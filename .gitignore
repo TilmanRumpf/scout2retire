@@ -135,5 +135,7 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# Vite + your project specifics
 node_modules/
 dist/
+.vite/
