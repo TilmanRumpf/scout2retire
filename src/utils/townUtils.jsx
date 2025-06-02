@@ -1,4 +1,5 @@
 import supabase from './supabaseClient';
+import { logTownActivity } from './journalUtils';
 
 // Town management
 export const fetchTowns = async (filters = {}) => {
@@ -56,7 +57,7 @@ export const fetchTowns = async (filters = {}) => {
   }
 };
 
-export const toggleFavorite = async (userId, townId) => {
+export const toggleFavorite = async (userId, townId, townName = null, townCountry = null) => {
   try {
     // Enhanced debugging
     console.log('=== TOGGLE FAVORITE DEBUG ===');
@@ -88,6 +89,21 @@ export const toggleFavorite = async (userId, townId) => {
 
     console.log('Existing favorite:', existingFavorite);
 
+    // If we don't have town name/country, fetch it for journal logging
+    if (!townName || !townCountry) {
+      const { data: townData, error: townError } = await supabase
+        .from('towns')
+        .select('name, country')
+        .eq('id', normalizedTownId)
+        .maybeSingle();
+
+      if (!townError && townData) {
+        townName = townData.name;
+        townCountry = townData.country;
+        console.log('Fetched town details for journal:', townName, townCountry);
+      }
+    }
+
     // If already favorited, remove it
     if (existingFavorite) {
       console.log('Removing favorite...');
@@ -104,6 +120,13 @@ export const toggleFavorite = async (userId, townId) => {
       }
 
       console.log('Favorite removed successfully');
+      
+      // Log the unlike activity to journal
+      if (townName && townCountry) {
+        console.log('Logging unlike activity to journal...');
+        await logTownActivity(userIdString, normalizedTownId, 'unliked', townName, townCountry);
+      }
+      
       return { success: true, action: 'removed' };
     }
 
@@ -124,6 +147,13 @@ export const toggleFavorite = async (userId, townId) => {
     }
 
     console.log('Favorite added successfully');
+    
+    // Log the like activity to journal
+    if (townName && townCountry) {
+      console.log('Logging like activity to journal...');
+      await logTownActivity(userIdString, normalizedTownId, 'liked', townName, townCountry);
+    }
+    
     return { success: true, action: 'added' };
   } catch (error) {
     console.error("Unexpected error toggling favorite:", error);
@@ -249,5 +279,19 @@ export const getTownOfTheDay = async (userId) => {
   } catch (error) {
     console.error("Unexpected error getting town of the day:", error);
     return { success: false, error };
+  }
+};
+
+// Log town view activity
+export const logTownView = async (userId, townId, townName, townCountry) => {
+  try {
+    const userIdString = String(userId).trim();
+    const normalizedTownId = String(townId).toLowerCase().trim();
+    
+    console.log('Logging town view activity...');
+    await logTownActivity(userIdString, normalizedTownId, 'viewed', townName, townCountry);
+  } catch (error) {
+    console.error("Error logging town view:", error);
+    // Don't return error as this is non-critical
   }
 };

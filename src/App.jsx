@@ -19,6 +19,7 @@ import MasterSchedule from "./pages/MasterSchedule";
 import TownComparison from "./pages/TownComparison";
 import TownDiscovery from "./pages/TownDiscovery";
 import Chat from "./pages/Chat";
+import Journal from "./pages/Journal";
 
 // Onboarding Flow
 import OnboardingStatus from "./pages/onboarding/OnboardingStatus";
@@ -186,6 +187,13 @@ function App() {
             <ProtectedRoute onboardingRequired={true}>
               <AuthenticatedLayout>
                 <MasterSchedule />
+              </AuthenticatedLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/journal" element={
+            <ProtectedRoute onboardingRequired={true}>
+              <AuthenticatedLayout>
+                <Journal />
               </AuthenticatedLayout>
             </ProtectedRoute>
           } />

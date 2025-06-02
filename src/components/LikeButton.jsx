@@ -2,7 +2,14 @@ import { useState, useEffect } from 'react';
 import { toggleFavorite } from '../utils/townUtils';
 import toast from 'react-hot-toast';
 
-export default function LikeButton({ townId, userId, initialState = false, onToggle }) {
+export default function LikeButton({ 
+  townId, 
+  userId, 
+  initialState = false, 
+  onToggle,
+  townName = null,      // Added as optional prop
+  townCountry = null    // Added as optional prop
+}) {
   const [isLiked, setIsLiked] = useState(initialState);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -20,9 +27,11 @@ export default function LikeButton({ townId, userId, initialState = false, onTog
       townId,
       userId,
       initialState,
-      currentState: isLiked
+      currentState: isLiked,
+      townName,        // Added to debug log
+      townCountry      // Added to debug log
     });
-  }, [townId, userId, initialState, isLiked]);
+  }, [townId, userId, initialState, isLiked, townName, townCountry]);
 
   const handleToggle = async () => {
     // Don't proceed if already loading or missing required data
@@ -44,7 +53,13 @@ export default function LikeButton({ townId, userId, initialState = false, onTog
       
       console.log(`Toggling like for town ${stringTownId} by user ${stringUserId}. Current state: ${isLiked}`);
       
-      const { success, action, error } = await toggleFavorite(stringUserId, stringTownId);
+      // Pass town name and country if available
+      const { success, action, error } = await toggleFavorite(
+        stringUserId, 
+        stringTownId,
+        townName,      // Added
+        townCountry    // Added
+      );
       
       console.log(`Toggle response:`, { success, action, error });
       

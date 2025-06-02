@@ -7,6 +7,8 @@ import DailyTownCard from '../components/DailyTownCard';
 import TownCard from '../components/TownCard';
 import QuickNav from '../components/QuickNav';
 import { fetchFavorites } from '../utils/townUtils';
+import { saveJournalEntry } from '../utils/journalUtils';
+import toast from 'react-hot-toast';
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -14,6 +16,7 @@ export default function Home() {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [journalEntry, setJournalEntry] = useState('');
+  const [savingJournal, setSavingJournal] = useState(false);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -57,11 +60,38 @@ export default function Home() {
     // If you need to add it to the list, you'd need to fetch the town data
   };
 
-  // Handle journal save (placeholder - would save to database)
-  const handleJournalSave = () => {
-    console.log('Saving journal entry:', journalEntry);
-    // TODO: Implement journal saving to Supabase
-    setJournalEntry('');
+  // Handle journal save
+  const handleJournalSave = async () => {
+    if (!journalEntry.trim()) {
+      toast.error('Please write something in your journal entry');
+      return;
+    }
+
+    if (!userId) {
+      toast.error('User not found. Please log in again.');
+      return;
+    }
+
+    setSavingJournal(true);
+    try {
+      const { success, error } = await saveJournalEntry(
+        userId,
+        journalEntry,
+        null // Could link to today's recommended town if needed
+      );
+
+      if (success) {
+        toast.success('Journal entry saved!');
+        setJournalEntry('');
+      } else {
+        toast.error(`Failed to save journal entry: ${error?.message || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error('Error saving journal:', err);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setSavingJournal(false);
+    }
   };
 
   if (loading) {
@@ -215,10 +245,10 @@ export default function Home() {
           </div>
           <button
             onClick={handleJournalSave}
-            disabled={!journalEntry.trim()}
+            disabled={!journalEntry.trim() || savingJournal}
             className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Save Journal Entry
+            {savingJournal ? 'Saving...' : 'Save Journal Entry'}
           </button>
         </div>
       </main>
