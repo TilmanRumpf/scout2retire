@@ -1,193 +1,595 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils';
+import { getCurrentUser } from '../utils/authUtils';
+import TownRadarChart from '../components/TownRadarChart';
+import LikeButton from '../components/LikeButton';
+import QuickNav from '../components/QuickNav';
+import toast from 'react-hot-toast';
 
 export default function TownComparison() {
-  const location = useLocation();
   const [towns, setTowns] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [userId, setUserId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState('overview');
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // Mock data for towns (in a real app, this would come from an API)
-  const allTowns = [
-    {
-      id: 1,
-      name: 'Valencia',
-      country: 'Spain',
-      description: 'A vibrant coastal city with excellent healthcare and affordable living.',
-      cost_index: 1800,
-      healthcare_score: 9,
-      safety_score: 8,
-      image_url: 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      climate: {
-        avg_temp_summer: 30,
-        avg_temp_winter: 12,
-        rainfall: 'Low',
-        humidity: 'Moderate'
-      },
-      lifestyle: {
-        nightlife: 8,
-        culture: 9,
-        food: 9,
-        outdoor: 8
-      }
-    },
-    {
-      id: 2,
-      name: 'Lisbon',
-      country: 'Portugal',
-      description: 'Beautiful coastal capital with rich history and moderate cost of living.',
-      cost_index: 2000,
-      healthcare_score: 8,
-      safety_score: 7,
-      image_url: 'https://images.unsplash.com/photo-1585208798174-6cedd86e019a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      climate: {
-        avg_temp_summer: 28,
-        avg_temp_winter: 11,
-        rainfall: 'Moderate',
-        humidity: 'Moderate'
-      },
-      lifestyle: {
-        nightlife: 9,
-        culture: 8,
-        food: 9,
-        outdoor: 7
-      }
-    },
-    {
-      id: 3,
-      name: 'Chiang Mai',
-      country: 'Thailand',
-      description: 'Cultural northern city with very low cost of living and warm climate.',
-      cost_index: 1200,
-      healthcare_score: 7,
-      safety_score: 7,
-      image_url: 'https://images.unsplash.com/photo-1598096969068-ad16bcf5c688?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      climate: {
-        avg_temp_summer: 34,
-        avg_temp_winter: 20,
-        rainfall: 'High',
-        humidity: 'High'
-      },
-      lifestyle: {
-        nightlife: 7,
-        culture: 9,
-        food: 10,
-        outdoor: 8
-      }
-    },
-  ];
+  // Parse town IDs from URL
+  const getSelectedTownIds = () => {
+    const params = new URLSearchParams(location.search);
+    const townIds = params.get('towns');
+    return townIds ? townIds.split(',') : [];
+  };
 
   // Categories for comparison tabs
   const categories = [
     { id: 'overview', label: 'Overview' },
     { id: 'climate', label: 'Climate' },
     { id: 'cost', label: 'Cost of Living' },
-    { id: 'lifestyle', label: 'Lifestyle' },
     { id: 'healthcare', label: 'Healthcare' },
-    { id: 'safety', label: 'Safety' }
+    { id: 'lifestyle', label: 'Lifestyle' },
+    { id: 'safety', label: 'Safety' },
+    { id: 'infrastructure', label: 'Infrastructure' }
   ];
 
-  // Parse town IDs from URL query parameters
+  // Load data
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const townId = params.get('town');
-    
-    if (townId) {
-      // In a real app, you would fetch the town data from an API
-      // For now, we'll filter from our mock data
-      const selectedTown = allTowns.find(town => town.id === Number(townId));
-      if (selectedTown) {
-        setTowns([selectedTown]);
-      }
-    } else {
-      // If no towns specified, show the first 2 towns as default
-      setTowns(allTowns.slice(0, 2));
-    }
-  }, [location.search]);
+    const loadData = async () => {
+      try {
+        setLoading(true);
 
-  // Helper to get content for the active category
-  const getCategoryContent = (town, category) => {
-    switch (category) {
-      case 'overview':
-        return (
-          <div>
-            <p className="mb-3">{town.description}</p>
-            <div className="flex flex-wrap gap-2">
-              <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-xs rounded-full">
-                ${town.cost_index}/mo
-              </span>
-              <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-full">
-                Health: {town.healthcare_score}/10
-              </span>
-              <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 text-xs rounded-full">
-                Safety: {town.safety_score}/10
-              </span>
-            </div>
-          </div>
-        );
-      case 'climate':
-        return (
-          <div className="space-y-2">
-            <p><span className="font-medium">Summer:</span> {town.climate.avg_temp_summer}°C</p>
-            <p><span className="font-medium">Winter:</span> {town.climate.avg_temp_winter}°C</p>
-            <p><span className="font-medium">Rainfall:</span> {town.climate.rainfall}</p>
-            <p><span className="font-medium">Humidity:</span> {town.climate.humidity}</p>
-          </div>
-        );
-      case 'cost':
-        return (
-          <div className="space-y-2">
-            <p><span className="font-medium">Monthly Estimate:</span> ${town.cost_index}</p>
-            <p><span className="font-medium">Housing:</span> ~${Math.round(town.cost_index * 0.4)}/month</p>
-            <p><span className="font-medium">Food:</span> ~${Math.round(town.cost_index * 0.3)}/month</p>
-            <p><span className="font-medium">Other:</span> ~${Math.round(town.cost_index * 0.3)}/month</p>
-          </div>
-        );
-      case 'lifestyle':
-        return (
-          <div className="space-y-2">
-            <p><span className="font-medium">Nightlife:</span> {town.lifestyle.nightlife}/10</p>
-            <p><span className="font-medium">Culture:</span> {town.lifestyle.culture}/10</p>
-            <p><span className="font-medium">Food:</span> {town.lifestyle.food}/10</p>
-            <p><span className="font-medium">Outdoor Activities:</span> {town.lifestyle.outdoor}/10</p>
-          </div>
-        );
-      case 'healthcare':
-        return (
-          <div className="space-y-2">
-            <p><span className="font-medium">Overall Rating:</span> {town.healthcare_score}/10</p>
-            <p><span className="font-medium">Public Healthcare:</span> {town.healthcare_score >= 8 ? 'Excellent' : town.healthcare_score >= 6 ? 'Good' : 'Basic'}</p>
-            <p><span className="font-medium">Private Options:</span> {town.healthcare_score >= 7 ? 'Many available' : 'Limited'}</p>
-            <p><span className="font-medium">English-speaking Doctors:</span> {town.country === 'Thailand' ? 'In tourist areas' : 'Widely available'}</p>
-          </div>
-        );
-      case 'safety':
-        return (
-          <div className="space-y-2">
-            <p><span className="font-medium">Overall Rating:</span> {town.safety_score}/10</p>
-            <p><span className="font-medium">Crime Rate:</span> {town.safety_score >= 8 ? 'Low' : town.safety_score >= 6 ? 'Moderate' : 'High'}</p>
-            <p><span className="font-medium">Tourist Safety:</span> {town.safety_score >= 7 ? 'Very safe for tourists' : 'Exercise normal precautions'}</p>
-            <p><span className="font-medium">Natural Disasters:</span> {town.name === 'Chiang Mai' ? 'Seasonal flooding possible' : 'Low risk'}</p>
-          </div>
-        );
-      default:
-        return 'No information available for this category';
+        // Get current user
+        const { user } = await getCurrentUser();
+        if (!user) {
+          navigate('/welcome');
+          return;
+        }
+        setUserId(user.id);
+
+        // Get favorites
+        const { success: favSuccess, favorites: userFavorites, error: favError } = await fetchFavorites(user.id);
+        
+        if (!favSuccess) {
+          console.error("Error fetching favorites:", favError);
+          setError("Failed to load favorites");
+          setLoading(false);
+          return;
+        }
+
+        setFavorites(userFavorites);
+
+        // Get selected town IDs from URL or use top favorites if none specified
+        const selectedTownIds = getSelectedTownIds();
+        let townsToFetch = [];
+
+        if (selectedTownIds.length > 0) {
+          // Fetch specified towns all at once
+          const { success, towns: fetchedTowns, error: townError } = 
+            await fetchTowns({ townIds: selectedTownIds });
+          
+          if (success && fetchedTowns.length > 0) {
+            townsToFetch = fetchedTowns;
+          } else {
+            console.error("Error fetching selected towns:", townError);
+          }
+        } else if (userFavorites.length > 0) {
+          // Use top favorites (up to 3)
+          const favoriteTownIds = userFavorites
+            .slice(0, 3)
+            .map(fav => fav.town_id);
+
+          // Update URL with these town IDs
+          navigate(`/compare?towns=${favoriteTownIds.join(',')}`, { replace: true });
+
+          // Fetch all towns at once
+          const { success, towns: fetchedTowns, error: townError } = 
+            await fetchTowns({ townIds: favoriteTownIds });
+          
+          if (success && fetchedTowns.length > 0) {
+            townsToFetch = fetchedTowns;
+          } else {
+            console.error("Error fetching favorite towns:", townError);
+          }
+        }
+
+        if (townsToFetch.length === 0) {
+          setError("No towns selected for comparison. Please select towns from your favorites.");
+        } else {
+          setTowns(townsToFetch);
+        }
+
+      } catch (err) {
+        console.error("Error loading comparison data:", err);
+        setError("An unexpected error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [navigate, location.search]);
+
+  // Handle favorite toggle
+  const handleToggleFavorite = async (townId) => {
+    if (!userId) return;
+
+    try {
+      const { success, action, error: toggleError } = await toggleFavorite(userId, townId);
+      
+      if (!success) {
+        toast.error(`Failed to update favorites: ${toggleError.message}`);
+        return;
+      }
+
+      // Update local favorites state
+      if (action === 'added') {
+        const { success: townSuccess, towns: fetchedTowns } = await fetchTowns({ townIds: [townId] });
+        if (townSuccess && fetchedTowns.length > 0) {
+          setFavorites(prev => [...prev, {
+            user_id: userId,
+            town_id: townId,
+            created_at: new Date().toISOString(),
+            towns: fetchedTowns[0]
+          }]);
+        }
+      } else {
+        // Remove from favorites
+        setFavorites(prev => prev.filter(fav => fav.town_id !== townId));
+        
+        // Also remove from comparison
+        setTowns(prev => {
+          const updatedTowns = prev.filter(town => town.id !== townId);
+          
+          // Update URL to reflect the change
+          const remainingTownIds = updatedTowns.map(t => t.id);
+          if (remainingTownIds.length > 0) {
+            navigate(`/compare?towns=${remainingTownIds.join(',')}`, { replace: true });
+          } else {
+            // If no towns left, redirect to favorites
+            setTimeout(() => {
+              navigate('/favorites');
+            }, 1000); // Small delay to show the toast message
+          }
+          
+          return updatedTowns;
+        });
+      }
+
+      toast.success(action === 'added' ? 'Added to favorites' : 'Removed from favorites');
+    } catch (err) {
+      console.error("Error toggling favorite:", err);
+      toast.error("Failed to update favorites");
     }
   };
 
+  // Helper to check if a town is favorited
+  const isFavorited = (townId) => {
+    return favorites.some(fav => fav.town_id === townId);
+  };
+
+  // Helper to get the overall rating for a category
+  const getCategoryRating = (town, category) => {
+    switch (category) {
+      case 'climate':
+        return town.climate_rating || null;
+      case 'cost':
+        // Convert cost index to a rating (lower cost = higher rating)
+        // Assuming $1000 = 10/10, $5000 = 1/10
+        if (town.cost_index) {
+          const rating = Math.max(1, Math.min(10, 11 - (town.cost_index / 500)));
+          return Math.round(rating);
+        }
+        return null;
+      case 'healthcare':
+        return town.healthcare_score || null;
+      case 'lifestyle':
+        // Average of lifestyle sub-ratings
+        const lifestyleRatings = [
+          town.nightlife_rating,
+          town.restaurants_rating,
+          town.cultural_rating,
+          town.outdoor_rating,
+          town.quality_of_life
+        ].filter(r => r !== null && r !== undefined);
+        
+        if (lifestyleRatings.length > 0) {
+          const avg = lifestyleRatings.reduce((a, b) => a + b, 0) / lifestyleRatings.length;
+          return Math.round(avg);
+        }
+        return null;
+      case 'safety':
+        return town.safety_score || null;
+      case 'infrastructure':
+        // Average of infrastructure sub-ratings
+        const infraRatings = [
+          town.public_transport_quality,
+          town.walkability,
+          town.infrastructure_rating
+        ].filter(r => r !== null && r !== undefined);
+        
+        if (infraRatings.length > 0) {
+          const avg = infraRatings.reduce((a, b) => a + b, 0) / infraRatings.length;
+          return Math.round(avg);
+        }
+        return null;
+      default:
+        return null;
+    }
+  };
+
+  // Helper to get value for specific category field
+  const getCategoryValue = (town, category) => {
+    switch (category) {
+      case 'overview':
+        return (
+          <div className="h-full flex flex-col">
+            <p className="mb-2 min-h-[7.5rem] line-clamp-5">{town.description || 'No description available.'}</p>
+            <div className="flex flex-wrap gap-2 mt-auto">
+              {town.cost_index && (
+                <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-xs rounded-full">
+                  ${town.cost_index}/mo
+                </span>
+              )}
+              {town.healthcare_score && (
+                <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+                  Healthcare: {town.healthcare_score}/10
+                </span>
+              )}
+              {town.safety_score && (
+                <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 text-xs rounded-full">
+                  Safety: {town.safety_score}/10
+                </span>
+              )}
+            </div>
+          </div>
+        );
+
+      case 'climate':
+        return (
+          <div className="h-full flex flex-col">
+            <p className="mb-3 text-gray-700 dark:text-gray-300 min-h-[7.5rem] line-clamp-5">{town.climate_description || 'No climate information available.'}</p>
+            <div className="space-y-3 flex-1">
+              {/* Live Weather Section */}
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-3 h-[4rem] flex items-center justify-center">
+                <div className="flex items-center space-x-3">
+                  {/* Animated weather icon */}
+                  <div className="relative">
+                    <svg className="w-10 h-10 text-yellow-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
+                    </svg>
+                  </div>
+                  <div className="text-sm">
+                    <p className="font-medium text-gray-700 dark:text-gray-300">Live Weather</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Check current conditions</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Temperature Section - Fixed Height */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[5.5rem]">
+                <h4 className="font-medium text-sm mb-2">Temperature</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-gray-500 dark:text-gray-400">Summer:</span>
+                    <span className="ml-1 font-medium">{town.avg_temp_summer ? `${town.avg_temp_summer}°C` : 'N/A'}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500 dark:text-gray-400">Winter:</span>
+                    <span className="ml-1 font-medium">{town.avg_temp_winter ? `${town.avg_temp_winter}°C` : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Precipitation & Sunshine Section - Fixed Height */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[7.5rem]">
+                <h4 className="font-medium text-sm mb-2">Precipitation & Sunshine</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Annual Rainfall:</span>
+                    <span className="font-medium">{town.annual_rainfall ? `${town.annual_rainfall}mm` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Daily Sunshine:</span>
+                    <span className="font-medium">{town.sunshine_hours ? `${town.sunshine_hours} hours` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Humidity:</span>
+                    <span className="font-medium">{town.humidity_level || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'cost':
+        return (
+          <div className="h-full flex flex-col">
+            <p className="mb-3 text-gray-700 dark:text-gray-300 min-h-[7.5rem] line-clamp-5">{town.cost_description || 'No cost information available.'}</p>
+            <div className="space-y-3 flex-1">
+              {/* Housing Costs Section - Fixed Height */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[7.5rem]">
+                <h4 className="font-medium text-sm mb-2">Housing Costs</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">1-Bedroom Rent:</span>
+                    <span className="font-medium">{town.rent_1bed ? `$${town.rent_1bed}/mo` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">2-Bedroom Rent:</span>
+                    <span className="font-medium">{town.rent_2bed ? `$${town.rent_2bed}/mo` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Buy Price/m²:</span>
+                    <span className="font-medium">{town.property_buy_sqm ? `$${town.property_buy_sqm}` : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Daily Expenses Section - Fixed Height */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[9rem]">
+                <h4 className="font-medium text-sm mb-2">Daily Expenses</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Restaurant Meal:</span>
+                    <span className="font-medium">{town.meal_cost ? `$${town.meal_cost}` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Weekly Groceries:</span>
+                    <span className="font-medium">{town.groceries_cost ? `$${town.groceries_cost}` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Monthly Utilities:</span>
+                    <span className="font-medium">{town.utilities_cost ? `$${town.utilities_cost}` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Public Transport:</span>
+                    <span className="font-medium">{town.transport_cost ? `$${town.transport_cost}/mo` : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Total Costs/Month Section */}
+              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 h-[4rem] flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Total Costs/Month</p>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    ${town.cost_index || 'N/A'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'healthcare':
+        return (
+          <div className="h-full flex flex-col">
+            <p className="mb-3 text-gray-700 dark:text-gray-300 min-h-[7.5rem] line-clamp-5">{town.healthcare_description || 'No healthcare information available.'}</p>
+            <div className="space-y-3 flex-1">
+              {/* Medical Facilities Section - Fixed Height */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[7.5rem]">
+                <h4 className="font-medium text-sm mb-2">Medical Facilities</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Hospitals:</span>
+                    <span className="font-medium">{town.hospital_count || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Clinics:</span>
+                    <span className="font-medium">{town.clinic_count || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Emergency Response:</span>
+                    <span className="font-medium">{town.emergency_response_time || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Healthcare Access Section - Fixed Height */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[9rem]">
+                <h4 className="font-medium text-sm mb-2">Healthcare Access</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">English Doctors:</span>
+                    <span className={`font-medium ${town.english_speaking_doctors === true ? 'text-green-600 dark:text-green-400' : town.english_speaking_doctors === false ? 'text-orange-600 dark:text-orange-400' : ''}`}>
+                      {town.english_speaking_doctors === true ? 'Available' : town.english_speaking_doctors === false ? 'Limited' : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Insurance Cost:</span>
+                    <span className="font-medium">{town.healthcare_cost ? `$${town.healthcare_cost}/mo` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Specialists:</span>
+                    <span className="font-medium">{town.specialist_availability || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Dental Care:</span>
+                    <span className="font-medium">{town.dental_care_quality ? `${town.dental_care_quality}/10` : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Healthcare System Type - Fixed Height */}
+              <div className="text-xs text-center p-2 bg-gray-100 dark:bg-gray-700 rounded h-[2rem] flex items-center justify-center">
+                <span className="text-gray-600 dark:text-gray-400">System: </span>
+                <span className="font-medium ml-1">{town.healthcare_system_type || 'N/A'}</span>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'lifestyle':
+        return (
+          <div className="h-full flex flex-col">
+            <p className="mb-3 text-gray-700 dark:text-gray-300 min-h-[7.5rem] line-clamp-5">{town.lifestyle_description || 'No lifestyle information available.'}</p>
+            <div className="space-y-3 flex-1">
+              {/* Community & Culture Section - Fixed Height */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[7.5rem]">
+                <h4 className="font-medium text-sm mb-2">Community & Culture</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Expat Community:</span>
+                    <span className="font-medium">{town.expat_population || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Cultural Scene:</span>
+                    <span className="font-medium">{town.cultural_rating ? `${town.cultural_rating}/10` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Nightlife:</span>
+                    <span className="font-medium">{town.nightlife_rating ? `${town.nightlife_rating}/10` : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Activities & Amenities Section - Fixed Height */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[7.5rem]">
+                <h4 className="font-medium text-sm mb-2">Activities & Amenities</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Dining Options:</span>
+                    <span className="font-medium">{town.restaurants_rating ? `${town.restaurants_rating}/10` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Outdoor Activities:</span>
+                    <span className="font-medium">{town.outdoor_rating ? `${town.outdoor_rating}/10` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Quality of Life:</span>
+                    <span className="font-medium">{town.quality_of_life ? `${town.quality_of_life}/10` : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'safety':
+        return (
+          <div className="h-full flex flex-col">
+            <p className="mb-3 text-gray-700 dark:text-gray-300 min-h-[7.5rem] line-clamp-5">{town.safety_description || 'No safety information available.'}</p>
+            <div className="space-y-3 flex-1">
+              {/* Safety Metrics Section - Fixed Height */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[7.5rem]">
+                <h4 className="font-medium text-sm mb-2">Safety Metrics</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Crime Rate:</span>
+                    <span className="font-medium">{town.crime_rate || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Safety Ranking:</span>
+                    <span className="font-medium">{town.safety_ranking || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Police Reliability:</span>
+                    <span className="font-medium">{town.police_reliability ? `${town.police_reliability}/10` : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Risk Factors Section - Fixed Height */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[6rem]">
+                <h4 className="font-medium text-sm mb-2">Risk Factors</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Natural Disaster Risk:</span>
+                    <span className={`font-medium ${
+                      town.natural_disaster_risk <= 3 ? 'text-green-600 dark:text-green-400' : 
+                      town.natural_disaster_risk <= 6 ? 'text-yellow-600 dark:text-yellow-400' : 
+                      town.natural_disaster_risk > 6 ? 'text-red-600 dark:text-red-400' : ''
+                    }`}>
+                      {town.natural_disaster_risk !== undefined ?
+                        (town.natural_disaster_risk <= 3 ? 'Low' : 
+                         town.natural_disaster_risk <= 6 ? 'Moderate' : 'High') : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Political Stability:</span>
+                    <span className="font-medium">{town.political_stability ? `${town.political_stability}/10` : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'infrastructure':
+        return (
+          <div className="h-full flex flex-col">
+            <p className="mb-3 text-gray-700 dark:text-gray-300 min-h-[7.5rem] line-clamp-5">{town.infrastructure_description || 'No infrastructure information available.'}</p>
+            <div className="space-y-3 flex-1">
+              {/* Transportation Section - Fixed Height */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[9rem]">
+                <h4 className="font-medium text-sm mb-2">Transportation</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Public Transport:</span>
+                    <span className="font-medium">{town.public_transport_quality ? `${town.public_transport_quality}/10` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Walkability:</span>
+                    <span className="font-medium">{town.walkability ? `${town.walkability}/10` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Nearest Airport:</span>
+                    <span className="font-medium text-xs">{town.nearest_airport || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">City Center to Airport:</span>
+                    <span className="font-medium">{town.airport_distance ? `${town.airport_distance} km` : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Connectivity & Services Section - Fixed Height */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[7.5rem]">
+                <h4 className="font-medium text-sm mb-2">Connectivity & Services</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Internet Speed:</span>
+                    <span className="font-medium">{town.internet_speed ? `${town.internet_speed} Mbps` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Mobile Coverage:</span>
+                    <span className="font-medium">{town.mobile_coverage || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Utilities Reliability:</span>
+                    <span className="font-medium">{town.utilities_reliability ? `${town.utilities_reliability}/10` : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return 'No data available for this category';
+    }
+  };
+
+  // Render loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
+        <div className="animate-pulse text-green-600 font-semibold">Loading town comparison...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 md:pb-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-16 md:pb-4">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-10">
+      <header className="sticky top-0 z-10 bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
-            <div className="flex items-center">
-              <Link to="/welcome" className="text-xl font-bold text-gray-800 dark:text-white mr-4">
-                Scout<span className="text-green-600">2</span>Retire
-              </Link>
-              <h1 className="text-lg font-semibold text-gray-800 dark:text-white">
-                Compare Towns
-              </h1>
-            </div>
+            <h1 className="text-xl font-bold text-gray-800 dark:text-white">Compare Towns</h1>
             
             {/* Category tabs */}
             <div className="flex overflow-x-auto pb-2 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 space-x-2">
@@ -209,110 +611,160 @@ export default function TownComparison() {
         </div>
       </header>
 
-      {/* Main content */}
       <main className="max-w-7xl mx-auto px-4 py-6">
+        {/* Error message */}
+        {error && (
+          <div className="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 p-4 rounded-lg mb-6">
+            {error}
+            {error.includes("No towns selected") && (
+              <button
+                onClick={() => navigate('/favorites')}
+                className="mt-2 text-sm text-red-700 dark:text-red-300 underline"
+              >
+                Go to Favorites
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Town comparison grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {towns.map((town) => (
-            <div key={town.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-              {/* Town header with image */}
-              <div className="relative h-40">
-                {town.image_url ? (
-                  <img
-                    src={town.image_url}
-                    alt={town.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
-                    <span className="text-gray-400">No image</span>
+        {towns.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {towns.map((town) => (
+              <div key={town.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                {/* Town header with image */}
+                <div className="relative h-40">
+                  {town.image_url_1 ? (
+                    <img
+                      src={town.image_url_1}
+                      alt={town.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                      </svg>
+                    </div>
+                  )}
+                  {/* Like button */}
+                  {userId && (
+                    <div className="absolute top-2 right-2">
+                      <LikeButton
+                        townId={town.id}
+                        userId={userId}
+                        initialState={isFavorited(town.id)}
+                        onToggle={() => handleToggleFavorite(town.id)}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Town name and country */}
+                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-800 dark:text-white">{town.name}</h2>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{town.country}</p>
+                    </div>
+                    <a
+                      href={town.google_maps_link || `https://www.google.com/maps/search/${encodeURIComponent(town.name + ', ' + town.country)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-600 dark:text-green-400 text-sm hover:underline"
+                    >
+                      View on Map
+                    </a>
+                  </div>
+                </div>
+
+                {/* Category rating - show on all tabs except overview */}
+                {activeCategory !== 'overview' && (
+                  <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-bold text-gray-700 dark:text-gray-300">
+                        {categories.find(cat => cat.id === activeCategory)?.label}
+                      </span>
+                      <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                        {activeCategory === 'climate' && getCategoryRating(town, activeCategory) === null && town.climate_summary
+                          ? town.climate_summary
+                          : getCategoryRating(town, activeCategory) !== null
+                          ? `${getCategoryRating(town, activeCategory)}/10`
+                          : activeCategory === 'climate'
+                          ? 'Pleasant'
+                          : 'N/A'}
+                      </span>
+                    </div>
                   </div>
                 )}
-                <div className="absolute top-2 right-2">
-                  <button className="w-8 h-8 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center text-gray-400 hover:text-red-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
+
+                {/* Radar chart for quick comparison - only show on overview tab */}
+                {activeCategory === 'overview' && (
+                  <div className="p-4 border-b border-gray-200 dark:border-gray-700 h-[14rem]">
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Town Profile</h3>
+                    <div className="h-[11rem]">
+                      <TownRadarChart townData={town} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Category content */}
+                <div className="p-4 min-h-[30rem]">
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {activeCategory === 'overview' ? 'Overview' : 'Summary'}
+                  </h3>
+                  <div className="text-sm text-gray-600 dark:text-gray-300 h-full">
+                    {getCategoryValue(town, activeCategory)}
+                  </div>
+                </div>
+
+                {/* View details button */}
+                <div className="p-4 pt-0">
+                  <button
+                    onClick={() => navigate(`/discover?town=${town.id}`)}
+                    className="w-full py-2 px-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md transition-colors text-sm"
+                  >
+                    View Full Details
                   </button>
                 </div>
               </div>
+            ))}
 
-              {/* Town name and country */}
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-                      {town.name}
-                    </h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {town.country}
-                    </p>
-                  </div>
-                  <a
-                    href={`https://www.google.com/maps/search/${encodeURIComponent(
-                      town.name + ', ' + town.country
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-green-600 dark:text-green-400 text-sm hover:underline"
-                  >
-                    View on Map
-                  </a>
-                </div>
-              </div>
-
-              {/* Category content */}
-              <div className="p-4">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {categories.find(cat => cat.id === activeCategory)?.label || 'Information'}
-                </h3>
-                <div className="text-sm text-gray-600 dark:text-gray-300">
-                  {getCategoryContent(town, activeCategory)}
-                </div>
-              </div>
-
-              {/* View details button */}
-              <div className="p-4 pt-0">
-                <Link
-                  to={`/discover?town=${town.id}`}
-                  className="w-full block py-2 px-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md transition-colors text-sm text-center"
+            {/* Add town card if less than 3 towns */}
+            {towns.length < 3 && (
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 h-96">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <p className="text-gray-600 dark:text-gray-400 text-center mb-4">
+                  Add another town to compare
+                </p>
+                <button
+                  onClick={() => navigate('/favorites')}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
                 >
-                  View Full Details
-                </Link>
+                  Select from Favorites
+                </button>
               </div>
-            </div>
-          ))}
-
-          {/* Add town card if less than 3 towns */}
-          {towns.length < 3 && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 min-h-[300px]">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-12 w-12 text-gray-400 mb-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-              <p className="text-gray-600 dark:text-gray-400 text-center mb-4">
-                Add another town to compare
-              </p>
-              <Link
-                to="/discover"
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
-              >
-                Select from Towns
-              </Link>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              No towns to compare. Please select towns from your favorites.
+            </p>
+            <button
+              onClick={() => navigate('/favorites')}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
+            >
+              Go to Favorites
+            </button>
+          </div>
+        )}
       </main>
+
+      {/* Bottom navigation (mobile) */}
+      <QuickNav />
     </div>
   );
 }
