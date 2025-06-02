@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LikeButton from './LikeButton';
-import { getTownOfTheDay } from '../utils/townUtils';
+import { getTownOfTheDay, fetchFavorites } from '../utils/townUtils';
 import { getCurrentUser } from '../utils/authUtils';
 
 export default function DailyTownCard() {
@@ -9,6 +9,7 @@ export default function DailyTownCard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [isFavorited, setIsFavorited] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,15 +23,38 @@ export default function DailyTownCard() {
           return;
         }
         setUserId(user.id);
-
+        
         // Get town of the day
         const { success, town: dailyTown, error: townError } = await getTownOfTheDay(user.id);
+        
         if (!success) {
           setError(townError?.message || "Failed to fetch town of the day");
           setLoading(false);
           return;
         }
+        
+        // Log detailed town information for debugging
+        console.log("Daily Town Data:", {
+          id: dailyTown.id,
+          idType: typeof dailyTown.id,
+          name: dailyTown.name,
+          country: dailyTown.country,
+          cost: dailyTown.cost_index
+        });
+        
         setTown(dailyTown);
+        
+        // Check if this town is favorited
+        if (dailyTown) {
+          const { success: favSuccess, favorites } = await fetchFavorites(user.id);
+          if (favSuccess && favorites) {
+            const isTownFavorited = favorites.some(fav => 
+              fav.town_id.toLowerCase() === dailyTown.id.toLowerCase()
+            );
+            setIsFavorited(isTownFavorited);
+            console.log(`Town ${dailyTown.name} (${dailyTown.id}) is ${isTownFavorited ? 'favorited' : 'not favorited'}`);
+          }
+        }
       } catch (err) {
         setError("An unexpected error occurred");
         console.error(err);
@@ -38,9 +62,14 @@ export default function DailyTownCard() {
         setLoading(false);
       }
     };
-
+    
     fetchData();
   }, []);
+
+  const handleFavoriteToggle = (newState) => {
+    setIsFavorited(newState);
+    console.log(`Favorite toggled for ${town?.name}: ${newState ? 'Added' : 'Removed'}`);
+  };
 
   const handleExploreClick = () => {
     if (town) {
@@ -91,20 +120,23 @@ export default function DailyTownCard() {
           </div>
         )}
         <div className="absolute top-2 right-2">
-          {userId && (
-            <LikeButton townId={town.id} userId={userId} />
+          {userId && town && (
+            <LikeButton 
+              townId={town.id} 
+              userId={userId} 
+              initialState={isFavorited}
+              onToggle={handleFavoriteToggle}
+            />
           )}
         </div>
       </div>
+      
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-            {town.name}
-          </h3>
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            {town.country}
-          </span>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{town.name}</h3>
+          <span className="text-sm text-gray-500 dark:text-gray-400">{town.country}</span>
         </div>
+        
         <div className="flex space-x-2 mb-3">
           {town.cost_index && (
             <span className="px-2 py-1 bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs rounded-full">
@@ -122,9 +154,11 @@ export default function DailyTownCard() {
             </span>
           )}
         </div>
+        
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">
           {town.description || "Discover this beautiful town for your retirement."}
         </p>
+        
         <div className="flex justify-between items-center">
           <button
             onClick={handleExploreClick}

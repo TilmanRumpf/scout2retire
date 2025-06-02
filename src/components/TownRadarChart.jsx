@@ -1,132 +1,138 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
+import { 
+  Radar, 
+  RadarChart, 
+  PolarGrid, 
+  PolarAngleAxis, 
+  PolarRadiusAxis, 
+  ResponsiveContainer 
+} from 'recharts';
 
 export default function TownRadarChart({ townData }) {
-  const chartRef = useRef(null);
-  
-  // Define the chart properties
-  useEffect(() => {
-    if (!townData || !chartRef.current) return;
+  // Helper to calculate cost rating (inverse relationship)
+  const getCostRating = (costIndex) => {
+    if (!costIndex) return 5;
+    // $1000 = 10/10, $5000 = 1/10
+    const rating = Math.max(1, Math.min(10, 11 - (costIndex / 500)));
+    return Math.round(rating);
+  };
+
+  // Helper to calculate lifestyle rating (average of sub-ratings)
+  const getLifestyleRating = () => {
+    const ratings = [
+      townData.nightlife_rating,
+      townData.restaurants_rating,
+      townData.cultural_rating,
+      townData.outdoor_rating,
+      townData.quality_of_life
+    ].filter(r => r !== null && r !== undefined);
     
-    // Clear any existing content
-    chartRef.current.innerHTML = '';
+    if (ratings.length > 0) {
+      const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+      return Math.round(avg);
+    }
+    return 5; // Default if no data
+  };
+
+  // Helper to calculate infrastructure rating (average of sub-ratings)
+  const getInfrastructureRating = () => {
+    const ratings = [
+      townData.public_transport_quality,
+      townData.walkability,
+      townData.infrastructure_rating
+    ].filter(r => r !== null && r !== undefined);
     
-    // Get the dimensions
-    const width = chartRef.current.clientWidth;
-    const height = chartRef.current.clientHeight;
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const radius = Math.min(centerX, centerY) * 0.8;
-    
-    // Define the metrics to display
-    const metrics = [
-      { key: 'cost_index', label: 'Cost', scale: 0.1, max: 3000, inverse: true },
-      { key: 'healthcare_score', label: 'Healthcare', scale: 10, max: 10 },
-      { key: 'safety_score', label: 'Safety', scale: 10, max: 10 },
-      { key: 'nightlife_rating', label: 'Nightlife', scale: 10, max: 10 },
-      { key: 'cultural_rating', label: 'Culture', scale: 10, max: 10 },
-      { key: 'walkability', label: 'Walkability', scale: 10, max: 10 }
+    if (ratings.length > 0) {
+      const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+      return Math.round(avg);
+    }
+    return 5; // Default if no data
+  };
+
+  // Helper to calculate overall rating (average of all categories)
+  const getOverallRating = () => {
+    const ratings = [
+      townData.climate_rating || 5,
+      getCostRating(townData.cost_index),
+      townData.healthcare_score || 5,
+      getLifestyleRating(),
+      townData.safety_score || 5,
+      getInfrastructureRating()
     ];
     
-    // Create SVG element
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', width);
-    svg.setAttribute('height', height);
-    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-    chartRef.current.appendChild(svg);
-    
-    // Create axes
-    const numMetrics = metrics.length;
-    const angleStep = (Math.PI * 2) / numMetrics;
-    
-    // Create polygon points for chart data
-    let polygonPoints = '';
-    const dataPoints = [];
-    
-    metrics.forEach((metric, i) => {
-      const angle = i * angleStep - Math.PI / 2; // Start from top
-      
-      // Calculate axis endpoint
-      const axisX = centerX + radius * Math.cos(angle);
-      const axisY = centerY + radius * Math.sin(angle);
-      
-      // Draw axis line
-      const axisLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      axisLine.setAttribute('x1', centerX);
-      axisLine.setAttribute('y1', centerY);
-      axisLine.setAttribute('x2', axisX);
-      axisLine.setAttribute('y2', axisY);
-      axisLine.setAttribute('stroke', '#cbd5e1');
-      axisLine.setAttribute('stroke-width', '1');
-      svg.appendChild(axisLine);
-      
-      // Add axis label
-      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      label.setAttribute('x', centerX + (radius + 20) * Math.cos(angle));
-      label.setAttribute('y', centerY + (radius + 20) * Math.sin(angle));
-      label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('dominant-baseline', 'middle');
-      label.setAttribute('fill', '#64748b');
-      label.setAttribute('font-size', '12px');
-      label.textContent = metric.label;
-      svg.appendChild(label);
-      
-      // Calculate data point
-      let value = townData[metric.key] || 0;
-      
-      // Handle inverse metrics (lower is better)
-      if (metric.inverse && value > 0) {
-        value = metric.max - Math.min(value, metric.max);
-      }
-      
-      // Scale value to [0-1] range
-      const normalizedValue = Math.min(value / metric.max, 1);
-      
-      // Calculate point position
-      const pointDistance = normalizedValue * radius;
-      const pointX = centerX + pointDistance * Math.cos(angle);
-      const pointY = centerY + pointDistance * Math.sin(angle);
-      
-      dataPoints.push({ x: pointX, y: pointY });
-      polygonPoints += `${pointX},${pointY} `;
-    });
-    
-    // Create background circles
-    for (let i = 1; i <= 5; i++) {
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      circle.setAttribute('cx', centerX);
-      circle.setAttribute('cy', centerY);
-      circle.setAttribute('r', radius * i / 5);
-      circle.setAttribute('fill', 'none');
-      circle.setAttribute('stroke', '#e2e8f0');
-      circle.setAttribute('stroke-width', '1');
-      svg.appendChild(circle);
+    const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+    return Math.round(avg);
+  };
+
+  // Prepare data for the radar chart
+  const data = [
+    {
+      category: 'Overall',
+      value: getOverallRating(),
+      fullMark: 10
+    },
+    {
+      category: 'Climate',
+      value: townData.climate_rating || 5,
+      fullMark: 10
+    },
+    {
+      category: 'Cost of Living',
+      value: getCostRating(townData.cost_index),
+      fullMark: 10
+    },
+    {
+      category: 'Healthcare',
+      value: townData.healthcare_score || 5,
+      fullMark: 10
+    },
+    {
+      category: 'Lifestyle',
+      value: getLifestyleRating(),
+      fullMark: 10
+    },
+    {
+      category: 'Safety',
+      value: townData.safety_score || 5,
+      fullMark: 10
+    },
+    {
+      category: 'Infrastructure',
+      value: getInfrastructureRating(),
+      fullMark: 10
     }
-    
-    // Create data polygon
-    const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-    polygon.setAttribute('points', polygonPoints);
-    polygon.setAttribute('fill', 'rgba(34, 197, 94, 0.2)');
-    polygon.setAttribute('stroke', '#16a34a');
-    polygon.setAttribute('stroke-width', '2');
-    svg.appendChild(polygon);
-    
-    // Add data points
-    dataPoints.forEach((point) => {
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      circle.setAttribute('cx', point.x);
-      circle.setAttribute('cy', point.y);
-      circle.setAttribute('r', '4');
-      circle.setAttribute('fill', '#16a34a');
-      svg.appendChild(circle);
-    });
-    
-  }, [townData]);
-  
+  ];
+
   return (
-    <div 
-      ref={chartRef} 
-      className="w-full h-full min-h-[200px]"
-      aria-label="Town metrics radar chart"
-    />
+    <ResponsiveContainer width="100%" height="100%">
+      <RadarChart data={data}>
+        <PolarGrid 
+          gridType="polygon" 
+          radialLines={true}
+          stroke="#e5e7eb"
+          strokeDasharray="3 3"
+        />
+        <PolarAngleAxis 
+          dataKey="category" 
+          tick={{ fontSize: 10 }}
+          className="text-gray-600 dark:text-gray-400"
+        />
+        <PolarRadiusAxis 
+          angle={90} 
+          domain={[0, 10]} 
+          tickCount={6}
+          tick={{ fontSize: 10 }}
+          className="text-gray-500 dark:text-gray-500"
+        />
+        <Radar 
+          name={townData.name} 
+          dataKey="value" 
+          stroke="#10b981" 
+          fill="#10b981" 
+          fillOpacity={0.3}
+          strokeWidth={2}
+        />
+      </RadarChart>
+    </ResponsiveContainer>
   );
 }
