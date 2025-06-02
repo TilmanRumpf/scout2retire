@@ -124,6 +124,8 @@ export default function DailyTownCard() {
             <LikeButton 
               townId={town.id} 
               userId={userId} 
+              townName={town.name}        // Added this
+              townCountry={town.country}  // Added this
               initialState={isFavorited}
               onToggle={handleFavoriteToggle}
             />
