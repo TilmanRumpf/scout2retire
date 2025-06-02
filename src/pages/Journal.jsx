@@ -133,12 +133,18 @@ export default function Journal() {
     
     if (entry.towns) {
       return (
-        <div className="flex justify-end">
+        <div className="flex justify-end space-x-2">
           <button 
             onClick={() => navigate(`/discover?town=${entry.towns.id}`)}
             className="text-blue-600 hover:text-blue-700 text-sm"
           >
-            View Town
+            View
+          </button>
+          <button 
+            onClick={() => handleDelete(entry.id)}
+            className="text-red-600 hover:text-red-700 text-sm"
+          >
+            Delete
           </button>
         </div>
       );
