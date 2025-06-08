@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
+// 08JUN25: Import uiConfig for consistent design system
+import { uiConfig } from '../../styles/uiConfig';
 
+// 08JUN25: Refactored to use uiConfig design tokens and mobile-first approach
+// Maintained all existing functionality while improving design consistency and mobile responsiveness
 const OnboardingRegion = (props) => {
+  // 08JUN25: Preserved original props destructuring
   const { onNext, onPrevious, formData, setFormData } = props || {};
+  
+  // 08JUN25: Preserved all original state management
   const [selectedRegions, setSelectedRegions] = useState(['Recommended', 'Recommended', 'Recommended']);
   const [selectedCountries, setSelectedCountries] = useState(['Optional', 'Optional', 'Optional']);
   const [selectedProvinces, setSelectedProvinces] = useState(['Optional', 'Optional', 'Optional']);
@@ -10,6 +17,7 @@ const OnboardingRegion = (props) => {
   const [selectedVegetation, setSelectedVegetation] = useState(['Optional', 'Optional', 'Optional']);
   const [selectedDensity, setSelectedDensity] = useState(['Optional', 'Optional', 'Optional']);
 
+  // 08JUN25: Preserved all original data arrays
   const regions = [
     'Recommended',
     'North America',
@@ -59,6 +67,7 @@ const OnboardingRegion = (props) => {
     'Remote'
   ];
 
+  // 08JUN25: Preserved all original data mappings
   const regionCountries = {
     'North America': ['Mexico', 'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador', 'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon'],
     'Central America': ['Belize', 'Costa Rica', 'El Salvador', 'Guatemala', 'Honduras', 'Nicaragua', 'Panama'],
@@ -109,6 +118,7 @@ const OnboardingRegion = (props) => {
     'Oceania': ['Indonesia', 'Australia', 'New Zealand', 'Philippines']
   };
 
+  // 08JUN25: Preserved original filtering logic
   const getFilteredCountries = (regionIndex) => {
     const selectedRegion = selectedRegions[regionIndex];
     
@@ -146,6 +156,7 @@ const OnboardingRegion = (props) => {
     return ['Optional', ...countryProvinces[selectedCountry]];
   };
 
+  // 08JUN25: Preserved all original event handlers
   const handleRegionChange = (index, value) => {
     const newRegions = [...selectedRegions];
     newRegions[index] = value;
@@ -195,6 +206,7 @@ const OnboardingRegion = (props) => {
     setSelectedDensity(newDensity);
   };
 
+  // 08JUN25: Preserved original useEffect for form data updates
   useEffect(() => {
     if (setFormData && typeof setFormData === 'function') {
       setFormData(prev => ({
@@ -209,6 +221,7 @@ const OnboardingRegion = (props) => {
     }
   }, [selectedRegions, selectedCountries, selectedProvinces, selectedFeatures, selectedVegetation, selectedDensity, setFormData]);
 
+  // 08JUN25: Preserved original navigation handlers
   const handleNext = () => {
     if (onNext && typeof onNext === 'function') {
       onNext();
@@ -222,96 +235,50 @@ const OnboardingRegion = (props) => {
   };
 
   return (
-    <div style={{
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: '24px',
-      backgroundColor: 'white',
-      minHeight: '100vh',
-      fontFamily: 'system-ui, -apple-system, sans-serif'
-    }}>
-      <div style={{ marginBottom: '32px' }}>
-        <h1 style={{
-          fontSize: '30px',
-          fontWeight: 'bold',
-          color: '#1f2937',
-          marginBottom: '8px'
-        }}>Find Your Perfect Retirement Location</h1>
-        <div style={{
-          width: '100%',
-          backgroundColor: '#e5e7eb',
-          borderRadius: '9999px',
-          height: '8px',
-          marginBottom: '16px'
-        }}>
-          <div style={{
-            backgroundColor: '#2563eb',
-            height: '8px',
-            borderRadius: '9999px',
-            width: '40%',
-            transition: 'all 0.3s'
-          }}></div>
+    // 08JUN25: Mobile-first page container using uiConfig design tokens
+    <div className={`${uiConfig.layout.width.containerWide} ${uiConfig.layout.spacing.section} ${uiConfig.colors.page} min-h-screen ${uiConfig.font.family}`}>
+      
+      {/* 08JUN25: Header section with mobile-responsive design */}
+      <div className="mb-6 sm:mb-8">
+        <h1 className={`${uiConfig.font.size['2xl']} sm:${uiConfig.font.size['3xl']} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading} mb-2`}>
+          Find Your Perfect Retirement Location
+        </h1>
+        
+        {/* 08JUN25: Progress bar with uiConfig styling */}
+        <div className={`w-full ${uiConfig.progress.track} ${uiConfig.layout.radius.full} h-2 mb-4`}>
+          <div className={`${uiConfig.progress.fill} h-2 ${uiConfig.layout.radius.full} ${uiConfig.animation.transition}`} 
+               style={{ width: '40%' }}>
+          </div>
         </div>
-        <p style={{ color: '#6b7280' }}>Step 2 of 5: Regional Preferences</p>
+        <p className={`${uiConfig.colors.hint} ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base}`}>
+          Step 2 of 5: Regional Preferences
+        </p>
       </div>
 
-      {/* Three Column Geographical Hierarchy */}
-      <div style={{ marginBottom: '32px' }}>
-        <h2 style={{
-          fontSize: '20px',
-          fontWeight: '600',
-          color: '#374151',
-          marginBottom: '8px'
-        }}>
+      {/* 08JUN25: Mobile-first geographical preferences section */}
+      <div className="mb-6 sm:mb-8">
+        <h2 className={`${uiConfig.font.size.lg} sm:${uiConfig.font.size.xl} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-2`}>
           Geographical Preferences
         </h2>
-        <p style={{
-          fontSize: '14px',
-          color: '#6b7280',
-          marginBottom: '24px'
-        }}>
+        <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.body} mb-4 sm:mb-6`}>
           All choices are optional - select "Recommended" or "Optional" to keep options open
         </p>
         
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '0px'
-        }}>
+        {/* 08JUN25: Mobile-first responsive grid - stacked on mobile, 2 cols on tablet, 3 cols on desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-0">
           {[0, 1, 2].map(index => (
-            <div key={index} style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-              padding: '0 24px',
-              borderRight: index < 2 ? '1px solid #e5e7eb' : 'none'
-            }}>
-              {/* Region Dropdown */}
+            <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index < 2 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
+              
+              {/* 08JUN25: Region dropdown with uiConfig styling */}
               <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  marginBottom: '8px'
-                }}>
+                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                   Preference {index + 1}
                 </label>
-                <div style={{ position: 'relative' }}>
+                <div className="relative">
                   <select
                     value={selectedRegions[index]}
                     onChange={(e) => handleRegionChange(index, e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      backgroundColor: 'white',
-                      color: '#374151',
-                      fontSize: '14px',
-                      appearance: 'none',
-                      cursor: 'pointer'
-                    }}
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
                   >
                     {regions.map(region => (
                       <option key={region} value={region}>
@@ -321,44 +288,21 @@ const OnboardingRegion = (props) => {
                   </select>
                   <ChevronDown 
                     size={20} 
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: '#9ca3af',
-                      pointerEvents: 'none'
-                    }}
+                    className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none`}
                   />
                 </div>
               </div>
 
-              {/* Country/State Dropdown */}
+              {/* 08JUN25: Country/State dropdown */}
               <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  marginBottom: '8px'
-                }}>
+                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                   Country/State
                 </label>
-                <div style={{ position: 'relative' }}>
+                <div className="relative">
                   <select
                     value={selectedCountries[index]}
                     onChange={(e) => handleCountryChange(index, e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      backgroundColor: 'white',
-                      color: '#374151',
-                      fontSize: '14px',
-                      appearance: 'none',
-                      cursor: 'pointer'
-                    }}
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
                   >
                     {getFilteredCountries(index).map(country => (
                       <option key={country} value={country}>
@@ -368,44 +312,21 @@ const OnboardingRegion = (props) => {
                   </select>
                   <ChevronDown 
                     size={20} 
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: '#9ca3af',
-                      pointerEvents: 'none'
-                    }}
+                    className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none`}
                   />
                 </div>
               </div>
 
-              {/* Province Dropdown */}
+              {/* 08JUN25: Province dropdown */}
               <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  marginBottom: '8px'
-                }}>
+                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                   Province
                 </label>
-                <div style={{ position: 'relative' }}>
+                <div className="relative">
                   <select
                     value={selectedProvinces[index]}
                     onChange={(e) => handleProvinceChange(index, e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      backgroundColor: 'white',
-                      color: '#374151',
-                      fontSize: '14px',
-                      appearance: 'none',
-                      cursor: 'pointer'
-                    }}
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
                   >
                     {getFilteredProvinces(index).map(province => (
                       <option key={province} value={province}>
@@ -415,14 +336,7 @@ const OnboardingRegion = (props) => {
                   </select>
                   <ChevronDown 
                     size={20} 
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: '#9ca3af',
-                      pointerEvents: 'none'
-                    }}
+                    className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none`}
                   />
                 </div>
               </div>
@@ -431,62 +345,27 @@ const OnboardingRegion = (props) => {
         </div>
       </div>
 
-      {/* Geographic Features Section */}
-      <div style={{ marginBottom: '32px' }}>
-        <h2 style={{
-          fontSize: '20px',
-          fontWeight: '600',
-          color: '#374151',
-          marginBottom: '8px'
-        }}>
+      {/* 08JUN25: Geographic Features section with mobile-first design */}
+      <div className="mb-6 sm:mb-8">
+        <h2 className={`${uiConfig.font.size.lg} sm:${uiConfig.font.size.xl} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-2`}>
           Geographic Features
         </h2>
-        <p style={{
-          fontSize: '14px',
-          color: '#6b7280',
-          marginBottom: '24px'
-        }}>
+        <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.body} mb-4 sm:mb-6`}>
           Select preferred geographic features for your retirement location
         </p>
         
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '0px'
-        }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-0">
           {[0, 1, 2].map(index => (
-            <div key={index} style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-              padding: '0 24px',
-              borderRight: index < 2 ? '1px solid #e5e7eb' : 'none'
-            }}>
+            <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index < 2 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
               <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  marginBottom: '8px'
-                }}>
+                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                   Feature {index + 1}
                 </label>
-                <div style={{ position: 'relative' }}>
+                <div className="relative">
                   <select
                     value={selectedFeatures[index]}
                     onChange={(e) => handleFeatureChange(index, e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      backgroundColor: 'white',
-                      color: '#374151',
-                      fontSize: '14px',
-                      appearance: 'none',
-                      cursor: 'pointer'
-                    }}
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
                   >
                     {geographicFeatures.map(feature => (
                       <option key={feature} value={feature}>
@@ -496,14 +375,7 @@ const OnboardingRegion = (props) => {
                   </select>
                   <ChevronDown 
                     size={20} 
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: '#9ca3af',
-                      pointerEvents: 'none'
-                    }}
+                    className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none`}
                   />
                 </div>
               </div>
@@ -512,62 +384,27 @@ const OnboardingRegion = (props) => {
         </div>
       </div>
 
-      {/* Vegetation Section */}
-      <div style={{ marginBottom: '32px' }}>
-        <h2 style={{
-          fontSize: '20px',
-          fontWeight: '600',
-          color: '#374151',
-          marginBottom: '8px'
-        }}>
+      {/* 08JUN25: Vegetation section */}
+      <div className="mb-6 sm:mb-8">
+        <h2 className={`${uiConfig.font.size.lg} sm:${uiConfig.font.size.xl} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-2`}>
           Vegetation
         </h2>
-        <p style={{
-          fontSize: '14px',
-          color: '#6b7280',
-          marginBottom: '24px'
-        }}>
+        <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.body} mb-4 sm:mb-6`}>
           Select preferred vegetation types for your retirement location
         </p>
         
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '0px'
-        }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-0">
           {[0, 1, 2].map(index => (
-            <div key={index} style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-              padding: '0 24px',
-              borderRight: index < 2 ? '1px solid #e5e7eb' : 'none'
-            }}>
+            <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index < 2 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
               <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  marginBottom: '8px'
-                }}>
+                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                   Vegetation {index + 1}
                 </label>
-                <div style={{ position: 'relative' }}>
+                <div className="relative">
                   <select
                     value={selectedVegetation[index]}
                     onChange={(e) => handleVegetationChange(index, e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      backgroundColor: 'white',
-                      color: '#374151',
-                      fontSize: '14px',
-                      appearance: 'none',
-                      cursor: 'pointer'
-                    }}
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
                   >
                     {vegetationTypes.map(vegetation => (
                       <option key={vegetation} value={vegetation}>
@@ -577,14 +414,7 @@ const OnboardingRegion = (props) => {
                   </select>
                   <ChevronDown 
                     size={20} 
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: '#9ca3af',
-                      pointerEvents: 'none'
-                    }}
+                    className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none`}
                   />
                 </div>
               </div>
@@ -593,62 +423,27 @@ const OnboardingRegion = (props) => {
         </div>
       </div>
 
-      {/* Population Density Section */}
-      <div style={{ marginBottom: '32px' }}>
-        <h2 style={{
-          fontSize: '20px',
-          fontWeight: '600',
-          color: '#374151',
-          marginBottom: '8px'
-        }}>
+      {/* 08JUN25: Population Density section */}
+      <div className="mb-6 sm:mb-8">
+        <h2 className={`${uiConfig.font.size.lg} sm:${uiConfig.font.size.xl} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-2`}>
           Population Density
         </h2>
-        <p style={{
-          fontSize: '14px',
-          color: '#6b7280',
-          marginBottom: '24px'
-        }}>
+        <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.body} mb-4 sm:mb-6`}>
           Select preferred population density for your retirement location
         </p>
         
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '0px'
-        }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-0">
           {[0, 1, 2].map(index => (
-            <div key={index} style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-              padding: '0 24px',
-              borderRight: index < 2 ? '1px solid #e5e7eb' : 'none'
-            }}>
+            <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index < 2 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
               <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  marginBottom: '8px'
-                }}>
+                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                   Density {index + 1}
                 </label>
-                <div style={{ position: 'relative' }}>
+                <div className="relative">
                   <select
                     value={selectedDensity[index]}
                     onChange={(e) => handleDensityChange(index, e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      backgroundColor: 'white',
-                      color: '#374151',
-                      fontSize: '14px',
-                      appearance: 'none',
-                      cursor: 'pointer'
-                    }}
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
                   >
                     {populationDensity.map(density => (
                       <option key={density} value={density}>
@@ -658,14 +453,7 @@ const OnboardingRegion = (props) => {
                   </select>
                   <ChevronDown 
                     size={20} 
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: '#9ca3af',
-                      pointerEvents: 'none'
-                    }}
+                    className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none`}
                   />
                 </div>
               </div>
@@ -674,109 +462,55 @@ const OnboardingRegion = (props) => {
         </div>
       </div>
 
-      {/* Summary */}
-      <div style={{
-        backgroundColor: '#f9fafb',
-        padding: '24px',
-        borderRadius: '8px',
-        border: '1px solid #e5e7eb',
-        marginBottom: '32px'
-      }}>
-        <h3 style={{
-          fontWeight: '500',
-          color: '#1f2937',
-          marginBottom: '12px'
-        }}>Your Geographical Preferences:</h3>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '16px'
-        }}>
+      {/* 08JUN25: Summary section with uiConfig styling */}
+      <div className={`${uiConfig.colors.card} ${uiConfig.layout.spacing.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.borderLight} mb-6 sm:mb-8`}>
+        <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} mb-3`}>
+          Your Geographical Preferences:
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <span style={{
-              fontWeight: '500',
-              color: '#374151'
-            }}>Regions:</span>
-            <p style={{
-              color: '#6b7280',
-              marginTop: '4px',
-              margin: '4px 0 0 0'
-            }}>
+            <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>Regions:</span>
+            <p className={`${uiConfig.colors.body} mt-1 ${uiConfig.font.size.sm}`}>
               {selectedRegions.filter(region => region !== 'Recommended').length > 0 
                 ? selectedRegions.filter(region => region !== 'Recommended').join(', ') 
                 : 'Any region worldwide'}
             </p>
           </div>
           <div>
-            <span style={{
-              fontWeight: '500',
-              color: '#374151'
-            }}>Countries/States:</span>
-            <p style={{
-              color: '#6b7280',
-              marginTop: '4px',
-              margin: '4px 0 0 0'
-            }}>
+            <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>Countries/States:</span>
+            <p className={`${uiConfig.colors.body} mt-1 ${uiConfig.font.size.sm}`}>
               {selectedCountries.filter(country => country !== 'Optional').length > 0 
                 ? selectedCountries.filter(country => country !== 'Optional').join(', ') 
                 : 'Any location'}
             </p>
           </div>
           <div>
-            <span style={{
-              fontWeight: '500',
-              color: '#374151'
-            }}>Provinces:</span>
-            <p style={{
-              color: '#6b7280',
-              marginTop: '4px',
-              margin: '4px 0 0 0'
-            }}>
+            <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>Provinces:</span>
+            <p className={`${uiConfig.colors.body} mt-1 ${uiConfig.font.size.sm}`}>
               {selectedProvinces.filter(province => province !== 'Optional').length > 0 
                 ? selectedProvinces.filter(province => province !== 'Optional').join(', ') 
                 : 'Any province'}
             </p>
           </div>
           <div>
-            <span style={{
-              fontWeight: '500',
-              color: '#374151'
-            }}>Geographic Features:</span>
-            <p style={{
-              color: '#6b7280',
-              marginTop: '4px',
-              margin: '4px 0 0 0'
-            }}>
+            <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>Geographic Features:</span>
+            <p className={`${uiConfig.colors.body} mt-1 ${uiConfig.font.size.sm}`}>
               {selectedFeatures.filter(feature => feature !== 'Optional').length > 0 
                 ? selectedFeatures.filter(feature => feature !== 'Optional').join(', ') 
                 : 'Any features'}
             </p>
           </div>
           <div>
-            <span style={{
-              fontWeight: '500',
-              color: '#374151'
-            }}>Vegetation Types:</span>
-            <p style={{
-              color: '#6b7280',
-              marginTop: '4px',
-              margin: '4px 0 0 0'
-            }}>
+            <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>Vegetation Types:</span>
+            <p className={`${uiConfig.colors.body} mt-1 ${uiConfig.font.size.sm}`}>
               {selectedVegetation.filter(vegetation => vegetation !== 'Optional').length > 0 
                 ? selectedVegetation.filter(vegetation => vegetation !== 'Optional').join(', ') 
                 : 'Any vegetation'}
             </p>
           </div>
           <div>
-            <span style={{
-              fontWeight: '500',
-              color: '#374151'
-            }}>Population Density:</span>
-            <p style={{
-              color: '#6b7280',
-              marginTop: '4px',
-              margin: '4px 0 0 0'
-            }}>
+            <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>Population Density:</span>
+            <p className={`${uiConfig.colors.body} mt-1 ${uiConfig.font.size.sm}`}>
               {selectedDensity.filter(density => density !== 'Optional').length > 0 
                 ? selectedDensity.filter(density => density !== 'Optional').join(', ') 
                 : 'Any density'}
@@ -785,47 +519,20 @@ const OnboardingRegion = (props) => {
         </div>
       </div>
 
-      {/* Navigation */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingTop: '24px',
-        borderTop: '1px solid #e5e7eb'
-      }}>
+      {/* 08JUN25: Mobile-first navigation with uiConfig styling */}
+      <div className={`flex flex-col sm:flex-row sm:justify-between sm:items-center pt-6 border-t ${uiConfig.colors.borderLight} space-y-4 sm:space-y-0`}>
         <button 
           onClick={handlePrevious}
-          style={{
-            padding: '12px 24px',
-            border: '1px solid #d1d5db',
-            borderRadius: '8px',
-            color: '#374151',
-            backgroundColor: 'white',
-            cursor: 'pointer'
-          }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#f9fafb'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+          className={`w-full sm:w-auto px-4 sm:px-6 py-3 border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.heading} ${uiConfig.colors.input} cursor-pointer ${uiConfig.states.hover} ${uiConfig.animation.transition} order-2 sm:order-1`}
         >
           Previous Step
         </button>
-        <div style={{
-          fontSize: '14px',
-          color: '#6b7280'
-        }}>
+        <div className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint} text-center order-1 sm:order-2`}>
           Step 2 of 5
         </div>
         <button 
           onClick={handleNext}
-          style={{
-            padding: '12px 24px',
-            backgroundColor: '#2563eb',
-            color: 'white',
-            borderRadius: '8px',
-            border: 'none',
-            cursor: 'pointer'
-          }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#1d4ed8'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = '#2563eb'}
+          className={`w-full sm:w-auto px-4 sm:px-6 py-3 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.lg} border-none cursor-pointer ${uiConfig.animation.transition} ${uiConfig.colors.focusRing} focus:ring-offset-2 order-3`}
         >
           Continue to Step 3
         </button>
