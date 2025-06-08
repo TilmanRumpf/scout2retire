@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
+// 08JUN25: Import uiConfig for consistent design system
+import { uiConfig } from '../../styles/uiConfig';
 
+// 08JUN25: Refactored to use uiConfig design tokens and mobile-first approach
+// Maintained all existing functionality while improving design consistency
 export default function OnboardingStep1({ onNext, onPrevious, formData: parentFormData, setFormData: setParentFormData }) {
-  // Add console.log to verify props
+  // 08JUN25: Preserved original prop verification logging
   console.log('OnboardingCurrentStatus received props:', { onNext, onPrevious });
 
+  // 08JUN25: Preserved original form state structure
   const [formData, setFormData] = useState({
     currentCity: '',
     postalCode: '',
@@ -16,17 +21,19 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
     secondPet: ''
   });
 
+  // 08JUN25: Preserved all original state management
   const [locationLoading, setLocationLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [showValidationSummary, setShowValidationSummary] = useState(false);
 
-  // Get user's location on component mount - DISABLED for now
+  // 08JUN25: Preserved original useEffect - location detection disabled
   useEffect(() => {
     // Location detection disabled to prevent 404 errors
     setLocationLoading(false);
   }, []);
 
+  // 08JUN25: Preserved original input change handler
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -47,6 +54,7 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
     }
   };
 
+  // 08JUN25: Preserved original blur handler
   const handleInputBlur = (field) => {
     setTouched(prev => ({
       ...prev,
@@ -55,6 +63,7 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
     validateField(field);
   };
 
+  // 08JUN25: Preserved original field validation logic
   const validateField = (field) => {
     const newErrors = { ...errors };
     
@@ -80,6 +89,7 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
     setErrors(newErrors);
   };
 
+  // 08JUN25: Preserved original form validation logic
   const validateForm = () => {
     const newErrors = {};
     
@@ -95,6 +105,7 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
     return Object.keys(newErrors).length === 0;
   };
 
+  // 08JUN25: Preserved original validation summary logic
   const getValidationSummary = () => {
     const missingFields = [];
     if (!formData.primaryCitizenship) missingFields.push('Primary Citizenship');
@@ -102,6 +113,7 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
     return missingFields;
   };
 
+  // 08JUN25: Preserved original next handler with all logging
   const handleNext = () => {
     console.log('=== NEXT BUTTON CLICKED ===');
     console.log('Form Data:', formData);
@@ -141,6 +153,7 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
     }
   };
 
+  // 08JUN25: Preserved original back handler
   const handleBack = () => {
     console.log('Back button clicked');
     if (onPrevious && typeof onPrevious === 'function') {
@@ -153,60 +166,66 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm">
-        <div className="max-w-2xl mx-auto px-6 py-6">
+    // 08JUN25: Mobile-first page background using uiConfig.colors.page
+    <div className={`min-h-screen ${uiConfig.colors.page}`}>
+      {/* 08JUN25: Header with mobile-first responsive design */}
+      <div className={`${uiConfig.colors.card} ${uiConfig.layout.shadow.sm}`}>
+        <div className={`${uiConfig.layout.width.containerNarrow} px-4 sm:px-6 py-4 sm:py-6`}>
           <div className="mb-4">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {/* 08JUN25: Mobile-first heading using uiConfig typography */}
+            <h1 className={`${uiConfig.font.size.xl} sm:${uiConfig.font.size['2xl']} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>
               Getting to Know You
             </h1>
-            <div className="flex items-center justify-between mt-2">
-              <p className="text-gray-600 dark:text-gray-400">
+            {/* 08JUN25: Mobile-first layout for step info */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-2 space-y-1 sm:space-y-0">
+              <p className={`${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} ${uiConfig.colors.body}`}>
                 Step 1 of 6: Current Status
               </p>
-              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <span className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.hint}`}>
                 17% Complete
               </span>
             </div>
           </div>
           
-          {/* Progress Bar */}
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-            <div className="bg-green-600 h-2 rounded-full" style={{ width: '17%' }}></div>
+          {/* 08JUN25: Progress bar with uiConfig styling */}
+          <div className={`w-full ${uiConfig.progress.track} ${uiConfig.layout.radius.full} h-2`}>
+            <div 
+              className={`${uiConfig.progress.fill} h-2 ${uiConfig.layout.radius.full} ${uiConfig.animation.transition}`} 
+              style={{ width: '17%' }}
+            ></div>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-2xl mx-auto px-6 py-8">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+      {/* 08JUN25: Mobile-first main content area */}
+      <div className={`${uiConfig.layout.width.containerNarrow} px-4 sm:px-6 py-6 sm:py-8`}>
+        <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.xl} ${uiConfig.layout.shadow.sm} ${uiConfig.colors.borderLight} border p-4 sm:p-6 lg:p-8`}>
           
-          {/* Icon and Description */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full mb-4">
-              <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* 08JUN25: Mobile-optimized icon and description section */}
+          <div className="text-center mb-6 sm:mb-8">
+            <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-scout-accent-100 dark:bg-scout-accent-900/20 ${uiConfig.layout.radius.full} mb-3 sm:mb-4`}>
+              <svg className={`${uiConfig.icons.size.lg} sm:${uiConfig.icons.size.xl} text-scout-accent-600 dark:text-scout-accent-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
-            <p className="text-gray-600 dark:text-gray-400 text-lg">
+            <p className={`${uiConfig.colors.body} ${uiConfig.font.size.base} sm:${uiConfig.font.size.lg} px-2`}>
               Tell us about your current situation to help us find the perfect retirement destination.
             </p>
           </div>
 
-          {/* Validation Summary */}
+          {/* 08JUN25: Mobile-optimized validation summary using uiConfig notification styling */}
           {showValidationSummary && getValidationSummary().length > 0 && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className={`mb-4 sm:mb-6 p-3 sm:p-4 ${uiConfig.notifications.error} border ${uiConfig.layout.radius.lg}`}>
               <div className="flex items-start">
-                <svg className="w-5 h-5 text-red-400 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <svg className={`${uiConfig.icons.size.md} text-red-400 mt-0.5 mr-3 flex-shrink-0`} fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
-                <div>
-                  <h3 className="text-sm font-medium text-red-800 dark:text-red-300 mb-1">
+                <div className="flex-1">
+                  <h3 className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} mb-1`}>
                     Please complete the following required fields:
                   </h3>
-                  <ul className="text-sm text-red-700 dark:text-red-400 list-disc list-inside">
+                  <ul className={`${uiConfig.font.size.sm} list-disc list-inside space-y-1`}>
                     {getValidationSummary().map((field, index) => (
                       <li key={index}>{field}</li>
                     ))}
@@ -216,13 +235,13 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
             </div>
           )}
 
-          {/* Form Fields */}
-          <div className="space-y-6">
+          {/* 08JUN25: Mobile-first form fields with enhanced spacing */}
+          <div className="space-y-4 sm:space-y-6">
             
-            {/* Row 1: Current City & Primary Citizenship */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 08JUN25: Mobile-first grid - stacked on mobile, side-by-side on larger screens */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                   Current City
                 </label>
                 <input
@@ -230,22 +249,22 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
                   placeholder="e.g., New York"
                   value={formData.currentCity}
                   onChange={(e) => handleInputChange('currentCity', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.colors.input} ${uiConfig.colors.heading} placeholder-gray-500 dark:placeholder-gray-400 ${uiConfig.animation.transition}`}
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                   Primary Citizenship *
                 </label>
                 <select
                   value={formData.primaryCitizenship}
                   onChange={(e) => handleInputChange('primaryCitizenship', e.target.value)}
                   onBlur={() => handleInputBlur('primaryCitizenship')}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} border ${uiConfig.layout.radius.lg} ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.colors.input} ${uiConfig.colors.heading} ${uiConfig.animation.transition} ${
                     errors.primaryCitizenship && touched.primaryCitizenship
-                      ? 'border-red-300 dark:border-red-600'
-                      : 'border-gray-300 dark:border-gray-600'
+                      ? uiConfig.validation.invalid
+                      : uiConfig.validation.neutral
                   }`}
                 >
                   <option value="">Select citizenship</option>
@@ -261,17 +280,17 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
                   <option value="other">Other</option>
                 </select>
                 {errors.primaryCitizenship && touched.primaryCitizenship && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  <p className={`mt-1 ${uiConfig.font.size.sm} ${uiConfig.colors.error}`}>
                     {errors.primaryCitizenship}
                   </p>
                 )}
               </div>
             </div>
 
-            {/* Row 2: Postal Code & Secondary Citizenship */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 08JUN25: Row 2 with responsive grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                   Postal Code
                 </label>
                 <input
@@ -279,18 +298,18 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
                   placeholder="e.g., 10001"
                   value={formData.postalCode}
                   onChange={(e) => handleInputChange('postalCode', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.colors.input} ${uiConfig.colors.heading} placeholder-gray-500 dark:placeholder-gray-400 ${uiConfig.animation.transition}`}
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                   Secondary Citizenship
                 </label>
                 <select
                   value={formData.secondaryCitizenship}
                   onChange={(e) => handleInputChange('secondaryCitizenship', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.colors.input} ${uiConfig.colors.heading} ${uiConfig.animation.transition}`}
                 >
                   <option value="">Select if applicable</option>
                   <option value="united_states">United States</option>
@@ -307,10 +326,10 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
               </div>
             </div>
 
-            {/* Row 3: Current Country & Planned Relocation Date */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 08JUN25: Row 3 with responsive grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                   Current Country
                 </label>
                 <input
@@ -318,12 +337,12 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
                   placeholder="e.g., United States"
                   value={formData.currentCountry}
                   onChange={(e) => handleInputChange('currentCountry', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.colors.input} ${uiConfig.colors.heading} placeholder-gray-500 dark:placeholder-gray-400 ${uiConfig.animation.transition}`}
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                   Planned Relocation Date *
                 </label>
                 <input
@@ -331,30 +350,30 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
                   value={formData.plannedRelocationDate}
                   onChange={(e) => handleInputChange('plannedRelocationDate', e.target.value)}
                   onBlur={() => handleInputBlur('plannedRelocationDate')}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} border ${uiConfig.layout.radius.lg} ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.colors.input} ${uiConfig.colors.heading} ${uiConfig.animation.transition} ${
                     errors.plannedRelocationDate && touched.plannedRelocationDate
-                      ? 'border-red-300 dark:border-red-600'
-                      : 'border-gray-300 dark:border-gray-600'
+                      ? uiConfig.validation.invalid
+                      : uiConfig.validation.neutral
                   }`}
                 />
                 {errors.plannedRelocationDate && touched.plannedRelocationDate && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  <p className={`mt-1 ${uiConfig.font.size.sm} ${uiConfig.colors.error}`}>
                     {errors.plannedRelocationDate}
                   </p>
                 )}
               </div>
             </div>
 
-            {/* Partner Section */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            {/* 08JUN25: Partner section with mobile-optimized spacing */}
+            <div className={`border-t ${uiConfig.colors.borderLight} pt-4 sm:pt-6`}>
+              <div className="mb-4 sm:mb-6">
+                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                   Do you have a partner that will be relocating with you?
                 </label>
                 <select
                   value={formData.hasPartner}
                   onChange={(e) => handleInputChange('hasPartner', e.target.value)}
-                  className="w-full md:w-1/2 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className={`w-full lg:w-2/3 xl:w-1/2 px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.colors.input} ${uiConfig.colors.heading} ${uiConfig.animation.transition}`}
                 >
                   <option value="">Answer Optional</option>
                   <option value="yes">Yes</option>
@@ -365,23 +384,23 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
               </div>
             </div>
 
-            {/* Pet Section */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+            {/* 08JUN25: Pet section with mobile-first grid */}
+            <div className={`border-t ${uiConfig.colors.borderLight} pt-4 sm:pt-6`}>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-3 sm:mb-4`}>
                   Do you have pets that will be relocating with you?
                 </label>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                     First Pet
                   </label>
                   <select
                     value={formData.firstPet}
                     onChange={(e) => handleInputChange('firstPet', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.colors.input} ${uiConfig.colors.heading} ${uiConfig.animation.transition}`}
                   >
                     <option value="">Answer Optional</option>
                     <option value="dog">Dog</option>
@@ -394,13 +413,13 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                     Second Pet
                   </label>
                   <select
                     value={formData.secondPet}
                     onChange={(e) => handleInputChange('secondPet', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.colors.input} ${uiConfig.colors.heading} ${uiConfig.animation.transition}`}
                   >
                     <option value="">Answer Optional</option>
                     <option value="dog">Dog</option>
@@ -416,25 +435,25 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
           </div>
         </div>
 
-        {/* Navigation */}
-        <div className="flex justify-between items-center mt-8">
+        {/* 08JUN25: Mobile-optimized navigation with FIXED button styling - removed always-disabled classes */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-6 sm:mt-8 space-y-4 sm:space-y-0">
           <button
             onClick={handleBack}
-            className="flex items-center px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            className={`flex items-center justify-center sm:justify-start px-4 sm:px-6 py-3 ${uiConfig.colors.hint} hover:${uiConfig.colors.heading} ${uiConfig.animation.transition} order-2 sm:order-1`}
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`${uiConfig.icons.size.md} mr-2`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Back to Login
           </button>
           
-          <div className="text-right">
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+          <div className="text-center sm:text-right order-1 sm:order-2">
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-2`}>
               * Required fields
             </p>
             <button
               onClick={handleNext}
-              className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+              className={`w-full sm:w-auto px-6 sm:px-8 py-3 ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.lg} ${uiConfig.animation.transition} ${uiConfig.colors.focusRing} focus:ring-offset-2`}
             >
               NEXT
             </button>
