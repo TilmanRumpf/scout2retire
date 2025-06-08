@@ -1,9 +1,39 @@
 import supabase from './supabaseClient';
 import { logTownActivity } from './journalUtils';
+import { getPersonalizedTowns } from './matchingAlgorithm'; // NEW: Added import
 
 // Town management
 export const fetchTowns = async (filters = {}) => {
   try {
+    // NEW: Check if personalization is requested
+    if (filters.userId && filters.usePersonalization !== false) {
+      console.log('Attempting personalized recommendations for user:', filters.userId);
+      
+      try {
+        const personalizedResult = await getPersonalizedTowns(filters.userId, {
+          limit: filters.limit || 20,
+          offset: filters.offset || 0
+        });
+        
+        if (personalizedResult.success) {
+          console.log('Personalized recommendations successful');
+          return {
+            success: true,
+            towns: personalizedResult.towns,
+            isPersonalized: true,
+            userPreferences: personalizedResult.userPreferences
+          };
+        } else {
+          console.log('Personalization failed, falling back to regular fetch');
+          // Fall through to original logic
+        }
+      } catch (personalizationError) {
+        console.error('Personalization error, falling back:', personalizationError);
+        // Fall through to original logic
+      }
+    }
+
+    // EXISTING: Your original logic unchanged
     let query = supabase
       .from('towns')
       .select('*');
@@ -50,7 +80,11 @@ export const fetchTowns = async (filters = {}) => {
       console.log('Sample town ID:', data[0].id, 'Type:', typeof data[0].id);
     }
 
-    return { success: true, towns: data };
+    return { 
+      success: true, 
+      towns: data, 
+      isPersonalized: false  // NEW: Flag to indicate this is not personalized
+    };
   } catch (error) {
     console.error("Unexpected error fetching towns:", error);
     return { success: false, error };

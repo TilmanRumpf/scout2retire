@@ -1,446 +1,445 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getCurrentUser } from '../../utils/authUtils';
-import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
-import toast from 'react-hot-toast';
 
-export default function OnboardingCurrentStatus() {
-  const currentYear = new Date().getFullYear();
-  
+export default function OnboardingStep1({ onNext, onPrevious, formData: parentFormData, setFormData: setParentFormData }) {
+  // Add console.log to verify props
+  console.log('OnboardingCurrentStatus received props:', { onNext, onPrevious });
+
   const [formData, setFormData] = useState({
-    retirement_timeline: {
-      status: 'planning', // planning, retiring_soon, already_retired
-      target_year: currentYear + 5,
-      flexibility: 'somewhat_flexible' // very_flexible, somewhat_flexible, fixed
-    },
-    citizenship: {
-      primary_citizenship: 'usa',
-      secondary_citizenship: '',
-      visa_concerns: false
-    },
-    family_situation: {
-      status: 'couple', // solo, couple, family
-      partner_agreement: 'full_agreement', // full_agreement, mostly_agree, still_convincing
-      bringing_children: false,
-      bringing_pets: false
-    },
-    current_location: '',
-    moving_motivation: ''
+    currentCity: '',
+    postalCode: '',
+    currentCountry: '',
+    primaryCitizenship: '',
+    secondaryCitizenship: '',
+    plannedRelocationDate: '',
+    hasPartner: '',
+    firstPet: '',
+    secondPet: ''
   });
-  
-  const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const navigate = useNavigate();
 
-  // Country options
-  const countries = [
-    { id: 'usa', label: 'United States' },
-    { id: 'canada', label: 'Canada' },
-    { id: 'uk', label: 'United Kingdom' },
-    { id: 'australia', label: 'Australia' },
-    { id: 'germany', label: 'Germany' },
-    { id: 'france', label: 'France' },
-    { id: 'spain', label: 'Spain' },
-    { id: 'italy', label: 'Italy' },
-    { id: 'japan', label: 'Japan' },
-    { id: 'other', label: 'Other' }
-  ];
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [showValidationSummary, setShowValidationSummary] = useState(false);
 
-  // Load existing data if available
+  // Get user's location on component mount - DISABLED for now
   useEffect(() => {
-    const loadExistingData = async () => {
-      try {
-        const { user } = await getCurrentUser();
-        if (!user) {
-          navigate('/welcome');
-          return;
-        }
-        
-        const { success, data, error } = await getOnboardingProgress(user.id);
-        if (!success) {
-          console.error("Error loading existing data:", error);
-          setInitialLoading(false);
-          return;
-        }
-        
-        // If current status data exists, load it
-        if (data && data.current_status) {
-          setFormData(data.current_status);
-        }
-      } catch (err) {
-        console.error("Unexpected error loading data:", err);
-      } finally {
-        setInitialLoading(false);
-      }
-    };
-    
-    loadExistingData();
-  }, [navigate]);
+    // Location detection disabled to prevent 404 errors
+    setLocationLoading(false);
+  }, []);
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
     
-    // Handle nested properties with dot notation
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setFormData(prev => ({
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({
         ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: type === 'checkbox' ? checked : value
-        }
+        [field]: ''
       }));
+    }
+    
+    // Hide validation summary when user makes changes
+    if (showValidationSummary) {
+      setShowValidationSummary(false);
+    }
+  };
+
+  const handleInputBlur = (field) => {
+    setTouched(prev => ({
+      ...prev,
+      [field]: true
+    }));
+    validateField(field);
+  };
+
+  const validateField = (field) => {
+    const newErrors = { ...errors };
+    
+    switch (field) {
+      case 'primaryCitizenship':
+        if (!formData.primaryCitizenship) {
+          newErrors.primaryCitizenship = 'Primary citizenship is required';
+        } else {
+          newErrors.primaryCitizenship = '';
+        }
+        break;
+      case 'plannedRelocationDate':
+        if (!formData.plannedRelocationDate) {
+          newErrors.plannedRelocationDate = 'Planned relocation date is required';
+        } else {
+          newErrors.plannedRelocationDate = '';
+        }
+        break;
+      default:
+        break;
+    }
+    
+    setErrors(newErrors);
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.primaryCitizenship) {
+      newErrors.primaryCitizenship = 'Primary citizenship is required';
+    }
+    
+    if (!formData.plannedRelocationDate) {
+      newErrors.plannedRelocationDate = 'Planned relocation date is required';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const getValidationSummary = () => {
+    const missingFields = [];
+    if (!formData.primaryCitizenship) missingFields.push('Primary Citizenship');
+    if (!formData.plannedRelocationDate) missingFields.push('Planned Relocation Date');
+    return missingFields;
+  };
+
+  const handleNext = () => {
+    console.log('=== NEXT BUTTON CLICKED ===');
+    console.log('Form Data:', formData);
+    console.log('Validation Summary:', getValidationSummary());
+    
+    const isValid = validateForm();
+    console.log('Form is valid:', isValid);
+    
+    if (!isValid) {
+      console.log('Form validation failed, showing errors');
+      setShowValidationSummary(true);
+      // Mark all required fields as touched to show errors
+      setTouched({
+        primaryCitizenship: true,
+        plannedRelocationDate: true
+      });
+      return;
+    }
+    
+    console.log('Form validation passed! Calling onNext...');
+    
+    // Save form data to parent if available
+    if (setParentFormData && typeof setParentFormData === 'function') {
+      setParentFormData(prev => ({
+        ...prev,
+        currentStatus: formData
+      }));
+    }
+    
+    // Call the navigation function
+    if (onNext && typeof onNext === 'function') {
+      console.log('Calling onNext function...');
+      onNext();
     } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: type === 'checkbox' ? checked : value
-      }));
+      console.error('onNext function not available!', onNext);
+      alert('Form is valid! Ready to proceed to Step 2');
     }
   };
 
-  const handleFamilyStatusChange = (status) => {
-    setFormData(prev => ({
-      ...prev,
-      family_situation: {
-        ...prev.family_situation,
-        status
-      }
-    }));
-  };
-
-  const handleRetirementStatusChange = (status) => {
-    setFormData(prev => ({
-      ...prev,
-      retirement_timeline: {
-        ...prev.retirement_timeline,
-        status
-      }
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    try {
-      const { user } = await getCurrentUser();
-      if (!user) {
-        navigate('/welcome');
-        return;
-      }
-      
-      const { success, error } = await saveOnboardingStep(
-        user.id,
-        formData,
-        'current_status'
-      );
-      
-      if (!success) {
-        toast.error(`Failed to save: ${error.message}`);
-        setLoading(false);
-        return;
-      }
-      
-      toast.success('Current status saved!');
-      navigate('/onboarding/region');
-    } catch (err) {
-      toast.error('An unexpected error occurred');
-      console.error(err);
-    } finally {
-      setLoading(false);
+  const handleBack = () => {
+    console.log('Back button clicked');
+    if (onPrevious && typeof onPrevious === 'function') {
+      console.log('Calling onPrevious function...');
+      onPrevious();
+    } else {
+      console.log('onPrevious not available, fallback behavior');
+      // TODO: Navigate back to login
     }
   };
-
-  if (initialLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
-        <div className="animate-pulse text-green-600 font-semibold">Loading...</div>
-      </div>
-    );
-  }
-
-  // Generate retirement year options (current year to +30 years)
-  const retirementYearOptions = [];
-  for (let i = 0; i <= 30; i++) {
-    retirementYearOptions.push(currentYear + i);
-  }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="max-w-md mx-auto">
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <button
-              onClick={() => navigate('/welcome')}
-              className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
-            <div className="flex space-x-1">
-              {[1, 2, 3, 4, 5, 6].map((step) => (
-                <div
-                  key={step}
-                  className={`w-8 h-1 rounded-full ${
-                    step === 1
-                      ? 'bg-green-600 dark:bg-green-400'
-                      : 'bg-gray-200 dark:bg-gray-700'
-                  }`}
-                ></div>
-              ))}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <div className="bg-white dark:bg-gray-800 shadow-sm">
+        <div className="max-w-2xl mx-auto px-6 py-6">
+          <div className="mb-4">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Getting to Know You
+            </h1>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-gray-600 dark:text-gray-400">
+                Step 1 of 6: Current Status
+              </p>
+              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                17% Complete
+              </span>
             </div>
-            <div className="w-5"></div> {/* Spacer to balance the back button */}
           </div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Current Status</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Tell us a bit about your current retirement situation.
-          </p>
+          
+          {/* Progress Bar */}
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div className="bg-green-600 h-2 rounded-full" style={{ width: '17%' }}></div>
+          </div>
         </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Retirement Status
-            </label>
-            <div className="grid grid-cols-1 gap-2">
-              {[
-                { value: 'planning', label: 'Planning for Retirement' },
-                { value: 'retiring_soon', label: 'Retiring Within a Year' },
-                { value: 'already_retired', label: 'Already Retired' }
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => handleRetirementStatusChange(option.value)}
-                  className={`py-3 px-4 rounded-lg border text-left ${
-                    formData.retirement_timeline.status === option.value
-                      ? 'border-green-600 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
-                      : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
+      {/* Main Content */}
+      <div className="max-w-2xl mx-auto px-6 py-8">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+          
+          {/* Icon and Description */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full mb-4">
+              <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
             </div>
+            <p className="text-gray-600 dark:text-gray-400 text-lg">
+              Tell us about your current situation to help us find the perfect retirement destination.
+            </p>
           </div>
 
-          {formData.retirement_timeline.status !== 'already_retired' && (
-            <div>
-              <label htmlFor="target_year" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Target Retirement Year
-              </label>
-              <select
-                id="target_year"
-                name="retirement_timeline.target_year"
-                value={formData.retirement_timeline.target_year}
-                onChange={handleInputChange}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
-              >
-                {retirementYearOptions.map(year => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
+          {/* Validation Summary */}
+          {showValidationSummary && getValidationSummary().length > 0 && (
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-red-400 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <h3 className="text-sm font-medium text-red-800 dark:text-red-300 mb-1">
+                    Please complete the following required fields:
+                  </h3>
+                  <ul className="text-sm text-red-700 dark:text-red-400 list-disc list-inside">
+                    {getValidationSummary().map((field, index) => (
+                      <li key={index}>{field}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
           )}
 
-          <div>
-            <label htmlFor="flexibility" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Timeline Flexibility
-            </label>
-            <select
-              id="flexibility"
-              name="retirement_timeline.flexibility"
-              value={formData.retirement_timeline.flexibility}
-              onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
-            >
-              <option value="very_flexible">Very Flexible (±3 years)</option>
-              <option value="somewhat_flexible">Somewhat Flexible (±1 year)</option>
-              <option value="fixed">Fixed Date</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="primary_citizenship" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Primary Citizenship
-            </label>
-            <select
-              id="primary_citizenship"
-              name="citizenship.primary_citizenship"
-              value={formData.citizenship.primary_citizenship}
-              onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
-            >
-              {countries.map(country => (
-                <option key={country.id} value={country.id}>
-                  {country.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="secondary_citizenship" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Secondary Citizenship (Optional)
-            </label>
-            <select
-              id="secondary_citizenship"
-              name="citizenship.secondary_citizenship"
-              value={formData.citizenship.secondary_citizenship}
-              onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
-            >
-              <option value="">None / Not Applicable</option>
-              {countries.map(country => (
-                <option key={country.id} value={country.id}>
-                  {country.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <div className="flex items-center">
-              <input
-                id="visa_concerns"
-                name="citizenship.visa_concerns"
-                type="checkbox"
-                checked={formData.citizenship.visa_concerns}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-              />
-              <label htmlFor="visa_concerns" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                I have concerns about visas or residency permits
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Family Situation
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { value: 'solo', label: 'Solo' },
-                { value: 'couple', label: 'Couple' },
-                { value: 'family', label: 'Family' }
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => handleFamilyStatusChange(option.value)}
-                  className={`py-3 px-4 rounded-lg border text-center ${
-                    formData.family_situation.status === option.value
-                      ? 'border-green-600 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
-                      : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
+          {/* Form Fields */}
+          <div className="space-y-6">
+            
+            {/* Row 1: Current City & Primary Citizenship */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Current City
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., New York"
+                  value={formData.currentCity}
+                  onChange={(e) => handleInputChange('currentCity', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Primary Citizenship *
+                </label>
+                <select
+                  value={formData.primaryCitizenship}
+                  onChange={(e) => handleInputChange('primaryCitizenship', e.target.value)}
+                  onBlur={() => handleInputBlur('primaryCitizenship')}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+                    errors.primaryCitizenship && touched.primaryCitizenship
+                      ? 'border-red-300 dark:border-red-600'
+                      : 'border-gray-300 dark:border-gray-600'
                   }`}
                 >
-                  {option.label}
-                </button>
-              ))}
+                  <option value="">Select citizenship</option>
+                  <option value="united_states">United States</option>
+                  <option value="canada">Canada</option>
+                  <option value="united_kingdom">United Kingdom</option>
+                  <option value="germany">Germany</option>
+                  <option value="france">France</option>
+                  <option value="spain">Spain</option>
+                  <option value="italy">Italy</option>
+                  <option value="australia">Australia</option>
+                  <option value="new_zealand">New Zealand</option>
+                  <option value="other">Other</option>
+                </select>
+                {errors.primaryCitizenship && touched.primaryCitizenship && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.primaryCitizenship}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
 
-          {formData.family_situation.status !== 'solo' && (
-            <div>
-              {formData.family_situation.status === 'couple' && (
+            {/* Row 2: Postal Code & Secondary Citizenship */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Postal Code
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., 10001"
+                  value={formData.postalCode}
+                  onChange={(e) => handleInputChange('postalCode', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Secondary Citizenship
+                </label>
+                <select
+                  value={formData.secondaryCitizenship}
+                  onChange={(e) => handleInputChange('secondaryCitizenship', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="">Select if applicable</option>
+                  <option value="united_states">United States</option>
+                  <option value="canada">Canada</option>
+                  <option value="united_kingdom">United Kingdom</option>
+                  <option value="germany">Germany</option>
+                  <option value="france">France</option>
+                  <option value="spain">Spain</option>
+                  <option value="italy">Italy</option>
+                  <option value="australia">Australia</option>
+                  <option value="new_zealand">New Zealand</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Row 3: Current Country & Planned Relocation Date */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Current Country
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., United States"
+                  value={formData.currentCountry}
+                  onChange={(e) => handleInputChange('currentCountry', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Planned Relocation Date *
+                </label>
+                <input
+                  type="date"
+                  value={formData.plannedRelocationDate}
+                  onChange={(e) => handleInputChange('plannedRelocationDate', e.target.value)}
+                  onBlur={() => handleInputBlur('plannedRelocationDate')}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+                    errors.plannedRelocationDate && touched.plannedRelocationDate
+                      ? 'border-red-300 dark:border-red-600'
+                      : 'border-gray-300 dark:border-gray-600'
+                  }`}
+                />
+                {errors.plannedRelocationDate && touched.plannedRelocationDate && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.plannedRelocationDate}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Partner Section */}
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Do you have a partner that will be relocating with you?
+                </label>
+                <select
+                  value={formData.hasPartner}
+                  onChange={(e) => handleInputChange('hasPartner', e.target.value)}
+                  className="w-full md:w-1/2 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="">Answer Optional</option>
+                  <option value="yes">Yes</option>
+                  <option value="not_sure">Not Sure</option>
+                  <option value="not_applicable">Not Applicable</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Pet Section */}
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                  Do you have pets that will be relocating with you?
+                </label>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="partner_agreement" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Partner Agreement Level
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    First Pet
                   </label>
                   <select
-                    id="partner_agreement"
-                    name="family_situation.partner_agreement"
-                    value={formData.family_situation.partner_agreement}
-                    onChange={handleInputChange}
-                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                    value={formData.firstPet}
+                    onChange={(e) => handleInputChange('firstPet', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
-                    <option value="full_agreement">Full Agreement on Relocating</option>
-                    <option value="mostly_agree">Mostly Agree on Relocating</option>
-                    <option value="still_convincing">Still Convincing Partner</option>
+                    <option value="">Answer Optional</option>
+                    <option value="dog">Dog</option>
+                    <option value="cat">Cat</option>
+                    <option value="horse">Horse</option>
+                    <option value="bird">Bird</option>
+                    <option value="reptile">Reptile</option>
+                    <option value="other">Other</option>
                   </select>
                 </div>
-              )}
-
-              {formData.family_situation.status === 'family' && (
-                <div className="mt-4">
-                  <div className="flex items-center">
-                    <input
-                      id="bringing_children"
-                      name="family_situation.bringing_children"
-                      type="checkbox"
-                      checked={formData.family_situation.bringing_children}
-                      onChange={handleInputChange}
-                      className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor="bringing_children" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      Bringing children with us
-                    </label>
-                  </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Second Pet
+                  </label>
+                  <select
+                    value={formData.secondPet}
+                    onChange={(e) => handleInputChange('secondPet', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="">Answer Optional</option>
+                    <option value="dog">Dog</option>
+                    <option value="cat">Cat</option>
+                    <option value="horse">Horse</option>
+                    <option value="bird">Bird</option>
+                    <option value="reptile">Reptile</option>
+                    <option value="other">Other</option>
+                  </select>
                 </div>
-              )}
-            </div>
-          )}
-
-          <div className="mt-4">
-            <div className="flex items-center">
-              <input
-                id="bringing_pets"
-                name="family_situation.bringing_pets"
-                type="checkbox"
-                checked={formData.family_situation.bringing_pets}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-              />
-              <label htmlFor="bringing_pets" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                Bringing pets
-              </label>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div>
-            <label htmlFor="current_location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Current City/Region (Optional)
-            </label>
-            <input
-              type="text"
-              id="current_location"
-              name="current_location"
-              value={formData.current_location}
-              onChange={handleInputChange}
-              placeholder="e.g. Boston, MA"
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="moving_motivation" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Primary Motivation for Moving (Optional)
-            </label>
-            <textarea
-              id="moving_motivation"
-              name="moving_motivation"
-              value={formData.moving_motivation}
-              onChange={handleInputChange}
-              rows="3"
-              placeholder="What's your main reason for considering an international move?"
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
-            />
-          </div>
-
-          <div className="pt-4">
+        {/* Navigation */}
+        <div className="flex justify-between items-center mt-8">
+          <button
+            onClick={handleBack}
+            className="flex items-center px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Login
+          </button>
+          
+          <div className="text-right">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+              * Required fields
+            </p>
             <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50"
+              onClick={handleNext}
+              className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
             >
-              {loading ? 'Saving...' : 'Continue'}
+              NEXT
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

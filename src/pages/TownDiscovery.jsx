@@ -14,6 +14,8 @@ export default function TownDiscovery() {
   const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
   const [selectedTown, setSelectedTown] = useState(null);
+  const [isPersonalized, setIsPersonalized] = useState(false);
+  const [userPreferences, setUserPreferences] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -47,10 +49,34 @@ export default function TownDiscovery() {
           setFavorites(userFavorites);
         }
 
-        // Fetch towns
-        const { success: townSuccess, towns: allTowns } = await fetchTowns({ limit: 20 });
+        // Fetch towns with personalization
+        const { 
+          success: townSuccess, 
+          towns: allTowns, 
+          isPersonalized: isPersonalizedResult,
+          userPreferences: userPrefs
+        } = await fetchTowns({ 
+          limit: 20, 
+          userId: user.id 
+        });
+
         if (townSuccess) {
           setTowns(allTowns);
+          setIsPersonalized(isPersonalizedResult);
+          setUserPreferences(userPrefs);
+          
+          // Log personalization status
+          if (isPersonalizedResult) {
+            console.log("✅ Personalized recommendations loaded!");
+            console.log("User preferences:", userPrefs);
+            console.log("Top 3 towns with scores:", allTowns.slice(0, 3).map(t => ({
+              name: t.name,
+              score: t.matchScore,
+              reasons: t.matchReasons
+            })));
+          } else {
+            console.log("ℹ️ Using general recommendations");
+          }
           
           // If a town is selected in URL, make sure it's in our data
           if (selectedTown) {
@@ -107,7 +133,14 @@ export default function TownDiscovery() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
-        <div className="animate-pulse text-green-600 font-semibold">Loading towns...</div>
+        <div className="text-center">
+          <div className="animate-pulse text-green-600 font-semibold mb-2">
+            Finding your perfect matches...
+          </div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            Analyzing your preferences
+          </div>
+        </div>
       </div>
     );
   }
@@ -125,7 +158,16 @@ export default function TownDiscovery() {
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <h1 className="text-xl font-bold text-gray-800 dark:text-white">Discover Towns</h1>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-xl font-bold text-gray-800 dark:text-white">Discover Towns</h1>
+              {isPersonalized && (
+                <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                  ✨ Personalized recommendations based on your preferences
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       </header>
 
@@ -134,6 +176,26 @@ export default function TownDiscovery() {
         {error && (
           <div className="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 p-4 rounded-lg mb-6">
             {error}
+          </div>
+        )}
+
+        {/* Personalization Status */}
+        {!isPersonalized && (
+          <div className="bg-blue-100 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200 p-4 rounded-lg mb-6">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <span>
+                Complete your onboarding to get personalized recommendations!{' '}
+                <button 
+                  onClick={() => navigate('/onboarding')}
+                  className="underline hover:no-underline font-medium"
+                >
+                  Start here
+                </button>
+              </span>
+            </div>
           </div>
         )}
 
@@ -165,7 +227,17 @@ export default function TownDiscovery() {
                     />
                   )}
                 </div>
+                
+                {/* Match Score Badge */}
+                {selectedTownData.matchScore && (
+                  <div className="absolute top-4 left-4">
+                    <div className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                      {selectedTownData.matchScore}% match
+                    </div>
+                  </div>
+                )}
               </div>
+              
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
@@ -181,6 +253,23 @@ export default function TownDiscovery() {
                     View on Map
                   </a>
                 </div>
+
+                {/* Match Reasons */}
+                {selectedTownData.matchReasons && selectedTownData.matchReasons.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Why this matches you:</h4>
+                    <div className="space-y-1">
+                      {selectedTownData.matchReasons.map((reason, index) => (
+                        <div key={index} className="flex items-center text-sm text-green-700 dark:text-green-300">
+                          <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          {reason}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 <div className="flex flex-wrap gap-2 mb-4">
                   {selectedTownData.cost_index && (
@@ -203,6 +292,7 @@ export default function TownDiscovery() {
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
                   {selectedTownData.description || "No description available for this town."}
                 </p>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Town Profile</h3>
@@ -250,7 +340,7 @@ export default function TownDiscovery() {
           {towns.map((town) => (
             <div
               key={town.id}
-              className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden ${
+              className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg ${
                 selectedTownData && String(town.id) === String(selectedTownData.id) ? 'ring-2 ring-green-500' : ''
               }`}
             >
@@ -268,6 +358,16 @@ export default function TownDiscovery() {
                     </svg>
                   </div>
                 )}
+                
+                {/* Match Score */}
+                {town.matchScore && (
+                  <div className="absolute top-2 left-2">
+                    <div className="bg-green-600 text-white px-2 py-1 rounded text-xs font-medium">
+                      {town.matchScore}% match
+                    </div>
+                  </div>
+                )}
+                
                 <div className="absolute top-2 right-2">
                   {userId && (
                     <LikeButton
@@ -279,11 +379,22 @@ export default function TownDiscovery() {
                   )}
                 </div>
               </div>
+              
               <div className="p-4">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{town.name}</h3>
                   <span className="text-sm text-gray-500 dark:text-gray-400">{town.country}</span>
                 </div>
+                
+                {/* Match Reasons */}
+                {town.matchReasons && town.matchReasons.length > 0 && (
+                  <div className="mb-3">
+                    <div className="text-xs text-green-700 dark:text-green-300">
+                      {town.matchReasons[0]}
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex space-x-2 mb-3">
                   {town.cost_index && (
                     <span className="px-2 py-1 bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs rounded-full">
@@ -296,9 +407,11 @@ export default function TownDiscovery() {
                     </span>
                   )}
                 </div>
+                
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
                   {town.description || "Discover this beautiful town for your retirement."}
                 </p>
+                
                 <div className="flex justify-between items-center">
                   <button
                     onClick={() => navigate(`/discover?town=${town.id}`)}
