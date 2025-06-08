@@ -1,5 +1,5 @@
-// App.jsx - Complete Updated File
-import { useState, useEffect } from "react";
+// App.jsx - Complete Fixed File
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -30,6 +30,33 @@ import OnboardingCurrentStatus from "./pages/onboarding/OnboardingCurrentStatus"
 import OnboardingHobbies from "./pages/onboarding/OnboardingHobbies";
 import OnboardingRegion from "./pages/onboarding/OnboardingRegion";
 import OnboardingReview from "./pages/onboarding/OnboardingReview";
+
+// Onboarding wrapper components with navigation
+const OnboardingWrapper = ({ children, nextPath, prevPath }) => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({});
+
+  const handleNext = () => {
+    console.log('Navigation to:', nextPath);
+    if (nextPath) {
+      navigate(nextPath);
+    }
+  };
+
+  const handlePrevious = () => {
+    console.log('Navigation to:', prevPath);
+    if (prevPath) {
+      navigate(prevPath);
+    }
+  };
+
+  return React.cloneElement(children, {
+    onNext: handleNext,
+    onPrevious: handlePrevious,
+    formData,
+    setFormData
+  });
+};
 
 // Protected Route component
 const ProtectedRoute = ({ children, onboardingRequired = false }) => {
@@ -105,45 +132,61 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Onboarding flow */}
+          {/* Onboarding flow with navigation */}
           <Route path="/onboarding/status" element={
             <ProtectedRoute>
-              <OnboardingStatus />
+              <OnboardingWrapper nextPath="/onboarding/current-status" prevPath="/welcome">
+                <OnboardingStatus />
+              </OnboardingWrapper>
             </ProtectedRoute>
           } />
           <Route path="/onboarding/current-status" element={
             <ProtectedRoute>
-              <OnboardingCurrentStatus />
+              <OnboardingWrapper nextPath="/onboarding/region" prevPath="/onboarding/status">
+                <OnboardingCurrentStatus />
+              </OnboardingWrapper>
             </ProtectedRoute>
           } />
           <Route path="/onboarding/region" element={
             <ProtectedRoute>
-              <OnboardingRegion />
+              <OnboardingWrapper nextPath="/onboarding/climate" prevPath="/onboarding/current-status">
+                <OnboardingRegion />
+              </OnboardingWrapper>
             </ProtectedRoute>
           } />
           <Route path="/onboarding/climate" element={
             <ProtectedRoute>
-              <OnboardingClimate />
+              <OnboardingWrapper nextPath="/onboarding/culture" prevPath="/onboarding/region">
+                <OnboardingClimate />
+              </OnboardingWrapper>
             </ProtectedRoute>
           } />
           <Route path="/onboarding/culture" element={
             <ProtectedRoute>
-              <OnboardingCulture />
+              <OnboardingWrapper nextPath="/onboarding/hobbies" prevPath="/onboarding/climate">
+                <OnboardingCulture />
+              </OnboardingWrapper>
             </ProtectedRoute>
           } />
           <Route path="/onboarding/hobbies" element={
             <ProtectedRoute>
-              <OnboardingHobbies />
+              <OnboardingWrapper nextPath="/onboarding/costs" prevPath="/onboarding/culture">
+                <OnboardingHobbies />
+              </OnboardingWrapper>
             </ProtectedRoute>
           } />
           <Route path="/onboarding/costs" element={
             <ProtectedRoute>
-              <OnboardingCosts />
+              <OnboardingWrapper nextPath="/onboarding/review" prevPath="/onboarding/hobbies">
+                <OnboardingCosts />
+              </OnboardingWrapper>
             </ProtectedRoute>
           } />
           <Route path="/onboarding/review" element={
             <ProtectedRoute>
-              <OnboardingReview />
+              <OnboardingWrapper nextPath="/daily" prevPath="/onboarding/costs">
+                <OnboardingReview />
+              </OnboardingWrapper>
             </ProtectedRoute>
           } />
 

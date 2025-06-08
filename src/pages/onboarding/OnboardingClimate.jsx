@@ -4,14 +4,16 @@ import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import toast from 'react-hot-toast';
 
+// NOTE: Add Phosphor Icons CSS to your index.html:
+// <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" />
+
 export default function OnboardingClimate() {
   const [formData, setFormData] = useState({
-    temperature_preference: 'warm', // warm, moderate, cool
-    min_temperature: 15,
-    max_temperature: 30,
-    rainfall_preference: 'moderate', // dry, moderate, rainy
-    humidity_preference: 'moderate', // low, moderate, high
-    sunshine_hours: 'high', // low, moderate, high
+    summer_climate_preference: [], // Array for multi-choice: ['mild', 'warm', 'hot']
+    winter_climate_preference: [], // Array for multi-choice: ['cold', 'cool', 'mild']
+    humidity_level: [], // Array for multi-choice: ['dry', 'balanced', 'humid']
+    sunshine: [], // Array for multi-choice: ['mostly_sunny', 'balanced', 'often_cloudy']
+    precipitation: [], // Array for multi-choice: ['mostly_dry', 'balanced', 'often_rainy']
     seasonal_preference: 'all_seasons' // all_seasons, summer_focused, winter_focused
   });
   
@@ -38,7 +40,16 @@ export default function OnboardingClimate() {
         
         // If climate data exists, load it
         if (data && data.climate_preferences) {
-          setFormData(data.climate_preferences);
+          setFormData(prev => ({
+            ...prev,
+            ...data.climate_preferences,
+            // Ensure arrays exist for backward compatibility
+            summer_climate_preference: data.climate_preferences.summer_climate_preference || [],
+            winter_climate_preference: data.climate_preferences.winter_climate_preference || [],
+            humidity_level: data.climate_preferences.humidity_level || [],
+            sunshine: data.climate_preferences.sunshine || [],
+            precipitation: data.climate_preferences.precipitation || []
+          }));
         }
       } catch (err) {
         console.error("Unexpected error loading data:", err);
@@ -58,12 +69,47 @@ export default function OnboardingClimate() {
     }));
   };
 
-  const handleRangeChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: parseInt(value, 10)
-    }));
+  const handleClimateToggle = (season, option) => {
+    const fieldName = `${season}_climate_preference`;
+    setFormData(prev => {
+      const currentOptions = prev[fieldName] || [];
+      const isSelected = currentOptions.includes(option);
+      
+      if (isSelected) {
+        // Remove option if already selected
+        return {
+          ...prev,
+          [fieldName]: currentOptions.filter(item => item !== option)
+        };
+      } else {
+        // Add option if not selected
+        return {
+          ...prev,
+          [fieldName]: [...currentOptions, option]
+        };
+      }
+    });
+  };
+
+  const handleMultiChoiceToggle = (fieldName, option) => {
+    setFormData(prev => {
+      const currentOptions = prev[fieldName] || [];
+      const isSelected = currentOptions.includes(option);
+      
+      if (isSelected) {
+        // Remove option if already selected
+        return {
+          ...prev,
+          [fieldName]: currentOptions.filter(item => item !== option)
+        };
+      } else {
+        // Add option if not selected
+        return {
+          ...prev,
+          [fieldName]: [...currentOptions, option]
+        };
+      }
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -107,6 +153,36 @@ export default function OnboardingClimate() {
     );
   }
 
+  const summerOptions = [
+    { value: 'mild', label: 'Mild', icon: 'sun' },
+    { value: 'warm', label: 'Warm', icon: 'sun-dim' },
+    { value: 'hot', label: 'Hot', icon: 'fire' }
+  ];
+
+  const winterOptions = [
+    { value: 'cold', label: 'Cold', icon: 'snowflake' },
+    { value: 'cool', label: 'Cool', icon: 'cloud-snow' },
+    { value: 'mild', label: 'Mild', icon: 'cloud' }
+  ];
+
+  const humidityOptions = [
+    { value: 'dry', label: 'Dry', icon: 'drop-half' },
+    { value: 'balanced', label: 'Balanced', icon: 'scales' },
+    { value: 'humid', label: 'Humid', icon: 'drop' }
+  ];
+
+  const sunshineOptions = [
+    { value: 'mostly_sunny', label: 'Mostly Sunny', icon: 'sun' },
+    { value: 'balanced', label: 'Balanced', icon: 'cloud-sun' },
+    { value: 'often_cloudy', label: 'Often Cloudy', icon: 'cloud' }
+  ];
+
+  const precipitationOptions = [
+    { value: 'mostly_dry', label: 'Mostly Dry', icon: 'plant' },
+    { value: 'balanced', label: 'Balanced', icon: 'cloud-rain' },
+    { value: 'often_rainy', label: 'Often Rainy', icon: 'cloud-lightning-rain' }
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-md mx-auto">
@@ -138,139 +214,132 @@ export default function OnboardingClimate() {
           </div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Climate Preferences</h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Tell us about your ideal weather conditions for retirement.
+            Select your climates preference you'd enjoy. Multiple choices are allowed.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          {/* Summer Climate */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Temperature Preference
+              Summer Climate
             </label>
             <div className="grid grid-cols-3 gap-2">
-              {[
-                { value: 'cool', label: 'Cool', icon: '❄' },
-                { value: 'moderate', label: 'Moderate', icon: '🌤' },
-                { value: 'warm', label: 'Warm', icon: '☀' }
-              ].map((option) => (
+              {summerOptions.map((option) => (
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => setFormData({ ...formData, temperature_preference: option.value })}
-                  className={`flex flex-col items-center justify-center p-3 rounded-lg border ${
-                    formData.temperature_preference === option.value
-                      ? 'border-green-600 bg-green-50 dark:bg-green-900/20'
-                      : 'border-gray-200 dark:border-gray-700'
+                  onClick={() => handleClimateToggle('summer', option.value)}
+                  className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all ${
+                    formData.summer_climate_preference?.includes(option.value)
+                      ? 'border-green-600 bg-green-50 dark:bg-green-900/20 shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
                 >
-                  <span className="text-2xl mb-1">{option.icon}</span>
-                  <span className="text-sm">{option.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Temperature Range (°C)
-            </label>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
-                  Minimum
-                </label>
-                <input
-                  type="range"
-                  name="min_temperature"
-                  min="-10"
-                  max="30"
-                  value={formData.min_temperature}
-                  onChange={handleRangeChange}
-                  className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>{formData.min_temperature}°C</span>
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
-                  Maximum
-                </label>
-                <input
-                  type="range"
-                  name="max_temperature"
-                  min="0"
-                  max="40"
-                  value={formData.max_temperature}
-                  onChange={handleRangeChange}
-                  className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>{formData.max_temperature}°C</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Rainfall Preference
-            </label>
-            <select
-              name="rainfall_preference"
-              value={formData.rainfall_preference}
-              onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
-            >
-              <option value="dry">Dry (Desert-like)</option>
-              <option value="moderate">Moderate (Occasional Rain)</option>
-              <option value="rainy">Rainy (Frequent Precipitation)</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Humidity Preference
-            </label>
-            <select
-              name="humidity_preference"
-              value={formData.humidity_preference}
-              onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
-            >
-              <option value="low">Low (Arid, Desert)</option>
-              <option value="moderate">Moderate (Comfortable)</option>
-              <option value="high">High (Tropical)</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Sunshine Hours
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { value: 'low', label: 'Low', description: '< 4 hrs/day' },
-                { value: 'moderate', label: 'Moderate', description: '4-7 hrs/day' },
-                { value: 'high', label: 'High', description: '8+ hrs/day' }
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, sunshine_hours: option.value })}
-                  className={`flex flex-col items-center p-3 rounded-lg border ${
-                    formData.sunshine_hours === option.value
-                      ? 'border-green-600 bg-green-50 dark:bg-green-900/20'
-                      : 'border-gray-200 dark:border-gray-700'
-                  }`}
-                >
+                  <i className={`ph ph-${option.icon} text-2xl mb-1`}></i>
                   <span className="text-sm font-medium">{option.label}</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">{option.description}</span>
                 </button>
               ))}
             </div>
           </div>
 
+          {/* Winter Climate */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Winter Climate
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {winterOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleClimateToggle('winter', option.value)}
+                  className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all ${
+                    formData.winter_climate_preference?.includes(option.value)
+                      ? 'border-green-600 bg-green-50 dark:bg-green-900/20 shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <i className={`ph ph-${option.icon} text-2xl mb-1`}></i>
+                  <span className="text-sm font-medium">{option.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Humidity Level */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Humidity Level
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {humidityOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleMultiChoiceToggle('humidity_level', option.value)}
+                  className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all ${
+                    formData.humidity_level?.includes(option.value)
+                      ? 'border-green-600 bg-green-50 dark:bg-green-900/20 shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <i className={`ph ph-${option.icon} text-2xl mb-1`}></i>
+                  <span className="text-sm font-medium">{option.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Sunshine */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Sunshine
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {sunshineOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleMultiChoiceToggle('sunshine', option.value)}
+                  className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all ${
+                    formData.sunshine?.includes(option.value)
+                      ? 'border-green-600 bg-green-50 dark:bg-green-900/20 shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <i className={`ph ph-${option.icon} text-2xl mb-1`}></i>
+                  <span className="text-sm font-medium">{option.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Precipitation */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Precipitation
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {precipitationOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleMultiChoiceToggle('precipitation', option.value)}
+                  className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all ${
+                    formData.precipitation?.includes(option.value)
+                      ? 'border-green-600 bg-green-50 dark:bg-green-900/20 shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <i className={`ph ph-${option.icon} text-2xl mb-1`}></i>
+                  <span className="text-sm font-medium">{option.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Seasonal Preference */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Seasonal Preference
