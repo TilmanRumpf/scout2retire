@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
+import { uiConfig } from '../../styles/uiConfig'; // 08JUN25: Added missing import
 import toast from 'react-hot-toast';
 
 export default function OnboardingCulture() {
@@ -234,22 +235,22 @@ export default function OnboardingCulture() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
-        <div className="animate-pulse text-green-600 dark:text-green-400 font-semibold">Loading...</div>
+      <div className={`min-h-screen ${uiConfig.colors.page} ${uiConfig.layout.spacing.section} flex items-center justify-center`}>
+        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.accent} ${uiConfig.font.weight.semibold}`}>Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="max-w-md mx-auto">
+    <div className={`min-h-screen ${uiConfig.colors.page} ${uiConfig.layout.spacing.section}`}>
+      <div className={uiConfig.layout.width.containerNarrow}>
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
             <button
               onClick={() => navigate('/onboarding/climate')}
-              className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+              className={`${uiConfig.colors.hint} hover:${uiConfig.colors.body} ${uiConfig.animation.transition}`}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className={uiConfig.icons.size.md} viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
               </svg>
             </button>
@@ -257,7 +258,7 @@ export default function OnboardingCulture() {
               {[1, 2, 3, 4, 5, 6].map((step) => (
                 <div
                   key={step}
-                  className={`w-8 h-1 rounded-full ${
+                  className={`w-8 h-1 ${uiConfig.layout.radius.full} ${
                     step === 4
                       ? 'bg-green-600 dark:bg-green-400'
                       : step < 4
@@ -269,13 +270,13 @@ export default function OnboardingCulture() {
             </div>
             <div className="w-5"></div> {/* Spacer to balance the back button */}
           </div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Culture & Lifestyle</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <h1 className={`${uiConfig.font.size['2xl']} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading} mb-2`}>Culture & Lifestyle</h1>
+          <p className={`${uiConfig.colors.hint} mb-6`}>
             Tell us about your cultural preferences and lifestyle expectations.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <form onSubmit={handleSubmit} className={`space-y-6 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} ${uiConfig.layout.spacing.card}`}>
           
           {/* 08JUN25: Rearranged sections - 1. Dining & Food */}
           <div>
@@ -292,7 +293,7 @@ export default function OnboardingCulture() {
               onChange={(e) => handleImportanceChange('restaurants', parseInt(e.target.value))}
               className={uiConfig.components.slider}
             />
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <div className={`flex justify-between ${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
               <span>1</span>
               <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.accent}`}>{formData.cultural_importance.restaurants} / 5</span>
               <span>5</span>
@@ -317,7 +318,7 @@ export default function OnboardingCulture() {
               onChange={(e) => handleImportanceChange('museums', parseInt(e.target.value))}
               className={uiConfig.components.slider}
             />
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <div className={`flex justify-between ${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
               <span>1</span>
               <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.accent}`}>{formData.cultural_importance.museums} / 5</span>
               <span>5</span>
@@ -342,7 +343,7 @@ export default function OnboardingCulture() {
               onChange={(e) => handleImportanceChange('nightlife', parseInt(e.target.value))}
               className={uiConfig.components.slider}
             />
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <div className={`flex justify-between ${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
               <span>1</span>
               <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.accent}`}>{formData.cultural_importance.nightlife} / 5</span>
               <span>5</span>
@@ -367,7 +368,7 @@ export default function OnboardingCulture() {
               onChange={(e) => handleImportanceChange('cultural_events', parseInt(e.target.value))}
               className={uiConfig.components.slider}
             />
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <div className={`flex justify-between ${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
               <span>1</span>
               <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.accent}`}>{formData.cultural_importance.cultural_events} / 5</span>
               <span>5</span>
@@ -433,7 +434,7 @@ export default function OnboardingCulture() {
               onChange={(e) => handleImportanceChange('religious_facilities', parseInt(e.target.value))}
               className={uiConfig.components.slider}
             />
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <div className={`flex justify-between ${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
               <span>1</span>
               <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.accent}`}>{formData.cultural_importance.religious_facilities} / 5</span>
               <span>5</span>
@@ -444,7 +445,7 @@ export default function OnboardingCulture() {
           </div>
 
           {/* 08JUN25: 8. Languages You Already Speak */}
-          <div className={`${formData.language_comfort.english_only ? 'opacity-50' : ''}`}>
+          <div className={`${formData.language_comfort.english_only ? uiConfig.states.disabled : ''}`}>
             <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
               Languages You Already Speak
             </label>
@@ -499,13 +500,13 @@ export default function OnboardingCulture() {
                   onChange={handleCheckboxChange}
                   disabled={formData.language_comfort.english_only}
                   className={`${uiConfig.components.checkbox} ${
-                    formData.language_comfort.english_only ? 'opacity-50' : ''
+                    formData.language_comfort.english_only ? uiConfig.states.disabled : ''
                   }`}
                 />
                 <label
                   htmlFor="willing_to_learn"
                   className={`ml-2 ${uiConfig.font.size.sm} ${uiConfig.colors.body} ${
-                    formData.language_comfort.english_only ? 'opacity-50' : ''
+                    formData.language_comfort.english_only ? uiConfig.states.disabled : ''
                   }`}
                 >
                   I'm willing to learn a new language
@@ -518,7 +519,7 @@ export default function OnboardingCulture() {
           </div>
 
           {/* 08JUN25: 10. Add Additional Language */}
-          <div className={`${formData.language_comfort.english_only ? 'opacity-50' : ''}`}>
+          <div className={`${formData.language_comfort.english_only ? uiConfig.states.disabled : ''}`}>
             <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
               Add Additional Language
             </label>
@@ -530,13 +531,13 @@ export default function OnboardingCulture() {
                 onChange={handleInputChange}
                 disabled={formData.language_comfort.english_only}
                 placeholder="Enter a language not listed above"
-                className={`${uiConfig.components.input} ${formData.language_comfort.english_only ? uiConfig.states.disabled : ''}`}
+                className={`flex-1 p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 focus:border-green-600 ${formData.language_comfort.english_only ? uiConfig.states.disabled : ''}`}
               />
               <button
                 type="button"
                 onClick={handleAdditionalLanguageAdd}
                 disabled={formData.language_comfort.english_only || !(formData.language_comfort.additional_language || '').trim()}
-                className={`px-4 py-3 ${uiConfig.colors.btnPrimary} font-medium rounded-lg disabled:bg-gray-400 disabled:cursor-not-allowed`}
+                className={`px-4 py-3 ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.lg} disabled:bg-gray-400 disabled:cursor-not-allowed ${uiConfig.animation.transition}`}
               >
                 Add
               </button>
@@ -549,7 +550,7 @@ export default function OnboardingCulture() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} py-3 px-4 ${uiConfig.layout.radius.lg} disabled:opacity-50`}
+            className={`w-full ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} py-3 px-4 ${uiConfig.layout.radius.lg} ${uiConfig.states.disabled} ${uiConfig.animation.transition}`}
           >
             {loading ? 'Saving...' : 'Save & Continue'}
           </button>
