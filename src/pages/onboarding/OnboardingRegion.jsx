@@ -16,6 +16,9 @@ const OnboardingRegion = (props) => {
   const [selectedFeatures, setSelectedFeatures] = useState(['Optional', 'Optional']);
   const [selectedVegetation, setSelectedVegetation] = useState(['Optional', 'Optional']);
   const [selectedDensity, setSelectedDensity] = useState(['Optional', 'Optional']);
+  
+  // 08JUN25: Added state to control visibility of dependent dropdowns
+  const [showDependentDropdowns, setShowDependentDropdowns] = useState([false, false]);
 
   // 08JUN25: Preserved all original data arrays
   const regions = [
@@ -156,13 +159,18 @@ const OnboardingRegion = (props) => {
     return ['Optional', ...countryProvinces[selectedCountry]];
   };
 
-  // 08JUN25: Preserved all original event handlers
+  // 08JUN25: Updated event handlers to always reset dependent selections
   const handleRegionChange = (index, value) => {
     const newRegions = [...selectedRegions];
     newRegions[index] = value;
     setSelectedRegions(newRegions);
     
-    // Reset country and province when region changes
+    // 08JUN25: Control visibility of dependent dropdowns
+    const newShowDependentDropdowns = [...showDependentDropdowns];
+    newShowDependentDropdowns[index] = value !== 'Recommended';
+    setShowDependentDropdowns(newShowDependentDropdowns);
+    
+    // 08JUN25: ALWAYS reset country and province when region changes (even if same region)
     const newCountries = [...selectedCountries];
     const newProvinces = [...selectedProvinces];
     newCountries[index] = 'Optional';
@@ -234,6 +242,26 @@ const OnboardingRegion = (props) => {
     }
   };
 
+  // 08JUN25: Function to get the hierarchical display value
+  const getDisplayValue = (index) => {
+    if (selectedProvinces[index] !== 'Optional') {
+      // Show "Country, Province"
+      return `${selectedCountries[index]}, ${selectedProvinces[index]}`;
+    }
+    if (selectedCountries[index] !== 'Optional') {
+      // Show "Region, Country"
+      return `${selectedRegions[index]}, ${selectedCountries[index]}`;
+    }
+    // Show just "Region"
+    return selectedRegions[index];
+  };
+
+  // 08JUN25: Function to get available regions (all regions always available)
+  const getAvailableRegions = (index) => {
+    // Always show all regions - user should be able to reselect same region
+    return regions;
+  };
+
   // 08JUN25: Function to get preference label based on index
   const getPreferenceLabel = (index) => {
     return index === 0 ? 'First Preference' : 'Optional Preference';
@@ -274,75 +302,108 @@ const OnboardingRegion = (props) => {
           {[0, 1].map(index => (
             <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index === 0 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
               
-              {/* 08JUN25: Region dropdown with updated labels */}
-              <div>
-                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+              {/* 08JUN25: Region dropdown with updated labels - horizontal layout */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} sm:min-w-0 sm:flex-shrink-0`}>
                   {getPreferenceLabel(index)}
                 </label>
-                <div className="relative">
+                <div className="relative sm:flex-1 sm:max-w-xs">
                   <select
                     value={selectedRegions[index]}
                     onChange={(e) => handleRegionChange(index, e.target.value)}
+                    onFocus={() => {
+                      // 08JUN25: When user clicks dropdown, if they have made selections, reset them to allow re-selection
+                      if (selectedCountries[index] !== 'Optional' || selectedProvinces[index] !== 'Optional') {
+                        const newCountries = [...selectedCountries];
+                        const newProvinces = [...selectedProvinces];
+                        newCountries[index] = 'Optional';
+                        newProvinces[index] = 'Optional';
+                        setSelectedCountries(newCountries);
+                        setSelectedProvinces(newProvinces);
+                      }
+                    }}
                     className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
                   >
-                    {regions.map(region => (
+                    {getAvailableRegions(index).map(region => (
                       <option key={region} value={region}>
                         {region}
                       </option>
                     ))}
                   </select>
+                  {/* 08JUN25: Show hierarchical selection as overlay text when selections are made */}
+                  {(selectedCountries[index] !== 'Optional' || selectedProvinces[index] !== 'Optional') && (
+                    <div className={`absolute inset-0 px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} ${uiConfig.colors.heading} bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg pointer-events-none flex items-center`}>
+                      {getDisplayValue(index)}
+                    </div>
+                  )}
                   <ChevronDown 
                     size={20} 
-                    className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none`}
+                    className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none z-10`}
                   />
                 </div>
               </div>
 
-              {/* 08JUN25: Country/State dropdown */}
-              <div>
-                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
-                  Country/State
-                </label>
-                <div className="relative">
-                  <select
-                    value={selectedCountries[index]}
-                    onChange={(e) => handleCountryChange(index, e.target.value)}
-                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
-                  >
-                    {getFilteredCountries(index).map(country => (
-                      <option key={country} value={country}>
-                        {country}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown 
-                    size={20} 
-                    className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none`}
-                  />
+              {/* 08JUN25: Country/State dropdown - stay visible until province is chosen */}
+              <div 
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  showDependentDropdowns[index] && selectedProvinces[index] === 'Optional' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                }`}
+              >
+                <div className="pt-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                    <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} sm:min-w-0 sm:flex-shrink-0`}>
+                      Country/State
+                    </label>
+                    <div className="relative sm:flex-1 sm:max-w-xs">
+                      <select
+                        value={selectedCountries[index]}
+                        onChange={(e) => handleCountryChange(index, e.target.value)}
+                        className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
+                      >
+                        {getFilteredCountries(index).map(country => (
+                          <option key={country} value={country}>
+                            {country}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown 
+                        size={20} 
+                        className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none`}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* 08JUN25: Province dropdown */}
-              <div>
-                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
-                  Province
-                </label>
-                <div className="relative">
-                  <select
-                    value={selectedProvinces[index]}
-                    onChange={(e) => handleProvinceChange(index, e.target.value)}
-                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
-                  >
-                    {getFilteredProvinces(index).map(province => (
-                      <option key={province} value={province}>
-                        {province}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown 
-                    size={20} 
-                    className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none`}
-                  />
+              {/* 08JUN25: Province dropdown - show when country chosen, hide when province chosen */}
+              <div 
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  showDependentDropdowns[index] && selectedCountries[index] !== 'Optional' && selectedProvinces[index] === 'Optional' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                }`}
+              >
+                <div className="pt-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                    <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} sm:min-w-0 sm:flex-shrink-0`}>
+                      Province
+                    </label>
+                    <div className="relative sm:flex-1 sm:max-w-xs">
+                      <select
+                        value={selectedProvinces[index]}
+                        onChange={(e) => handleProvinceChange(index, e.target.value)}
+                        className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
+                      >
+                        {getFilteredProvinces(index).map(province => (
+                          <option key={province} value={province}>
+                            {province}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown 
+                        size={20} 
+                        className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none`}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -362,11 +423,11 @@ const OnboardingRegion = (props) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {[0, 1].map(index => (
             <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index === 0 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
-              <div>
-                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} sm:min-w-0 sm:flex-shrink-0`}>
                   Feature {index + 1}
                 </label>
-                <div className="relative">
+                <div className="relative sm:flex-1 sm:max-w-xs">
                   <select
                     value={selectedFeatures[index]}
                     onChange={(e) => handleFeatureChange(index, e.target.value)}
@@ -401,11 +462,11 @@ const OnboardingRegion = (props) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {[0, 1].map(index => (
             <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index === 0 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
-              <div>
-                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} sm:min-w-0 sm:flex-shrink-0`}>
                   Vegetation {index + 1}
                 </label>
-                <div className="relative">
+                <div className="relative sm:flex-1 sm:max-w-xs">
                   <select
                     value={selectedVegetation[index]}
                     onChange={(e) => handleVegetationChange(index, e.target.value)}
@@ -440,11 +501,11 @@ const OnboardingRegion = (props) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {[0, 1].map(index => (
             <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index === 0 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
-              <div>
-                <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} sm:min-w-0 sm:flex-shrink-0`}>
                   Density {index + 1}
                 </label>
-                <div className="relative">
+                <div className="relative sm:flex-1 sm:max-w-xs">
                   <select
                     value={selectedDensity[index]}
                     onChange={(e) => handleDensityChange(index, e.target.value)}

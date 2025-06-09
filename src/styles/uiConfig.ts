@@ -124,6 +124,72 @@ export const icons = {
   }
 };
 
+// 08JUN25: Added missing components object for form elements
+export const components = {
+  // Form inputs
+  input: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent',
+  textarea: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent resize-vertical',
+  select: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent',
+  
+  // Checkboxes and radios
+  checkbox: 'h-4 w-4 text-scout-accent focus:ring-scout-accent-400 border-gray-300 dark:border-gray-600 rounded',
+  radio: 'h-4 w-4 text-scout-accent focus:ring-scout-accent-400 border-gray-300 dark:border-gray-600',
+  
+  // Range sliders
+  slider: 'w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider-thumb:appearance-none slider-thumb:h-4 slider-thumb:w-4 slider-thumb:rounded-full slider-thumb:bg-scout-accent slider-thumb:cursor-pointer',
+  
+  // Toggle switches
+  toggle: 'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-scout-accent-400 focus:ring-offset-2',
+  toggleKnob: 'inline-block h-4 w-4 transform rounded-full bg-white transition',
+  
+  // File inputs
+  fileInput: 'block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-scout-accent-50 file:text-scout-accent-700 hover:file:bg-scout-accent-100',
+  
+  // Search inputs
+  searchInput: 'w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent',
+  
+  // Form groups
+  formGroup: 'mb-4',
+  formGroupCompact: 'mb-2',
+  
+  // Labels
+  label: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2',
+  labelRequired: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 after:content-["*"] after:ml-0.5 after:text-red-500',
+  
+  // Help text
+  helpText: 'mt-1 text-xs text-gray-500 dark:text-gray-400',
+  errorText: 'mt-1 text-xs text-red-600 dark:text-red-400',
+  
+  // Buttons
+  button: 'inline-flex items-center px-4 py-2 border border-transparent rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors',
+  buttonPrimary: 'inline-flex items-center px-4 py-2 border border-transparent rounded-md font-medium text-white bg-scout-accent hover:bg-scout-accent-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-scout-accent-500 transition-colors',
+  buttonSecondary: 'inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-scout-accent-500 transition-colors',
+  
+  // Cards
+  card: 'bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg',
+  cardHeader: 'px-4 py-5 sm:px-6',
+  cardBody: 'px-4 py-5 sm:p-6',
+  cardFooter: 'px-4 py-4 sm:px-6',
+  
+  // Modal overlays
+  modalOverlay: 'fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity',
+  modalContainer: 'fixed inset-0 z-10 overflow-y-auto',
+  modalPanel: 'relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all',
+  
+  // Navigation
+  nav: 'bg-white dark:bg-gray-800 shadow',
+  navItem: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+  navItemActive: 'text-scout-accent bg-scout-accent-100 dark:bg-scout-accent-900 px-3 py-2 rounded-md text-sm font-medium',
+  
+  // Tables
+  table: 'min-w-full divide-y divide-gray-200 dark:divide-gray-700',
+  tableHeader: 'bg-gray-50 dark:bg-gray-800',
+  tableHeaderCell: 'px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider',
+  tableBody: 'bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700',
+  tableRow: 'hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors',
+  tableCell: 'px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100',
+};
+
 // Financial data display colors
 export const financial = {
   positive: 'text-scout-accent-600 dark:text-scout-accent-400',
@@ -307,6 +373,7 @@ export const uiConfig = {
   layout,
   animation,
   icons,
+  components, // 08JUN25: Added components to main export
   financial,
   progress,
   validation,
