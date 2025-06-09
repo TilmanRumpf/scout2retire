@@ -3,19 +3,19 @@ import { ChevronDown } from 'lucide-react';
 // 08JUN25: Import uiConfig for consistent design system
 import { uiConfig } from '../../styles/uiConfig';
 
-// 08JUN25: Refactored to use uiConfig design tokens and mobile-first approach
-// Maintained all existing functionality while improving design consistency and mobile responsiveness
+// 08JUN25: Updated to have only 2 preferences - First Preference and Optional Preference
+// Removed Preference 3 completely and updated all related functionality
 const OnboardingRegion = (props) => {
   // 08JUN25: Preserved original props destructuring
   const { onNext, onPrevious, formData, setFormData } = props || {};
   
-  // 08JUN25: Preserved all original state management
-  const [selectedRegions, setSelectedRegions] = useState(['Recommended', 'Recommended', 'Recommended']);
-  const [selectedCountries, setSelectedCountries] = useState(['Optional', 'Optional', 'Optional']);
-  const [selectedProvinces, setSelectedProvinces] = useState(['Optional', 'Optional', 'Optional']);
-  const [selectedFeatures, setSelectedFeatures] = useState(['Optional', 'Optional', 'Optional']);
-  const [selectedVegetation, setSelectedVegetation] = useState(['Optional', 'Optional', 'Optional']);
-  const [selectedDensity, setSelectedDensity] = useState(['Optional', 'Optional', 'Optional']);
+  // 08JUN25: Updated state arrays to only have 2 elements instead of 3
+  const [selectedRegions, setSelectedRegions] = useState(['Recommended', 'Recommended']);
+  const [selectedCountries, setSelectedCountries] = useState(['Optional', 'Optional']);
+  const [selectedProvinces, setSelectedProvinces] = useState(['Optional', 'Optional']);
+  const [selectedFeatures, setSelectedFeatures] = useState(['Optional', 'Optional']);
+  const [selectedVegetation, setSelectedVegetation] = useState(['Optional', 'Optional']);
+  const [selectedDensity, setSelectedDensity] = useState(['Optional', 'Optional']);
 
   // 08JUN25: Preserved all original data arrays
   const regions = [
@@ -234,6 +234,11 @@ const OnboardingRegion = (props) => {
     }
   };
 
+  // 08JUN25: Function to get preference label based on index
+  const getPreferenceLabel = (index) => {
+    return index === 0 ? 'First Preference' : 'Optional Preference';
+  };
+
   return (
     // 08JUN25: Mobile-first page container using uiConfig design tokens
     <div className={`${uiConfig.layout.width.containerWide} ${uiConfig.layout.spacing.section} ${uiConfig.colors.page} min-h-screen ${uiConfig.font.family}`}>
@@ -255,7 +260,7 @@ const OnboardingRegion = (props) => {
         </p>
       </div>
 
-      {/* 08JUN25: Mobile-first geographical preferences section */}
+      {/* 08JUN25: Mobile-first geographical preferences section - Updated to show only 2 preferences */}
       <div className="mb-6 sm:mb-8">
         <h2 className={`${uiConfig.font.size.lg} sm:${uiConfig.font.size.xl} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-2`}>
           Geographical Preferences
@@ -264,15 +269,15 @@ const OnboardingRegion = (props) => {
           All choices are optional - select "Recommended" or "Optional" to keep options open
         </p>
         
-        {/* 08JUN25: Mobile-first responsive grid - stacked on mobile, 2 cols on tablet, 3 cols on desktop */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-0">
-          {[0, 1, 2].map(index => (
-            <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index < 2 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
+        {/* 08JUN25: Updated grid to accommodate 2 columns - mobile stacked, desktop side-by-side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[0, 1].map(index => (
+            <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index === 0 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
               
-              {/* 08JUN25: Region dropdown with uiConfig styling */}
+              {/* 08JUN25: Region dropdown with updated labels */}
               <div>
                 <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
-                  Preference {index + 1}
+                  {getPreferenceLabel(index)}
                 </label>
                 <div className="relative">
                   <select
@@ -345,7 +350,7 @@ const OnboardingRegion = (props) => {
         </div>
       </div>
 
-      {/* 08JUN25: Geographic Features section with mobile-first design */}
+      {/* 08JUN25: Geographic Features section - Updated to 2 columns */}
       <div className="mb-6 sm:mb-8">
         <h2 className={`${uiConfig.font.size.lg} sm:${uiConfig.font.size.xl} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-2`}>
           Geographic Features
@@ -354,9 +359,9 @@ const OnboardingRegion = (props) => {
           Select preferred geographic features for your retirement location
         </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-0">
-          {[0, 1, 2].map(index => (
-            <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index < 2 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[0, 1].map(index => (
+            <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index === 0 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
               <div>
                 <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                   Feature {index + 1}
@@ -384,7 +389,7 @@ const OnboardingRegion = (props) => {
         </div>
       </div>
 
-      {/* 08JUN25: Vegetation section */}
+      {/* 08JUN25: Vegetation section - Updated to 2 columns */}
       <div className="mb-6 sm:mb-8">
         <h2 className={`${uiConfig.font.size.lg} sm:${uiConfig.font.size.xl} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-2`}>
           Vegetation
@@ -393,9 +398,9 @@ const OnboardingRegion = (props) => {
           Select preferred vegetation types for your retirement location
         </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-0">
-          {[0, 1, 2].map(index => (
-            <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index < 2 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[0, 1].map(index => (
+            <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index === 0 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
               <div>
                 <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                   Vegetation {index + 1}
@@ -423,7 +428,7 @@ const OnboardingRegion = (props) => {
         </div>
       </div>
 
-      {/* 08JUN25: Population Density section */}
+      {/* 08JUN25: Population Density section - Updated to 2 columns */}
       <div className="mb-6 sm:mb-8">
         <h2 className={`${uiConfig.font.size.lg} sm:${uiConfig.font.size.xl} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-2`}>
           Population Density
@@ -432,9 +437,9 @@ const OnboardingRegion = (props) => {
           Select preferred population density for your retirement location
         </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-0">
-          {[0, 1, 2].map(index => (
-            <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index < 2 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[0, 1].map(index => (
+            <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index === 0 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
               <div>
                 <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                   Density {index + 1}
@@ -462,7 +467,7 @@ const OnboardingRegion = (props) => {
         </div>
       </div>
 
-      {/* 08JUN25: Summary section with uiConfig styling */}
+      {/* 08JUN25: Summary section with uiConfig styling - Updated to reflect 2 preferences */}
       <div className={`${uiConfig.colors.card} ${uiConfig.layout.spacing.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.borderLight} mb-6 sm:mb-8`}>
         <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} mb-3`}>
           Your Geographical Preferences:

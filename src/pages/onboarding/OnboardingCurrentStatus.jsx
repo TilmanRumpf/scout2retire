@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 // 08JUN25: Import uiConfig for consistent design system
 import { uiConfig } from '../../styles/uiConfig';
 
-// 08JUN25: Refactored to use uiConfig design tokens and mobile-first approach
-// Maintained all existing functionality while improving design consistency
+// 08JUN25: Updated field requirements - Current Country now mandatory, Planned Relocation Date now optional
+// Maintained all existing functionality while updating validation logic
 export default function OnboardingStep1({ onNext, onPrevious, formData: parentFormData, setFormData: setParentFormData }) {
   // 08JUN25: Preserved original prop verification logging
   console.log('OnboardingCurrentStatus received props:', { onNext, onPrevious });
@@ -63,7 +63,7 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
     validateField(field);
   };
 
-  // 08JUN25: Preserved original field validation logic
+  // 08JUN25: Updated field validation logic - Current Country now mandatory, Planned Relocation Date now optional
   const validateField = (field) => {
     const newErrors = { ...errors };
     
@@ -75,13 +75,15 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
           newErrors.primaryCitizenship = '';
         }
         break;
-      case 'plannedRelocationDate':
-        if (!formData.plannedRelocationDate) {
-          newErrors.plannedRelocationDate = 'Planned relocation date is required';
+      case 'currentCountry':
+        // 08JUN25: Added validation for Current Country (now mandatory)
+        if (!formData.currentCountry) {
+          newErrors.currentCountry = 'Current country is required';
         } else {
-          newErrors.plannedRelocationDate = '';
+          newErrors.currentCountry = '';
         }
         break;
+      // 08JUN25: Removed plannedRelocationDate validation (now optional)
       default:
         break;
     }
@@ -89,7 +91,7 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
     setErrors(newErrors);
   };
 
-  // 08JUN25: Preserved original form validation logic
+  // 08JUN25: Updated form validation logic - Current Country now mandatory, Planned Relocation Date now optional
   const validateForm = () => {
     const newErrors = {};
     
@@ -97,23 +99,27 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
       newErrors.primaryCitizenship = 'Primary citizenship is required';
     }
     
-    if (!formData.plannedRelocationDate) {
-      newErrors.plannedRelocationDate = 'Planned relocation date is required';
+    // 08JUN25: Added Current Country validation (now mandatory)
+    if (!formData.currentCountry) {
+      newErrors.currentCountry = 'Current country is required';
     }
+    
+    // 08JUN25: Removed Planned Relocation Date validation (now optional)
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // 08JUN25: Preserved original validation summary logic
+  // 08JUN25: Updated validation summary to reflect new field requirements
   const getValidationSummary = () => {
     const missingFields = [];
     if (!formData.primaryCitizenship) missingFields.push('Primary Citizenship');
-    if (!formData.plannedRelocationDate) missingFields.push('Planned Relocation Date');
+    if (!formData.currentCountry) missingFields.push('Current Country');
+    // 08JUN25: Removed Planned Relocation Date from required fields
     return missingFields;
   };
 
-  // 08JUN25: Preserved original next handler with all logging
+  // 08JUN25: Updated next handler with new validation requirements
   const handleNext = () => {
     console.log('=== NEXT BUTTON CLICKED ===');
     console.log('Form Data:', formData);
@@ -125,10 +131,10 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
     if (!isValid) {
       console.log('Form validation failed, showing errors');
       setShowValidationSummary(true);
-      // Mark all required fields as touched to show errors
+      // 08JUN25: Updated touched fields to include currentCountry, removed plannedRelocationDate
       setTouched({
         primaryCitizenship: true,
-        plannedRelocationDate: true
+        currentCountry: true
       });
       return;
     }
@@ -326,41 +332,41 @@ export default function OnboardingStep1({ onNext, onPrevious, formData: parentFo
               </div>
             </div>
 
-            {/* 08JUN25: Row 3 with responsive grid */}
+            {/* 08JUN25: Row 3 with responsive grid - Updated Current Country to mandatory, Planned Relocation Date to optional */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
-                  Current Country
+                  Current Country *
                 </label>
                 <input
                   type="text"
                   placeholder="e.g., United States"
                   value={formData.currentCountry}
                   onChange={(e) => handleInputChange('currentCountry', e.target.value)}
-                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.colors.input} ${uiConfig.colors.heading} placeholder-gray-500 dark:placeholder-gray-400 ${uiConfig.animation.transition}`}
+                  onBlur={() => handleInputBlur('currentCountry')}
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} border ${uiConfig.layout.radius.lg} ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.colors.input} ${uiConfig.colors.heading} placeholder-gray-500 dark:placeholder-gray-400 ${uiConfig.animation.transition} ${
+                    errors.currentCountry && touched.currentCountry
+                      ? uiConfig.validation.invalid
+                      : uiConfig.validation.neutral
+                  }`}
                 />
+                {errors.currentCountry && touched.currentCountry && (
+                  <p className={`mt-1 ${uiConfig.font.size.sm} ${uiConfig.colors.error}`}>
+                    {errors.currentCountry}
+                  </p>
+                )}
               </div>
               
               <div>
                 <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
-                  Planned Relocation Date *
+                  Planned Relocation Date
                 </label>
                 <input
                   type="date"
                   value={formData.plannedRelocationDate}
                   onChange={(e) => handleInputChange('plannedRelocationDate', e.target.value)}
-                  onBlur={() => handleInputBlur('plannedRelocationDate')}
-                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} border ${uiConfig.layout.radius.lg} ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.colors.input} ${uiConfig.colors.heading} ${uiConfig.animation.transition} ${
-                    errors.plannedRelocationDate && touched.plannedRelocationDate
-                      ? uiConfig.validation.invalid
-                      : uiConfig.validation.neutral
-                  }`}
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.colors.input} ${uiConfig.colors.heading} ${uiConfig.animation.transition}`}
                 />
-                {errors.plannedRelocationDate && touched.plannedRelocationDate && (
-                  <p className={`mt-1 ${uiConfig.font.size.sm} ${uiConfig.colors.error}`}>
-                    {errors.plannedRelocationDate}
-                  </p>
-                )}
               </div>
             </div>
 
