@@ -9,8 +9,8 @@ import { uiConfig } from '../../styles/uiConfig';
 // NOTE: Add Phosphor Icons CSS to your index.html:
 // <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" />
 
-// 08JUN25: Refactored to use uiConfig design tokens and mobile-first approach
-// Maintained all existing functionality while improving design consistency and mobile responsiveness
+// 08JUN25: Updated navigation pattern to match OnboardingRegion consistency
+// Added proper Previous Step / Step X of 5 / Continue to Step X navigation
 export default function OnboardingClimate() {
   // 08JUN25: Preserved all original state management
   const [formData, setFormData] = useState({
@@ -123,9 +123,8 @@ export default function OnboardingClimate() {
     });
   };
 
-  // 08JUN25: Preserved original form submission handler
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // 08JUN25: Updated form submission handler to match new navigation pattern
+  const handleNext = async () => {
     setLoading(true);
     
     try {
@@ -155,6 +154,11 @@ export default function OnboardingClimate() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // 08JUN25: Added previous step handler to match navigation pattern
+  const handlePrevious = () => {
+    navigate('/onboarding/region');
   };
 
   // 08JUN25: Loading screen with uiConfig styling
@@ -213,52 +217,43 @@ export default function OnboardingClimate() {
   };
 
   return (
-    // 08JUN25: Mobile-first page container using uiConfig design tokens
-    <div className={`min-h-screen ${uiConfig.colors.page} p-4`}>
-      <div className={`${uiConfig.layout.width.containerNarrow} px-4 sm:px-0`}>
+    // 08JUN25: Mobile-first page container using uiConfig design tokens - matching OnboardingRegion pattern
+    <div className={`${uiConfig.layout.width.containerWide} ${uiConfig.layout.spacing.section} ${uiConfig.colors.page} min-h-screen ${uiConfig.font.family}`}>
+      
+      {/* 08JUN25: Header section with mobile-responsive design - matching OnboardingRegion */}
+      <div className="mb-6 sm:mb-8">
+        <h1 className={`${uiConfig.font.size['2xl']} sm:${uiConfig.font.size['3xl']} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading} mb-2`}>
+          Climate Preferences
+        </h1>
         
-        {/* 08JUN25: Header section with mobile-responsive design */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-4">
-            {/* 08JUN25: Back button with uiConfig styling */}
-            <button
-              onClick={() => navigate('/onboarding/region')}
-              className={`${uiConfig.colors.hint} hover:${uiConfig.colors.heading} ${uiConfig.animation.transition}`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className={`${uiConfig.icons.size.md}`} viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
-            
-            {/* 08JUN25: Progress indicator with uiConfig styling */}
-            <div className="flex space-x-1">
-              {[1, 2, 3, 4, 5, 6].map((step) => (
-                <div
-                  key={step}
-                  className={`w-6 sm:w-8 h-1 ${uiConfig.layout.radius.full} ${
-                    step === 3
-                      ? 'bg-scout-accent-600 dark:bg-scout-accent-400'
-                      : step < 3
-                        ? `${uiConfig.colors.hint.replace('text-', 'bg-')}`
-                        : `${uiConfig.colors.borderLight.replace('border-', 'bg-')}`
-                  }`}
-                ></div>
-              ))}
-            </div>
-            <div className="w-5"></div> {/* 08JUN25: Spacer to balance the back button */}
+        {/* 08JUN25: Progress bar with uiConfig styling - Step 3 of 5 */}
+        <div className={`w-full ${uiConfig.progress.track} ${uiConfig.layout.radius.full} h-2 mb-4`}>
+          <div className={`${uiConfig.progress.fill} h-2 ${uiConfig.layout.radius.full} ${uiConfig.animation.transition}`} 
+               style={{ width: '60%' }}>
           </div>
-          
-          {/* 08JUN25: Mobile-responsive header text */}
-          <h1 className={`${uiConfig.font.size.xl} sm:${uiConfig.font.size['2xl']} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading} mb-2`}>
-            Climate Preferences
-          </h1>
-          <p className={`${uiConfig.colors.body} ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} mb-6`}>
-            Select your climates preference you'd enjoy. Multiple choices are allowed.
+        </div>
+        <p className={`${uiConfig.colors.hint} ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base}`}>
+          Step 3 of 5: Climate Preferences
+        </p>
+      </div>
+
+      {/* 08JUN25: Main content area with form */}
+      <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.xl} ${uiConfig.layout.shadow.sm} ${uiConfig.colors.borderLight} border p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8`}>
+        
+        {/* 08JUN25: Description section */}
+        <div className="text-center mb-6 sm:mb-8">
+          <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-scout-accent-100 dark:bg-scout-accent-900/20 ${uiConfig.layout.radius.full} mb-3 sm:mb-4`}>
+            <svg className={`${uiConfig.icons.size.lg} sm:${uiConfig.icons.size.xl} text-scout-accent-600 dark:text-scout-accent-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+            </svg>
+          </div>
+          <p className={`${uiConfig.colors.body} ${uiConfig.font.size.base} sm:${uiConfig.font.size.lg} px-2`}>
+            Select your climate preferences you'd enjoy. Multiple choices are allowed.
           </p>
         </div>
 
-        {/* 08JUN25: Form with uiConfig styling and mobile-first design */}
-        <form onSubmit={handleSubmit} className={`space-y-6 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 sm:p-6`}>
+        {/* 08JUN25: Form sections with preserved functionality */}
+        <div className="space-y-6 sm:space-y-8">
           
           {/* 08JUN25: Summer Climate section */}
           <div>
@@ -313,7 +308,7 @@ export default function OnboardingClimate() {
             </div>
           </div>
 
-          {/* 08JUN25: Humidity section - renamed from "Humidity Level" to "Humidity" */}
+          {/* 08JUN25: Humidity section */}
           <div>
             <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-3`}>
               Humidity
@@ -408,18 +403,27 @@ export default function OnboardingClimate() {
               <option value="winter_focused">I prefer cool seasons (winter)</option>
             </select>
           </div>
+        </div>
+      </div>
 
-          {/* 08JUN25: Submit button with conditional disabled styling to prevent red cursor icon */}
-          <div className="pt-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} py-3 px-4 ${uiConfig.layout.radius.lg} ${uiConfig.animation.transition} ${loading ? uiConfig.states.disabled : ''} ${uiConfig.colors.focusRing} focus:ring-offset-2`}
-            >
-              {loading ? 'Saving...' : 'Continue'}
-            </button>
-          </div>
-        </form>
+      {/* 08JUN25: Navigation section matching OnboardingRegion pattern */}
+      <div className={`flex flex-col sm:flex-row sm:justify-between sm:items-center pt-6 border-t ${uiConfig.colors.borderLight} space-y-4 sm:space-y-0`}>
+        <button 
+          onClick={handlePrevious}
+          className={`w-full sm:w-auto px-4 sm:px-6 py-3 border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.heading} ${uiConfig.colors.input} cursor-pointer ${uiConfig.states.hover} ${uiConfig.animation.transition} order-2 sm:order-1`}
+        >
+          Previous Step
+        </button>
+        <div className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint} text-center order-1 sm:order-2`}>
+          Step 3 of 5
+        </div>
+        <button 
+          onClick={handleNext}
+          disabled={loading}
+          className={`w-full sm:w-auto px-4 sm:px-6 py-3 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.lg} border-none cursor-pointer ${uiConfig.animation.transition} ${uiConfig.colors.focusRing} focus:ring-offset-2 order-3 ${loading ? uiConfig.states.disabled : ''}`}
+        >
+          {loading ? 'Saving...' : 'Continue to Step 4'}
+        </button>
       </div>
     </div>
   );

@@ -10,7 +10,8 @@ export default function OnboardingCulture() {
     language_comfort: {
       english_only: false,
       willing_to_learn: true,
-      already_speak: []
+      already_speak: [],
+      additional_language: '' // 08JUN25: Added for custom language input
     },
     cultural_importance: {
       restaurants: 3,
@@ -50,16 +51,6 @@ export default function OnboardingCulture() {
     { id: 'turkish', label: 'Turkish' }
   ];
 
-  // Cultural categories for importance ratings
-  const culturalCategories = [
-    { id: 'restaurants', label: 'Restaurants & Cuisine' },
-    { id: 'museums', label: 'Museums & Art' },
-    { id: 'nightlife', label: 'Nightlife & Entertainment' },
-    { id: 'religious_facilities', label: 'Religious Facilities' },
-    { id: 'cultural_events', label: 'Cultural Events & Festivals' },
-    { id: 'international_community', label: 'International Community' }
-  ];
-
   // Load existing data if available
   useEffect(() => {
     const loadExistingData = async () => {
@@ -79,7 +70,15 @@ export default function OnboardingCulture() {
         
         // If culture data exists, load it
         if (data && data.culture_preferences) {
-          setFormData(data.culture_preferences);
+          // 08JUN25: Ensure additional_language property exists for backward compatibility
+          const loadedData = {
+            ...data.culture_preferences,
+            language_comfort: {
+              ...data.culture_preferences.language_comfort,
+              additional_language: data.culture_preferences.language_comfort?.additional_language || ''
+            }
+          };
+          setFormData(loadedData);
         }
       } catch (err) {
         console.error("Unexpected error loading data:", err);
@@ -184,6 +183,22 @@ export default function OnboardingCulture() {
     }));
   };
 
+  // 08JUN25: Added handler for additional language input
+  const handleAdditionalLanguageAdd = () => {
+    const additionalLang = (formData.language_comfort.additional_language || '').trim();
+    if (additionalLang && !formData.language_comfort.already_speak.includes(additionalLang.toLowerCase())) {
+      setFormData(prev => ({
+        ...prev,
+        language_comfort: {
+          ...prev.language_comfort,
+          already_speak: [...prev.language_comfort.already_speak, additionalLang.toLowerCase()],
+          additional_language: '',
+          english_only: false
+        }
+      }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -220,7 +235,7 @@ export default function OnboardingCulture() {
   if (initialLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
-        <div className="animate-pulse text-green-600 font-semibold">Loading...</div>
+        <div className="animate-pulse text-green-600 dark:text-green-400 font-semibold">Loading...</div>
       </div>
     );
   }
@@ -261,237 +276,283 @@ export default function OnboardingCulture() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          
+          {/* 08JUN25: Rearranged sections - 1. Dining & Food */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Expat Community Preference
+            <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+              Dining & Food
+            </label>
+            <input
+              type="range"
+              name="restaurants"
+              min="1"
+              max="5"
+              step="1"
+              value={formData.cultural_importance.restaurants}
+              onChange={(e) => handleImportanceChange('restaurants', parseInt(e.target.value))}
+              className={uiConfig.components.slider}
+            />
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>1</span>
+              <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.accent}`}>{formData.cultural_importance.restaurants} / 5</span>
+              <span>5</span>
+            </div>
+            <p className={`mt-1 ${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+              How important are restaurants and local cuisine?
+            </p>
+          </div>
+
+          {/* 08JUN25: 2. Museums & Art */}
+          <div>
+            <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+              Museums & Art
+            </label>
+            <input
+              type="range"
+              name="museums"
+              min="1"
+              max="5"
+              step="1"
+              value={formData.cultural_importance.museums}
+              onChange={(e) => handleImportanceChange('museums', parseInt(e.target.value))}
+              className={uiConfig.components.slider}
+            />
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>1</span>
+              <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.accent}`}>{formData.cultural_importance.museums} / 5</span>
+              <span>5</span>
+            </div>
+            <p className={`mt-1 ${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+              How important are museums and art galleries?
+            </p>
+          </div>
+
+          {/* 08JUN25: 3. Nightlife & Entertainment */}
+          <div>
+            <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+              Nightlife & Entertainment
+            </label>
+            <input
+              type="range"
+              name="nightlife"
+              min="1"
+              max="5"
+              step="1"
+              value={formData.cultural_importance.nightlife}
+              onChange={(e) => handleImportanceChange('nightlife', parseInt(e.target.value))}
+              className={uiConfig.components.slider}
+            />
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>1</span>
+              <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.accent}`}>{formData.cultural_importance.nightlife} / 5</span>
+              <span>5</span>
+            </div>
+            <p className={`mt-1 ${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+              How important is nightlife and entertainment?
+            </p>
+          </div>
+
+          {/* 08JUN25: 4. Cultural Events & Festivals */}
+          <div>
+            <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+              Cultural Events & Festivals
+            </label>
+            <input
+              type="range"
+              name="cultural_events"
+              min="1"
+              max="5"
+              step="1"
+              value={formData.cultural_importance.cultural_events}
+              onChange={(e) => handleImportanceChange('cultural_events', parseInt(e.target.value))}
+              className={uiConfig.components.slider}
+            />
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>1</span>
+              <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.accent}`}>{formData.cultural_importance.cultural_events} / 5</span>
+              <span>5</span>
+            </div>
+            <p className={`mt-1 ${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+              How important are cultural events and festivals?
+            </p>
+          </div>
+
+          {/* 08JUN25: 5. Preferred Pace of Life */}
+          <div>
+            <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+              Preferred Pace of Life
+            </label>
+            <select
+              name="lifestyle_preferences.pace_of_life"
+              value={formData.lifestyle_preferences.pace_of_life}
+              onChange={handleInputChange}
+              className={uiConfig.components.select}
+            >
+              <option value="slow">Slow and relaxed</option>
+              <option value="moderate">Moderate pace</option>
+              <option value="fast">Fast and energetic</option>
+            </select>
+            <p className={`mt-1 ${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+              What pace of life do you prefer?
+            </p>
+          </div>
+
+          {/* 08JUN25: 6. Community Values Preference */}
+          <div>
+            <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+              Community Values Preference
             </label>
             <select
               name="expat_community_preference"
               value={formData.expat_community_preference}
               onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+              className={uiConfig.components.select}
             >
               <option value="none">No expat community needed</option>
               <option value="small">Small expat community</option>
               <option value="moderate">Moderate expat presence</option>
               <option value="large">Large international community</option>
             </select>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p className={`mt-1 ${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
               How important is having other expatriates nearby?
             </p>
           </div>
 
+          {/* 08JUN25: 7. Religious Facilities */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Language Comfort
+            <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+              Religious Facilities
             </label>
-            <div className="space-y-2">
+            <input
+              type="range"
+              name="religious_facilities"
+              min="1"
+              max="5"
+              step="1"
+              value={formData.cultural_importance.religious_facilities}
+              onChange={(e) => handleImportanceChange('religious_facilities', parseInt(e.target.value))}
+              className={uiConfig.components.slider}
+            />
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>1</span>
+              <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.accent}`}>{formData.cultural_importance.religious_facilities} / 5</span>
+              <span>5</span>
+            </div>
+            <p className={`mt-1 ${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+              How important are religious facilities?
+            </p>
+          </div>
+
+          {/* 08JUN25: 8. Languages You Already Speak */}
+          <div className={`${formData.language_comfort.english_only ? 'opacity-50' : ''}`}>
+            <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+              Languages You Already Speak
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {languages.map((language) => (
+                <div key={language.id} className="flex items-center">
+                  <input
+                    id={`language_${language.id}`}
+                    type="checkbox"
+                    checked={formData.language_comfort.already_speak.includes(language.id)}
+                    onChange={(e) => handleLanguageChange(language.id, e.target.checked)}
+                    disabled={formData.language_comfort.english_only}
+                    className={uiConfig.components.checkbox}
+                  />
+                  <label htmlFor={`language_${language.id}`} className={`ml-2 ${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
+                    {language.label}
+                  </label>
+                </div>
+              ))}
+            </div>
+            <p className={`mt-1 ${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+              Select all languages you can speak conversationally
+            </p>
+          </div>
+
+          {/* 08JUN25: 9. Language Comfort Level */}
+          <div>
+            <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+              Language Comfort Level
+            </label>
+            <div className="space-y-3">
               <div className="flex items-center">
                 <input
                   id="english_only"
-                  name="language_comfort.english_only"
                   type="checkbox"
+                  name="language_comfort.english_only"
                   checked={formData.language_comfort.english_only}
                   onChange={handleCheckboxChange}
-                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                  className={uiConfig.components.checkbox}
                 />
-                <label htmlFor="english_only" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                  I prefer places where English is widely spoken
+                <label htmlFor="english_only" className={`ml-2 ${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
+                  I prefer English-only destinations
                 </label>
               </div>
               
               <div className="flex items-center">
                 <input
                   id="willing_to_learn"
-                  name="language_comfort.willing_to_learn"
                   type="checkbox"
+                  name="language_comfort.willing_to_learn"
                   checked={formData.language_comfort.willing_to_learn}
                   onChange={handleCheckboxChange}
                   disabled={formData.language_comfort.english_only}
-                  className={`h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded ${
+                  className={`${uiConfig.components.checkbox} ${
                     formData.language_comfort.english_only ? 'opacity-50' : ''
                   }`}
                 />
                 <label
                   htmlFor="willing_to_learn"
-                  className={`ml-2 text-sm text-gray-700 dark:text-gray-300 ${
+                  className={`ml-2 ${uiConfig.font.size.sm} ${uiConfig.colors.body} ${
                     formData.language_comfort.english_only ? 'opacity-50' : ''
                   }`}
                 >
                   I'm willing to learn a new language
                 </label>
               </div>
-              
-              <div className={`mt-3 ${formData.language_comfort.english_only ? 'opacity-50' : ''}`}>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Languages I already speak
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {languages.map((language) => (
-                    <div key={language.id} className="flex items-center">
-                      <input
-                        id={`language_${language.id}`}
-                        type="checkbox"
-                        checked={formData.language_comfort.already_speak.includes(language.id)}
-                        onChange={(e) => handleLanguageChange(language.id, e.target.checked)}
-                        disabled={formData.language_comfort.english_only}
-                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                      />
-                      <label htmlFor={`language_${language.id}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                        {language.label}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-              Cultural Importance (1-5 scale)
-            </label>
-            <div className="space-y-4">
-              {culturalCategories.map((category) => (
-                <div key={category.id} className="flex flex-col">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-700 dark:text-gray-300">{category.label}</span>
-                    <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                      {formData.cultural_importance[category.id]} / 5
-                    </span>
-                  </div>
-                  <div className="flex space-x-2">
-                    {[1, 2, 3, 4, 5].map((value) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => handleImportanceChange(category.id, value)}
-                        className={`flex-1 py-2 rounded-md ${
-                          formData.cultural_importance[category.id] === value
-                            ? 'bg-green-600 text-white'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-                        }`}
-                      >
-                        {value}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              Rate how important each cultural aspect is to you (1 = not important, 5 = very important).
+            <p className={`mt-1 ${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+              How comfortable are you with language barriers?
             </p>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Pace of Life
+          {/* 08JUN25: 10. Add Additional Language */}
+          <div className={`${formData.language_comfort.english_only ? 'opacity-50' : ''}`}>
+            <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+              Add Additional Language
             </label>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { value: 'slow', label: 'Relaxed' },
-                { value: 'moderate', label: 'Moderate' },
-                { value: 'fast', label: 'Fast-Paced' }
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setFormData({
-                    ...formData,
-                    lifestyle_preferences: {
-                      ...formData.lifestyle_preferences,
-                      pace_of_life: option.value
-                    }
-                  })}
-                  className={`py-3 px-4 rounded-lg border text-center ${
-                    formData.lifestyle_preferences.pace_of_life === option.value
-                      ? 'border-green-600 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
-                      : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                name="language_comfort.additional_language"
+                value={formData.language_comfort.additional_language || ''}
+                onChange={handleInputChange}
+                disabled={formData.language_comfort.english_only}
+                placeholder="Enter a language not listed above"
+                className={`${uiConfig.components.input} ${formData.language_comfort.english_only ? uiConfig.states.disabled : ''}`}
+              />
+              <button
+                type="button"
+                onClick={handleAdditionalLanguageAdd}
+                disabled={formData.language_comfort.english_only || !(formData.language_comfort.additional_language || '').trim()}
+                className={`px-4 py-3 ${uiConfig.colors.btnPrimary} font-medium rounded-lg disabled:bg-gray-400 disabled:cursor-not-allowed`}
+              >
+                Add
+              </button>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Urban vs Rural
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { value: 'urban', label: 'Urban' },
-                { value: 'suburban', label: 'Suburban' },
-                { value: 'rural', label: 'Rural' }
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setFormData({
-                    ...formData,
-                    lifestyle_preferences: {
-                      ...formData.lifestyle_preferences,
-                      urban_rural: option.value
-                    }
-                  })}
-                  className={`py-3 px-4 rounded-lg border text-center ${
-                    formData.lifestyle_preferences.urban_rural === option.value
-                      ? 'border-green-600 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
-                      : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Traditional vs Progressive
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { value: 'traditional', label: 'Traditional' },
-                { value: 'balanced', label: 'Balanced' },
-                { value: 'progressive', label: 'Progressive' }
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setFormData({
-                    ...formData,
-                    lifestyle_preferences: {
-                      ...formData.lifestyle_preferences,
-                      traditional_progressive: option.value
-                    }
-                  })}
-                  className={`py-3 px-4 rounded-lg border text-center ${
-                    formData.lifestyle_preferences.traditional_progressive === option.value
-                      ? 'border-green-600 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
-                      : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Do you prefer communities with traditional values or more progressive attitudes?
+            <p className={`mt-1 ${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+              Add a language that's not in the list above
             </p>
           </div>
 
-          <div className="pt-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : 'Continue'}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} py-3 px-4 ${uiConfig.layout.radius.lg} disabled:opacity-50`}
+          >
+            {loading ? 'Saving...' : 'Save & Continue'}
+          </button>
         </form>
       </div>
     </div>
