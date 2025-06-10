@@ -21,8 +21,8 @@ import TownDiscovery from "./pages/TownDiscovery";
 import Chat from "./pages/Chat";
 import Journal from "./pages/Journal";
 
-// Onboarding Flow
-import OnboardingStatus from "./pages/onboarding/OnboardingStatus";
+// Onboarding Flow - FIXED: Changed OnboardingStatus to OnboardingProgress
+import OnboardingProgress from "./pages/onboarding/OnboardingProgress";
 import OnboardingClimate from "./pages/onboarding/OnboardingClimate";
 import OnboardingCosts from "./pages/onboarding/OnboardingCosts";
 import OnboardingCulture from "./pages/onboarding/OnboardingCulture";
@@ -137,7 +137,7 @@ function App() {
           <Route path="/onboarding/status" element={
             <ProtectedRoute>
               <OnboardingWrapper nextPath="/onboarding/current-status" prevPath="/welcome">
-                <OnboardingStatus />
+                <OnboardingProgress />
               </OnboardingWrapper>
             </ProtectedRoute>
           } />
