@@ -1,14 +1,14 @@
 // src/components/OnboardingStepNavigation.jsx
-// Fixed 09JUN25: Corrected step logic and icon/label alignment issues
+// Updated 10JUN25: Corrected to match exact 7-step flow from spreadsheet
 import { Link } from 'react-router-dom';
 import { 
   MapPin, 
   Globe, 
   CloudSun, 
   Users, 
-  DollarSign, 
-  Heart, 
-  Building
+  SmilePlus,
+  HousePlus,
+  DollarSign
 } from 'lucide-react';
 
 const OnboardingStepNavigation = ({ 
@@ -17,7 +17,7 @@ const OnboardingStepNavigation = ({
   onStepClick = null,
   className = "" 
 }) => {
-  // Fixed 09JUN25: Corrected step definitions to match actual flow
+  // Updated 10JUN25: Exact 7 steps as per spreadsheet
   const steps = [
     { 
       key: 'current_status', 
@@ -45,32 +45,32 @@ const OnboardingStepNavigation = ({
     },
     { 
       key: 'hobbies', 
-      label: 'Finance', 
+      label: 'Hobbies', 
       path: '/onboarding/hobbies',
-      icon: DollarSign
-    },
-    { 
-      key: 'healthcare', 
-      label: 'Health', 
-      path: '/onboarding/healthcare',
-      icon: Heart
+      icon: SmilePlus
     },
     { 
       key: 'administration', 
-      label: 'Legal', 
+      label: 'Admin', 
       path: '/onboarding/administration',
-      icon: Building
+      icon: HousePlus
+    },
+    { 
+      key: 'budget', 
+      label: 'Costs', 
+      path: '/onboarding/costs',
+      icon: DollarSign
     }
   ];
 
-  // Fixed 09JUN25: Improved step status detection
+  // Improved step status detection
   const getStepStatus = (stepKey) => {
     if (completedSteps[stepKey]) return 'completed';
     if (stepKey === currentStep) return 'current';
     return 'future';
   };
 
-  // Fixed 09JUN25: Corrected icon styling with proper emerald colors
+  // Icon styling with scout-accent colors
   const getIconClasses = (status) => {
     const baseClasses = 'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200';
     
@@ -86,7 +86,7 @@ const OnboardingStepNavigation = ({
     }
   };
 
-  // Fixed 09JUN25: Corrected label styling with proper emerald colors
+  // Label styling with scout-accent colors
   const getLabelClasses = (status) => {
     const baseClasses = 'text-xs font-medium text-center mt-2';
     
@@ -111,10 +111,13 @@ const OnboardingStepNavigation = ({
     }
   };
 
+  // Get current step details for title display
+  const currentStepDetails = steps.find(step => step.key === currentStep);
+
   return (
-    <div className={`mb-8 ${className}`}>
-      {/* Fixed 09JUN25: Proper alignment grid for icons AND labels */}
-      <div className="flex justify-center items-start space-x-2 sm:space-x-4">
+    <div className={`${className}`}>
+      {/* Step icons and labels */}
+      <div className="flex justify-center items-start space-x-2 sm:space-x-4 mb-6">
         {steps.map((step, index) => {
           const status = getStepStatus(step.key);
           const StepIcon = step.icon;
@@ -122,7 +125,7 @@ const OnboardingStepNavigation = ({
           
           return (
             <div key={step.key} className="flex flex-col items-center w-16 sm:w-20">
-              {/* Icon - Fixed 09JUN25: Centered properly */}
+              {/* Icon */}
               <div className="flex justify-center mb-2">
                 {canClick && !onStepClick ? (
                   <Link to={step.path}>
@@ -155,7 +158,7 @@ const OnboardingStepNavigation = ({
                 )}
               </div>
 
-              {/* Label - Fixed 09JUN25: Properly centered and sized */}
+              {/* Label */}
               <div className={getLabelClasses(status)} style={{textAlign: 'center', width: '100%'}}>
                 {step.label}
               </div>
@@ -164,8 +167,8 @@ const OnboardingStepNavigation = ({
         })}
       </div>
 
-      {/* Optional: Progress line - Fixed 09JUN25: Only show on larger screens */}
-      <div className="hidden sm:block relative mt-4">
+      {/* Progress line - Only show on larger screens */}
+      <div className="hidden sm:block relative mb-8">
         <div className="absolute top-0 left-0 w-full h-0.5 bg-gray-200 dark:bg-gray-700"></div>
         <div 
           className="absolute top-0 left-0 h-0.5 bg-scout-accent-400 transition-all duration-300"
