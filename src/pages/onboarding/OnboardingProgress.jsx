@@ -1,3 +1,5 @@
+// src/pages/onboarding/OnboardingProgress.jsx
+// Updated 10JUN25: Fixed icon circles with proper sage/white styling
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../../utils/authUtils';
@@ -173,7 +175,7 @@ export default function OnboardingProgress() {
   if (loading) {
     return (
       <div className={`min-h-screen ${uiConfig.colors.page} ${uiConfig.layout.spacing.section} flex items-center justify-center`}>
-        <div className={`${uiConfig.animation.pulse} text-sage-600 dark:text-sage-400 ${uiConfig.font.weight.semibold}`}>
+        <div className={`${uiConfig.animation.pulse} text-scout-accent-600 dark:text-scout-accent-400 ${uiConfig.font.weight.semibold}`}>
           Loading your progress...
         </div>
       </div>
@@ -211,7 +213,7 @@ export default function OnboardingProgress() {
               <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body}`}>
                 Overall Progress
               </span>
-              <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.semibold} text-sage-600 dark:text-sage-400`}>
+              <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.semibold} text-scout-accent-600 dark:text-scout-accent-400`}>
                 {progress.percentage}% Complete
               </span>
             </div>
@@ -253,22 +255,16 @@ export default function OnboardingProgress() {
                       : 'cursor-not-allowed opacity-75'
                   }`}
                 >
-                  {/* Column 1: Step Icon - Mobile first, responsive */}
+                  {/* Column 1: Step Icon - Fixed 10JUN25: Proper circle styling with white icons */}
                   <div className="flex items-center justify-center md:col-span-2 order-1">
                     <div className={`w-12 h-12 ${uiConfig.layout.radius.full} flex items-center justify-center ${
                       statusInfo.status === 'completed' 
-                        ? 'bg-sage-100 dark:bg-sage-900/30' 
+                        ? 'bg-scout-accent-200 dark:bg-scout-accent-300' 
                         : statusInfo.status === 'current'
-                        ? 'bg-blue-100 dark:bg-blue-900/30'
-                        : 'bg-gray-100 dark:bg-gray-800'
+                        ? 'bg-scout-accent-600 dark:bg-scout-accent-500'
+                        : 'bg-gray-200 dark:bg-gray-700'
                     }`}>
-                      <StepIcon className={`${uiConfig.icons.size.lg} ${
-                        statusInfo.status === 'completed'
-                          ? 'text-sage-600 dark:text-sage-400'
-                          : statusInfo.status === 'current'
-                          ? 'text-blue-600 dark:text-blue-400'
-                          : 'text-gray-400 dark:text-gray-500'
-                      }`} />
+                      <StepIcon className={`${uiConfig.icons.size.lg} text-white`} />
                     </div>
                   </div>
                   
@@ -299,7 +295,7 @@ export default function OnboardingProgress() {
         <div className="mt-6 flex justify-center">
           <button
             onClick={handleContinue}
-            className={uiConfig.components.buttonPrimary}
+            className={`${uiConfig.components.buttonPrimary} px-6`}
           >
             {progress.percentage === 100 ? 'Review Profile' : `Continue: ${getNextStep().label}`}
           </button>

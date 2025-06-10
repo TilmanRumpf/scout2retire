@@ -1,3 +1,5 @@
+// src/pages/Login.jsx
+// Fixed 10JUN25: Updated navigation to use /onboarding/progress
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signIn } from '../utils/authUtils';
@@ -40,7 +42,8 @@ export default function Login() {
         
         if (userError) {
           console.error("Error fetching user data:", userError);
-          navigate('/onboarding/status'); // Default to onboarding if profile can't be fetched
+          // Fixed 10JUN25: Changed from /onboarding/status to /onboarding/progress
+          navigate('/onboarding/progress'); // Default to onboarding if profile can't be fetched
           return;
         }
         
@@ -48,7 +51,8 @@ export default function Login() {
         if (userData.onboarding_completed) {
           navigate('/daily');
         } else {
-          navigate('/onboarding/status');
+          // Fixed 10JUN25: Changed from /onboarding/status to /onboarding/progress
+          navigate('/onboarding/progress');
         }
       } else {
         toast.error(error?.message || 'Login failed. Please check your credentials.');
