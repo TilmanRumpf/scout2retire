@@ -30,6 +30,7 @@ import OnboardingCurrentStatus from "./pages/onboarding/OnboardingCurrentStatus"
 import OnboardingHobbies from "./pages/onboarding/OnboardingHobbies";
 import OnboardingRegion from "./pages/onboarding/OnboardingRegion";
 import OnboardingReview from "./pages/onboarding/OnboardingReview";
+import OnboardingAdministration from "./pages/onboarding/OnboardingAdministration"; // Added 09JUN25: New Administration step
 
 // Onboarding wrapper components with navigation
 const OnboardingWrapper = ({ children, nextPath, prevPath }) => {
@@ -132,7 +133,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Onboarding flow with navigation */}
+          {/* Onboarding flow with navigation - Updated 09JUN25: Added Administration step */}
           <Route path="/onboarding/status" element={
             <ProtectedRoute>
               <OnboardingWrapper nextPath="/onboarding/current-status" prevPath="/welcome">
@@ -170,14 +171,22 @@ function App() {
           } />
           <Route path="/onboarding/hobbies" element={
             <ProtectedRoute>
-              <OnboardingWrapper nextPath="/onboarding/costs" prevPath="/onboarding/culture">
+              <OnboardingWrapper nextPath="/onboarding/administration" prevPath="/onboarding/culture">
                 <OnboardingHobbies />
+              </OnboardingWrapper>
+            </ProtectedRoute>
+          } />
+          {/* NEW: Administration route - Added 09JUN25 */}
+          <Route path="/onboarding/administration" element={
+            <ProtectedRoute>
+              <OnboardingWrapper nextPath="/onboarding/costs" prevPath="/onboarding/hobbies">
+                <OnboardingAdministration />
               </OnboardingWrapper>
             </ProtectedRoute>
           } />
           <Route path="/onboarding/costs" element={
             <ProtectedRoute>
-              <OnboardingWrapper nextPath="/onboarding/review" prevPath="/onboarding/hobbies">
+              <OnboardingWrapper nextPath="/onboarding/review" prevPath="/onboarding/administration">
                 <OnboardingCosts />
               </OnboardingWrapper>
             </ProtectedRoute>

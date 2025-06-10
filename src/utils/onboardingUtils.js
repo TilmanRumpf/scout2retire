@@ -77,13 +77,14 @@ try {
     .select('*')
     .eq('user_id', userId);
   
-  // Define the expected steps
+  // Define the expected steps - Updated 09JUN25: Added administration step
   const steps = [
     'current_status',
     'region_preferences',
     'climate_preferences',
     'culture_preferences',
     'hobbies',
+    'administration',  // NEW: Administration section for Health, Safety, Governance, Immigration
     'budget'
   ];
   

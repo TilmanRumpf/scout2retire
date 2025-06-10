@@ -1,4 +1,5 @@
-// 🎨 Scout2Retire Design Tokens & UI Configuration
+// Scout2Retire Design Tokens & UI Configuration - Updated 09JUN25
+// FIXED: Removed emoji from header and icon references from stepNavigation
 
 export const colors = {
   // Backgrounds
@@ -6,50 +7,50 @@ export const colors = {
   card: 'bg-white dark:bg-gray-800',
   modal: 'bg-white dark:bg-gray-800',
   input: 'bg-white dark:bg-gray-700',
-  tabActive: 'bg-scout-accent text-white',
-  tabInactive: 'bg-white dark:bg-gray-700 text-scout-accent dark:text-white',
+  tabActive: 'bg-sage-600 text-white',
+  tabInactive: 'bg-white dark:bg-gray-700 text-sage-600 dark:text-white',
 
   // Text
   heading: 'text-gray-800 dark:text-white',
   body: 'text-gray-700 dark:text-gray-300',
   hint: 'text-gray-500 dark:text-gray-400',
   muted: 'text-gray-400 dark:text-gray-500',
-  accent: 'text-scout-accent',
+  accent: 'text-sage-600',
   error: 'text-red-600 dark:text-red-400',
-  success: 'text-scout-accent-600 dark:text-scout-accent-400',
+  success: 'text-sage-600 dark:text-sage-400',
 
-  // Border
+  // Border - Updated 09JUN25: Using sage green accents
   border: 'border-gray-300 dark:border-gray-600',
   borderLight: 'border-gray-200 dark:border-gray-700',
-  borderActive: 'border-scout-accent',
+  borderActive: 'border-sage-600',
   borderDanger: 'border-red-600',
-  borderSuccess: 'border-scout-accent-400',
+  borderSuccess: 'border-sage-400',
 
-  // Buttons
-  btnPrimary: 'bg-scout-accent text-white hover:bg-scout-accent-400 transition-colors',
-  btnSecondary: 'bg-scout-accent-100 dark:bg-scout-accent-800 text-scout-accent-700 dark:text-scout-accent-200 hover:bg-scout-accent-200 dark:hover:bg-scout-accent-700 transition-colors',
+  // Buttons - Updated 09JUN25: Sage green theme
+  btnPrimary: 'bg-sage-600 text-white hover:bg-sage-700 transition-colors',
+  btnSecondary: 'bg-sage-100 dark:bg-sage-800 text-sage-700 dark:text-sage-200 hover:bg-sage-200 dark:hover:bg-sage-700 transition-colors',
   btnDanger: 'bg-red-600 hover:bg-red-700 text-white transition-colors',
   btnNeutral: 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors',
 
-  // Toggles
-  toggleOn: 'bg-scout-accent',
+  // Toggles - Updated 09JUN25: Sage green
+  toggleOn: 'bg-sage-600',
   toggleOff: 'bg-gray-300 dark:bg-gray-600',
   toggleKnob: 'bg-white dark:bg-gray-200',
 
-  // Match badges - using your sage green palette
-  badge: 'bg-scout-accent-100 text-scout-accent-800 dark:bg-scout-accent-900 dark:text-scout-accent-200',
-  matchStrong: 'bg-scout-accent text-white',
+  // Match badges - Updated 09JUN25: Using sage green palette
+  badge: 'bg-sage-100 text-sage-800 dark:bg-sage-900 dark:text-sage-200',
+  matchStrong: 'bg-sage-600 text-white',
   matchMedium: 'bg-yellow-500 text-white',
   matchLow: 'bg-red-500 text-white',
 
-  // Status indicators using sage green
-  statusSuccess: 'bg-scout-accent-100 text-scout-accent-800 dark:bg-scout-accent-900 dark:text-scout-accent-200',
+  // Status indicators - Updated 09JUN25: Using sage green
+  statusSuccess: 'bg-sage-100 text-sage-800 dark:bg-sage-900 dark:text-sage-200',
   statusWarning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
   statusError: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
   statusInfo: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
 
-  // Focus states
-  focusRing: 'focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75',
+  // Focus states - Updated 09JUN25: Sage green focus rings
+  focusRing: 'focus:ring-2 focus:ring-sage-400 focus:ring-opacity-75',
   focusRingDanger: 'focus:ring-2 focus:ring-red-400 focus:ring-opacity-75',
 };
 
@@ -71,7 +72,7 @@ export const font = {
     semibold: 'font-semibold',
     bold: 'font-bold',
   }
-}
+};
 
 export const layout = {
   spacing: {
@@ -124,46 +125,184 @@ export const icons = {
   }
 };
 
-// 08JUN25: Added missing components object for form elements
+// Step Navigation Patterns - Added 09JUN25: Reusable step navigation system
+// FIXED 09JUN25: Removed all icon references to prevent emoji clownface issues
+export const stepNavigation = {
+  styles: {
+    // Container styles
+    container: 'mb-8',
+    iconRow: 'flex justify-center items-center space-x-4 mb-4',
+    labelRow: 'flex justify-center items-center space-x-4',
+    
+    // Icon styles
+    icon: {
+      base: 'w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200',
+      current: 'bg-sage-600 text-white shadow-lg scale-110',
+      completed: 'bg-sage-500 text-white hover:bg-sage-600 cursor-pointer hover:scale-105',
+      future: 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+    },
+    
+    // Label styles
+    labels: {
+      base: 'text-xs text-center w-12',
+      current: 'text-sage-600 dark:text-sage-400 font-semibold',
+      completed: 'text-sage-500 dark:text-sage-400',
+      future: 'text-gray-400 dark:text-gray-500'
+    }
+  },
+  
+  // Different step configurations for different parts of app
+  // FIXED 09JUN25: Removed icon properties to prevent emoji rendering
+  variants: {
+    onboarding: {
+      steps: [
+        { 
+          key: 'current_status', 
+          label: 'Current Status', 
+          path: '/onboarding/current-status'
+        },
+        { 
+          key: 'region_preferences', 
+          label: 'Region', 
+          path: '/onboarding/region'
+        },
+        { 
+          key: 'climate_preferences', 
+          label: 'Climate', 
+          path: '/onboarding/climate'
+        },
+        { 
+          key: 'culture_preferences', 
+          label: 'Culture', 
+          path: '/onboarding/culture'
+        },
+        { 
+          key: 'hobbies', 
+          label: 'Hobbies', 
+          path: '/onboarding/hobbies'
+        },
+        { 
+          key: 'administration', 
+          label: 'Administration', 
+          path: '/onboarding/administration'
+        },
+        { 
+          key: 'budget', 
+          label: 'Costs', 
+          path: '/onboarding/costs'
+        }
+      ]
+    },
+    
+    townComparison: {
+      steps: [
+        { key: 'selection', label: 'Select' },
+        { key: 'compare', label: 'Compare' },
+        { key: 'analyze', label: 'Analyze' },
+        { key: 'decide', label: 'Decide' }
+      ]
+    },
+    
+    townDetails: {
+      steps: [
+        { key: 'overview', label: 'Overview' },
+        { key: 'lifestyle', label: 'Lifestyle' },
+        { key: 'costs', label: 'Costs' },
+        { key: 'requirements', label: 'Requirements' }
+      ]
+    }
+  }
+};
+
+// Bottom Navigation Patterns - Added 09JUN25
+export const bottomNavigation = {
+  styles: {
+    container: 'flex justify-between items-center pt-8 mt-8 border-t border-gray-200 dark:border-gray-700',
+    backButton: 'inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:ring-offset-2 transition-all duration-200',
+    nextButton: 'inline-flex items-center px-6 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-sage-600 hover:bg-sage-700 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
+  }
+};
+
+// Enhanced Form Components - Updated 09JUN25: Match screenshot design
 export const components = {
-  // Form inputs
-  input: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent',
-  textarea: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent resize-vertical',
-  select: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent',
+  // Form inputs - Updated with sage green theme
+  input: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-sage-400 focus:ring-opacity-75 focus:border-sage-600 transition-all duration-200',
+  textarea: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-sage-400 focus:ring-opacity-75 focus:border-sage-600 resize-vertical transition-all duration-200',
+  select: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-sage-400 focus:ring-opacity-75 focus:border-sage-600 transition-all duration-200',
   
-  // Checkboxes and radios
-  checkbox: 'h-4 w-4 text-scout-accent focus:ring-scout-accent-400 border-gray-300 dark:border-gray-600 rounded',
-  radio: 'h-4 w-4 text-scout-accent focus:ring-scout-accent-400 border-gray-300 dark:border-gray-600',
+  // Checkboxes and radios - Updated 09JUN25: Sage green with proper styling
+  checkbox: 'h-4 w-4 text-sage-600 focus:ring-sage-500 focus:ring-offset-0 border-2 border-gray-300 dark:border-gray-600 rounded transition-all duration-200',
+  radio: 'h-4 w-4 text-sage-600 focus:ring-sage-500 focus:ring-offset-0 border-2 border-gray-300 dark:border-gray-600 transition-all duration-200',
   
-  // Range sliders
-  slider: 'w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider-thumb:appearance-none slider-thumb:h-4 slider-thumb:w-4 slider-thumb:rounded-full slider-thumb:bg-scout-accent slider-thumb:cursor-pointer',
+  // Range sliders - Updated 09JUN25: Beautiful sage green sliders matching screenshot
+  slider: {
+    container: 'w-full mb-4',
+    track: 'w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none cursor-pointer',
+    fill: 'h-2 bg-sage-600 rounded-full',
+    thumb: 'appearance-none h-5 w-5 bg-sage-600 rounded-full cursor-pointer shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sage-400 focus:ring-opacity-75',
+    // CSS for webkit browsers
+    webkit: `
+      .slider::-webkit-slider-track {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 9999px;
+      }
+      .dark .slider::-webkit-slider-track {
+        background: #374151;
+      }
+      .slider::-webkit-slider-thumb {
+        appearance: none;
+        height: 20px;
+        width: 20px;
+        background: #10b981;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s;
+      }
+      .slider::-webkit-slider-thumb:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        transform: scale(1.1);
+      }
+    `
+  },
   
-  // Toggle switches
-  toggle: 'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-scout-accent-400 focus:ring-offset-2',
-  toggleKnob: 'inline-block h-4 w-4 transform rounded-full bg-white transition',
+  // Toggle switches - Updated 09JUN25: Sage green toggles
+  toggle: 'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-sage-500 focus:ring-offset-2',
+  toggleKnob: 'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200',
+  toggleOn: 'bg-sage-600',
+  toggleOff: 'bg-gray-300 dark:bg-gray-600',
+  
+  // Button variants - Updated 09JUN25: Sage green theme
+  buttonVariants: {
+    primary: 'py-3 px-4 rounded-lg border-2 border-transparent text-sm font-medium text-center transition-all duration-200 bg-sage-600 text-white hover:bg-sage-700 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:ring-offset-2',
+    secondary: 'py-3 px-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-sm font-medium text-center transition-all duration-200 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-sage-300 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:ring-offset-2',
+    selected: 'py-3 px-4 rounded-lg border-2 border-sage-600 text-sm font-medium text-center transition-all duration-200 bg-sage-50 dark:bg-sage-900/20 text-sage-700 dark:text-sage-300',
+    unselected: 'py-3 px-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 text-sm font-medium text-center transition-all duration-200 text-gray-700 dark:text-gray-300 hover:border-sage-300 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:ring-offset-2'
+  },
   
   // File inputs
-  fileInput: 'block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-scout-accent-50 file:text-scout-accent-700 hover:file:bg-scout-accent-100',
+  fileInput: 'block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sage-50 file:text-sage-700 hover:file:bg-sage-100',
   
   // Search inputs
-  searchInput: 'w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent',
+  searchInput: 'w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-sage-400 focus:ring-opacity-75 focus:border-sage-600',
   
   // Form groups
-  formGroup: 'mb-4',
-  formGroupCompact: 'mb-2',
+  formGroup: 'mb-6',
+  formGroupCompact: 'mb-4',
   
-  // Labels
-  label: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2',
-  labelRequired: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 after:content-["*"] after:ml-0.5 after:text-red-500',
+  // Labels - Updated 09JUN25: Better spacing and typography
+  label: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3',
+  labelRequired: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 after:content-["*"] after:ml-0.5 after:text-red-500',
   
   // Help text
-  helpText: 'mt-1 text-xs text-gray-500 dark:text-gray-400',
-  errorText: 'mt-1 text-xs text-red-600 dark:text-red-400',
+  helpText: 'mt-2 text-xs text-gray-500 dark:text-gray-400',
+  errorText: 'mt-2 text-xs text-red-600 dark:text-red-400',
   
   // Buttons
   button: 'inline-flex items-center px-4 py-2 border border-transparent rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors',
-  buttonPrimary: 'inline-flex items-center px-4 py-2 border border-transparent rounded-md font-medium text-white bg-scout-accent hover:bg-scout-accent-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-scout-accent-500 transition-colors',
-  buttonSecondary: 'inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-scout-accent-500 transition-colors',
+  buttonPrimary: 'inline-flex items-center px-4 py-2 border border-transparent rounded-md font-medium text-white bg-sage-600 hover:bg-sage-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sage-500 transition-colors',
+  buttonSecondary: 'inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sage-500 transition-colors',
   
   // Cards
   card: 'bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg',
@@ -179,7 +318,7 @@ export const components = {
   // Navigation
   nav: 'bg-white dark:bg-gray-800 shadow',
   navItem: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-  navItemActive: 'text-scout-accent bg-scout-accent-100 dark:bg-scout-accent-900 px-3 py-2 rounded-md text-sm font-medium',
+  navItemActive: 'text-sage-600 bg-sage-100 dark:bg-sage-900 px-3 py-2 rounded-md text-sm font-medium',
   
   // Tables
   table: 'min-w-full divide-y divide-gray-200 dark:divide-gray-700',
@@ -190,9 +329,9 @@ export const components = {
   tableCell: 'px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100',
 };
 
-// Financial data display colors
+// Financial data display colors - Updated 09JUN25: Sage green theme
 export const financial = {
-  positive: 'text-scout-accent-600 dark:text-scout-accent-400',
+  positive: 'text-sage-600 dark:text-sage-400',
   negative: 'text-red-600 dark:text-red-400',
   neutral: 'text-gray-600 dark:text-gray-400',
   highlight: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
@@ -200,43 +339,43 @@ export const financial = {
   percentage: 'text-sm font-medium',
 };
 
-// Progress bars and score indicators
+// Progress bars and score indicators - Updated 09JUN25: Sage green theme
 export const progress = {
-  bar: 'bg-scout-accent-200 dark:bg-scout-accent-800',
-  fill: 'bg-scout-accent transition-all duration-300',
+  bar: 'bg-sage-200 dark:bg-sage-800',
+  fill: 'bg-sage-600 transition-all duration-300',
   track: 'bg-gray-200 dark:bg-gray-700',
   low: 'bg-red-400',
   medium: 'bg-yellow-400', 
-  high: 'bg-scout-accent',
-  complete: 'bg-scout-accent-600',
+  high: 'bg-sage-600',
+  complete: 'bg-sage-600',
 };
 
-// Form validation states
+// Form validation states - Updated 09JUN25: Sage green theme
 export const validation = {
-  valid: 'border-scout-accent-400 bg-scout-accent-50 dark:bg-scout-accent-950 dark:border-scout-accent-600',
+  valid: 'border-sage-400 bg-sage-50 dark:bg-sage-950 dark:border-sage-600',
   invalid: 'border-red-400 bg-red-50 dark:bg-red-950 dark:border-red-600',
   warning: 'border-yellow-400 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-600',
   neutral: 'border-gray-300 dark:border-gray-600',
 };
 
-// Notification system
+// Notification system - Updated 09JUN25: Sage green theme
 export const notifications = {
-  success: 'bg-scout-accent-100 border-scout-accent-400 text-scout-accent-800 dark:bg-scout-accent-900 dark:border-scout-accent-600 dark:text-scout-accent-200',
+  success: 'bg-sage-100 border-sage-400 text-sage-800 dark:bg-sage-900 dark:border-sage-600 dark:text-sage-200',
   error: 'bg-red-100 border-red-400 text-red-800 dark:bg-red-900 dark:border-red-600 dark:text-red-200',
   warning: 'bg-yellow-100 border-yellow-400 text-yellow-800 dark:bg-yellow-900 dark:border-yellow-600 dark:text-yellow-200',
   info: 'bg-blue-100 border-blue-400 text-blue-800 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-200',
 };
 
-// Interactive component states
+// Interactive component states - Updated 09JUN25: Sage green theme
 export const states = {
   disabled: 'opacity-50 cursor-not-allowed',
   loading: 'opacity-75 cursor-wait animate-pulse',
-  active: 'bg-scout-accent-100 border-scout-accent-400 dark:bg-scout-accent-800 dark:border-scout-accent-600',
+  active: 'bg-sage-100 border-sage-400 dark:bg-sage-800 dark:border-sage-600',
   hover: 'hover:bg-gray-50 dark:hover:bg-gray-700',
-  selected: 'bg-scout-accent text-white',
+  selected: 'bg-sage-600 text-white',
 };
 
-// Internationalization utilities
+// Internationalization utilities (unchanged - working well)
 export const i18n = {
   // Auto-detect user's locale from browser/device
   getUserLocale: () => {
@@ -247,7 +386,7 @@ export const i18n = {
   },
 
   // Currency formatting based on locale
-  formatCurrency: (amount, currency = 'USD', locale = null) => {
+  formatCurrency: (amount: number, currency = 'USD', locale: string | null = null) => {
     const userLocale = locale || i18n.getUserLocale();
     try {
       return new Intl.NumberFormat(userLocale, {
@@ -268,7 +407,7 @@ export const i18n = {
   },
 
   // Number formatting (handles . vs , for decimals)
-  formatNumber: (number, locale = null) => {
+  formatNumber: (number: number, locale: string | null = null) => {
     const userLocale = locale || i18n.getUserLocale();
     return new Intl.NumberFormat(userLocale).format(number);
   },
@@ -276,13 +415,13 @@ export const i18n = {
   // Temperature conversion and formatting
   temperature: {
     // Convert Celsius to Fahrenheit
-    celsiusToFahrenheit: (celsius) => (celsius * 9/5) + 32,
+    celsiusToFahrenheit: (celsius: number) => (celsius * 9/5) + 32,
     
     // Convert Fahrenheit to Celsius  
-    fahrenheitToCelsius: (fahrenheit) => (fahrenheit - 32) * 5/9,
+    fahrenheitToCelsius: (fahrenheit: number) => (fahrenheit - 32) * 5/9,
     
     // Format temperature based on user preference
-    format: (tempCelsius, unit = 'auto', locale = null) => {
+    format: (tempCelsius: number, unit = 'auto', locale: string | null = null) => {
       const userLocale = locale || i18n.getUserLocale();
       
       // Auto-detect based on locale (US uses Fahrenheit, most others use Celsius)
@@ -298,13 +437,13 @@ export const i18n = {
   // Distance/measurement formatting
   measurement: {
     // Convert kilometers to miles
-    kmToMiles: (km) => km * 0.621371,
+    kmToMiles: (km: number) => km * 0.621371,
     
     // Convert miles to kilometers
-    milesToKm: (miles) => miles * 1.60934,
+    milesToKm: (miles: number) => miles * 1.60934,
     
     // Format distance based on user preference
-    formatDistance: (km, unit = 'auto', locale = null) => {
+    formatDistance: (km: number, unit = 'auto', locale: string | null = null) => {
       const userLocale = locale || i18n.getUserLocale();
       
       // Auto-detect based on locale (US, UK partially use miles)
@@ -318,26 +457,26 @@ export const i18n = {
   },
 
   // Date formatting
-  formatDate: (date, style = 'medium', locale = null) => {
+  formatDate: (date: Date | string, style: 'short' | 'medium' | 'long' = 'medium', locale: string | null = null) => {
     const userLocale = locale || i18n.getUserLocale();
     const dateObj = typeof date === 'string' ? new Date(date) : date;
     
     const options = {
       short: { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
+        year: 'numeric' as const, 
+        month: 'short' as const, 
+        day: 'numeric' as const 
       },
       medium: { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+        year: 'numeric' as const, 
+        month: 'long' as const, 
+        day: 'numeric' as const 
       },
       long: { 
-        weekday: 'long',
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+        weekday: 'long' as const,
+        year: 'numeric' as const, 
+        month: 'long' as const, 
+        day: 'numeric' as const 
       }
     };
     
@@ -358,12 +497,12 @@ export const i18n = {
     'ja-JP': { decimal: '.', thousand: ',', currency: 'JPY', temp: 'C', distance: 'km' },
     'ko-KR': { decimal: '.', thousand: ',', currency: 'KRW', temp: 'C', distance: 'km' },
     'zh-CN': { decimal: '.', thousand: ',', currency: 'CNY', temp: 'C', distance: 'km' },
-  },
+  } as const,
 
   // Get user's preferred formats
-  getUserFormats: (locale = null) => {
+  getUserFormats: (locale: string | null = null) => {
     const userLocale = locale || i18n.getUserLocale();
-    return i18n.localeFormats[userLocale] || i18n.localeFormats['en-US'];
+    return i18n.localeFormats[userLocale as keyof typeof i18n.localeFormats] || i18n.localeFormats['en-US'];
   }
 };
 
@@ -373,20 +512,143 @@ export const uiConfig = {
   layout,
   animation,
   icons,
-  components, // 08JUN25: Added components to main export
+  stepNavigation, // Added 09JUN25: Step navigation patterns
+  bottomNavigation, // Added 09JUN25: Bottom navigation patterns
+  components, // Updated 09JUN25: Enhanced form styling
   financial,
   progress,
   validation,
   notifications,
   states,
   i18n,
-  // Brand-specific configurations
+  // Brand-specific configurations - Updated 09JUN25: Using sage green
   brand: {
-    primary: 'scout-accent',
+    primary: 'sage-600',
     sage: {
-      light: 'scout-accent-200',
-      medium: 'scout-accent-300', // Your main brand color
-      dark: 'scout-accent-600',
+      light: 'sage-200',
+      medium: 'sage-400',
+      dark: 'sage-600',
     }
   }
+} as const;
+
+// ===== TYPESCRIPT TYPES =====
+export type UIConfig = typeof uiConfig;
+export type ColorConfig = typeof colors;
+export type FontConfig = typeof font;
+export type LayoutConfig = typeof layout;
+export type ComponentConfig = typeof components;
+export type StepNavigationConfig = typeof stepNavigation;
+
+// Step navigation types
+export type OnboardingStep = typeof stepNavigation.variants.onboarding.steps[number];
+export type StepKey = OnboardingStep['key'];
+
+// ===== UTILITY FUNCTIONS =====
+
+/**
+ * Get onboarding step by key
+ * @param stepKey - The step key to find
+ * @returns The step object or undefined
+ */
+export const getStepByKey = (stepKey: StepKey): OnboardingStep | undefined => {
+  return uiConfig.stepNavigation.variants.onboarding.steps.find(
+    step => step.key === stepKey
+  );
 };
+
+/**
+ * Get onboarding step index
+ * @param stepKey - The step key to find
+ * @returns The step index or -1 if not found
+ */
+export const getStepIndex = (stepKey: StepKey): number => {
+  return uiConfig.stepNavigation.variants.onboarding.steps.findIndex(
+    step => step.key === stepKey
+  );
+};
+
+/**
+ * Get total number of onboarding steps
+ * @returns The total number of steps
+ */
+export const getTotalSteps = (): number => {
+  return uiConfig.stepNavigation.variants.onboarding.steps.length;
+};
+
+/**
+ * Get the next step in the onboarding flow
+ * @param currentStep - The current step key
+ * @returns The next step object or undefined if at the end
+ */
+export const getNextStep = (currentStep: StepKey): OnboardingStep | undefined => {
+  const currentIndex = getStepIndex(currentStep);
+  if (currentIndex === -1 || currentIndex === getTotalSteps() - 1) {
+    return undefined;
+  }
+  return uiConfig.stepNavigation.variants.onboarding.steps[currentIndex + 1];
+};
+
+/**
+ * Get the previous step in the onboarding flow
+ * @param currentStep - The current step key
+ * @returns The previous step object or undefined if at the beginning
+ */
+export const getPreviousStep = (currentStep: StepKey): OnboardingStep | undefined => {
+  const currentIndex = getStepIndex(currentStep);
+  if (currentIndex <= 0) {
+    return undefined;
+  }
+  return uiConfig.stepNavigation.variants.onboarding.steps[currentIndex - 1];
+};
+
+/**
+ * Calculate progress percentage for onboarding
+ * @param completedSteps - Array of completed step keys
+ * @returns Progress percentage (0-100)
+ */
+export const calculateProgress = (completedSteps: StepKey[]): number => {
+  const totalSteps = getTotalSteps();
+  const completedCount = completedSteps.length;
+  return Math.round((completedCount / totalSteps) * 100);
+};
+
+/**
+ * Combine multiple CSS classes safely
+ * @param classes - CSS class strings to combine
+ * @returns Combined class string
+ */
+export const combineClasses = (...classes: (string | undefined | null | false)[]): string => {
+  return classes.filter(Boolean).join(' ');
+};
+
+/**
+ * Get responsive class for different breakpoints
+ * @param baseClass - Base CSS class
+ * @param breakpoint - Responsive breakpoint ('sm', 'md', 'lg', 'xl')
+ * @returns Responsive class string
+ */
+export const getResponsiveClass = (baseClass: string, breakpoint: keyof typeof uiConfig.responsive): string => {
+  return `${uiConfig.responsive[breakpoint]}${baseClass}`;
+};
+
+/**
+ * Memoized locale detection for performance
+ */
+let cachedLocale: string | null = null;
+export const getCachedLocale = (): string => {
+  if (!cachedLocale) {
+    cachedLocale = uiConfig.i18n.getUserLocale();
+  }
+  return cachedLocale;
+};
+
+/**
+ * Reset cached locale (useful for testing or locale changes)
+ */
+export const resetLocaleCache = (): void => {
+  cachedLocale = null;
+};
+
+// Default export for easy importing
+export default uiConfig;
