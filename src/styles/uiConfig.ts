@@ -1,5 +1,5 @@
 // Scout2Retire Design Tokens & UI Configuration - Updated 09JUN25
-// FIXED: Removed emoji from header and icon references from stepNavigation
+// UPDATED: Added phosphor icons for all 7 onboarding steps
 
 export const colors = {
   // Backgrounds
@@ -125,8 +125,7 @@ export const icons = {
   }
 };
 
-// Step Navigation Patterns - Added 09JUN25: Reusable step navigation system
-// FIXED 09JUN25: Removed all icon references to prevent emoji clownface issues
+// Step Navigation Patterns - Updated 09JUN25: Added phosphor icons for all 7 steps
 export const stepNavigation = {
   styles: {
     // Container styles
@@ -152,44 +151,51 @@ export const stepNavigation = {
   },
   
   // Different step configurations for different parts of app
-  // FIXED 09JUN25: Removed icon properties to prevent emoji rendering
+  // UPDATED 09JUN25: Added phosphor icons for all 7 onboarding steps
   variants: {
     onboarding: {
       steps: [
         { 
           key: 'current_status', 
           label: 'Current Status', 
-          path: '/onboarding/current-status'
+          path: '/onboarding/current-status',
+          icon: 'map-pin'
         },
         { 
           key: 'region_preferences', 
           label: 'Region', 
-          path: '/onboarding/region'
+          path: '/onboarding/region',
+          icon: 'globe'
         },
         { 
           key: 'climate_preferences', 
           label: 'Climate', 
-          path: '/onboarding/climate'
+          path: '/onboarding/climate',
+          icon: 'cloud-sun'
         },
         { 
           key: 'culture_preferences', 
           label: 'Culture', 
-          path: '/onboarding/culture'
+          path: '/onboarding/culture',
+          icon: 'users-three'
         },
         { 
           key: 'hobbies', 
           label: 'Hobbies', 
-          path: '/onboarding/hobbies'
+          path: '/onboarding/hobbies',
+          icon: 'currency-dollar'
         },
         { 
           key: 'administration', 
-          label: 'Administration', 
-          path: '/onboarding/administration'
+          label: 'Healthcare', 
+          path: '/onboarding/healthcare',
+          icon: 'ambulance'
         },
         { 
           key: 'budget', 
-          label: 'Costs', 
-          path: '/onboarding/costs'
+          label: 'Administration', 
+          path: '/onboarding/administration',
+          icon: 'building-office'
         }
       ]
     },
@@ -512,7 +518,7 @@ export const uiConfig = {
   layout,
   animation,
   icons,
-  stepNavigation, // Added 09JUN25: Step navigation patterns
+  stepNavigation, // Updated 09JUN25: Added phosphor icons to all 7 steps
   bottomNavigation, // Added 09JUN25: Bottom navigation patterns
   components, // Updated 09JUN25: Enhanced form styling
   financial,
