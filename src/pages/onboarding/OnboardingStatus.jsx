@@ -1,31 +1,40 @@
+// src/pages/onboarding/OnboardingClimate.jsx
+// Updated 09JUN25: Added 7-step navigation and Lucide icons while preserving ALL existing logic
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, CloudSun, Sun, Snowflake, Droplets, DropletOff, Cloud, CloudRain } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
-import { getOnboardingProgress } from '../../utils/onboardingUtils';
-// Updated 09JUN25: Using Lucide React icons for professional 7-step onboarding
-import { 
-  MapPin, 
-  Globe, 
-  CloudSun, 
-  Users, 
-  DollarSign, 
-  Heart, 
-  Building
-} from 'lucide-react';
+import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
+import { uiConfig } from '../../styles/uiConfig';
+import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
+import toast from 'react-hot-toast';
 
-export default function OnboardingStatus() {
+// Updated 09JUN25: Preserved all original functionality while improving design consistency and mobile responsiveness
+export default function OnboardingClimate() {
+  // Updated 09JUN25: Preserved all original state management with summer/winter logic
+  const [formData, setFormData] = useState({
+    summer_climate_preference: [], // Array for multi-choice: ['mild', 'warm', 'hot']
+    winter_climate_preference: [], // Array for multi-choice: ['cold', 'cool', 'mild']
+    humidity_level: [], // Array for multi-choice: ['dry', 'balanced', 'humid']
+    sunshine: [], // Array for multi-choice: ['mostly_sunny', 'balanced', 'often_cloudy']
+    precipitation: [], // Array for multi-choice: ['mostly_dry', 'balanced', 'often_rainy']
+    seasonal_preference: 'Optional' // Optional, all_seasons, summer_focused, winter_focused
+  });
+  
+  // Updated 09JUN25: Preserved all original loading states
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [progress, setProgress] = useState({
     completedSteps: {},
     completedCount: 0,
     totalSteps: 7, // Updated 09JUN25: Changed from 6 to 7 steps
     percentage: 0
   });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  // Updated 09JUN25: Preserved original data loading useEffect with progress loading
   useEffect(() => {
-    const fetchProgress = async () => {
+    const loadExistingData = async () => {
       try {
         const { user } = await getCurrentUser();
         if (!user) {
@@ -33,253 +42,377 @@ export default function OnboardingStatus() {
           return;
         }
         
-        const { success, progress: userProgress, error: progressError } = await getOnboardingProgress(user.id);
+        const { success, data, progress: userProgress, error } = await getOnboardingProgress(user.id);
         if (!success) {
-          setError(progressError?.message || "Failed to fetch onboarding progress");
-          setLoading(false);
+          console.error("Error loading existing data:", error);
+          setInitialLoading(false);
           return;
         }
         
-        setProgress(userProgress);
+        // Set progress data - Added 09JUN25
+        if (userProgress) {
+          setProgress(userProgress);
+        }
+        
+        // If climate data exists, load it - Preserved original logic
+        if (data && data.climate_preferences) {
+          setFormData(prev => ({
+            ...prev,
+            ...data.climate_preferences,
+            // Ensure arrays exist for backward compatibility
+            summer_climate_preference: data.climate_preferences.summer_climate_preference || [],
+            winter_climate_preference: data.climate_preferences.winter_climate_preference || [],
+            humidity_level: data.climate_preferences.humidity_level || [],
+            sunshine: data.climate_preferences.sunshine || [],
+            precipitation: data.climate_preferences.precipitation || [],
+            // Ensure seasonal preference defaults to Optional if not set
+            seasonal_preference: data.climate_preferences.seasonal_preference || 'Optional'
+          }));
+        }
       } catch (err) {
-        setError("An unexpected error occurred");
-        console.error(err);
+        console.error("Unexpected error loading data:", err);
       } finally {
-        setLoading(false);
+        setInitialLoading(false);
       }
     };
     
-    fetchProgress();
+    loadExistingData();
   }, [navigate]);
 
-  // Updated 09JUN25: Updated to 7 steps with Lucide React icons and proper labels
-  const steps = [
-    { 
-      key: 'current_status', 
-      label: 'Current Status', 
-      path: '/onboarding/current-status',
-      icon: MapPin
-    },
-    { 
-      key: 'region_preferences', 
-      label: 'Region Preferences', 
-      path: '/onboarding/region',
-      icon: Globe
-    },
-    { 
-      key: 'climate_preferences', 
-      label: 'Climate Preferences', 
-      path: '/onboarding/climate',
-      icon: CloudSun
-    },
-    { 
-      key: 'culture_preferences', 
-      label: 'Lifestyle Preferences', 
-      path: '/onboarding/culture',
-      icon: Users
-    },
-    { 
-      key: 'hobbies', 
-      label: 'Financial Requirements', 
-      path: '/onboarding/hobbies',
-      icon: DollarSign
-    },
-    { 
-      key: 'healthcare', 
-      label: 'Healthcare Needs', 
-      path: '/onboarding/healthcare',
-      icon: Heart
-    },
-    { 
-      key: 'administration', 
-      label: 'Administration & Legal', 
-      path: '/onboarding/administration',
-      icon: Building
-    }
-  ];
-
-  // Determine the next incomplete step
-  const getNextStep = () => {
-    const nextIncompleteStep = steps.find(step => !progress.completedSteps[step.key]);
-    return nextIncompleteStep || steps[0]; // Default to first step if all complete
+  // Updated 09JUN25: Preserved original input change handler
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleContinue = () => {
-    const nextStep = getNextStep();
-    navigate(nextStep.path);
+  // Updated 09JUN25: Preserved original climate toggle handler
+  const handleClimateToggle = (season, option) => {
+    const fieldName = `${season}_climate_preference`;
+    setFormData(prev => {
+      const currentOptions = prev[fieldName] || [];
+      const isSelected = currentOptions.includes(option);
+      
+      if (isSelected) {
+        // Remove option if already selected
+        return {
+          ...prev,
+          [fieldName]: currentOptions.filter(item => item !== option)
+        };
+      } else {
+        // Add option if not selected
+        return {
+          ...prev,
+          [fieldName]: [...currentOptions, option]
+        };
+      }
+    });
   };
 
-  // Updated 09JUN25: Added function to get step status for styling
-  const getStepStatus = (stepKey, stepIndex) => {
-    const isCompleted = progress.completedSteps[stepKey];
-    const nextIncompleteIndex = steps.findIndex(step => !progress.completedSteps[step.key]);
-    const isCurrent = nextIncompleteIndex === stepIndex;
+  // Updated 09JUN25: Preserved original multi-choice toggle handler
+  const handleMultiChoiceToggle = (fieldName, option) => {
+    setFormData(prev => {
+      const currentOptions = prev[fieldName] || [];
+      const isSelected = currentOptions.includes(option);
+      
+      if (isSelected) {
+        // Remove option if already selected
+        return {
+          ...prev,
+          [fieldName]: currentOptions.filter(item => item !== option)
+        };
+      } else {
+        // Add option if not selected
+        return {
+          ...prev,
+          [fieldName]: [...currentOptions, option]
+        };
+      }
+    });
+  };
+
+  // Updated 09JUN25: Preserved original form submission handler
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     
-    if (isCompleted) return 'completed';
-    if (isCurrent) return 'current';
-    return 'future';
-  };
-
-  // Updated 09JUN25: Added function to get icon styling based on step status
-  const getIconClasses = (status) => {
-    const baseClasses = 'w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer';
-    
-    switch (status) {
-      case 'completed':
-        return `${baseClasses} bg-emerald-100 text-emerald-700 hover:bg-emerald-200 hover:scale-105`;
-      case 'current':
-        return `${baseClasses} bg-emerald-400 text-white shadow-lg scale-110`;
-      case 'future':
-        return `${baseClasses} bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed`;
-      default:
-        return `${baseClasses} bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500`;
-    }
-  };
-
-  // Updated 09JUN25: Added function to get label styling
-  const getLabelClasses = (status) => {
-    const baseClasses = 'text-sm font-medium';
-    
-    switch (status) {
-      case 'completed':
-        return `${baseClasses} text-emerald-600 dark:text-emerald-400`;
-      case 'current':
-        return `${baseClasses} text-emerald-500 dark:text-emerald-400 font-semibold`;
-      case 'future':
-        return `${baseClasses} text-gray-400 dark:text-gray-500`;
-      default:
-        return `${baseClasses} text-gray-600 dark:text-gray-400`;
+    try {
+      const { user } = await getCurrentUser();
+      if (!user) {
+        navigate('/welcome');
+        return;
+      }
+      
+      const { success, error } = await saveOnboardingStep(
+        user.id,
+        formData,
+        'climate_preferences'
+      );
+      
+      if (!success) {
+        toast.error(`Failed to save: ${error.message}`);
+        setLoading(false);
+        return;
+      }
+      
+      toast.success('Climate preferences saved!');
+      navigate('/onboarding/culture');
+    } catch (err) {
+      toast.error('An unexpected error occurred');
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loading) {
+  // Navigation handlers - Added 09JUN25
+  const handleBack = () => {
+    navigate('/onboarding/region');
+  };
+
+  // Updated 09JUN25: Loading screen with emerald styling
+  if (initialLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
-        <div className="animate-pulse text-emerald-600 font-semibold">Loading your progress...</div>
+        <div className="animate-pulse text-scout-accent-600 font-semibold">Loading...</div>
       </div>
     );
   }
 
+  // Updated 09JUN25: Converted to Lucide React icons with preserved multi-icon support
+  const summerOptions = [
+    { value: 'mild', label: 'Mild', icons: [CloudSun] },
+    { value: 'warm', label: 'Warm', icons: [Sun] },
+    { value: 'hot', label: 'Hot', icons: [Sun, Sun] } // Multiple suns for hot
+  ];
+
+  const winterOptions = [
+    { value: 'cold', label: 'Cold', icons: [Snowflake, Snowflake] }, // 2 snowflakes
+    { value: 'cool', label: 'Cool', icons: [Snowflake] }, // 1 snowflake
+    { value: 'mild', label: 'Mild', icons: [CloudSun] }
+  ];
+
+  const humidityOptions = [
+    { value: 'dry', label: 'Dry', icons: [DropletOff] },
+    { value: 'balanced', label: 'Balanced', icons: [Droplets] },
+    { value: 'humid', label: 'Humid', icons: [Droplets, Droplets] }
+  ];
+
+  const sunshineOptions = [
+    { value: 'mostly_sunny', label: 'Often Sunny', icons: [Sun] },
+    { value: 'balanced', label: 'Balanced', icons: [CloudSun] },
+    { value: 'often_cloudy', label: 'Less Sunny', icons: [Cloud] }
+  ];
+
+  const precipitationOptions = [
+    { value: 'mostly_dry', label: 'Mostly Dry', icons: [Sun] },
+    { value: 'balanced', label: 'Balanced', icons: [CloudSun] },
+    { value: 'often_rainy', label: 'Often Rainy', icons: [CloudRain] }
+  ];
+
+  // Updated 09JUN25: Reusable Lucide icon rendering function for multiple icons support
+  const renderIcons = (iconsArray, size = 20) => {
+    return (
+      <div className="flex items-center justify-center space-x-1">
+        {iconsArray.map((IconComponent, index) => (
+          <IconComponent 
+            key={index} 
+            size={size} 
+            className="text-gray-600 dark:text-gray-400"
+          />
+        ))}
+      </div>
+    );
+  };
+
   return (
+    // Updated 09JUN25: Mobile-first page container with emerald theme
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-md mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6 text-center">Your Retirement Profile</h1>
         
-        {error && (
-          <div className="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 p-4 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
-        
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Your Progress</h2>
-            <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-              {progress.percentage}% Complete
-            </span>
-          </div>
+        {/* Step Navigation - Added 09JUN25: New 7-step navigation component */}
+        <OnboardingStepNavigation 
+          currentStep="climate_preferences"
+          completedSteps={progress.completedSteps}
+          className="mb-8"
+        />
+
+        {/* Header section removed - 09JUN25: Avoiding duplicate headings */}
+
+        {/* Updated 09JUN25: Form with emerald theme and preserved functionality */}
+        <form onSubmit={handleSubmit} className="space-y-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           
-          {/* Updated 09JUN25: Enhanced progress bar with sage green theme */}
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-8">
-            <div 
-              className="bg-emerald-400 h-2.5 rounded-full transition-all duration-300" 
-              style={{ width: `${progress.percentage}%` }}
-            ></div>
+          {/* Updated 09JUN25: Summer Climate section with Lucide icons */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+              Summer Climate
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {summerOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleClimateToggle('summer', option.value)}
+                  className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200 ${
+                    formData.summer_climate_preference?.includes(option.value)
+                      ? 'border-scout-accent-600 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-scout-accent-300 hover:bg-scout-accent-50/50 dark:hover:bg-scout-accent-900/10'
+                  }`}
+                >
+                  {renderIcons(option.icons, 24)}
+                  <span className="text-sm font-medium text-center text-gray-800 dark:text-gray-200 mt-2">
+                    {option.label}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Updated 09JUN25: New step visualization with Lucide React icons */}
-          <div className="space-y-6 mb-8">
-            {steps.map((step, index) => {
-              const status = getStepStatus(step.key, index);
-              const StepIcon = step.icon;
-              
-              return (
-                <div key={step.key} className="flex items-center space-x-4">
-                  {/* Step Icon Circle - Updated 09JUN25: No numbers, no checkmarks, icons only */}
-                  <div className="flex-shrink-0 text-center">
-                    <Link
-                      to={step.path}
-                      className={getIconClasses(status)}
-                      onClick={(e) => {
-                        if (status === 'future') {
-                          e.preventDefault();
-                        }
-                      }}
-                    >
-                      <StepIcon size={20} strokeWidth={status === 'current' ? 2.5 : 2} />
-                    </Link>
-                  </div>
-
-                  {/* Step Details */}
-                  <div className="flex-1 min-w-0">
-                    <Link
-                      to={step.path}
-                      className={`block ${getLabelClasses(status)} hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors`}
-                      onClick={(e) => {
-                        if (status === 'future') {
-                          e.preventDefault();
-                        }
-                      }}
-                    >
-                      {step.label}
-                      {status === 'completed' && (
-                                                  <span className="ml-2 text-xs text-emerald-600 dark:text-emerald-400">
-                          ✓ Completed
-                        </span>
-                      )}
-                    </Link>
-                    
-                    {/* Added 09JUN25: Helper text for specific steps */}
-                    {step.key === 'administration' && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Health, Safety, Governance, Immigration
-                      </p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+          {/* Updated 09JUN25: Winter Climate section with Lucide icons */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+              Winter Climate
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {winterOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleClimateToggle('winter', option.value)}
+                  className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200 ${
+                    formData.winter_climate_preference?.includes(option.value)
+                      ? 'border-scout-accent-600 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-scout-accent-300 hover:bg-scout-accent-50/50 dark:hover:bg-scout-accent-900/10'
+                  }`}
+                >
+                  {renderIcons(option.icons, 24)}
+                  <span className="text-sm font-medium text-center text-gray-800 dark:text-gray-200 mt-2">
+                    {option.label}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
-          
-          {/* Updated 09JUN25: Enhanced continue button with sage green theme */}
-          <button
-            onClick={handleContinue}
-            className="w-full bg-emerald-400 hover:bg-emerald-500 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
-          >
-            {progress.completedCount === 0 
-              ? 'Start Your Profile' 
-              : progress.completedCount === progress.totalSteps 
-                ? 'Review & Complete' 
-                : 'Continue'}
-          </button>
-        </div>
 
-        {/* Updated 09JUN25: Added informational section */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-            What's Next?
-          </h3>
-          
-          <div className="text-gray-600 dark:text-gray-400 space-y-2">
-            <p className="text-sm">
-              Complete all 7 sections to get personalized retirement location recommendations.
-            </p>
+          {/* Updated 09JUN25: Humidity section with Lucide icons */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+              Humidity
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {humidityOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleMultiChoiceToggle('humidity_level', option.value)}
+                  className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200 ${
+                    formData.humidity_level?.includes(option.value)
+                      ? 'border-scout-accent-600 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-scout-accent-300 hover:bg-scout-accent-50/50 dark:hover:bg-scout-accent-900/10'
+                  }`}
+                >
+                  {renderIcons(option.icons, 24)}
+                  <span className="text-sm font-medium text-center text-gray-800 dark:text-gray-200 mt-2">
+                    {option.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Updated 09JUN25: Sunshine section with Lucide icons */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+              Sunshine
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {sunshineOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleMultiChoiceToggle('sunshine', option.value)}
+                  className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200 ${
+                    formData.sunshine?.includes(option.value)
+                      ? 'border-scout-accent-600 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-scout-accent-300 hover:bg-scout-accent-50/50 dark:hover:bg-scout-accent-900/10'
+                  }`}
+                >
+                  {renderIcons(option.icons, 24)}
+                  <span className="text-sm font-medium text-center text-gray-800 dark:text-gray-200 mt-2">
+                    {option.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Updated 09JUN25: Precipitation section with Lucide icons */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+              Precipitation
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {precipitationOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleMultiChoiceToggle('precipitation', option.value)}
+                  className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200 ${
+                    formData.precipitation?.includes(option.value)
+                      ? 'border-scout-accent-600 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-scout-accent-300 hover:bg-scout-accent-50/50 dark:hover:bg-scout-accent-900/10'
+                  }`}
+                >
+                  {renderIcons(option.icons, 24)}
+                  <span className="text-sm font-medium text-center text-gray-800 dark:text-gray-200 mt-2">
+                    {option.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Updated 09JUN25: Seasonal Preference dropdown with emerald styling */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+              Seasonal Preference
+            </label>
+            <select
+              name="seasonal_preference"
+              value={formData.seasonal_preference}
+              onChange={handleInputChange}
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:border-scout-accent-400 transition-all duration-200"
+            >
+              <option value="Optional">Optional</option>
+              <option value="all_seasons">I enjoy all seasons equally</option>
+              <option value="summer_focused">I prefer warm seasons (summer)</option>
+              <option value="winter_focused">I prefer cool seasons (winter)</option>
+            </select>
+          </div>
+
+          {/* Bottom Navigation - Added 09JUN25: Professional navigation buttons */}
+          <div className="flex justify-between items-center pt-8 mt-8 border-t border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-scout-accent-400 focus:ring-offset-2 transition-all duration-200"
+            >
+              <ChevronLeft size={16} className="mr-2" />
+              Back
+            </button>
             
-            <div className="text-sm space-y-1">
-              <p>• Each section takes 2-3 minutes</p>
-              <p>• Your progress is saved automatically</p>
-              <p>• You can edit your answers anytime</p>
-            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="inline-flex items-center px-6 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-scout-accent-600 hover:bg-scout-accent-700 focus:outline-none focus:ring-2 focus:ring-scout-accent-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            >
+              {loading ? 'Saving...' : 'Continue'}
+              {!loading && <ChevronRight size={16} className="ml-2" />}
+            </button>
           </div>
-
-          {progress.completedCount > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Great progress! You can always come back and finish later.
-              </p>
-            </div>
-          )}
-        </div>
+        </form>
       </div>
     </div>
   );

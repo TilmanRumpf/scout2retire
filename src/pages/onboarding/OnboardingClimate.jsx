@@ -1,18 +1,17 @@
+// src/pages/onboarding/OnboardingClimate.jsx
+// Updated 09JUN25: Added 7-step navigation and Lucide icons while preserving ALL existing logic
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, CloudSun, Sun, Snowflake, Droplets, DropletOff, Cloud, CloudRain } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
-import toast from 'react-hot-toast';
-// 08JUN25: Import uiConfig for consistent design system
 import { uiConfig } from '../../styles/uiConfig';
+import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
+import toast from 'react-hot-toast';
 
-// NOTE: Add Phosphor Icons CSS to your index.html:
-// <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" />
-
-// 08JUN25: Updated navigation pattern to match OnboardingRegion consistency
-// Added proper Previous Step / Step X of 5 / Continue to Step X navigation
+// Updated 09JUN25: Preserved all original functionality while improving design consistency and mobile responsiveness
 export default function OnboardingClimate() {
-  // 08JUN25: Preserved all original state management
+  // Updated 09JUN25: Preserved all original state management with summer/winter logic
   const [formData, setFormData] = useState({
     summer_climate_preference: [], // Array for multi-choice: ['mild', 'warm', 'hot']
     winter_climate_preference: [], // Array for multi-choice: ['cold', 'cool', 'mild']
@@ -22,12 +21,18 @@ export default function OnboardingClimate() {
     seasonal_preference: 'Optional' // Optional, all_seasons, summer_focused, winter_focused
   });
   
-  // 08JUN25: Preserved all original loading states
+  // Updated 09JUN25: Preserved all original loading states
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [progress, setProgress] = useState({
+    completedSteps: {},
+    completedCount: 0,
+    totalSteps: 7, // Updated 09JUN25: Changed from 6 to 7 steps
+    percentage: 0
+  });
   const navigate = useNavigate();
 
-  // 08JUN25: Preserved original data loading useEffect
+  // Updated 09JUN25: Preserved original data loading useEffect with progress loading
   useEffect(() => {
     const loadExistingData = async () => {
       try {
@@ -37,14 +42,19 @@ export default function OnboardingClimate() {
           return;
         }
         
-        const { success, data, error } = await getOnboardingProgress(user.id);
+        const { success, data, progress: userProgress, error } = await getOnboardingProgress(user.id);
         if (!success) {
           console.error("Error loading existing data:", error);
           setInitialLoading(false);
           return;
         }
         
-        // If climate data exists, load it
+        // Set progress data - Added 09JUN25
+        if (userProgress) {
+          setProgress(userProgress);
+        }
+        
+        // If climate data exists, load it - Preserved original logic
         if (data && data.climate_preferences) {
           setFormData(prev => ({
             ...prev,
@@ -69,7 +79,7 @@ export default function OnboardingClimate() {
     loadExistingData();
   }, [navigate]);
 
-  // 08JUN25: Preserved original input change handler
+  // Updated 09JUN25: Preserved original input change handler
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -78,7 +88,7 @@ export default function OnboardingClimate() {
     }));
   };
 
-  // 08JUN25: Preserved original climate toggle handler
+  // Updated 09JUN25: Preserved original climate toggle handler
   const handleClimateToggle = (season, option) => {
     const fieldName = `${season}_climate_preference`;
     setFormData(prev => {
@@ -101,7 +111,7 @@ export default function OnboardingClimate() {
     });
   };
 
-  // 08JUN25: Preserved original multi-choice toggle handler
+  // Updated 09JUN25: Preserved original multi-choice toggle handler
   const handleMultiChoiceToggle = (fieldName, option) => {
     setFormData(prev => {
       const currentOptions = prev[fieldName] || [];
@@ -123,8 +133,9 @@ export default function OnboardingClimate() {
     });
   };
 
-  // 08JUN25: Updated form submission handler to match new navigation pattern
-  const handleNext = async () => {
+  // Updated 09JUN25: Preserved original form submission handler
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setLoading(true);
     
     try {
@@ -156,60 +167,60 @@ export default function OnboardingClimate() {
     }
   };
 
-  // 08JUN25: Added previous step handler to match navigation pattern
-  const handlePrevious = () => {
+  // Navigation handlers - Added 09JUN25
+  const handleBack = () => {
     navigate('/onboarding/region');
   };
 
-  // 08JUN25: Loading screen with uiConfig styling
+  // Updated 09JUN25: Loading screen with emerald styling
   if (initialLoading) {
     return (
-      <div className={`min-h-screen ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
-        <div className={`${uiConfig.animation.pulse} text-scout-accent-600 ${uiConfig.font.weight.semibold}`}>Loading...</div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
+        <div className="animate-pulse text-emerald-600 font-semibold">Loading...</div>
       </div>
     );
   }
 
-  // 08JUN25: Updated to flexible icons array system for reusability across components
-  // Each option can now have single or multiple icons using the 'icons' array
+  // Updated 09JUN25: Converted to Lucide React icons with preserved multi-icon support
   const summerOptions = [
-    { value: 'mild', label: 'Mild', icons: ['cloud-sun'] },
-    { value: 'warm', label: 'Warm', icons: ['sun-dim'] },
-    { value: 'hot', label: 'Hot', icons: ['sun'] }
+    { value: 'mild', label: 'Mild', icons: [CloudSun] },
+    { value: 'warm', label: 'Warm', icons: [Sun] },
+    { value: 'hot', label: 'Hot', icons: [Sun, Sun] } // Multiple suns for hot
   ];
 
   const winterOptions = [
-    { value: 'cold', label: 'Cold', icons: ['snowflake', 'snowflake'] }, // 2 snowflakes
-    { value: 'cool', label: 'Cool', icons: ['snowflake'] }, // 1 snowflake
-    { value: 'mild', label: 'Mild', icons: ['sun-dim'] }
+    { value: 'cold', label: 'Cold', icons: [Snowflake, Snowflake] }, // 2 snowflakes
+    { value: 'cool', label: 'Cool', icons: [Snowflake] }, // 1 snowflake
+    { value: 'mild', label: 'Mild', icons: [CloudSun] }
   ];
 
   const humidityOptions = [
-    { value: 'dry', label: 'Dry', icons: ['drop-slash'] },
-    { value: 'balanced', label: 'Balanced', icons: ['drop-half-bottom'] },
-    { value: 'humid', label: 'Humid', icons: ['drop'] }
+    { value: 'dry', label: 'Dry', icons: [DropletOff] },
+    { value: 'balanced', label: 'Balanced', icons: [Droplets] },
+    { value: 'humid', label: 'Humid', icons: [Droplets, Droplets] }
   ];
 
   const sunshineOptions = [
-    { value: 'mostly_sunny', label: 'Mostly Sunny', icons: ['sun'] },
-    { value: 'balanced', label: 'Balanced', icons: ['cloud-sun'] },
-    { value: 'often_cloudy', label: 'Often Cloudy', icons: ['cloud'] }
+    { value: 'mostly_sunny', label: 'Often Sunny', icons: [Sun] },
+    { value: 'balanced', label: 'Balanced', icons: [CloudSun] },
+    { value: 'often_cloudy', label: 'Less Sunny', icons: [Cloud] }
   ];
 
   const precipitationOptions = [
-    { value: 'mostly_dry', label: 'Mostly Dry', icons: ['sun'] },
-    { value: 'balanced', label: 'Balanced', icons: ['cloud-sun'] },
-    { value: 'often_rainy', label: 'Often Rainy', icons: ['cloud-rain'] }
+    { value: 'mostly_dry', label: 'Mostly Dry', icons: [Sun] },
+    { value: 'balanced', label: 'Balanced', icons: [CloudSun] },
+    { value: 'often_rainy', label: 'Often Rainy', icons: [CloudRain] }
   ];
 
-  // 08JUN25: Reusable icon rendering function for multiple icons support
-  const renderIcons = (iconsArray, size = 'xl') => {
+  // Updated 09JUN25: Reusable Lucide icon rendering function for multiple icons support
+  const renderIcons = (iconsArray, size = 20) => {
     return (
       <div className="flex items-center justify-center space-x-1">
-        {iconsArray.map((iconName, index) => (
-          <i 
+        {iconsArray.map((IconComponent, index) => (
+          <IconComponent 
             key={index} 
-            className={`ph ph-${iconName} text-${size === 'xl' ? 'xl' : 'lg'} sm:text-${size === 'xl' ? '2xl' : 'xl'} ${uiConfig.colors.heading}`}
+            size={size} 
+            className="text-gray-600 dark:text-gray-400"
           />
         ))}
       </div>
@@ -217,64 +228,41 @@ export default function OnboardingClimate() {
   };
 
   return (
-    // 08JUN25: Mobile-first page container using uiConfig design tokens - matching OnboardingRegion pattern
-    <div className={`${uiConfig.layout.width.containerWide} ${uiConfig.layout.spacing.section} ${uiConfig.colors.page} min-h-screen ${uiConfig.font.family}`}>
-      
-      {/* 08JUN25: Header section with mobile-responsive design - matching OnboardingRegion */}
-      <div className="mb-6 sm:mb-8">
-        <h1 className={`${uiConfig.font.size['2xl']} sm:${uiConfig.font.size['3xl']} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading} mb-2`}>
-          Climate Preferences
-        </h1>
+    // Updated 09JUN25: Mobile-first page container with emerald theme
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="max-w-md mx-auto">
         
-        {/* 08JUN25: Progress bar with uiConfig styling - Step 3 of 5 */}
-        <div className={`w-full ${uiConfig.progress.track} ${uiConfig.layout.radius.full} h-2 mb-4`}>
-          <div className={`${uiConfig.progress.fill} h-2 ${uiConfig.layout.radius.full} ${uiConfig.animation.transition}`} 
-               style={{ width: '60%' }}>
-          </div>
-        </div>
-        <p className={`${uiConfig.colors.hint} ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base}`}>
-          Step 3 of 5: Climate Preferences
-        </p>
-      </div>
+        {/* Step Navigation - Added 09JUN25: New 7-step navigation component */}
+        <OnboardingStepNavigation 
+          currentStep="climate_preferences"
+          completedSteps={progress.completedSteps}
+          className="mb-8"
+        />
 
-      {/* 08JUN25: Main content area with form */}
-      <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.xl} ${uiConfig.layout.shadow.sm} ${uiConfig.colors.borderLight} border p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8`}>
-        
-        {/* 08JUN25: Description section */}
-        <div className="text-center mb-6 sm:mb-8">
-          <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-scout-accent-100 dark:bg-scout-accent-900/20 ${uiConfig.layout.radius.full} mb-3 sm:mb-4`}>
-            <svg className={`${uiConfig.icons.size.lg} sm:${uiConfig.icons.size.xl} text-scout-accent-600 dark:text-scout-accent-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-            </svg>
-          </div>
-          <p className={`${uiConfig.colors.body} ${uiConfig.font.size.base} sm:${uiConfig.font.size.lg} px-2`}>
-            Select your climate preferences you'd enjoy. Multiple choices are allowed.
-          </p>
-        </div>
+        {/* Header section removed - 09JUN25: Avoiding duplicate headings */}
 
-        {/* 08JUN25: Form sections with preserved functionality */}
-        <div className="space-y-6 sm:space-y-8">
+        {/* Updated 09JUN25: Form with emerald theme and preserved functionality */}
+        <form onSubmit={handleSubmit} className="space-y-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           
-          {/* 08JUN25: Summer Climate section */}
+          {/* Updated 09JUN25: Summer Climate section with Lucide icons */}
           <div>
-            <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-3`}>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Summer Climate
             </label>
-            {/* 08JUN25: Mobile-first grid - 2 cols on mobile, 3 on larger screens */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {summerOptions.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => handleClimateToggle('summer', option.value)}
-                  className={`flex flex-col items-center justify-center p-3 sm:p-4 ${uiConfig.layout.radius.lg} border ${uiConfig.animation.transition} ${
+                  className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200 ${
                     formData.summer_climate_preference?.includes(option.value)
-                      ? `border-scout-accent-600 bg-scout-accent-50 dark:bg-scout-accent-900/20 ${uiConfig.layout.shadow.md}`
-                      : `${uiConfig.colors.border} ${uiConfig.states.hover}`
+                      ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-emerald-300 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10'
                   }`}
                 >
-                  {renderIcons(option.icons)}
-                  <span className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} text-center ${uiConfig.colors.heading} mt-1`}>
+                  {renderIcons(option.icons, 24)}
+                  <span className="text-sm font-medium text-center text-gray-800 dark:text-gray-200 mt-2">
                     {option.label}
                   </span>
                 </button>
@@ -282,25 +270,25 @@ export default function OnboardingClimate() {
             </div>
           </div>
 
-          {/* 08JUN25: Winter Climate section */}
+          {/* Updated 09JUN25: Winter Climate section with Lucide icons */}
           <div>
-            <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-3`}>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Winter Climate
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {winterOptions.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => handleClimateToggle('winter', option.value)}
-                  className={`flex flex-col items-center justify-center p-3 sm:p-4 ${uiConfig.layout.radius.lg} border ${uiConfig.animation.transition} ${
+                  className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200 ${
                     formData.winter_climate_preference?.includes(option.value)
-                      ? `border-scout-accent-600 bg-scout-accent-50 dark:bg-scout-accent-900/20 ${uiConfig.layout.shadow.md}`
-                      : `${uiConfig.colors.border} ${uiConfig.states.hover}`
+                      ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-emerald-300 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10'
                   }`}
                 >
-                  {renderIcons(option.icons)}
-                  <span className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} text-center ${uiConfig.colors.heading} mt-1`}>
+                  {renderIcons(option.icons, 24)}
+                  <span className="text-sm font-medium text-center text-gray-800 dark:text-gray-200 mt-2">
                     {option.label}
                   </span>
                 </button>
@@ -308,25 +296,25 @@ export default function OnboardingClimate() {
             </div>
           </div>
 
-          {/* 08JUN25: Humidity section */}
+          {/* Updated 09JUN25: Humidity section with Lucide icons */}
           <div>
-            <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-3`}>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Humidity
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {humidityOptions.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => handleMultiChoiceToggle('humidity_level', option.value)}
-                  className={`flex flex-col items-center justify-center p-3 sm:p-4 ${uiConfig.layout.radius.lg} border ${uiConfig.animation.transition} ${
+                  className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200 ${
                     formData.humidity_level?.includes(option.value)
-                      ? `border-scout-accent-600 bg-scout-accent-50 dark:bg-scout-accent-900/20 ${uiConfig.layout.shadow.md}`
-                      : `${uiConfig.colors.border} ${uiConfig.states.hover}`
+                      ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-emerald-300 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10'
                   }`}
                 >
-                  {renderIcons(option.icons)}
-                  <span className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} text-center ${uiConfig.colors.heading} mt-1`}>
+                  {renderIcons(option.icons, 24)}
+                  <span className="text-sm font-medium text-center text-gray-800 dark:text-gray-200 mt-2">
                     {option.label}
                   </span>
                 </button>
@@ -334,25 +322,25 @@ export default function OnboardingClimate() {
             </div>
           </div>
 
-          {/* 08JUN25: Sunshine section */}
+          {/* Updated 09JUN25: Sunshine section with Lucide icons */}
           <div>
-            <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-3`}>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Sunshine
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {sunshineOptions.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => handleMultiChoiceToggle('sunshine', option.value)}
-                  className={`flex flex-col items-center justify-center p-3 sm:p-4 ${uiConfig.layout.radius.lg} border ${uiConfig.animation.transition} ${
+                  className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200 ${
                     formData.sunshine?.includes(option.value)
-                      ? `border-scout-accent-600 bg-scout-accent-50 dark:bg-scout-accent-900/20 ${uiConfig.layout.shadow.md}`
-                      : `${uiConfig.colors.border} ${uiConfig.states.hover}`
+                      ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-emerald-300 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10'
                   }`}
                 >
-                  {renderIcons(option.icons)}
-                  <span className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} text-center ${uiConfig.colors.heading} mt-1`}>
+                  {renderIcons(option.icons, 24)}
+                  <span className="text-sm font-medium text-center text-gray-800 dark:text-gray-200 mt-2">
                     {option.label}
                   </span>
                 </button>
@@ -360,25 +348,25 @@ export default function OnboardingClimate() {
             </div>
           </div>
 
-          {/* 08JUN25: Precipitation section */}
+          {/* Updated 09JUN25: Precipitation section with Lucide icons */}
           <div>
-            <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-3`}>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Precipitation
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {precipitationOptions.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => handleMultiChoiceToggle('precipitation', option.value)}
-                  className={`flex flex-col items-center justify-center p-3 sm:p-4 ${uiConfig.layout.radius.lg} border ${uiConfig.animation.transition} ${
+                  className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200 ${
                     formData.precipitation?.includes(option.value)
-                      ? `border-scout-accent-600 bg-scout-accent-50 dark:bg-scout-accent-900/20 ${uiConfig.layout.shadow.md}`
-                      : `${uiConfig.colors.border} ${uiConfig.states.hover}`
+                      ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-emerald-300 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10'
                   }`}
                 >
-                  {renderIcons(option.icons)}
-                  <span className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} text-center ${uiConfig.colors.heading} mt-1`}>
+                  {renderIcons(option.icons, 24)}
+                  <span className="text-sm font-medium text-center text-gray-800 dark:text-gray-200 mt-2">
                     {option.label}
                   </span>
                 </button>
@@ -386,16 +374,16 @@ export default function OnboardingClimate() {
             </div>
           </div>
 
-          {/* 08JUN25: Seasonal Preference dropdown with uiConfig styling */}
+          {/* Updated 09JUN25: Seasonal Preference dropdown with emerald styling */}
           <div>
-            <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Seasonal Preference
             </label>
             <select
               name="seasonal_preference"
               value={formData.seasonal_preference}
               onChange={handleInputChange}
-              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all duration-200"
             >
               <option value="Optional">Optional</option>
               <option value="all_seasons">I enjoy all seasons equally</option>
@@ -403,27 +391,28 @@ export default function OnboardingClimate() {
               <option value="winter_focused">I prefer cool seasons (winter)</option>
             </select>
           </div>
-        </div>
-      </div>
 
-      {/* 08JUN25: Navigation section matching OnboardingRegion pattern */}
-      <div className={`flex flex-col sm:flex-row sm:justify-between sm:items-center pt-6 border-t ${uiConfig.colors.borderLight} space-y-4 sm:space-y-0`}>
-        <button 
-          onClick={handlePrevious}
-          className={`w-full sm:w-auto px-4 sm:px-6 py-3 border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.heading} ${uiConfig.colors.input} cursor-pointer ${uiConfig.states.hover} ${uiConfig.animation.transition} order-2 sm:order-1`}
-        >
-          Previous Step
-        </button>
-        <div className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint} text-center order-1 sm:order-2`}>
-          Step 3 of 5
-        </div>
-        <button 
-          onClick={handleNext}
-          disabled={loading}
-          className={`w-full sm:w-auto px-4 sm:px-6 py-3 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.lg} border-none cursor-pointer ${uiConfig.animation.transition} ${uiConfig.colors.focusRing} focus:ring-offset-2 order-3 ${loading ? uiConfig.states.disabled : ''}`}
-        >
-          {loading ? 'Saving...' : 'Continue to Step 4'}
-        </button>
+          {/* Bottom Navigation - Added 09JUN25: Professional navigation buttons */}
+          <div className="flex justify-between items-center pt-8 mt-8 border-t border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 transition-all duration-200"
+            >
+              <ChevronLeft size={16} className="mr-2" />
+              Back
+            </button>
+            
+            <button
+              type="submit"
+              disabled={loading}
+              className="inline-flex items-center px-6 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-400 hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            >
+              {loading ? 'Saving...' : 'Continue'}
+              {!loading && <ChevronRight size={16} className="ml-2" />}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
