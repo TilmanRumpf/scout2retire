@@ -1,5 +1,6 @@
-// Scout2Retire Design Tokens & UI Configuration - Updated 09JUN25
-// UPDATED: Added phosphor icons for all 7 onboarding steps
+// src/styles/uiConfig.ts
+// Scout2Retire Design Tokens & UI Configuration - Updated 10JUN25
+// Fixed: Using scout-accent colors to match Tailwind config
 
 export const colors = {
   // Backgrounds
@@ -7,50 +8,50 @@ export const colors = {
   card: 'bg-white dark:bg-gray-800',
   modal: 'bg-white dark:bg-gray-800',
   input: 'bg-white dark:bg-gray-700',
-  tabActive: 'bg-sage-600 text-white',
-  tabInactive: 'bg-white dark:bg-gray-700 text-sage-600 dark:text-white',
+  tabActive: 'bg-scout-accent-600 text-white',
+  tabInactive: 'bg-white dark:bg-gray-700 text-scout-accent-600 dark:text-white',
 
   // Text
   heading: 'text-gray-800 dark:text-white',
   body: 'text-gray-700 dark:text-gray-300',
   hint: 'text-gray-500 dark:text-gray-400',
   muted: 'text-gray-400 dark:text-gray-500',
-  accent: 'text-sage-600',
+  accent: 'text-scout-accent-600',
   error: 'text-red-600 dark:text-red-400',
-  success: 'text-sage-600 dark:text-sage-400',
+  success: 'text-scout-accent-600 dark:text-scout-accent-400',
 
-  // Border - Updated 09JUN25: Using sage green accents
+  // Border - Updated 10JUN25: Using scout-accent
   border: 'border-gray-300 dark:border-gray-600',
   borderLight: 'border-gray-200 dark:border-gray-700',
-  borderActive: 'border-sage-600',
+  borderActive: 'border-scout-accent-600',
   borderDanger: 'border-red-600',
-  borderSuccess: 'border-sage-400',
+  borderSuccess: 'border-scout-accent-400',
 
-  // Buttons - Updated 09JUN25: Sage green theme
-  btnPrimary: 'bg-sage-600 text-white hover:bg-sage-700 transition-colors',
-  btnSecondary: 'bg-sage-100 dark:bg-sage-800 text-sage-700 dark:text-sage-200 hover:bg-sage-200 dark:hover:bg-sage-700 transition-colors',
+  // Buttons - Updated 10JUN25: Scout-accent (sage green) theme
+  btnPrimary: 'bg-scout-accent-300 text-white hover:bg-scout-accent-400 transition-colors',
+  btnSecondary: 'bg-scout-accent-100 dark:bg-scout-accent-800 text-scout-accent-700 dark:text-scout-accent-200 hover:bg-scout-accent-200 dark:hover:bg-scout-accent-700 transition-colors',
   btnDanger: 'bg-red-600 hover:bg-red-700 text-white transition-colors',
   btnNeutral: 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors',
 
-  // Toggles - Updated 09JUN25: Sage green
-  toggleOn: 'bg-sage-600',
+  // Toggles - Updated 10JUN25: Scout-accent
+  toggleOn: 'bg-scout-accent-600',
   toggleOff: 'bg-gray-300 dark:bg-gray-600',
   toggleKnob: 'bg-white dark:bg-gray-200',
 
-  // Match badges - Updated 09JUN25: Using sage green palette
-  badge: 'bg-sage-100 text-sage-800 dark:bg-sage-900 dark:text-sage-200',
-  matchStrong: 'bg-sage-600 text-white',
+  // Match badges - Updated 10JUN25: Using scout-accent palette
+  badge: 'bg-scout-accent-100 text-scout-accent-800 dark:bg-scout-accent-900 dark:text-scout-accent-200',
+  matchStrong: 'bg-scout-accent-600 text-white',
   matchMedium: 'bg-yellow-500 text-white',
   matchLow: 'bg-red-500 text-white',
 
-  // Status indicators - Updated 09JUN25: Using sage green
-  statusSuccess: 'bg-sage-100 text-sage-800 dark:bg-sage-900 dark:text-sage-200',
+  // Status indicators - Updated 10JUN25: Using scout-accent
+  statusSuccess: 'bg-scout-accent-100 text-scout-accent-800 dark:bg-scout-accent-900 dark:text-scout-accent-200',
   statusWarning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
   statusError: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
   statusInfo: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
 
-  // Focus states - Updated 09JUN25: Sage green focus rings
-  focusRing: 'focus:ring-2 focus:ring-sage-400 focus:ring-opacity-75',
+  // Focus states - Updated 10JUN25: Scout-accent focus rings
+  focusRing: 'focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75',
   focusRingDanger: 'focus:ring-2 focus:ring-red-400 focus:ring-opacity-75',
 };
 
@@ -115,7 +116,7 @@ export const animation = {
 };
 
 export const icons = {
-  default: 'phosphor-react', // All icons pulled from this set
+  default: 'lucide-react', // Using lucide as requested
   size: {
     xs: 'w-3 h-3',
     sm: 'w-4 h-4', 
@@ -125,7 +126,7 @@ export const icons = {
   }
 };
 
-// Step Navigation Patterns - Updated 09JUN25: Added phosphor icons for all 7 steps
+// Step Navigation Patterns - Updated 10JUN25: Aligned with actual flow
 export const stepNavigation = {
   styles: {
     // Container styles
@@ -136,22 +137,22 @@ export const stepNavigation = {
     // Icon styles
     icon: {
       base: 'w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200',
-      current: 'bg-sage-600 text-white shadow-lg scale-110',
-      completed: 'bg-sage-500 text-white hover:bg-sage-600 cursor-pointer hover:scale-105',
+      current: 'bg-scout-accent-600 text-white shadow-lg scale-110',
+      completed: 'bg-scout-accent-500 text-white hover:bg-scout-accent-600 cursor-pointer hover:scale-105',
       future: 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
     },
     
     // Label styles
     labels: {
       base: 'text-xs text-center w-12',
-      current: 'text-sage-600 dark:text-sage-400 font-semibold',
-      completed: 'text-sage-500 dark:text-sage-400',
+      current: 'text-scout-accent-600 dark:text-scout-accent-400 font-semibold',
+      completed: 'text-scout-accent-500 dark:text-scout-accent-400',
       future: 'text-gray-400 dark:text-gray-500'
     }
   },
   
   // Different step configurations for different parts of app
-  // UPDATED 09JUN25: Added phosphor icons for all 7 onboarding steps
+  // Updated 10JUN25: Aligned with actual 6-step onboarding flow
   variants: {
     onboarding: {
       steps: [
@@ -159,43 +160,37 @@ export const stepNavigation = {
           key: 'current_status', 
           label: 'Current Status', 
           path: '/onboarding/current-status',
-          icon: 'map-pin'
+          icon: 'MapPin'
         },
         { 
           key: 'region_preferences', 
           label: 'Region', 
           path: '/onboarding/region',
-          icon: 'globe'
+          icon: 'Globe'
         },
         { 
           key: 'climate_preferences', 
           label: 'Climate', 
           path: '/onboarding/climate',
-          icon: 'cloud-sun'
+          icon: 'CloudSun'
         },
         { 
           key: 'culture_preferences', 
           label: 'Culture', 
           path: '/onboarding/culture',
-          icon: 'users-three'
+          icon: 'Users'
         },
         { 
           key: 'hobbies', 
           label: 'Hobbies', 
           path: '/onboarding/hobbies',
-          icon: 'currency-dollar'
-        },
-        { 
-          key: 'administration', 
-          label: 'Healthcare', 
-          path: '/onboarding/healthcare',
-          icon: 'ambulance'
+          icon: 'Heart'
         },
         { 
           key: 'budget', 
-          label: 'Administration', 
-          path: '/onboarding/administration',
-          icon: 'building-office'
+          label: 'Costs', 
+          path: '/onboarding/costs',
+          icon: 'DollarSign'
         }
       ]
     },
@@ -220,32 +215,32 @@ export const stepNavigation = {
   }
 };
 
-// Bottom Navigation Patterns - Added 09JUN25
+// Bottom Navigation Patterns - Added 10JUN25
 export const bottomNavigation = {
   styles: {
     container: 'flex justify-between items-center pt-8 mt-8 border-t border-gray-200 dark:border-gray-700',
-    backButton: 'inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:ring-offset-2 transition-all duration-200',
-    nextButton: 'inline-flex items-center px-6 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-sage-600 hover:bg-sage-700 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
+    backButton: 'inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2 transition-all duration-200',
+    nextButton: 'inline-flex items-center px-6 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-scout-accent-300 hover:bg-scout-accent-400 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
   }
 };
 
-// Enhanced Form Components - Updated 09JUN25: Match screenshot design
+// Enhanced Form Components - Updated 10JUN25: Match design system
 export const components = {
-  // Form inputs - Updated with sage green theme
-  input: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-sage-400 focus:ring-opacity-75 focus:border-sage-600 transition-all duration-200',
-  textarea: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-sage-400 focus:ring-opacity-75 focus:border-sage-600 resize-vertical transition-all duration-200',
-  select: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-sage-400 focus:ring-opacity-75 focus:border-sage-600 transition-all duration-200',
+  // Form inputs - Updated with scout-accent theme
+  input: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent-600 transition-all duration-200',
+  textarea: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent-600 resize-vertical transition-all duration-200',
+  select: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent-600 transition-all duration-200',
   
-  // Checkboxes and radios - Updated 09JUN25: Sage green with proper styling
-  checkbox: 'h-4 w-4 text-sage-600 focus:ring-sage-500 focus:ring-offset-0 border-2 border-gray-300 dark:border-gray-600 rounded transition-all duration-200',
-  radio: 'h-4 w-4 text-sage-600 focus:ring-sage-500 focus:ring-offset-0 border-2 border-gray-300 dark:border-gray-600 transition-all duration-200',
+  // Checkboxes and radios - Updated 10JUN25: Scout-accent with proper styling
+  checkbox: 'h-4 w-4 text-scout-accent-600 focus:ring-scout-accent-500 focus:ring-offset-0 border-2 border-gray-300 dark:border-gray-600 rounded transition-all duration-200',
+  radio: 'h-4 w-4 text-scout-accent-600 focus:ring-scout-accent-500 focus:ring-offset-0 border-2 border-gray-300 dark:border-gray-600 transition-all duration-200',
   
-  // Range sliders - Updated 09JUN25: Beautiful sage green sliders matching screenshot
+  // Range sliders - Updated 10JUN25: Beautiful scout-accent sliders
   slider: {
     container: 'w-full mb-4',
     track: 'w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none cursor-pointer',
-    fill: 'h-2 bg-sage-600 rounded-full',
-    thumb: 'appearance-none h-5 w-5 bg-sage-600 rounded-full cursor-pointer shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sage-400 focus:ring-opacity-75',
+    fill: 'h-2 bg-scout-accent-600 rounded-full',
+    thumb: 'appearance-none h-5 w-5 bg-scout-accent-600 rounded-full cursor-pointer shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75',
     // CSS for webkit browsers
     webkit: `
       .slider::-webkit-slider-track {
@@ -260,7 +255,7 @@ export const components = {
         appearance: none;
         height: 20px;
         width: 20px;
-        background: #10b981;
+        background: #8fbc8f;
         border-radius: 50%;
         cursor: pointer;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -273,31 +268,31 @@ export const components = {
     `
   },
   
-  // Toggle switches - Updated 09JUN25: Sage green toggles
-  toggle: 'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-sage-500 focus:ring-offset-2',
+  // Toggle switches - Updated 10JUN25: Scout-accent toggles
+  toggle: 'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2',
   toggleKnob: 'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200',
-  toggleOn: 'bg-sage-600',
+  toggleOn: 'bg-scout-accent-600',
   toggleOff: 'bg-gray-300 dark:bg-gray-600',
   
-  // Button variants - Updated 09JUN25: Sage green theme
+  // Button variants - Updated 10JUN25: Scout-accent theme with 300 as primary
   buttonVariants: {
-    primary: 'py-3 px-4 rounded-lg border-2 border-transparent text-sm font-medium text-center transition-all duration-200 bg-sage-600 text-white hover:bg-sage-700 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:ring-offset-2',
-    secondary: 'py-3 px-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-sm font-medium text-center transition-all duration-200 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-sage-300 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:ring-offset-2',
-    selected: 'py-3 px-4 rounded-lg border-2 border-sage-600 text-sm font-medium text-center transition-all duration-200 bg-sage-50 dark:bg-sage-900/20 text-sage-700 dark:text-sage-300',
-    unselected: 'py-3 px-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 text-sm font-medium text-center transition-all duration-200 text-gray-700 dark:text-gray-300 hover:border-sage-300 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:ring-offset-2'
+    primary: 'py-3 px-4 rounded-lg border-2 border-transparent text-sm font-medium text-center transition-all duration-200 bg-scout-accent-300 text-white hover:bg-scout-accent-400 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2',
+    secondary: 'py-3 px-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-sm font-medium text-center transition-all duration-200 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-scout-accent-300 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2',
+    selected: 'py-3 px-4 rounded-lg border-2 border-scout-accent-600 text-sm font-medium text-center transition-all duration-200 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300',
+    unselected: 'py-3 px-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 text-sm font-medium text-center transition-all duration-200 text-gray-700 dark:text-gray-300 hover:border-scout-accent-300 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2'
   },
   
   // File inputs
-  fileInput: 'block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sage-50 file:text-sage-700 hover:file:bg-sage-100',
+  fileInput: 'block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-scout-accent-50 file:text-scout-accent-700 hover:file:bg-scout-accent-100',
   
   // Search inputs
-  searchInput: 'w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-sage-400 focus:ring-opacity-75 focus:border-sage-600',
+  searchInput: 'w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent-600',
   
   // Form groups
   formGroup: 'mb-6',
   formGroupCompact: 'mb-4',
   
-  // Labels - Updated 09JUN25: Better spacing and typography
+  // Labels - Updated 10JUN25: Better spacing and typography
   label: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3',
   labelRequired: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 after:content-["*"] after:ml-0.5 after:text-red-500',
   
@@ -307,8 +302,8 @@ export const components = {
   
   // Buttons
   button: 'inline-flex items-center px-4 py-2 border border-transparent rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors',
-  buttonPrimary: 'inline-flex items-center px-4 py-2 border border-transparent rounded-md font-medium text-white bg-sage-600 hover:bg-sage-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sage-500 transition-colors',
-  buttonSecondary: 'inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sage-500 transition-colors',
+  buttonPrimary: 'inline-flex items-center px-4 py-2 border border-transparent rounded-md font-medium text-white bg-scout-accent-300 hover:bg-scout-accent-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-scout-accent-500 transition-colors',
+  buttonSecondary: 'inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-scout-accent-500 transition-colors',
   
   // Cards
   card: 'bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg',
@@ -324,7 +319,7 @@ export const components = {
   // Navigation
   nav: 'bg-white dark:bg-gray-800 shadow',
   navItem: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-  navItemActive: 'text-sage-600 bg-sage-100 dark:bg-sage-900 px-3 py-2 rounded-md text-sm font-medium',
+  navItemActive: 'text-scout-accent-600 bg-scout-accent-100 dark:bg-scout-accent-900 px-3 py-2 rounded-md text-sm font-medium',
   
   // Tables
   table: 'min-w-full divide-y divide-gray-200 dark:divide-gray-700',
@@ -335,9 +330,9 @@ export const components = {
   tableCell: 'px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100',
 };
 
-// Financial data display colors - Updated 09JUN25: Sage green theme
+// Financial data display colors - Updated 10JUN25: Scout-accent theme
 export const financial = {
-  positive: 'text-sage-600 dark:text-sage-400',
+  positive: 'text-scout-accent-600 dark:text-scout-accent-400',
   negative: 'text-red-600 dark:text-red-400',
   neutral: 'text-gray-600 dark:text-gray-400',
   highlight: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
@@ -345,43 +340,52 @@ export const financial = {
   percentage: 'text-sm font-medium',
 };
 
-// Progress bars and score indicators - Updated 09JUN25: Sage green theme
+// Progress bars and score indicators - Updated 10JUN25: Scout-accent theme
 export const progress = {
-  bar: 'bg-sage-200 dark:bg-sage-800',
-  fill: 'bg-sage-600 transition-all duration-300',
+  bar: 'bg-scout-accent-200 dark:bg-scout-accent-800',
+  fill: 'bg-scout-accent-600 transition-all duration-300',
   track: 'bg-gray-200 dark:bg-gray-700',
   low: 'bg-red-400',
   medium: 'bg-yellow-400', 
-  high: 'bg-sage-600',
-  complete: 'bg-sage-600',
+  high: 'bg-scout-accent-600',
+  complete: 'bg-scout-accent-600',
 };
 
-// Form validation states - Updated 09JUN25: Sage green theme
+// Form validation states - Updated 10JUN25: Scout-accent theme
 export const validation = {
-  valid: 'border-sage-400 bg-sage-50 dark:bg-sage-950 dark:border-sage-600',
+  valid: 'border-scout-accent-400 bg-scout-accent-50 dark:bg-scout-accent-950 dark:border-scout-accent-600',
   invalid: 'border-red-400 bg-red-50 dark:bg-red-950 dark:border-red-600',
   warning: 'border-yellow-400 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-600',
   neutral: 'border-gray-300 dark:border-gray-600',
 };
 
-// Notification system - Updated 09JUN25: Sage green theme
+// Notification system - Updated 10JUN25: Scout-accent theme
 export const notifications = {
-  success: 'bg-sage-100 border-sage-400 text-sage-800 dark:bg-sage-900 dark:border-sage-600 dark:text-sage-200',
+  success: 'bg-scout-accent-100 border-scout-accent-400 text-scout-accent-800 dark:bg-scout-accent-900 dark:border-scout-accent-600 dark:text-scout-accent-200',
   error: 'bg-red-100 border-red-400 text-red-800 dark:bg-red-900 dark:border-red-600 dark:text-red-200',
   warning: 'bg-yellow-100 border-yellow-400 text-yellow-800 dark:bg-yellow-900 dark:border-yellow-600 dark:text-yellow-200',
   info: 'bg-blue-100 border-blue-400 text-blue-800 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-200',
 };
 
-// Interactive component states - Updated 09JUN25: Sage green theme
+// Interactive component states - Updated 10JUN25: Scout-accent theme
 export const states = {
   disabled: 'opacity-50 cursor-not-allowed',
   loading: 'opacity-75 cursor-wait animate-pulse',
-  active: 'bg-sage-100 border-sage-400 dark:bg-sage-800 dark:border-sage-600',
+  active: 'bg-scout-accent-100 border-scout-accent-400 dark:bg-scout-accent-800 dark:border-scout-accent-600',
   hover: 'hover:bg-gray-50 dark:hover:bg-gray-700',
-  selected: 'bg-sage-600 text-white',
+  selected: 'bg-scout-accent-600 text-white',
 };
 
-// Internationalization utilities (unchanged - working well)
+// Responsive breakpoints
+export const responsive = {
+  sm: 'sm:',
+  md: 'md:',
+  lg: 'lg:',
+  xl: 'xl:',
+  '2xl': '2xl:'
+};
+
+// Internationalization utilities
 export const i18n = {
   // Auto-detect user's locale from browser/device
   getUserLocale: () => {
@@ -471,18 +475,18 @@ export const i18n = {
       short: { 
         year: 'numeric' as const, 
         month: 'short' as const, 
-        day: 'numeric' as const 
+        day: 'numeric' as const
       },
       medium: { 
         year: 'numeric' as const, 
         month: 'long' as const, 
-        day: 'numeric' as const 
+        day: 'numeric' as const
       },
       long: { 
         weekday: 'long' as const,
         year: 'numeric' as const, 
         month: 'long' as const, 
-        day: 'numeric' as const 
+        day: 'numeric' as const
       }
     };
     
@@ -518,22 +522,23 @@ export const uiConfig = {
   layout,
   animation,
   icons,
-  stepNavigation, // Updated 09JUN25: Added phosphor icons to all 7 steps
-  bottomNavigation, // Added 09JUN25: Bottom navigation patterns
-  components, // Updated 09JUN25: Enhanced form styling
+  stepNavigation, // Updated 10JUN25: Fixed step definitions
+  bottomNavigation, // Added 10JUN25: Bottom navigation patterns
+  components, // Updated 10JUN25: Enhanced form styling
   financial,
   progress,
   validation,
   notifications,
   states,
+  responsive,
   i18n,
-  // Brand-specific configurations - Updated 09JUN25: Using sage green
+  // Brand-specific configurations - Updated 10JUN25: Using scout-accent
   brand: {
-    primary: 'sage-600',
-    sage: {
-      light: 'sage-200',
-      medium: 'sage-400',
-      dark: 'sage-600',
+    primary: 'scout-accent-300', // Your main brand color #8fbc8f
+    accent: {
+      light: 'scout-accent-200',
+      medium: 'scout-accent-400',
+      dark: 'scout-accent-600',
     }
   }
 } as const;
@@ -634,7 +639,7 @@ export const combineClasses = (...classes: (string | undefined | null | false)[]
  * @param breakpoint - Responsive breakpoint ('sm', 'md', 'lg', 'xl')
  * @returns Responsive class string
  */
-export const getResponsiveClass = (baseClass: string, breakpoint: keyof typeof uiConfig.responsive): string => {
+export const getResponsiveClass = (baseClass: string, breakpoint: keyof typeof responsive): string => {
   return `${uiConfig.responsive[breakpoint]}${baseClass}`;
 };
 
