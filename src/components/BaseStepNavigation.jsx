@@ -1,47 +1,47 @@
 import { useNavigate } from 'react-router-dom';
 import { uiConfig } from '../styles/uiConfig';
-// Added 09JUN25: Proper Phosphor React icons as specified in uiConfig
+// Updated 09JUN25: Converted from Phosphor React to Lucide React icons
 import { 
   User, 
   Globe, 
   Sun, 
   Users, 
   Target, 
-  ClipboardText, 
-  CurrencyDollar,
+  ClipboardList, 
+  DollarSign,
   Check,
-  Scales,
-  ChartBar,
+  Scale,
+  BarChart3,
   Star,
   MapPin,
   Heart,
   Calculator,
-  ListBullets
-} from 'phosphor-react';
+  List
+} from 'lucide-react';
 
-// Icon mapping - Updated 09JUN25: Using Phosphor React icons consistently
+// Icon mapping - Updated 09JUN25: Using Lucide React icons consistently
 const IconMap = {
   user: User,
   globe: Globe,
   sun: Sun,
   users: Users,
   target: Target,
-  clipboard: ClipboardText,
-  dollar: CurrencyDollar,
+  clipboard: ClipboardList,
+  dollar: DollarSign,
   check: Check,
-  scales: Scales,
-  chart: ChartBar,
+  scales: Scale,
+  chart: BarChart3,
   star: Star,
   map: MapPin,
   heart: Heart,
   calculator: Calculator,
-  list: ListBullets
+  list: List
 };
 
 /**
  * BaseStepNavigation - Reusable step navigation component
  * Added 09JUN25: Centralized step navigation system following industry best practices
- * Updated 09JUN25: Uses proper Phosphor React icons
+ * Updated 09JUN25: Converted to Lucide React icons
  */
 export const BaseStepNavigation = ({ 
   variant = 'onboarding', 
@@ -77,7 +77,8 @@ export const BaseStepNavigation = ({
   const getIconForStep = (step) => {
     if (typeof step.icon === 'string' && IconMap[step.icon]) {
       const IconComponent = IconMap[step.icon];
-      return <IconComponent size={20} weight="fill" />;
+      // Updated 09JUN25: Lucide React uses size and strokeWidth instead of weight
+      return <IconComponent size={20} strokeWidth={2} />;
     }
     return step.icon; // Custom JSX icon
   };

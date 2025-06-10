@@ -2,14 +2,22 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../../utils/authUtils';
 import { getOnboardingProgress } from '../../utils/onboardingUtils';
-import { BaseStepNavigation } from '../../components/BaseStepNavigation';
-import { uiConfig } from '../../styles/uiConfig';
+// Updated 09JUN25: Using Lucide React icons for professional 7-step onboarding
+import { 
+  MapPin, 
+  Globe, 
+  CloudSun, 
+  Users, 
+  DollarSign, 
+  Heart, 
+  Building
+} from 'lucide-react';
 
 export default function OnboardingStatus() {
   const [progress, setProgress] = useState({
     completedSteps: {},
     completedCount: 0,
-    totalSteps: 7, // Updated 09JUN25: Changed from 6 to 7 for Administration step
+    totalSteps: 7, // Updated 09JUN25: Changed from 6 to 7 steps
     percentage: 0
   });
   const [loading, setLoading] = useState(true);
@@ -44,15 +52,50 @@ export default function OnboardingStatus() {
     fetchProgress();
   }, [navigate]);
 
-  // FIXED 09JUN25: Hardcoded clean step list - NO FUCKING ICONS FROM uiConfig
+  // Updated 09JUN25: Updated to 7 steps with Lucide React icons and proper labels
   const steps = [
-    { key: 'current_status', label: 'Current Status', path: '/onboarding/current-status' },
-    { key: 'region', label: 'Region Preferences', path: '/onboarding/region' },
-    { key: 'climate', label: 'Climate Preferences', path: '/onboarding/climate' },
-    { key: 'lifestyle', label: 'Lifestyle Preferences', path: '/onboarding/lifestyle' },
-    { key: 'financial', label: 'Financial Requirements', path: '/onboarding/financial' },
-    { key: 'healthcare', label: 'Healthcare Needs', path: '/onboarding/healthcare' },
-    { key: 'administration', label: 'Administration & Legal', path: '/onboarding/administration' }
+    { 
+      key: 'current_status', 
+      label: 'Current Status', 
+      path: '/onboarding/current-status',
+      icon: MapPin
+    },
+    { 
+      key: 'region_preferences', 
+      label: 'Region Preferences', 
+      path: '/onboarding/region',
+      icon: Globe
+    },
+    { 
+      key: 'climate_preferences', 
+      label: 'Climate Preferences', 
+      path: '/onboarding/climate',
+      icon: CloudSun
+    },
+    { 
+      key: 'culture_preferences', 
+      label: 'Lifestyle Preferences', 
+      path: '/onboarding/culture',
+      icon: Users
+    },
+    { 
+      key: 'hobbies', 
+      label: 'Financial Requirements', 
+      path: '/onboarding/hobbies',
+      icon: DollarSign
+    },
+    { 
+      key: 'healthcare', 
+      label: 'Healthcare Needs', 
+      path: '/onboarding/healthcare',
+      icon: Heart
+    },
+    { 
+      key: 'administration', 
+      label: 'Administration & Legal', 
+      path: '/onboarding/administration',
+      icon: Building
+    }
   ];
 
   // Determine the next incomplete step
@@ -66,145 +109,176 @@ export default function OnboardingStatus() {
     navigate(nextStep.path);
   };
 
+  // Updated 09JUN25: Added function to get step status for styling
+  const getStepStatus = (stepKey, stepIndex) => {
+    const isCompleted = progress.completedSteps[stepKey];
+    const nextIncompleteIndex = steps.findIndex(step => !progress.completedSteps[step.key]);
+    const isCurrent = nextIncompleteIndex === stepIndex;
+    
+    if (isCompleted) return 'completed';
+    if (isCurrent) return 'current';
+    return 'future';
+  };
+
+  // Updated 09JUN25: Added function to get icon styling based on step status
+  const getIconClasses = (status) => {
+    const baseClasses = 'w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer';
+    
+    switch (status) {
+      case 'completed':
+        return `${baseClasses} bg-emerald-100 text-emerald-700 hover:bg-emerald-200 hover:scale-105`;
+      case 'current':
+        return `${baseClasses} bg-emerald-400 text-white shadow-lg scale-110`;
+      case 'future':
+        return `${baseClasses} bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed`;
+      default:
+        return `${baseClasses} bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500`;
+    }
+  };
+
+  // Updated 09JUN25: Added function to get label styling
+  const getLabelClasses = (status) => {
+    const baseClasses = 'text-sm font-medium';
+    
+    switch (status) {
+      case 'completed':
+        return `${baseClasses} text-emerald-600 dark:text-emerald-400`;
+      case 'current':
+        return `${baseClasses} text-emerald-500 dark:text-emerald-400 font-semibold`;
+      case 'future':
+        return `${baseClasses} text-gray-400 dark:text-gray-500`;
+      default:
+        return `${baseClasses} text-gray-600 dark:text-gray-400`;
+    }
+  };
+
   if (loading) {
     return (
-      <div className={`min-h-screen ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
-        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.accent} ${uiConfig.font.weight.semibold}`}>
-          Loading your progress...
-        </div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
+        <div className="animate-pulse text-emerald-600 font-semibold">Loading your progress...</div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen ${uiConfig.colors.page} p-4`}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-md mx-auto">
-        <h1 className={`${uiConfig.font.size['2xl']} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading} mb-6`}>
-          Your Retirement Profile
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6 text-center">Your Retirement Profile</h1>
         
         {error && (
-          <div className={`${uiConfig.notifications.error} p-4 ${uiConfig.layout.radius.lg} mb-6 border`}>
+          <div className="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 p-4 rounded-lg mb-6">
             {error}
           </div>
         )}
-
-        {/* FIXED 09JUN25: REMOVED BaseStepNavigation - NO MORE EMOJI ICONS! */}
         
-        <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-6 mb-6`}>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
-              Your Progress
-            </h2>
-            <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.success}`}>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Your Progress</h2>
+            <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
               {progress.percentage}% Complete
             </span>
           </div>
           
-          {/* Progress Bar - Updated 09JUN25: Using uiConfig progress styling */}
-          <div className={`w-full ${uiConfig.progress.track} rounded-full h-2.5 mb-6`}>
+          {/* Updated 09JUN25: Enhanced progress bar with sage green theme */}
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-8">
             <div 
-              className={`${uiConfig.progress.fill} h-2.5 rounded-full`}
+              className="bg-emerald-400 h-2.5 rounded-full transition-all duration-300" 
               style={{ width: `${progress.percentage}%` }}
             ></div>
           </div>
-          
-          {/* Steps List - FIXED 09JUN25: ABSOLUTELY NO FUCKING ICONS OR EMOJIS */}
-          <ul className="space-y-3 mb-6">
-            {steps.map((step) => {
-              const isCompleted = progress.completedSteps[step.key];
+
+          {/* Updated 09JUN25: New step visualization with Lucide React icons */}
+          <div className="space-y-6 mb-8">
+            {steps.map((step, index) => {
+              const status = getStepStatus(step.key, index);
+              const StepIcon = step.icon;
+              
               return (
-                <li key={step.key} className="flex items-center">
-                  {/* FIXED: Clean status indicator - no more mr-3 bullshit */}
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-4 ${
-                    isCompleted
-                      ? `${uiConfig.colors.matchStrong}`
-                      : `${uiConfig.progress.track} ${uiConfig.colors.muted}`
-                  }`}>
-                    {isCompleted ? (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    ) : (
-                      <span className={`${uiConfig.font.size.xs} ${uiConfig.font.weight.semibold}`}>
-                        {steps.indexOf(step) + 1}
-                      </span>
-                    )}
+                <div key={step.key} className="flex items-center space-x-4">
+                  {/* Step Icon Circle - Updated 09JUN25: No numbers, no checkmarks, icons only */}
+                  <div className="flex-shrink-0 text-center">
+                    <Link
+                      to={step.path}
+                      className={getIconClasses(status)}
+                      onClick={(e) => {
+                        if (status === 'future') {
+                          e.preventDefault();
+                        }
+                      }}
+                    >
+                      <StepIcon size={20} strokeWidth={status === 'current' ? 2.5 : 2} />
+                    </Link>
                   </div>
-                  
-                  <Link
-                    to={step.path}
-                    className={`flex-1 ${uiConfig.font.size.sm} ${
-                      isCompleted
-                        ? uiConfig.colors.heading
-                        : uiConfig.colors.body
-                    } hover:${uiConfig.colors.accent} ${uiConfig.animation.transitionFast}`}
-                  >
-                    <div className="flex flex-col">
-                      <span className={uiConfig.font.weight.medium}>{step.label}</span>
-                      {isCompleted && (
-                        <span className={`${uiConfig.font.size.xs} ${uiConfig.colors.success} mt-1`}>
+
+                  {/* Step Details */}
+                  <div className="flex-1 min-w-0">
+                    <Link
+                      to={step.path}
+                      className={`block ${getLabelClasses(status)} hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors`}
+                      onClick={(e) => {
+                        if (status === 'future') {
+                          e.preventDefault();
+                        }
+                      }}
+                    >
+                      {step.label}
+                      {status === 'completed' && (
+                                                  <span className="ml-2 text-xs text-emerald-600 dark:text-emerald-400">
                           ✓ Completed
                         </span>
                       )}
-                      {/* Description for Administration step - Added 09JUN25 */}
-                      {step.key === 'administration' && !isCompleted && (
-                        <span className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
-                          Health, Safety, Governance, Immigration
-                        </span>
-                      )}
-                    </div>
-                  </Link>
-                </li>
+                    </Link>
+                    
+                    {/* Added 09JUN25: Helper text for specific steps */}
+                    {step.key === 'administration' && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Health, Safety, Governance, Immigration
+                      </p>
+                    )}
+                  </div>
+                </div>
               );
             })}
-          </ul>
+          </div>
           
-          {/* Continue Button - Updated 09JUN25: Using uiConfig button styling */}
+          {/* Updated 09JUN25: Enhanced continue button with sage green theme */}
           <button
             onClick={handleContinue}
-            className={`w-full ${uiConfig.components.buttonPrimary} py-3 px-4 ${uiConfig.layout.radius.lg}`}
+            className="w-full bg-emerald-400 hover:bg-emerald-500 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
           >
-            {progress.completedCount === 0 ? 'Start Your Journey' : 
-             progress.completedCount === progress.totalSteps ? 'Review & Complete' : 
-             'Continue Setup'}
+            {progress.completedCount === 0 
+              ? 'Start Your Profile' 
+              : progress.completedCount === progress.totalSteps 
+                ? 'Review & Complete' 
+                : 'Continue'}
           </button>
-          
-          {/* Progress Messages - Updated 09JUN25: Enhanced messaging */}
-          {progress.completedCount > 0 && progress.completedCount < progress.totalSteps && (
-            <p className={`text-center ${uiConfig.font.size.sm} ${uiConfig.colors.hint} mt-4`}>
-              Great progress! You can always come back and finish later.
-            </p>
-          )}
-          
-          {progress.completedCount === progress.totalSteps && (
-            <div className={`text-center mt-4 p-3 ${uiConfig.colors.statusSuccess} ${uiConfig.layout.radius.md}`}>
-              <p className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} mb-2`}>
-                All sections completed!
-              </p>
-              <Link
-                to="/onboarding/review"
-                className={`${uiConfig.font.size.sm} ${uiConfig.colors.accent} hover:underline ${uiConfig.animation.transitionFast}`}
-              >
-                Review and finalize your preferences →
-              </Link>
-            </div>
-          )}
         </div>
 
-        {/* Help Section - Added 09JUN25: Additional user guidance */}
-        <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.sm} p-4`}>
-          <h3 className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-2`}>
+        {/* Updated 09JUN25: Added informational section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
             What's Next?
           </h3>
-          <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.body} mb-3`}>
-            Complete all {steps.length} sections to get personalized retirement location recommendations.
-          </p>
-          <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
-            <p>• Each section takes 2-3 minutes</p>
-            <p>• Your progress is saved automatically</p>
-            <p>• You can edit your answers anytime</p>
+          
+          <div className="text-gray-600 dark:text-gray-400 space-y-2">
+            <p className="text-sm">
+              Complete all 7 sections to get personalized retirement location recommendations.
+            </p>
+            
+            <div className="text-sm space-y-1">
+              <p>• Each section takes 2-3 minutes</p>
+              <p>• Your progress is saved automatically</p>
+              <p>• You can edit your answers anytime</p>
+            </div>
           </div>
+
+          {progress.completedCount > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Great progress! You can always come back and finish later.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
