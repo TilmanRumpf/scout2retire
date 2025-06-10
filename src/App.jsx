@@ -1,4 +1,4 @@
-// App.jsx - Complete Fixed File
+// App.jsx - Complete Fixed File - Updated 10JUN25
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
@@ -109,8 +109,9 @@ const ProtectedRoute = ({ children, onboardingRequired = false }) => {
   }
 
   // Redirect to onboarding if it's not completed and the route requires it
+  // FIXED 10JUN25: Changed to /onboarding/progress
   if (onboardingRequired && onboardingCompleted === false) {
-    return <Navigate to="/onboarding/status" replace />;
+    return <Navigate to="/onboarding/progress" replace />;
   }
 
   // Redirect to daily dashboard if onboarding is completed but user tries to access onboarding
@@ -133,8 +134,8 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Onboarding flow with navigation - Updated 09JUN25: Added Administration step */}
-          <Route path="/onboarding/status" element={
+          {/* Onboarding flow with navigation - Updated 10JUN25: Changed /onboarding/status to /onboarding/progress */}
+          <Route path="/onboarding/progress" element={
             <ProtectedRoute>
               <OnboardingWrapper nextPath="/onboarding/current-status" prevPath="/welcome">
                 <OnboardingProgress />
@@ -143,7 +144,7 @@ function App() {
           } />
           <Route path="/onboarding/current-status" element={
             <ProtectedRoute>
-              <OnboardingWrapper nextPath="/onboarding/region" prevPath="/onboarding/status">
+              <OnboardingWrapper nextPath="/onboarding/region" prevPath="/onboarding/progress">
                 <OnboardingCurrentStatus />
               </OnboardingWrapper>
             </ProtectedRoute>
