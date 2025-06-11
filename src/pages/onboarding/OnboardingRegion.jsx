@@ -1,26 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
-// 08JUN25: Import uiConfig for consistent design system
-import { uiConfig } from '../../styles/uiConfig';
+import { useNavigate } from 'react-router-dom';
+import { ChevronDown, Globe, MapPin, Trees } from 'lucide-react';
+import { getCurrentUser } from '../../utils/authUtils';
+import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
+import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
+import toast from 'react-hot-toast';
 
-// 08JUN25: Updated to have only 2 preferences - First Preference and Optional Preference
-// Removed Preference 3 completely and updated all related functionality
-const OnboardingRegion = (props) => {
-  // 08JUN25: Preserved original props destructuring
-  const { onNext, onPrevious, formData, setFormData } = props || {};
+// Option Button Component
+const OptionButton = ({ label, description, isSelected, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`p-3 rounded-md border-2 transition-all text-center ${
+      isSelected
+        ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
+        : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
+    }`}
+  >
+    <div className={`text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
+    {description && <div className={`text-xs mt-1 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
+  </button>
+);
+
+const OnboardingRegion = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [progress, setProgress] = useState({ completedSteps: {} });
   
-  // 08JUN25: Updated state arrays to only have 2 elements instead of 3
+  // Updated state arrays to only have 2 elements instead of 3
   const [selectedRegions, setSelectedRegions] = useState(['Recommended', 'Recommended']);
   const [selectedCountries, setSelectedCountries] = useState(['Optional', 'Optional']);
   const [selectedProvinces, setSelectedProvinces] = useState(['Optional', 'Optional']);
-  const [selectedFeatures, setSelectedFeatures] = useState(['Optional', 'Optional']);
-  const [selectedVegetation, setSelectedVegetation] = useState(['Optional', 'Optional']);
-  const [selectedDensity, setSelectedDensity] = useState(['Optional', 'Optional']);
+  const [selectedFeatures, setSelectedFeatures] = useState([]);
+  const [selectedVegetation, setSelectedVegetation] = useState([]);
   
-  // 08JUN25: Added state to control visibility of dependent dropdowns
+  // Added state to control visibility of dependent dropdowns
   const [showDependentDropdowns, setShowDependentDropdowns] = useState([false, false]);
 
-  // 08JUN25: Preserved all original data arrays
+  // Preserved all original data arrays
   const regions = [
     'Recommended',
     'North America',
@@ -36,7 +54,6 @@ const OnboardingRegion = (props) => {
   ];
 
   const geographicFeatures = [
-    'Optional',
     'Coastal',
     'Mountains',
     'Island',
@@ -49,28 +66,16 @@ const OnboardingRegion = (props) => {
   ];
 
   const vegetationTypes = [
-    'Optional',
     'Tropical',
     'Subtropical',
     'Mediterranean',
-    'Temperate forest',
+    'Forest',
     'Grassland',
-    'Coniferous forest',
     'Desert',
     'Alpine'
   ];
 
-  const populationDensity = [
-    'Optional',
-    'Metropolitan',
-    'Urban', 
-    'Suburban',
-    'Town',
-    'Village',
-    'Remote'
-  ];
-
-  // 08JUN25: Preserved all original data mappings
+  // Preserved all original data mappings
   const regionCountries = {
     'North America': ['Mexico', 'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador', 'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon'],
     'Central America': ['Belize', 'Costa Rica', 'El Salvador', 'Guatemala', 'Honduras', 'Nicaragua', 'Panama'],
@@ -121,7 +126,85 @@ const OnboardingRegion = (props) => {
     'Oceania': ['Indonesia', 'Australia', 'New Zealand', 'Philippines']
   };
 
-  // 08JUN25: Preserved original filtering logic
+  // Load existing data if available
+  useEffect(() => {
+    const loadExistingData = async () => {
+      try {
+        const { user } = await getCurrentUser();
+        if (!user) {
+          navigate('/welcome');
+          return;
+        }
+        
+        const { success, data, progress: userProgress, error } = await getOnboardingProgress(user.id);
+        if (!success) {
+          console.error("Error loading existing data:", error);
+          setInitialLoading(false);
+          return;
+        }
+        
+        setProgress(userProgress);
+        
+        // If region data exists, load it
+        if (data && data.region_preferences) {
+          // Map the saved data back to the dropdown states
+          const regionData = data.region_preferences;
+          
+          // Handle regions
+          if (regionData.regions && regionData.regions.length > 0) {
+            const newRegions = [...selectedRegions];
+            regionData.regions.forEach((region, index) => {
+              if (index < 2) newRegions[index] = region;
+            });
+            setSelectedRegions(newRegions);
+            
+            // Set dropdown visibility
+            const newShowDependentDropdowns = [...showDependentDropdowns];
+            regionData.regions.forEach((region, index) => {
+              if (index < 2) newShowDependentDropdowns[index] = region !== 'Recommended';
+            });
+            setShowDependentDropdowns(newShowDependentDropdowns);
+          }
+          
+          // Handle countries
+          if (regionData.countries && regionData.countries.length > 0) {
+            const newCountries = [...selectedCountries];
+            regionData.countries.forEach((country, index) => {
+              if (index < 2) newCountries[index] = country;
+            });
+            setSelectedCountries(newCountries);
+          }
+          
+          // Handle provinces
+          if (regionData.provinces && regionData.provinces.length > 0) {
+            const newProvinces = [...selectedProvinces];
+            regionData.provinces.forEach((province, index) => {
+              if (index < 2) newProvinces[index] = province;
+            });
+            setSelectedProvinces(newProvinces);
+          }
+          
+          // Handle features
+          if (regionData.geographic_features && regionData.geographic_features.length > 0) {
+            setSelectedFeatures(regionData.geographic_features);
+          }
+          
+          // Handle vegetation
+          if (regionData.vegetation_types && regionData.vegetation_types.length > 0) {
+            setSelectedVegetation(regionData.vegetation_types);
+          }
+        }
+      } catch (err) {
+        console.error("Unexpected error loading data:", err);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+    
+    loadExistingData();
+  }, [navigate]);
+
+  // Preserved original filtering logic
   const getFilteredCountries = (regionIndex) => {
     const selectedRegion = selectedRegions[regionIndex];
     
@@ -159,18 +242,18 @@ const OnboardingRegion = (props) => {
     return ['Optional', ...countryProvinces[selectedCountry]];
   };
 
-  // 08JUN25: Updated event handlers to always reset dependent selections
+  // Updated event handlers to always reset dependent selections
   const handleRegionChange = (index, value) => {
     const newRegions = [...selectedRegions];
     newRegions[index] = value;
     setSelectedRegions(newRegions);
     
-    // 08JUN25: Control visibility of dependent dropdowns
+    // Control visibility of dependent dropdowns
     const newShowDependentDropdowns = [...showDependentDropdowns];
     newShowDependentDropdowns[index] = value !== 'Recommended';
     setShowDependentDropdowns(newShowDependentDropdowns);
     
-    // 08JUN25: ALWAYS reset country and province when region changes (even if same region)
+    // ALWAYS reset country and province when region changes (even if same region)
     const newCountries = [...selectedCountries];
     const newProvinces = [...selectedProvinces];
     newCountries[index] = 'Optional';
@@ -196,53 +279,23 @@ const OnboardingRegion = (props) => {
     setSelectedProvinces(newProvinces);
   };
 
-  const handleFeatureChange = (index, value) => {
-    const newFeatures = [...selectedFeatures];
-    newFeatures[index] = value;
-    setSelectedFeatures(newFeatures);
+  const handleFeatureToggle = (feature) => {
+    setSelectedFeatures(prev => 
+      prev.includes(feature) 
+        ? prev.filter(f => f !== feature)
+        : [...prev, feature]
+    );
   };
 
-  const handleVegetationChange = (index, value) => {
-    const newVegetation = [...selectedVegetation];
-    newVegetation[index] = value;
-    setSelectedVegetation(newVegetation);
+  const handleVegetationToggle = (vegetation) => {
+    setSelectedVegetation(prev => 
+      prev.includes(vegetation) 
+        ? prev.filter(v => v !== vegetation)
+        : [...prev, vegetation]
+    );
   };
 
-  const handleDensityChange = (index, value) => {
-    const newDensity = [...selectedDensity];
-    newDensity[index] = value;
-    setSelectedDensity(newDensity);
-  };
-
-  // 08JUN25: Preserved original useEffect for form data updates
-  useEffect(() => {
-    if (setFormData && typeof setFormData === 'function') {
-      setFormData(prev => ({
-        ...prev,
-        preferredRegions: selectedRegions.filter(region => region !== 'Recommended'),
-        preferredCountries: selectedCountries.filter(country => country !== 'Optional'),
-        preferredProvinces: selectedProvinces.filter(province => province !== 'Optional'),
-        geographicFeatures: selectedFeatures.filter(feature => feature !== 'Optional'),
-        vegetationTypes: selectedVegetation.filter(vegetation => vegetation !== 'Optional'),
-        populationDensity: selectedDensity.filter(density => density !== 'Optional')
-      }));
-    }
-  }, [selectedRegions, selectedCountries, selectedProvinces, selectedFeatures, selectedVegetation, selectedDensity, setFormData]);
-
-  // 08JUN25: Preserved original navigation handlers
-  const handleNext = () => {
-    if (onNext && typeof onNext === 'function') {
-      onNext();
-    }
-  };
-
-  const handlePrevious = () => {
-    if (onPrevious && typeof onPrevious === 'function') {
-      onPrevious();
-    }
-  };
-
-  // 08JUN25: Function to get the hierarchical display value
+  // Function to get the hierarchical display value
   const getDisplayValue = (index) => {
     if (selectedProvinces[index] !== 'Optional') {
       // Show "Country, Province"
@@ -256,352 +309,320 @@ const OnboardingRegion = (props) => {
     return selectedRegions[index];
   };
 
-  // 08JUN25: Function to get available regions (all regions always available)
+  // Function to get available regions (all regions always available)
   const getAvailableRegions = (index) => {
     // Always show all regions - user should be able to reselect same region
     return regions;
   };
 
-  // 08JUN25: Function to get preference label based on index
+  // Function to get preference label based on index
   const getPreferenceLabel = (index) => {
     return index === 0 ? 'First Preference' : 'Optional Preference';
   };
 
-  return (
-    // 08JUN25: Mobile-first page container using uiConfig design tokens
-    <div className={`${uiConfig.layout.width.containerWide} ${uiConfig.layout.spacing.section} ${uiConfig.colors.page} min-h-screen ${uiConfig.font.family}`}>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    setLoading(true);
+    
+    try {
+      const { user } = await getCurrentUser();
+      if (!user) {
+        navigate('/welcome');
+        return;
+      }
       
-      {/* 08JUN25: Header section with mobile-responsive design */}
-      <div className="mb-6 sm:mb-8">
-        <h1 className={`${uiConfig.font.size['2xl']} sm:${uiConfig.font.size['3xl']} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading} mb-2`}>
-          Find Your Perfect Retirement Location
-        </h1>
-        
-        {/* 08JUN25: Progress bar with uiConfig styling */}
-        <div className={`w-full ${uiConfig.progress.track} ${uiConfig.layout.radius.full} h-2 mb-4`}>
-          <div className={`${uiConfig.progress.fill} h-2 ${uiConfig.layout.radius.full} ${uiConfig.animation.transition}`} 
-               style={{ width: '40%' }}>
-          </div>
-        </div>
-        <p className={`${uiConfig.colors.hint} ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base}`}>
-          Step 2 of 5: Regional Preferences
-        </p>
+      // Prepare form data for saving
+      const formData = {
+        regions: selectedRegions.filter(region => region !== 'Recommended'),
+        countries: selectedCountries.filter(country => country !== 'Optional'),
+        provinces: selectedProvinces.filter(province => province !== 'Optional'),
+        geographic_features: selectedFeatures,
+        vegetation_types: selectedVegetation
+      };
+      
+      const { success, error } = await saveOnboardingStep(
+        user.id,
+        formData,
+        'region_preferences'
+      );
+      
+      if (!success) {
+        toast.error(`Failed to save: ${error.message}`);
+        setLoading(false);
+        return;
+      }
+      
+      toast.success('Regional preferences saved!');
+      navigate('/onboarding/climate');
+    } catch (err) {
+      toast.error('An unexpected error occurred');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
+        <div className="animate-pulse text-scout-accent-600 font-semibold">Loading...</div>
       </div>
+    );
+  }
 
-      {/* 08JUN25: Mobile-first geographical preferences section - Updated to show only 2 preferences */}
-      <div className="mb-6 sm:mb-8">
-        <h2 className={`${uiConfig.font.size.lg} sm:${uiConfig.font.size.xl} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-2`}>
-          Geographical Preferences
-        </h2>
-        <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.body} mb-4 sm:mb-6`}>
-          All choices are optional - select "Recommended" or "Optional" to keep options open
-        </p>
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="max-w-md mx-auto">
+        <OnboardingStepNavigation 
+          currentStep="region_preferences" 
+          completedSteps={progress.completedSteps} 
+          className="mb-4" 
+        />
         
-        {/* 08JUN25: Updated grid to accommodate 2 columns - mobile stacked, desktop side-by-side */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {[0, 1].map(index => (
-            <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index === 0 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
-              
-              {/* 08JUN25: Region dropdown with updated labels - horizontal layout */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-                <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} sm:min-w-0 sm:flex-shrink-0`}>
-                  {getPreferenceLabel(index)}
-                </label>
-                <div className="relative sm:flex-1 sm:max-w-xs">
-                  <select
-                    value={selectedRegions[index]}
-                    onChange={(e) => handleRegionChange(index, e.target.value)}
-                    onFocus={() => {
-                      // 08JUN25: When user clicks dropdown, if they have made selections, reset them to allow re-selection
-                      if (selectedCountries[index] !== 'Optional' || selectedProvinces[index] !== 'Optional') {
-                        const newCountries = [...selectedCountries];
-                        const newProvinces = [...selectedProvinces];
-                        newCountries[index] = 'Optional';
-                        newProvinces[index] = 'Optional';
-                        setSelectedCountries(newCountries);
-                        setSelectedProvinces(newProvinces);
-                      }
-                    }}
-                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
-                  >
-                    {getAvailableRegions(index).map(region => (
-                      <option key={region} value={region}>
-                        {region}
-                      </option>
-                    ))}
-                  </select>
-                  {/* 08JUN25: Show hierarchical selection as overlay text when selections are made */}
-                  {(selectedCountries[index] !== 'Optional' || selectedProvinces[index] !== 'Optional') && (
-                    <div className={`absolute inset-0 px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} ${uiConfig.colors.heading} bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg pointer-events-none flex items-center`}>
-                      {getDisplayValue(index)}
-                    </div>
-                  )}
-                  <ChevronDown 
-                    size={20} 
-                    className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none z-10`}
-                  />
-                </div>
-              </div>
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4">
+          {/* Header - mb-4 */}
+          <div className="mb-4">
+            <h1 className="text-lg font-bold text-gray-800 dark:text-white">Regional Preferences</h1>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+              All choices are optional - select "Recommended" to keep options open
+            </p>
+          </div>
 
-              {/* 08JUN25: Country/State dropdown - stay visible until province is chosen */}
-              <div 
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  showDependentDropdowns[index] && selectedProvinces[index] === 'Optional' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                }`}
-              >
-                <div className="pt-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-                    <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} sm:min-w-0 sm:flex-shrink-0`}>
-                      Country/State
+          {/* Geographical Preferences section - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <Globe size={18} className="mr-1.5" />
+              Geographical Preferences
+            </label>
+            
+            <div className="space-y-4">
+              {[0, 1].map(index => (
+                <div key={index} className="space-y-3">
+                  {/* Region dropdown */}
+                  <div>
+                    <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                      {getPreferenceLabel(index)}
                     </label>
-                    <div className="relative sm:flex-1 sm:max-w-xs">
+                    <div className="relative">
                       <select
-                        value={selectedCountries[index]}
-                        onChange={(e) => handleCountryChange(index, e.target.value)}
-                        className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
+                        value={selectedRegions[index]}
+                        onChange={(e) => handleRegionChange(index, e.target.value)}
+                        onFocus={() => {
+                          // When user clicks dropdown, if they have made selections, reset them to allow re-selection
+                          if (selectedCountries[index] !== 'Optional' || selectedProvinces[index] !== 'Optional') {
+                            const newCountries = [...selectedCountries];
+                            const newProvinces = [...selectedProvinces];
+                            newCountries[index] = 'Optional';
+                            newProvinces[index] = 'Optional';
+                            setSelectedCountries(newCountries);
+                            setSelectedProvinces(newProvinces);
+                          }
+                        }}
+                        className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white appearance-none cursor-pointer focus:ring-0 focus:border-scout-accent-300 transition-colors"
                       >
-                        {getFilteredCountries(index).map(country => (
-                          <option key={country} value={country}>
-                            {country}
+                        {getAvailableRegions(index).map(region => (
+                          <option key={region} value={region}>
+                            {region}
                           </option>
                         ))}
                       </select>
+                      {/* Show hierarchical selection as overlay text when selections are made */}
+                      {(selectedCountries[index] !== 'Optional' || selectedProvinces[index] !== 'Optional') && (
+                        <div className="absolute inset-0 px-4 py-2 text-sm text-gray-800 dark:text-white bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg pointer-events-none flex items-center">
+                          {getDisplayValue(index)}
+                        </div>
+                      )}
                       <ChevronDown 
                         size={20} 
-                        className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none`}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none z-10"
                       />
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* 08JUN25: Province dropdown - show when country chosen, hide when province chosen */}
-              <div 
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  showDependentDropdowns[index] && selectedCountries[index] !== 'Optional' && selectedProvinces[index] === 'Optional' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                }`}
-              >
-                <div className="pt-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-                    <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} sm:min-w-0 sm:flex-shrink-0`}>
-                      Province
-                    </label>
-                    <div className="relative sm:flex-1 sm:max-w-xs">
-                      <select
-                        value={selectedProvinces[index]}
-                        onChange={(e) => handleProvinceChange(index, e.target.value)}
-                        className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
-                      >
-                        {getFilteredProvinces(index).map(province => (
-                          <option key={province} value={province}>
-                            {province}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown 
-                        size={20} 
-                        className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none`}
-                      />
+                  {/* Country/State dropdown - stay visible until province is chosen */}
+                  <div 
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                      showDependentDropdowns[index] && selectedProvinces[index] === 'Optional' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                        Country/State
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={selectedCountries[index]}
+                          onChange={(e) => handleCountryChange(index, e.target.value)}
+                          className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white appearance-none cursor-pointer focus:ring-0 focus:border-scout-accent-300 transition-colors"
+                        >
+                          {getFilteredCountries(index).map(country => (
+                            <option key={country} value={country}>
+                              {country}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown 
+                          size={20} 
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
 
-      {/* 08JUN25: Geographic Features section - Updated to 2 columns */}
-      <div className="mb-6 sm:mb-8">
-        <h2 className={`${uiConfig.font.size.lg} sm:${uiConfig.font.size.xl} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-2`}>
-          Geographic Features
-        </h2>
-        <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.body} mb-4 sm:mb-6`}>
-          Select preferred geographic features for your retirement location
-        </p>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {[0, 1].map(index => (
-            <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index === 0 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-                <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} sm:min-w-0 sm:flex-shrink-0`}>
-                  Feature {index + 1}
-                </label>
-                <div className="relative sm:flex-1 sm:max-w-xs">
-                  <select
-                    value={selectedFeatures[index]}
-                    onChange={(e) => handleFeatureChange(index, e.target.value)}
-                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
+                  {/* Province dropdown - show when country chosen, hide when province chosen */}
+                  <div 
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                      showDependentDropdowns[index] && selectedCountries[index] !== 'Optional' && selectedProvinces[index] === 'Optional' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
                   >
-                    {geographicFeatures.map(feature => (
-                      <option key={feature} value={feature}>
-                        {feature}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown 
-                    size={20} 
-                    className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none`}
-                  />
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                        Province
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={selectedProvinces[index]}
+                          onChange={(e) => handleProvinceChange(index, e.target.value)}
+                          className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white appearance-none cursor-pointer focus:ring-0 focus:border-scout-accent-300 transition-colors"
+                        >
+                          {getFilteredProvinces(index).map(province => (
+                            <option key={province} value={province}>
+                              {province}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown 
+                          size={20} 
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {index === 0 && <div className="border-t border-gray-200 dark:border-gray-700 my-3"></div>}
                 </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Geographic Features section - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <MapPin size={18} className="mr-1.5" />
+              Geographic Features
+            </label>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+              Select preferred geographic features (optional)
+            </p>
+            
+            <div className="grid grid-cols-3 gap-1.5">
+              {geographicFeatures.map(feature => (
+                <OptionButton
+                  key={feature}
+                  label={feature}
+                  isSelected={selectedFeatures.includes(feature)}
+                  onClick={() => handleFeatureToggle(feature)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Vegetation section - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <Trees size={18} className="mr-1.5" />
+              Vegetation Types
+            </label>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+              Select preferred vegetation types (optional)
+            </p>
+            
+            <div className="grid grid-cols-3 gap-1.5">
+              {vegetationTypes.map(vegetation => (
+                <OptionButton
+                  key={vegetation}
+                  label={vegetation}
+                  isSelected={selectedVegetation.includes(vegetation)}
+                  onClick={() => handleVegetationToggle(vegetation)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Summary section - mb-4 */}
+          <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <h3 className="font-medium text-gray-800 dark:text-white mb-2 text-sm">
+              Your Geographical Preferences:
+            </h3>
+            <div className="space-y-1 text-xs text-gray-600 dark:text-gray-300">
+              <div>
+                <span className="font-medium">Regions:</span>{' '}
+                {selectedRegions.filter(region => region !== 'Recommended').length > 0 
+                  ? selectedRegions.filter(region => region !== 'Recommended').join(', ') 
+                  : 'Any region worldwide'}
+              </div>
+              <div>
+                <span className="font-medium">Countries/States:</span>{' '}
+                {selectedCountries.filter(country => country !== 'Optional').length > 0 
+                  ? selectedCountries.filter(country => country !== 'Optional').join(', ') 
+                  : 'Any location'}
+              </div>
+              <div>
+                <span className="font-medium">Provinces:</span>{' '}
+                {selectedProvinces.filter(province => province !== 'Optional').length > 0 
+                  ? selectedProvinces.filter(province => province !== 'Optional').join(', ') 
+                  : 'Any province'}
+              </div>
+              <div>
+                <span className="font-medium">Geographic Features:</span>{' '}
+                {selectedFeatures.length > 0 
+                  ? selectedFeatures.join(', ') 
+                  : 'Any features'}
+              </div>
+              <div>
+                <span className="font-medium">Vegetation Types:</span>{' '}
+                {selectedVegetation.length > 0 
+                  ? selectedVegetation.join(', ') 
+                  : 'Any vegetation'}
               </div>
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      {/* 08JUN25: Vegetation section - Updated to 2 columns */}
-      <div className="mb-6 sm:mb-8">
-        <h2 className={`${uiConfig.font.size.lg} sm:${uiConfig.font.size.xl} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-2`}>
-          Vegetation
-        </h2>
-        <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.body} mb-4 sm:mb-6`}>
-          Select preferred vegetation types for your retirement location
-        </p>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {[0, 1].map(index => (
-            <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index === 0 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-                <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} sm:min-w-0 sm:flex-shrink-0`}>
-                  Vegetation {index + 1}
-                </label>
-                <div className="relative sm:flex-1 sm:max-w-xs">
-                  <select
-                    value={selectedVegetation[index]}
-                    onChange={(e) => handleVegetationChange(index, e.target.value)}
-                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
-                  >
-                    {vegetationTypes.map(vegetation => (
-                      <option key={vegetation} value={vegetation}>
-                        {vegetation}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown 
-                    size={20} 
-                    className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none`}
-                  />
-                </div>
+          {/* Pro Tip */}
+          <div className="mb-4 p-3 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
+            <div className="flex items-start">
+              <div className="mr-2">
+                <svg className="h-5 w-5 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-gray-700 dark:text-gray-300">
+                  <span className="font-medium">Pro Tip:</span> Keep your options open by selecting "Recommended" for regions. You can drill down to specific countries or provinces if you have strong preferences.
+                </p>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      {/* 08JUN25: Population Density section - Updated to 2 columns */}
-      <div className="mb-6 sm:mb-8">
-        <h2 className={`${uiConfig.font.size.lg} sm:${uiConfig.font.size.xl} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-2`}>
-          Population Density
-        </h2>
-        <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.body} mb-4 sm:mb-6`}>
-          Select preferred population density for your retirement location
-        </p>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {[0, 1].map(index => (
-            <div key={index} className={`flex flex-col gap-4 lg:px-6 ${index === 0 ? 'lg:border-r lg:border-gray-200 dark:lg:border-gray-700' : ''}`}>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-                <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} sm:min-w-0 sm:flex-shrink-0`}>
-                  Density {index + 1}
-                </label>
-                <div className="relative sm:flex-1 sm:max-w-xs">
-                  <select
-                    value={selectedDensity[index]}
-                    onChange={(e) => handleDensityChange(index, e.target.value)}
-                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 ${uiConfig.font.size.sm} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.input} ${uiConfig.colors.heading} appearance-none cursor-pointer ${uiConfig.colors.focusRing} focus:border-transparent ${uiConfig.animation.transition}`}
-                  >
-                    {populationDensity.map(density => (
-                      <option key={density} value={density}>
-                        {density}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown 
-                    size={20} 
-                    className={`absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.hint} pointer-events-none`}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 08JUN25: Summary section with uiConfig styling - Updated to reflect 2 preferences */}
-      <div className={`${uiConfig.colors.card} ${uiConfig.layout.spacing.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.borderLight} mb-6 sm:mb-8`}>
-        <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} mb-3`}>
-          Your Geographical Preferences:
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div>
-            <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>Regions:</span>
-            <p className={`${uiConfig.colors.body} mt-1 ${uiConfig.font.size.sm}`}>
-              {selectedRegions.filter(region => region !== 'Recommended').length > 0 
-                ? selectedRegions.filter(region => region !== 'Recommended').join(', ') 
-                : 'Any region worldwide'}
-            </p>
+          {/* Bottom Navigation */}
+          <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              onClick={() => navigate('/onboarding/current-status')}
+              className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+            >
+              Back
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-2 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Saving...' : 'Continue'}
+            </button>
           </div>
-          <div>
-            <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>Countries/States:</span>
-            <p className={`${uiConfig.colors.body} mt-1 ${uiConfig.font.size.sm}`}>
-              {selectedCountries.filter(country => country !== 'Optional').length > 0 
-                ? selectedCountries.filter(country => country !== 'Optional').join(', ') 
-                : 'Any location'}
-            </p>
-          </div>
-          <div>
-            <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>Provinces:</span>
-            <p className={`${uiConfig.colors.body} mt-1 ${uiConfig.font.size.sm}`}>
-              {selectedProvinces.filter(province => province !== 'Optional').length > 0 
-                ? selectedProvinces.filter(province => province !== 'Optional').join(', ') 
-                : 'Any province'}
-            </p>
-          </div>
-          <div>
-            <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>Geographic Features:</span>
-            <p className={`${uiConfig.colors.body} mt-1 ${uiConfig.font.size.sm}`}>
-              {selectedFeatures.filter(feature => feature !== 'Optional').length > 0 
-                ? selectedFeatures.filter(feature => feature !== 'Optional').join(', ') 
-                : 'Any features'}
-            </p>
-          </div>
-          <div>
-            <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>Vegetation Types:</span>
-            <p className={`${uiConfig.colors.body} mt-1 ${uiConfig.font.size.sm}`}>
-              {selectedVegetation.filter(vegetation => vegetation !== 'Optional').length > 0 
-                ? selectedVegetation.filter(vegetation => vegetation !== 'Optional').join(', ') 
-                : 'Any vegetation'}
-            </p>
-          </div>
-          <div>
-            <span className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>Population Density:</span>
-            <p className={`${uiConfig.colors.body} mt-1 ${uiConfig.font.size.sm}`}>
-              {selectedDensity.filter(density => density !== 'Optional').length > 0 
-                ? selectedDensity.filter(density => density !== 'Optional').join(', ') 
-                : 'Any density'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 08JUN25: Mobile-first navigation with uiConfig styling */}
-      <div className={`flex flex-col sm:flex-row sm:justify-between sm:items-center pt-6 border-t ${uiConfig.colors.borderLight} space-y-4 sm:space-y-0`}>
-        <button 
-          onClick={handlePrevious}
-          className={`w-full sm:w-auto px-4 sm:px-6 py-3 border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.colors.heading} ${uiConfig.colors.input} cursor-pointer ${uiConfig.states.hover} ${uiConfig.animation.transition} order-2 sm:order-1`}
-        >
-          Previous Step
-        </button>
-        <div className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint} text-center order-1 sm:order-2`}>
-          Step 2 of 5
-        </div>
-        <button 
-          onClick={handleNext}
-          className={`w-full sm:w-auto px-4 sm:px-6 py-3 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.lg} border-none cursor-pointer ${uiConfig.animation.transition} ${uiConfig.colors.focusRing} focus:ring-offset-2 order-3`}
-        >
-          Continue to Step 3
-        </button>
+        </form>
       </div>
     </div>
   );
