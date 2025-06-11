@@ -13,7 +13,7 @@ const OptionButton = ({ label, description, isSelected, onClick }) => (
     onClick={onClick}
     className={`p-3 rounded-md border-2 transition-all text-center ${
       isSelected
-        ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 ring-2 ring-scout-accent-300 ring-offset-1'
+        ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
         : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
     }`}
   >
@@ -411,7 +411,7 @@ export default function OnboardingCurrentStatus() {
                         type="checkbox"
                         checked={formData.citizenship.dual_citizenship}
                         onChange={handleInputChange}
-                        className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-2 focus:ring-scout-accent-300 focus:ring-offset-0 cursor-pointer"
+                        className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
                         style={{ 
                           accentColor: '#8fbc8f',
                           WebkitAppearance: 'none',
@@ -484,7 +484,7 @@ export default function OnboardingCurrentStatus() {
                         type="checkbox"
                         checked={formData.partner_citizenship.dual_citizenship}
                         onChange={handleInputChange}
-                        className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-2 focus:ring-scout-accent-300 focus:ring-offset-0 cursor-pointer"
+                        className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
                         style={{ 
                           accentColor: '#8fbc8f',
                           WebkitAppearance: 'none',
@@ -559,7 +559,7 @@ export default function OnboardingCurrentStatus() {
                     type="checkbox"
                     checked={formData.citizenship.dual_citizenship}
                     onChange={handleInputChange}
-                    className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-2 focus:ring-scout-accent-300 focus:ring-offset-0 cursor-pointer"
+                                            className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
                     style={{ 
                       accentColor: '#8fbc8f',
                       WebkitAppearance: 'none',
