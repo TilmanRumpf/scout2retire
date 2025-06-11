@@ -1,42 +1,43 @@
-// src/pages/onboarding/OnboardingClimate.jsx
-// Updated 10JUN25: Fixed scout-accent colors, improved mobile-first design, added professional enhancements
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, CloudSun, Sun, Snowflake, Droplets, DropletOff, Cloud, CloudRain } from 'lucide-react';
+import { Sun, Snowflake, Droplets, Cloud, CloudRain } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
-import { uiConfig } from '../../styles/uiConfig';
 import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
 import toast from 'react-hot-toast';
 
-// Updated 10JUN25: Enhanced with professional features and scout-accent theme
+// Option Button Component
+const OptionButton = ({ label, description, isSelected, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`p-3 rounded-md border-2 transition-all text-center ${
+      isSelected
+        ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
+        : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
+    }`}
+  >
+    <div className={`text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
+    {description && <div className={`text-xs mt-1 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
+  </button>
+);
+
 export default function OnboardingClimate() {
-  // Preserved all original state management with summer/winter logic
   const [formData, setFormData] = useState({
-    summer_climate_preference: [], // Array for multi-choice: ['mild', 'warm', 'hot']
-    winter_climate_preference: [], // Array for multi-choice: ['cold', 'cool', 'mild']
-    humidity_level: [], // Array for multi-choice: ['dry', 'balanced', 'humid']
-    sunshine: [], // Array for multi-choice: ['mostly_sunny', 'balanced', 'often_cloudy']
-    precipitation: [], // Array for multi-choice: ['mostly_dry', 'balanced', 'often_rainy']
-    seasonal_preference: 'Optional' // Optional, all_seasons, summer_focused, winter_focused
+    summer_climate_preference: [],
+    winter_climate_preference: [],
+    humidity_level: [],
+    sunshine: [],
+    precipitation: [],
+    seasonal_preference: 'Optional'
   });
   
-  // Preserved all original loading states
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [progress, setProgress] = useState({
-    completedSteps: {},
-    completedCount: 0,
-    totalSteps: 7,
-    percentage: 0
-  });
-  
-  // Added 10JUN25: Touch feedback state for better mobile UX
-  const [touchedButton, setTouchedButton] = useState(null);
-  
+  const [progress, setProgress] = useState({ completedSteps: {} });
   const navigate = useNavigate();
 
-  // Preserved original data loading useEffect with progress loading
+  // Load existing data if available
   useEffect(() => {
     const loadExistingData = async () => {
       try {
@@ -53,23 +54,18 @@ export default function OnboardingClimate() {
           return;
         }
         
-        // Set progress data
-        if (userProgress) {
-          setProgress(userProgress);
-        }
+        setProgress(userProgress);
         
-        // If climate data exists, load it - Preserved original logic
+        // If climate data exists, load it
         if (data && data.climate_preferences) {
           setFormData(prev => ({
             ...prev,
             ...data.climate_preferences,
-            // Ensure arrays exist for backward compatibility
             summer_climate_preference: data.climate_preferences.summer_climate_preference || [],
             winter_climate_preference: data.climate_preferences.winter_climate_preference || [],
             humidity_level: data.climate_preferences.humidity_level || [],
             sunshine: data.climate_preferences.sunshine || [],
             precipitation: data.climate_preferences.precipitation || [],
-            // Ensure seasonal preference defaults to Optional if not set
             seasonal_preference: data.climate_preferences.seasonal_preference || 'Optional'
           }));
         }
@@ -83,7 +79,6 @@ export default function OnboardingClimate() {
     loadExistingData();
   }, [navigate]);
 
-  // Preserved original input change handler
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -92,26 +87,18 @@ export default function OnboardingClimate() {
     }));
   };
 
-  // Enhanced 10JUN25: Added haptic feedback simulation for mobile
   const handleClimateToggle = (season, option) => {
-    // Haptic feedback for mobile
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
-    
     const fieldName = `${season}_climate_preference`;
     setFormData(prev => {
       const currentOptions = prev[fieldName] || [];
       const isSelected = currentOptions.includes(option);
       
       if (isSelected) {
-        // Remove option if already selected
         return {
           ...prev,
           [fieldName]: currentOptions.filter(item => item !== option)
         };
       } else {
-        // Add option if not selected
         return {
           ...prev,
           [fieldName]: [...currentOptions, option]
@@ -120,25 +107,17 @@ export default function OnboardingClimate() {
     });
   };
 
-  // Enhanced 10JUN25: Added haptic feedback for better UX
   const handleMultiChoiceToggle = (fieldName, option) => {
-    // Haptic feedback for mobile
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
-    
     setFormData(prev => {
       const currentOptions = prev[fieldName] || [];
       const isSelected = currentOptions.includes(option);
       
       if (isSelected) {
-        // Remove option if already selected
         return {
           ...prev,
           [fieldName]: currentOptions.filter(item => item !== option)
         };
       } else {
-        // Add option if not selected
         return {
           ...prev,
           [fieldName]: [...currentOptions, option]
@@ -147,31 +126,8 @@ export default function OnboardingClimate() {
     });
   };
 
-  // Enhanced 10JUN25: Added validation before submission
-  const validateForm = () => {
-    // Check if at least one preference is selected in each category
-    const hasNoSelections = 
-      formData.summer_climate_preference.length === 0 &&
-      formData.winter_climate_preference.length === 0 &&
-      formData.humidity_level.length === 0 &&
-      formData.sunshine.length === 0 &&
-      formData.precipitation.length === 0;
-    
-    if (hasNoSelections) {
-      toast.error('Please select at least one preference to continue');
-      return false;
-    }
-    
-    return true;
-  };
-
-  // Enhanced form submission handler with validation
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
     
     setLoading(true);
     
@@ -204,342 +160,242 @@ export default function OnboardingClimate() {
     }
   };
 
-  // Navigation handlers
-  const handleBack = () => {
-    navigate('/onboarding/region');
-  };
-
-  // Updated 10JUN25: Professional loading screen with scout-accent
   if (initialLoading) {
     return (
-      <div className={`min-h-screen ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
-        <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-scout-accent-300"></div>
-          <p className="text-scout-accent-600 font-medium">Loading your preferences...</p>
-        </div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
+        <div className="animate-pulse text-scout-accent-600 font-semibold">Loading...</div>
       </div>
     );
   }
 
-  // Updated 10JUN25: Refined options with better labeling
   const summerOptions = [
-    { value: 'mild', label: 'Mild', icons: [CloudSun], description: '18-24°C' },
-    { value: 'warm', label: 'Warm', icons: [Sun], description: '24-30°C' },
-    { value: 'hot', label: 'Hot', icons: [Sun, Sun], description: '30°C+' }
+    { value: 'mild', label: 'Mild', description: '18-24°C' },
+    { value: 'warm', label: 'Warm', description: '24-30°C' },
+    { value: 'hot', label: 'Hot', description: '30°C+' }
   ];
 
   const winterOptions = [
-    { value: 'cold', label: 'Cold', icons: [Snowflake, Snowflake], description: 'Below 0°C' },
-    { value: 'cool', label: 'Cool', icons: [Snowflake], description: '0-10°C' },
-    { value: 'mild', label: 'Mild', icons: [CloudSun], description: '10°C+' }
+    { value: 'cold', label: 'Cold', description: 'Below 0°C' },
+    { value: 'cool', label: 'Cool', description: '0-10°C' },
+    { value: 'mild', label: 'Mild', description: '10°C+' }
   ];
 
   const humidityOptions = [
-    { value: 'dry', label: 'Dry', icons: [DropletOff], description: '<40%' },
-    { value: 'balanced', label: 'Balanced', icons: [Droplets], description: '40-60%' },
-    { value: 'humid', label: 'Humid', icons: [Droplets, Droplets], description: '>60%' }
+    { value: 'dry', label: 'Dry', description: '<40%' },
+    { value: 'balanced', label: 'Balanced', description: '40-60%' },
+    { value: 'humid', label: 'Humid', description: '>60%' }
   ];
 
   const sunshineOptions = [
-    { value: 'mostly_sunny', label: 'Often Sunny', icons: [Sun], description: '250+ days/year' },
-    { value: 'balanced', label: 'Balanced', icons: [CloudSun], description: '150-250 days/year' },
-    { value: 'often_cloudy', label: 'Less Sunny', icons: [Cloud], description: '<150 days/year' }
+    { value: 'mostly_sunny', label: 'Often Sunny', description: '250+ days' },
+    { value: 'balanced', label: 'Balanced', description: '150-250 days' },
+    { value: 'often_cloudy', label: 'Less Sunny', description: '<150 days' }
   ];
 
   const precipitationOptions = [
-    { value: 'mostly_dry', label: 'Mostly Dry', icons: [Sun], description: '<500mm/year' },
-    { value: 'balanced', label: 'Balanced', icons: [CloudSun], description: '500-1000mm/year' },
-    { value: 'often_rainy', label: 'Often Rainy', icons: [CloudRain], description: '>1000mm/year' }
+    { value: 'mostly_dry', label: 'Mostly Dry', description: '<500mm/yr' },
+    { value: 'balanced', label: 'Balanced', description: '500-1000mm' },
+    { value: 'often_rainy', label: 'Often Rainy', description: '>1000mm/yr' }
   ];
 
-  // Enhanced 10JUN25: Professional icon rendering with animations
-  const renderIcons = (iconsArray, size = 20, isSelected = false) => {
-    return (
-      <div className="flex items-center justify-center space-x-1">
-        {iconsArray.map((IconComponent, index) => (
-          <IconComponent 
-            key={index} 
-            size={size} 
-            className={`transition-all duration-300 ${
-              isSelected 
-                ? 'text-scout-accent-700 dark:text-scout-accent-300' 
-                : 'text-gray-600 dark:text-gray-400'
-            }`}
-          />
-        ))}
-      </div>
-    );
-  };
-
-  // Enhanced 10JUN25: Professional option button component
-  const OptionButton = ({ option, isSelected, onClick, sectionName, optionValue }) => {
-    const buttonId = `${sectionName}-${optionValue}`;
-    const isPressed = touchedButton === buttonId;
-    
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        onTouchStart={() => setTouchedButton(buttonId)}
-        onTouchEnd={() => setTouchedButton(null)}
-        className={`
-          relative flex flex-col items-center justify-center p-4 rounded-lg border-2 
-          transition-all duration-200 transform
-          ${isSelected
-            ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 shadow-md scale-[1.02]'
-            : 'border-gray-200 dark:border-gray-700 hover:border-scout-accent-200 hover:bg-gray-50 dark:hover:bg-gray-800'
-          }
-          ${isPressed ? 'scale-95' : ''}
-          focus:outline-none focus:ring-2 focus:ring-scout-accent-400 focus:ring-offset-2
-        `}
-        aria-label={`${option.label} - ${option.description || ''}`}
-        aria-pressed={isSelected}
-      >
-        {renderIcons(option.icons, 24, isSelected)}
-        <span className={`text-sm font-medium text-center mt-2 ${
-          isSelected 
-            ? 'text-scout-accent-700 dark:text-scout-accent-300' 
-            : 'text-gray-800 dark:text-gray-200'
-        }`}>
-          {option.label}
-        </span>
-        {option.description && (
-          <span className={`text-xs mt-1 ${
-            isSelected 
-              ? 'text-scout-accent-600 dark:text-scout-accent-400' 
-              : 'text-gray-500 dark:text-gray-400'
-          }`}>
-            {option.description}
-          </span>
-        )}
-        {isSelected && (
-          <div className="absolute top-2 right-2">
-            <div className="w-2 h-2 bg-scout-accent-300 rounded-full animate-pulse"></div>
-          </div>
-        )}
-      </button>
-    );
-  };
-
   return (
-    <div className={`min-h-screen ${uiConfig.colors.page} p-4`}>
-      <div className={uiConfig.layout.width.containerNarrow}>
-        
-        {/* Step Navigation */}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="max-w-md mx-auto">
         <OnboardingStepNavigation 
-          currentStep="climate_preferences"
-          completedSteps={progress.completedSteps}
-          className="mb-8"
+          currentStep="climate_preferences" 
+          completedSteps={progress.completedSteps} 
+          className="mb-4" 
         />
-
-        {/* Main Form - Enhanced 10JUN25 with better spacing and scout-accent theme */}
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} ${uiConfig.layout.spacing.card}`}>
-          
-          {/* Header - Added 10JUN25 */}
-          <div className="mb-8">
-            <h1 className={`${uiConfig.font.size['2xl']} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading} mb-2`}>
-              Climate Preferences
-            </h1>
-            <p className={`${uiConfig.font.size.base} ${uiConfig.colors.body}`}>
-              Select your ideal climate conditions. You can choose multiple options for each category.
+        
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4">
+          {/* Header - mb-4 */}
+          <div className="mb-4">
+            <h1 className="text-lg font-bold text-gray-800 dark:text-white">Climate Preferences</h1>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+              Select your ideal climate conditions - choose multiple options
             </p>
           </div>
 
-          {/* Summer Climate - Enhanced with descriptions */}
-          <div className={uiConfig.layout.spacing.field}>
-            <label className={`${uiConfig.components.label} flex items-center`}>
-              <Sun size={20} className="mr-2 text-scout-accent-600" />
+          {/* Summer Climate - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <Sun size={18} className="mr-1.5" />
               Summer Climate
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-1.5">
               {summerOptions.map((option) => (
                 <OptionButton
                   key={option.value}
-                  option={option}
+                  label={option.label}
+                  description={option.description}
                   isSelected={formData.summer_climate_preference?.includes(option.value)}
                   onClick={() => handleClimateToggle('summer', option.value)}
-                  sectionName="summer"
-                  optionValue={option.value}
                 />
               ))}
             </div>
           </div>
 
-          {/* Winter Climate - Enhanced with descriptions */}
-          <div className={uiConfig.layout.spacing.field}>
-            <label className={`${uiConfig.components.label} flex items-center`}>
-              <Snowflake size={20} className="mr-2 text-scout-accent-600" />
+          {/* Winter Climate - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <Snowflake size={18} className="mr-1.5" />
               Winter Climate
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-1.5">
               {winterOptions.map((option) => (
                 <OptionButton
                   key={option.value}
-                  option={option}
+                  label={option.label}
+                  description={option.description}
                   isSelected={formData.winter_climate_preference?.includes(option.value)}
                   onClick={() => handleClimateToggle('winter', option.value)}
-                  sectionName="winter"
-                  optionValue={option.value}
                 />
               ))}
             </div>
           </div>
 
-          {/* Humidity - Enhanced with descriptions */}
-          <div className={uiConfig.layout.spacing.field}>
-            <label className={`${uiConfig.components.label} flex items-center`}>
-              <Droplets size={20} className="mr-2 text-scout-accent-600" />
+          {/* Humidity - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <Droplets size={18} className="mr-1.5" />
               Humidity
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-1.5">
               {humidityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
-                  option={option}
+                  label={option.label}
+                  description={option.description}
                   isSelected={formData.humidity_level?.includes(option.value)}
                   onClick={() => handleMultiChoiceToggle('humidity_level', option.value)}
-                  sectionName="humidity"
-                  optionValue={option.value}
                 />
               ))}
             </div>
           </div>
 
-          {/* Sunshine - Enhanced with descriptions */}
-          <div className={uiConfig.layout.spacing.field}>
-            <label className={`${uiConfig.components.label} flex items-center`}>
-              <Sun size={20} className="mr-2 text-scout-accent-600" />
+          {/* Sunshine - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <Sun size={18} className="mr-1.5" />
               Sunshine
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-1.5">
               {sunshineOptions.map((option) => (
                 <OptionButton
                   key={option.value}
-                  option={option}
+                  label={option.label}
+                  description={option.description}
                   isSelected={formData.sunshine?.includes(option.value)}
                   onClick={() => handleMultiChoiceToggle('sunshine', option.value)}
-                  sectionName="sunshine"
-                  optionValue={option.value}
                 />
               ))}
             </div>
           </div>
 
-          {/* Precipitation - Enhanced with descriptions */}
-          <div className={uiConfig.layout.spacing.field}>
-            <label className={`${uiConfig.components.label} flex items-center`}>
-              <CloudRain size={20} className="mr-2 text-scout-accent-600" />
+          {/* Precipitation - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <CloudRain size={18} className="mr-1.5" />
               Precipitation
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-1.5">
               {precipitationOptions.map((option) => (
                 <OptionButton
                   key={option.value}
-                  option={option}
+                  label={option.label}
+                  description={option.description}
                   isSelected={formData.precipitation?.includes(option.value)}
                   onClick={() => handleMultiChoiceToggle('precipitation', option.value)}
-                  sectionName="precipitation"
-                  optionValue={option.value}
                 />
               ))}
             </div>
           </div>
 
-          {/* Seasonal Preference - Enhanced with better styling */}
-          <div className={uiConfig.layout.spacing.field}>
-            <label className={`${uiConfig.components.label}`}>
+          {/* Seasonal Preference - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
               Seasonal Preference
             </label>
             <select
               name="seasonal_preference"
               value={formData.seasonal_preference}
               onChange={handleInputChange}
-              className={uiConfig.components.select}
+              className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
             >
               <option value="Optional">No specific preference</option>
               <option value="all_seasons">I enjoy all seasons equally</option>
-              <option value="summer_focused">I prefer warm seasons (summer)</option>
-              <option value="winter_focused">I prefer cool seasons (winter)</option>
+              <option value="summer_focused">I prefer warm seasons</option>
+              <option value="winter_focused">I prefer cool seasons</option>
             </select>
-            <p className={uiConfig.components.helpText}>
-              This helps us prioritize locations based on your seasonal preferences
-            </p>
           </div>
 
-          {/* Summary Section - Added 10JUN25: Shows selected preferences */}
+          {/* Summary Section - mb-4 */}
           {(formData.summer_climate_preference.length > 0 || 
             formData.winter_climate_preference.length > 0 ||
             formData.humidity_level.length > 0 ||
             formData.sunshine.length > 0 ||
             formData.precipitation.length > 0) && (
-            <div className="mt-6 p-4 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
-              <h3 className="text-sm font-medium text-scout-accent-700 dark:text-scout-accent-300 mb-2">
-                Your Climate Profile:
-              </h3>
-              <div className="text-xs text-scout-accent-600 dark:text-scout-accent-400 space-y-1">
-                {formData.summer_climate_preference.length > 0 && (
-                  <p>• Summer: {formData.summer_climate_preference.join(', ')}</p>
-                )}
-                {formData.winter_climate_preference.length > 0 && (
-                  <p>• Winter: {formData.winter_climate_preference.join(', ')}</p>
-                )}
-                {formData.humidity_level.length > 0 && (
-                  <p>• Humidity: {formData.humidity_level.join(', ')}</p>
-                )}
-                {formData.sunshine.length > 0 && (
-                  <p>• Sunshine: {formData.sunshine.join(', ')}</p>
-                )}
-                {formData.precipitation.length > 0 && (
-                  <p>• Precipitation: {formData.precipitation.join(', ')}</p>
-                )}
+            <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <div className="text-sm text-gray-600 dark:text-gray-300">
+                <span className="font-medium">Summary:</span>
+                <div className="mt-1 text-xs space-y-1">
+                  {formData.summer_climate_preference.length > 0 && (
+                    <div>• Summer: {formData.summer_climate_preference.join(', ')}</div>
+                  )}
+                  {formData.winter_climate_preference.length > 0 && (
+                    <div>• Winter: {formData.winter_climate_preference.join(', ')}</div>
+                  )}
+                  {formData.humidity_level.length > 0 && (
+                    <div>• Humidity: {formData.humidity_level.join(', ')}</div>
+                  )}
+                  {formData.sunshine.length > 0 && (
+                    <div>• Sunshine: {formData.sunshine.join(', ')}</div>
+                  )}
+                  {formData.precipitation.length > 0 && (
+                    <div>• Precipitation: {formData.precipitation.join(', ')}</div>
+                  )}
+                  {formData.seasonal_preference !== 'Optional' && (
+                    <div>• Seasonal: {formData.seasonal_preference.replace(/_/g, ' ')}</div>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
-          {/* Bottom Navigation - Enhanced 10JUN25 with professional styling */}
-          <div className={uiConfig.bottomNavigation.styles.container}>
+          {/* Pro Tip */}
+          <div className="mb-4 p-3 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
+            <div className="flex items-start">
+              <div className="mr-2">
+                <svg className="h-5 w-5 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-gray-700 dark:text-gray-300">
+                  <span className="font-medium">Pro Tip:</span> Select multiple options to keep your choices flexible. We'll find locations that match your preferred climate conditions throughout the year.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Navigation */}
+          <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
-              onClick={handleBack}
-              disabled={loading}
-              className={uiConfig.bottomNavigation.styles.backButton}
+              onClick={() => navigate('/onboarding/region')}
+              className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
             >
-              <ChevronLeft size={16} className="mr-2" />
               Back
             </button>
-            
             <button
               type="submit"
               disabled={loading}
-              className={uiConfig.bottomNavigation.styles.nextButton}
+              className="px-6 py-2 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
             >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Saving...
-                </>
-              ) : (
-                <>
-                  Continue
-                  <ChevronRight size={16} className="ml-2" />
-                </>
-              )}
+              {loading ? 'Saving...' : 'Continue'}
             </button>
           </div>
         </form>
-
-        {/* Progress Indicator - Added 10JUN25 */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Step 3 of 7 • {Math.round((3/7) * 100)}% complete
-          </p>
-          <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-            <div 
-              className="bg-scout-accent-300 h-2 rounded-full transition-all duration-500"
-              style={{ width: `${Math.round((3/7) * 100)}%` }}
-            ></div>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -1,72 +1,53 @@
-// src/pages/onboarding/OnboardingCulture.jsx
-// Updated 10JUN25: Applied climate page design principles with scout-accent theme and professional enhancements
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Users, 
-  Globe2, 
-  Languages, 
-  Utensils,
-  Building,
-  Music,
-  Calendar,
-  UserPlus,
-  Gauge,
-  Home,
-  TreePine,
-  Zap,
-  BookOpen
-} from 'lucide-react';
+import { Users, Globe2, Languages, Utensils, Building, Music, Calendar, Gauge, Home } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
-import { uiConfig } from '../../styles/uiConfig';
 import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
 import toast from 'react-hot-toast';
 
+// Option Button Component
+const OptionButton = ({ label, description, isSelected, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`p-3 rounded-md border-2 transition-all text-center ${
+      isSelected
+        ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
+        : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
+    }`}
+  >
+    <div className={`text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
+    {description && <div className={`text-xs mt-1 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
+  </button>
+);
+
 export default function OnboardingCulture() {
-  // BEST PRACTICE 10JUN25: All form fields should use consistent heights
-  // Standard field height: px-4 py-2 (matches button heights)
-  // This should be defined in uiConfig.ts as:
-  // formFieldHeight: 'px-4 py-2'
-  // Then applied consistently across all inputs, selects, and interactive elements
-  
-  // Preserved all original state management
   const [formData, setFormData] = useState({
-    expat_community_preference: [], // Changed to array for multi-select
+    expat_community_preference: [],
     language_comfort: {
-      preferences: [], // Changed to array for multi-select buttons
+      preferences: [],
       already_speak: []
     },
     cultural_importance: {
       restaurants: 3,
       museums: 2,
       nightlife: 2,
-      cultural_events: 4
+      cultural_events: 3
     },
     lifestyle_preferences: {
-      pace_of_life: [], // Changed to array for multi-select
-      urban_rural: [], // Changed to array for multi-select
+      pace_of_life: [],
+      urban_rural: [],
       traditional_progressive: 'balanced'
     }
   });
   
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [progress, setProgress] = useState({
-    completedSteps: {},
-    completedCount: 0,
-    totalSteps: 7,
-    percentage: 0
-  });
-  
-  const [showLanguageInput, setShowLanguageInput] = useState(false);
-  const [touchedButton, setTouchedButton] = useState(null);
-  
+  const [progress, setProgress] = useState({ completedSteps: {} });
   const navigate = useNavigate();
 
-  // Common languages options - prioritized order WITHOUT FLAGS
+  // Common languages options
   const languages = [
     { id: 'english', label: 'English' },
     { id: 'spanish', label: 'Spanish' },
@@ -102,14 +83,10 @@ export default function OnboardingCulture() {
           return;
         }
         
-        // Set progress data
-        if (userProgress) {
-          setProgress(userProgress);
-        }
+        setProgress(userProgress);
         
         // If culture data exists, load it
         if (data && data.culture_preferences) {
-          // Handle backward compatibility - convert old single values to arrays
           const loadedData = {
             ...data.culture_preferences,
             expat_community_preference: Array.isArray(data.culture_preferences.expat_community_preference) 
@@ -117,10 +94,7 @@ export default function OnboardingCulture() {
               : (data.culture_preferences.expat_community_preference ? [data.culture_preferences.expat_community_preference] : []),
             language_comfort: {
               ...data.culture_preferences.language_comfort,
-              preferences: data.culture_preferences.language_comfort?.preferences || 
-                (data.culture_preferences.language_comfort?.english_only ? ['english_only'] :
-                 data.culture_preferences.language_comfort?.willing_to_learn ? ['willing_to_learn'] : 
-                 ['comfortable']),
+              preferences: data.culture_preferences.language_comfort?.preferences || [],
               already_speak: data.culture_preferences.language_comfort?.already_speak || []
             },
             lifestyle_preferences: {
@@ -145,16 +119,9 @@ export default function OnboardingCulture() {
     loadExistingData();
   }, [navigate]);
 
-  // Enhanced 10JUN25: Input handlers with haptic feedback
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
-    // Haptic feedback
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
-    
-    // Handle nested properties with dot notation
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
       setFormData(prev => ({
@@ -172,15 +139,8 @@ export default function OnboardingCulture() {
     }
   };
 
-  // Multi-select toggle handler for all option buttons
   const handleMultiSelect = (fieldName, value, isNested = false) => {
-    // Haptic feedback
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
-    
     if (isNested) {
-      // For nested fields like lifestyle_preferences
       const [parent, child] = fieldName.split('.');
       setFormData(prev => {
         const currentValues = prev[parent][child] || [];
@@ -197,7 +157,6 @@ export default function OnboardingCulture() {
         };
       });
     } else {
-      // For top-level fields
       setFormData(prev => {
         const currentValues = prev[fieldName] || [];
         const isSelected = currentValues.includes(value);
@@ -212,50 +171,6 @@ export default function OnboardingCulture() {
     }
   };
 
-  const handleCheckboxChange = (e) => {
-    const { name, checked } = e.target;
-    
-    // Haptic feedback
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
-    
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      
-      if (child === 'english_only') {
-        // If enabling English-only, clear the other language options
-        if (checked) {
-          setFormData(prev => ({
-            ...prev,
-            language_comfort: {
-              ...prev.language_comfort,
-              english_only: true,
-              willing_to_learn: false,
-              already_speak: []
-            }
-          }));
-        } else {
-          setFormData(prev => ({
-            ...prev,
-            language_comfort: {
-              ...prev.language_comfort,
-              english_only: false
-            }
-          }));
-        }
-      } else {
-        setFormData(prev => ({
-          ...prev,
-          [parent]: {
-            ...prev[parent],
-            [child]: checked
-          }
-        }));
-      }
-    }
-  };
-
   const handleLanguageChange = (newLanguages) => {
     setFormData(prev => ({
       ...prev,
@@ -267,11 +182,6 @@ export default function OnboardingCulture() {
   };
 
   const handleImportanceChange = (category, value) => {
-    // Haptic feedback
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
-    
     setFormData(prev => ({
       ...prev,
       cultural_importance: {
@@ -281,26 +191,8 @@ export default function OnboardingCulture() {
     }));
   };
 
-  // Enhanced 10JUN25: Form validation
-  const validateForm = () => {
-    // Check if at least some preferences are set
-    if (formData.expat_community_preference.length === 0 && 
-        formData.lifestyle_preferences.pace_of_life.length === 0 &&
-        formData.lifestyle_preferences.urban_rural.length === 0 &&
-        formData.language_comfort.preferences.length === 0) {
-      toast.error('Please select at least some preferences');
-      return false;
-    }
-    
-    return true;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
     
     setLoading(true);
     
@@ -333,24 +225,15 @@ export default function OnboardingCulture() {
     }
   };
 
-  // Navigation handlers
-  const handleBack = () => {
-    navigate('/onboarding/climate');
-  };
-
-  // Updated 10JUN25: Professional loading screen
   if (initialLoading) {
     return (
-      <div className={`min-h-screen ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
-        <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-scout-accent-300"></div>
-          <p className="text-scout-accent-600 font-medium">Loading your preferences...</p>
-        </div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
+        <div className="animate-pulse text-scout-accent-600 font-semibold">Loading...</div>
       </div>
     );
   }
 
-  // Cultural importance categories with icons - Reordered and removed Religious/Int'l
+  // Cultural importance categories with icons
   const culturalCategories = [
     { id: 'restaurants', label: 'Dining', icon: Utensils },
     { id: 'nightlife', label: 'Nightlife', icon: Music },
@@ -358,79 +241,35 @@ export default function OnboardingCulture() {
     { id: 'museums', label: 'Museums', icon: Building }
   ];
 
-  // Expat community options - Removed "None"
+  // Expat community options
   const expatOptions = [
-    { value: 'small', label: 'Small', icon: Users },
-    { value: 'moderate', label: 'Moderate', icon: UserPlus },
-    { value: 'large', label: 'Large', icon: Globe2 }
+    { value: 'small', label: 'Small' },
+    { value: 'moderate', label: 'Moderate' },
+    { value: 'large', label: 'Large' }
   ];
 
-  // Pace of life options - Compact labels
+  // Pace of life options
   const paceOptions = [
-    { value: 'slow', label: 'Relaxed', icon: TreePine },
-    { value: 'moderate', label: 'Moderate', icon: Gauge },
-    { value: 'fast', label: 'Fast', icon: Zap }
+    { value: 'slow', label: 'Relaxed' },
+    { value: 'moderate', label: 'Moderate' },
+    { value: 'fast', label: 'Fast' }
   ];
 
   // Language preference options
   const languageOptions = [
-    { value: 'english_only', label: 'English Only', icon: Languages },
-    { value: 'willing_to_learn', label: 'Will Learn', icon: BookOpen },
-    { value: 'comfortable', label: 'Any Language', icon: Globe2 }
+    { value: 'english_only', label: 'English Only' },
+    { value: 'willing_to_learn', label: 'Will Learn' },
+    { value: 'comfortable', label: 'Any Language' }
   ];
 
-  // Urban/Rural options - Compact labels
+  // Urban/Rural options
   const urbanOptions = [
-    { value: 'urban', label: 'Urban', icon: Building },
-    { value: 'suburban', label: 'Suburban', icon: Home },
-    { value: 'rural', label: 'Rural', icon: TreePine }
+    { value: 'urban', label: 'Urban' },
+    { value: 'suburban', label: 'Suburban' },
+    { value: 'rural', label: 'Rural' }
   ];
 
-  // Enhanced 10JUN25: Ultra-compact option button for mobile
-  const OptionButton = ({ option, isSelected, onClick, sectionName }) => {
-    const buttonId = `${sectionName}-${option.value}`;
-    const isPressed = touchedButton === buttonId;
-    const Icon = option.icon;
-    
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        onTouchStart={() => setTouchedButton(buttonId)}
-        onTouchEnd={() => setTouchedButton(null)}
-        className={`
-          relative flex flex-col items-center justify-center p-2 rounded-md border
-          transition-all duration-150 transform
-          ${isSelected
-            ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
-            : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200'
-          }
-          ${isPressed ? 'scale-95' : ''}
-          focus:outline-none focus:ring-1 focus:ring-scout-accent-400 focus:ring-offset-1
-        `}
-        aria-label={option.label}
-        aria-pressed={isSelected}
-      >
-        <Icon 
-          size={20} 
-          className={`transition-all duration-200 ${
-            isSelected 
-              ? 'text-scout-accent-600 dark:text-scout-accent-400' 
-              : 'text-gray-500 dark:text-gray-400'
-          }`}
-        />
-        <span className={`text-xs mt-1 ${
-          isSelected 
-            ? 'text-scout-accent-600 dark:text-scout-accent-400 font-medium' 
-            : 'text-gray-600 dark:text-gray-300'
-        }`}>
-          {option.label}
-        </span>
-      </button>
-    );
-  };
-
-  // Enhanced 10JUN25: Clean slider component with scout-accent theme
+  // Simple slider component
   const ImportanceSlider = ({ category, icon: Icon }) => {
     const value = formData.cultural_importance[category.id];
     
@@ -464,191 +303,172 @@ export default function OnboardingCulture() {
   };
 
   return (
-    <div className={`min-h-screen ${uiConfig.colors.page} p-4`}>
-      <div className={uiConfig.layout.width.containerNarrow}>
-        
-        {/* Step Navigation */}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="max-w-md mx-auto">
         <OnboardingStepNavigation 
-          currentStep="culture_preferences"
-          completedSteps={progress.completedSteps}
-          className="mb-4"
+          currentStep="culture_preferences" 
+          completedSteps={progress.completedSteps} 
+          className="mb-4" 
         />
-
-        {/* Main Form - Ultra compact padding */}
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-3 sm:p-4`}>
-          
-          {/* Header - Ultra compact */}
+        
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4">
+          {/* Header - mb-4 */}
           <div className="mb-4">
-            <h1 className="text-lg font-bold text-gray-800 dark:text-white">
-              Culture & Lifestyle
-            </h1>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              Tell us about your cultural preferences.
+            <h1 className="text-lg font-bold text-gray-800 dark:text-white">Culture & Lifestyle</h1>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+              Tell us about your cultural preferences
             </p>
           </div>
 
-          {/* Expat Community Preference - 3 columns, multi-select */}
+          {/* Expat Community Preference - mb-4 */}
           <div className="mb-4">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Users size={18} className="mr-1.5 text-scout-accent-600" />
+              <Users size={18} className="mr-1.5" />
               Expat Community Preference
             </label>
             <div className="grid grid-cols-3 gap-1.5">
               {expatOptions.map((option) => (
                 <OptionButton
                   key={option.value}
-                  option={option}
+                  label={option.label}
                   isSelected={formData.expat_community_preference.includes(option.value)}
                   onClick={() => handleMultiSelect('expat_community_preference', option.value)}
-                  sectionName="expat"
                 />
               ))}
             </div>
           </div>
 
-          {/* Pace of Life - Multi-select */}
+          {/* Pace of Life - mb-4 */}
           <div className="mb-4">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Gauge size={18} className="mr-1.5 text-scout-accent-600" />
+              <Gauge size={18} className="mr-1.5" />
               Pace of Life
             </label>
             <div className="grid grid-cols-3 gap-1.5">
               {paceOptions.map((option) => (
                 <OptionButton
                   key={option.value}
-                  option={option}
+                  label={option.label}
                   isSelected={formData.lifestyle_preferences.pace_of_life.includes(option.value)}
                   onClick={() => handleMultiSelect('lifestyle_preferences.pace_of_life', option.value, true)}
-                  sectionName="pace"
                 />
               ))}
             </div>
           </div>
 
-          {/* Urban vs Rural - Multi-select */}
+          {/* Living Environment - mb-4 */}
           <div className="mb-4">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Home size={18} className="mr-1.5 text-scout-accent-600" />
+              <Home size={18} className="mr-1.5" />
               Living Environment
             </label>
             <div className="grid grid-cols-3 gap-1.5">
               {urbanOptions.map((option) => (
                 <OptionButton
                   key={option.value}
-                  option={option}
+                  label={option.label}
                   isSelected={formData.lifestyle_preferences.urban_rural.includes(option.value)}
                   onClick={() => handleMultiSelect('lifestyle_preferences.urban_rural', option.value, true)}
-                  sectionName="urban"
                 />
               ))}
             </div>
           </div>
 
-          {/* Language Preferences - 3 button layout */}
+          {/* Language Preferences - mb-4 */}
           <div className="mb-4">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Languages size={18} className="mr-1.5 text-scout-accent-600" />
+              <Languages size={18} className="mr-1.5" />
               Language Preferences
             </label>
             <div className="grid grid-cols-3 gap-1.5">
               {languageOptions.map((option) => (
                 <OptionButton
                   key={option.value}
-                  option={option}
+                  label={option.label}
                   isSelected={formData.language_comfort.preferences.includes(option.value)}
                   onClick={() => handleMultiSelect('language_comfort.preferences', option.value, true)}
-                  sectionName="language"
                 />
               ))}
             </div>
           </div>
 
-          {/* Languages you speak - Same hierarchy level */}
+          {/* Languages you speak - mb-4 */}
           <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
               Languages you speak
             </label>
-            {formData.language_comfort.preferences.includes('english_only') ? (
-              <p className="text-xs text-gray-500 dark:text-gray-400 italic">
-                Language selection disabled for English-only destinations
-              </p>
-            ) : (
-              <div className="grid grid-cols-3 gap-1.5">
-                {/* Primary Language */}
-                <div>
-                  <label className="text-xs text-gray-500 dark:text-gray-400">Primary</label>
-                  <select
-                    value={formData.language_comfort.already_speak[0] || ''}
-                    onChange={(e) => {
-                      const newLanguages = [...formData.language_comfort.already_speak];
-                      newLanguages[0] = e.target.value;
-                      // Remove duplicates and empty values
-                      const uniqueLanguages = [...new Set(newLanguages.filter(Boolean))];
-                      handleLanguageChange(uniqueLanguages);
-                    }}
-                    className="w-full mt-0.5 px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-scout-accent-400"
-                  >
-                    <option value="">None</option>
-                    {languages.map(lang => (
-                      <option key={lang.id} value={lang.id}>
-                        {lang.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Secondary Language */}
-                <div>
-                  <label className="text-xs text-gray-500 dark:text-gray-400">Secondary</label>
-                  <select
-                    value={formData.language_comfort.already_speak[1] || ''}
-                    onChange={(e) => {
-                      const newLanguages = [...formData.language_comfort.already_speak];
-                      newLanguages[1] = e.target.value;
-                      // Remove duplicates and empty values
-                      const uniqueLanguages = [...new Set(newLanguages.filter(Boolean))];
-                      handleLanguageChange(uniqueLanguages);
-                    }}
-                    className="w-full mt-0.5 px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-scout-accent-400"
-                  >
-                    <option value="">None</option>
-                    {languages.map(lang => (
-                      <option key={lang.id} value={lang.id}>
-                        {lang.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Optional Language */}
-                <div>
-                  <label className="text-xs text-gray-500 dark:text-gray-400">Optional</label>
-                  <select
-                    value={formData.language_comfort.already_speak[2] || ''}
-                    onChange={(e) => {
-                      const newLanguages = [...formData.language_comfort.already_speak];
-                      newLanguages[2] = e.target.value;
-                      // Remove duplicates and empty values
-                      const uniqueLanguages = [...new Set(newLanguages.filter(Boolean))];
-                      handleLanguageChange(uniqueLanguages);
-                    }}
-                    className="w-full mt-0.5 px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-scout-accent-400"
-                  >
-                    <option value="">None</option>
-                    {languages.map(lang => (
-                      <option key={lang.id} value={lang.id}>
-                        {lang.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <div className="grid grid-cols-3 gap-1.5">
+              {/* Primary Language */}
+              <div>
+                <label className="text-xs text-gray-500 dark:text-gray-400">Primary</label>
+                <select
+                  value={formData.language_comfort.already_speak[0] || ''}
+                  onChange={(e) => {
+                    const newLanguages = [...formData.language_comfort.already_speak];
+                    newLanguages[0] = e.target.value;
+                    const uniqueLanguages = [...new Set(newLanguages.filter(Boolean))];
+                    handleLanguageChange(uniqueLanguages);
+                  }}
+                  className="w-full mt-0.5 px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+                >
+                  <option value="">None</option>
+                  {languages.map(lang => (
+                    <option key={lang.id} value={lang.id}>
+                      {lang.label}
+                    </option>
+                  ))}
+                </select>
               </div>
-            )}
+
+              {/* Secondary Language */}
+              <div>
+                <label className="text-xs text-gray-500 dark:text-gray-400">Secondary</label>
+                <select
+                  value={formData.language_comfort.already_speak[1] || ''}
+                  onChange={(e) => {
+                    const newLanguages = [...formData.language_comfort.already_speak];
+                    newLanguages[1] = e.target.value;
+                    const uniqueLanguages = [...new Set(newLanguages.filter(Boolean))];
+                    handleLanguageChange(uniqueLanguages);
+                  }}
+                  className="w-full mt-0.5 px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+                >
+                  <option value="">None</option>
+                  {languages.map(lang => (
+                    <option key={lang.id} value={lang.id}>
+                      {lang.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Optional Language */}
+              <div>
+                <label className="text-xs text-gray-500 dark:text-gray-400">Optional</label>
+                <select
+                  value={formData.language_comfort.already_speak[2] || ''}
+                  onChange={(e) => {
+                    const newLanguages = [...formData.language_comfort.already_speak];
+                    newLanguages[2] = e.target.value;
+                    const uniqueLanguages = [...new Set(newLanguages.filter(Boolean))];
+                    handleLanguageChange(uniqueLanguages);
+                  }}
+                  className="w-full mt-0.5 px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+                >
+                  <option value="">None</option>
+                  {languages.map(lang => (
+                    <option key={lang.id} value={lang.id}>
+                      {lang.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
-          {/* Cultural & Lifestyle Priorities - Compact sliders */}
+          {/* Cultural & Lifestyle Priorities - mb-4 */}
           <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
               Cultural & Lifestyle Priorities
             </label>
             <div className="space-y-2">
@@ -662,67 +482,68 @@ export default function OnboardingCulture() {
             </div>
           </div>
 
-          {/* Summary Section - Consistent height with buttons */}
-          {(formData.language_comfort.already_speak.length > 0 || 
-            formData.expat_community_preference.length > 0 ||
+          {/* Summary Section - mb-4 */}
+          {(formData.expat_community_preference.length > 0 ||
             formData.lifestyle_preferences.pace_of_life.length > 0 ||
             formData.lifestyle_preferences.urban_rural.length > 0 ||
             formData.language_comfort.preferences.length > 0 ||
-            Object.values(formData.cultural_importance).some(v => v >= 4)) && (
-            <div className="mt-3 px-4 py-2 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-md text-sm flex items-center">
-              <span className="font-medium text-scout-accent-700 dark:text-scout-accent-300">Summary: </span>
-              <span className="text-scout-accent-600 dark:text-scout-accent-400 ml-1">
-                {formData.expat_community_preference.map(v => 
-                  expatOptions.find(o => o.value === v)?.label
-                ).filter(Boolean).join(', ')}
-                {formData.expat_community_preference.length > 0 && ' community • '}
-                {formData.lifestyle_preferences.pace_of_life.map(v => 
-                  paceOptions.find(o => o.value === v)?.label
-                ).filter(Boolean).join(', ')}
-                {formData.lifestyle_preferences.pace_of_life.length > 0 && ' pace • '}
-                {formData.lifestyle_preferences.urban_rural.map(v => 
-                  urbanOptions.find(o => o.value === v)?.label
-                ).filter(Boolean).join(', ')}
-                {formData.lifestyle_preferences.urban_rural.length > 0 && ' • '}
-                {formData.language_comfort.preferences.map(v => 
-                  languageOptions.find(o => o.value === v)?.label
-                ).filter(Boolean).join(', ')}
-                {formData.language_comfort.preferences.length > 0 && ' • '}
-                {formData.language_comfort.already_speak.length > 0 && `${formData.language_comfort.already_speak.map(langId => 
-                  languages.find(l => l.id === langId)?.label
-                ).filter(Boolean).join(', ')}`}
-              </span>
+            formData.language_comfort.already_speak.length > 0) && (
+            <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <div className="text-sm text-gray-600 dark:text-gray-300">
+                <span className="font-medium">Summary:</span>
+                <div className="mt-1 text-xs space-y-1">
+                  {formData.expat_community_preference.length > 0 && (
+                    <div>• Community: {formData.expat_community_preference.join(', ')}</div>
+                  )}
+                  {formData.lifestyle_preferences.pace_of_life.length > 0 && (
+                    <div>• Pace: {formData.lifestyle_preferences.pace_of_life.join(', ')}</div>
+                  )}
+                  {formData.lifestyle_preferences.urban_rural.length > 0 && (
+                    <div>• Environment: {formData.lifestyle_preferences.urban_rural.join(', ')}</div>
+                  )}
+                  {formData.language_comfort.preferences.length > 0 && (
+                    <div>• Language preference: {formData.language_comfort.preferences.join(', ').replace(/_/g, ' ')}</div>
+                  )}
+                  {formData.language_comfort.already_speak.length > 0 && (
+                    <div>• Speaks: {formData.language_comfort.already_speak.map(langId => 
+                      languages.find(l => l.id === langId)?.label
+                    ).filter(Boolean).join(', ')}</div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
-          {/* Bottom Navigation - Compact */}
+          {/* Pro Tip */}
+          <div className="mb-4 p-3 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
+            <div className="flex items-start">
+              <div className="mr-2">
+                <svg className="h-5 w-5 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-gray-700 dark:text-gray-300">
+                  <span className="font-medium">Pro Tip:</span> Your cultural preferences help us find communities where you'll feel at home. Consider both practical needs and lifestyle desires.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
-              onClick={handleBack}
-              disabled={loading}
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+              onClick={() => navigate('/onboarding/climate')}
+              className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
             >
-              <ChevronLeft size={14} className="mr-1.5" />
               Back
             </button>
-            
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-scout-accent-300 rounded-md hover:bg-scout-accent-400 disabled:opacity-50"
+              className="px-6 py-2 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
             >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1.5"></div>
-                  Saving...
-                </>
-              ) : (
-                <>
-                  Continue
-                  <ChevronRight size={14} className="ml-1.5" />
-                </>
-              )}
+              {loading ? 'Saving...' : 'Continue'}
             </button>
           </div>
         </form>
