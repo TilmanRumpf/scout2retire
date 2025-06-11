@@ -1,16 +1,16 @@
 // src/pages/onboarding/OnboardingProgress.jsx
-// Updated 10JUN25: Fixed icon circles with proper sage/white styling
+// Updated 10JUN25: Fixed to match exact 7-step flow with correct icons
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../../utils/authUtils';
 import { getOnboardingProgress } from '../../utils/onboardingUtils';
 import { 
-  User, 
   MapPin, 
-  Thermometer, 
+  Globe, 
+  CloudSun, 
   Users, 
-  Heart, 
-  Stethoscope, 
+  SmilePlus,
+  HousePlus,
   DollarSign,
   CheckCircle2,
   Clock
@@ -28,56 +28,56 @@ export default function OnboardingProgress() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // 10JUN25 - Use lucide-react icons as requested
+  // 10JUN25 - Updated to match exact spreadsheet specification
   const steps = [
     { 
       key: 'current_status', 
       label: 'Current Status', 
       path: '/onboarding/current-status',
-      icon: User,
-      description: 'Tell us about your retirement situation'
+      icon: MapPin,
+      description: 'Your current situation'
     },
     { 
       key: 'region_preferences', 
       label: 'Region Preferences', 
       path: '/onboarding/region',
-      icon: MapPin,
-      description: 'Choose your preferred regions'
+      icon: Globe,
+      description: 'Your regional preferences'
     },
     { 
       key: 'climate_preferences', 
       label: 'Climate Preferences', 
       path: '/onboarding/climate',
-      icon: Thermometer,
-      description: 'Select your ideal climate'
+      icon: CloudSun,
+      description: 'Your climate preferences'
     },
     { 
       key: 'culture_preferences', 
       label: 'Culture Preferences', 
       path: '/onboarding/culture',
       icon: Users,
-      description: 'Define cultural preferences'
+      description: 'Your cultural preferences'
     },
     { 
       key: 'hobbies', 
       label: 'Hobbies & Interests', 
       path: '/onboarding/hobbies',
-      icon: Heart,
-      description: 'Share your hobbies and interests'
+      icon: SmilePlus,
+      description: 'Your preferred hobbies'
     },
     { 
       key: 'administration', 
-      label: 'Healthcare', 
-      path: '/onboarding/healthcare',
-      icon: Stethoscope,
-      description: 'Healthcare requirements and preferences'
+      label: 'Administration', 
+      path: '/onboarding/administration',
+      icon: HousePlus,
+      description: 'Your administrative preferences'
     },
     { 
       key: 'budget', 
       label: 'Budget & Costs', 
       path: '/onboarding/costs',
       icon: DollarSign,
-      description: 'Set your budget preferences'
+      description: 'Your cost preferences'
     }
   ];
 
@@ -97,14 +97,7 @@ export default function OnboardingProgress() {
           return;
         }
         
-        // 10JUN25 - Update total steps to 7 and recalculate percentage
-        const updatedProgress = {
-          ...userProgress,
-          totalSteps: 7,
-          percentage: Math.round((userProgress.completedCount / 7) * 100)
-        };
-        
-        setProgress(updatedProgress);
+        setProgress(userProgress);
       } catch (err) {
         setError("An unexpected error occurred");
         console.error(err);
@@ -116,13 +109,13 @@ export default function OnboardingProgress() {
     fetchProgress();
   }, [navigate]);
 
-  // 10JUN25 - Determine the next incomplete step for Continue button
+  // Determine the next incomplete step for Continue button
   const getNextStep = () => {
     const nextIncompleteStep = steps.find(step => !progress.completedSteps[step.key]);
     return nextIncompleteStep || steps[steps.length - 1];
   };
 
-  // 10JUN25 - Handle navigation to specific step (only if completed or next incomplete)
+  // Handle navigation to specific step (only if completed or next incomplete)
   const handleStepClick = (step) => {
     const isCompleted = progress.completedSteps[step.key];
     const nextStep = getNextStep();
@@ -133,13 +126,19 @@ export default function OnboardingProgress() {
     }
   };
 
-  // 10JUN25 - Handle continue button click
+  // Handle continue button click
   const handleContinue = () => {
     const nextStep = getNextStep();
-    navigate(nextStep.path);
+    
+    // If all steps are complete, go to review
+    if (progress.percentage === 100) {
+      navigate('/onboarding/review');
+    } else {
+      navigate(nextStep.path);
+    }
   };
 
-  // 10JUN25 - Get status display for each step using uiConfig patterns
+  // Get status display for each step using uiConfig patterns
   const getStepStatus = (step) => {
     const isCompleted = progress.completedSteps[step.key];
     const nextStep = getNextStep();
@@ -195,7 +194,7 @@ export default function OnboardingProgress() {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
-      {/* 10JUN25 - Header with progress overview using uiConfig styles */}
+      {/* Header with progress overview using uiConfig styles */}
       <header className={`${uiConfig.colors.card} ${uiConfig.layout.shadow.sm}`}>
         <div className={`${uiConfig.layout.width.container} ${uiConfig.layout.spacing.card}`}>
           <div className="text-center mb-6">
@@ -207,7 +206,7 @@ export default function OnboardingProgress() {
             </p>
           </div>
           
-          {/* 10JUN25 - Overall completion percentage using uiConfig progress styles */}
+          {/* Overall completion percentage using uiConfig progress styles */}
           <div className={`bg-gray-100 dark:bg-gray-700 ${uiConfig.layout.radius.lg} ${uiConfig.layout.spacing.cardCompact}`}>
             <div className="flex justify-between items-center mb-2">
               <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body}`}>
@@ -231,7 +230,7 @@ export default function OnboardingProgress() {
       </header>
 
       <main className={`${uiConfig.layout.width.container} ${uiConfig.layout.spacing.section}`}>
-        {/* 10JUN25 - Three-column table layout following uiConfig patterns */}
+        {/* Three-column table layout following uiConfig patterns */}
         <div className={`${uiConfig.components.card} ${uiConfig.layout.shadow.md}`}>
           <div className={`${uiConfig.layout.spacing.card} border-b ${uiConfig.colors.borderLight}`}>
             <h2 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
@@ -255,7 +254,7 @@ export default function OnboardingProgress() {
                       : 'cursor-not-allowed opacity-75'
                   }`}
                 >
-                  {/* Column 1: Step Icon - Fixed 10JUN25: Proper circle styling with white icons */}
+                  {/* Column 1: Step Icon - Proper circle styling with white icons */}
                   <div className="flex items-center justify-center md:col-span-2 order-1">
                     <div className={`w-12 h-12 ${uiConfig.layout.radius.full} flex items-center justify-center ${
                       statusInfo.status === 'completed' 
@@ -291,7 +290,7 @@ export default function OnboardingProgress() {
           </div>
         </div>
         
-        {/* 10JUN25 - Continue button using uiConfig button styles */}
+        {/* Continue button using uiConfig button styles */}
         <div className="mt-6 flex justify-center">
           <button
             onClick={handleContinue}
@@ -301,7 +300,7 @@ export default function OnboardingProgress() {
           </button>
         </div>
         
-        {/* 10JUN25 - Help text using uiConfig typography */}
+        {/* Help text using uiConfig typography */}
         <div className="mt-4 text-center">
           <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint}`}>
             💡 Click on completed steps to edit them. Complete all steps for the best recommendations.
