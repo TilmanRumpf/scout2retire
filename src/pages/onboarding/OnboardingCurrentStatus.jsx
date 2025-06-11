@@ -374,31 +374,6 @@ export default function OnboardingCurrentStatus() {
             </div>
           </div>
 
-          {/* Pet Owner - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <PawPrint size={18} className="mr-1.5" />
-              Pet Owner
-            </label>
-            <div className="grid grid-cols-3 gap-1.5">
-              <OptionButton
-                label="Cat"
-                isSelected={formData.pet_owner?.includes('cat') || false}
-                onClick={() => handlePetChange('cat')}
-              />
-              <OptionButton
-                label="Dog"
-                isSelected={formData.pet_owner?.includes('dog') || false}
-                onClick={() => handlePetChange('dog')}
-              />
-              <OptionButton
-                label="Other"
-                isSelected={formData.pet_owner?.includes('other') || false}
-                onClick={() => handlePetChange('other')}
-              />
-            </div>
-          </div>
-
           {/* Citizenship - mb-4 */}
           <div className="mb-4">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
@@ -646,6 +621,31 @@ export default function OnboardingCurrentStatus() {
                 )}
               </>
             )}
+          </div>
+
+          {/* Pet Owner - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <PawPrint size={18} className="mr-1.5" />
+              Pet Owner
+            </label>
+            <div className="grid grid-cols-3 gap-1.5">
+              <OptionButton
+                label="Cat"
+                isSelected={formData.pet_owner?.includes('cat') || false}
+                onClick={() => handlePetChange('cat')}
+              />
+              <OptionButton
+                label="Dog"
+                isSelected={formData.pet_owner?.includes('dog') || false}
+                onClick={() => handlePetChange('dog')}
+              />
+              <OptionButton
+                label="Other"
+                isSelected={formData.pet_owner?.includes('other') || false}
+                onClick={() => handlePetChange('other')}
+              />
+            </div>
           </div>
 
           {/* Summary Section - mb-4 */}
