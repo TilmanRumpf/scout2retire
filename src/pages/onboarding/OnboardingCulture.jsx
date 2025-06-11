@@ -17,12 +17,7 @@ import {
   Gauge,
   Home,
   TreePine,
-  Zap,
-  BookOpen,
-  Scale,
-  Plus,
-  Check,
-  X
+  Zap
 } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
@@ -37,8 +32,7 @@ export default function OnboardingCulture() {
     language_comfort: {
       english_only: false,
       willing_to_learn: true,
-      already_speak: [],
-      additional_language: '' // For custom language input
+      already_speak: []
     },
     cultural_importance: {
       restaurants: 3,
@@ -66,7 +60,6 @@ export default function OnboardingCulture() {
   
   // Added 10JUN25: Touch feedback state
   const [touchedButton, setTouchedButton] = useState(null);
-  const [showLanguageInput, setShowLanguageInput] = useState(false);
   
   const navigate = useNavigate();
 
@@ -113,14 +106,7 @@ export default function OnboardingCulture() {
         
         // If culture data exists, load it
         if (data && data.culture_preferences) {
-          const loadedData = {
-            ...data.culture_preferences,
-            language_comfort: {
-              ...data.culture_preferences.language_comfort,
-              additional_language: data.culture_preferences.language_comfort?.additional_language || ''
-            }
-          };
-          setFormData(loadedData);
+          setFormData(data.culture_preferences);
         }
       } catch (err) {
         console.error("Unexpected error loading data:", err);
@@ -203,28 +189,14 @@ export default function OnboardingCulture() {
     }
   };
 
-  const handleLanguageToggle = (language) => {
-    // Haptic feedback
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
-    
-    setFormData(prev => {
-      let updatedComfort = { ...prev.language_comfort };
-      const isSelected = updatedComfort.already_speak.includes(language);
-      
-      if (isSelected) {
-        updatedComfort.already_speak = updatedComfort.already_speak.filter(lang => lang !== language);
-      } else {
-        updatedComfort.english_only = false;
-        updatedComfort.already_speak = [...updatedComfort.already_speak, language];
+  const handleLanguageChange = (newLanguages) => {
+    setFormData(prev => ({
+      ...prev,
+      language_comfort: {
+        ...prev.language_comfort,
+        already_speak: newLanguages
       }
-      
-      return {
-        ...prev,
-        language_comfort: updatedComfort
-      };
-    });
+    }));
   };
 
   const handleImportanceChange = (category, value) => {
@@ -240,24 +212,6 @@ export default function OnboardingCulture() {
         [category]: value
       }
     }));
-  };
-
-  // Enhanced 10JUN25: Additional language handler
-  const handleAdditionalLanguageAdd = () => {
-    const additionalLang = (formData.language_comfort.additional_language || '').trim();
-    if (additionalLang && !formData.language_comfort.already_speak.includes(additionalLang.toLowerCase())) {
-      setFormData(prev => ({
-        ...prev,
-        language_comfort: {
-          ...prev.language_comfort,
-          already_speak: [...prev.language_comfort.already_speak, additionalLang.toLowerCase()],
-          additional_language: '',
-          english_only: false
-        }
-      }));
-      setShowLanguageInput(false);
-      toast.success(`Added ${additionalLang} to your languages`);
-    }
   };
 
   // Enhanced 10JUN25: Form validation
@@ -326,47 +280,40 @@ export default function OnboardingCulture() {
     );
   }
 
-  // Cultural importance categories with icons
+  // Cultural importance categories with icons - Compact labels
   const culturalCategories = [
-    { id: 'restaurants', label: 'Dining & Cuisine', icon: Utensils },
-    { id: 'museums', label: 'Museums & Art', icon: Building },
+    { id: 'restaurants', label: 'Dining', icon: Utensils },
+    { id: 'museums', label: 'Museums', icon: Building },
     { id: 'nightlife', label: 'Nightlife', icon: Music },
-    { id: 'religious_facilities', label: 'Religious Sites', icon: Church },
-    { id: 'cultural_events', label: 'Cultural Events', icon: Calendar },
-    { id: 'international_community', label: 'Int\'l Community', icon: Globe2 }
+    { id: 'religious_facilities', label: 'Religious', icon: Church },
+    { id: 'cultural_events', label: 'Events', icon: Calendar },
+    { id: 'international_community', label: 'Int\'l', icon: Globe2 }
   ];
 
-  // Expat community options
+  // Expat community options - Ultra compact
   const expatOptions = [
-    { value: 'none', label: 'None Needed', icon: Home, description: 'Prefer local immersion' },
-    { value: 'small', label: 'Small', icon: Users, description: 'Few expats around' },
-    { value: 'moderate', label: 'Moderate', icon: UserPlus, description: 'Balanced mix' },
-    { value: 'large', label: 'Large', icon: Globe2, description: 'Strong expat presence' }
+    { value: 'none', label: 'None', icon: Home },
+    { value: 'small', label: 'Small', icon: Users },
+    { value: 'moderate', label: 'Moderate', icon: UserPlus },
+    { value: 'large', label: 'Large', icon: Globe2 }
   ];
 
-  // Pace of life options
+  // Pace of life options - Compact labels
   const paceOptions = [
-    { value: 'slow', label: 'Relaxed', icon: TreePine, description: 'Slow & peaceful' },
-    { value: 'moderate', label: 'Moderate', icon: Gauge, description: 'Balanced pace' },
-    { value: 'fast', label: 'Fast', icon: Zap, description: 'Energetic & busy' }
+    { value: 'slow', label: 'Relaxed', icon: TreePine },
+    { value: 'moderate', label: 'Moderate', icon: Gauge },
+    { value: 'fast', label: 'Fast', icon: Zap }
   ];
 
-  // Urban/Rural options
+  // Urban/Rural options - Compact labels
   const urbanOptions = [
-    { value: 'urban', label: 'Urban', icon: Building, description: 'City living' },
-    { value: 'suburban', label: 'Suburban', icon: Home, description: 'Mix of both' },
-    { value: 'rural', label: 'Rural', icon: TreePine, description: 'Countryside' }
+    { value: 'urban', label: 'Urban', icon: Building },
+    { value: 'suburban', label: 'Suburban', icon: Home },
+    { value: 'rural', label: 'Rural', icon: TreePine }
   ];
 
-  // Community values options
-  const valuesOptions = [
-    { value: 'traditional', label: 'Traditional', icon: BookOpen, description: 'Conservative values' },
-    { value: 'balanced', label: 'Balanced', icon: Scale, description: 'Mixed approach' },
-    { value: 'progressive', label: 'Progressive', icon: Zap, description: 'Liberal values' }
-  ];
-
-  // Enhanced 10JUN25: Compact option button for mobile-first design
-  const OptionButton = ({ option, isSelected, onClick, sectionName, compact = false }) => {
+  // Enhanced 10JUN25: Ultra-compact option button for mobile
+  const OptionButton = ({ option, isSelected, onClick, sectionName }) => {
     const buttonId = `${sectionName}-${option.value}`;
     const isPressed = touchedButton === buttonId;
     const Icon = option.icon;
@@ -378,91 +325,71 @@ export default function OnboardingCulture() {
         onTouchStart={() => setTouchedButton(buttonId)}
         onTouchEnd={() => setTouchedButton(null)}
         className={`
-          relative flex ${compact ? 'flex-row items-center' : 'flex-col items-center justify-center'} 
-          ${compact ? 'p-3' : 'p-4'} rounded-lg border-2 
-          transition-all duration-200 transform
+          relative flex flex-col items-center justify-center p-2 rounded-md border
+          transition-all duration-150 transform
           ${isSelected
-            ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 shadow-md scale-[1.02]'
-            : 'border-gray-200 dark:border-gray-700 hover:border-scout-accent-200 hover:bg-gray-50 dark:hover:bg-gray-800'
+            ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
+            : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200'
           }
           ${isPressed ? 'scale-95' : ''}
-          focus:outline-none focus:ring-2 focus:ring-scout-accent-400 focus:ring-offset-2
+          focus:outline-none focus:ring-1 focus:ring-scout-accent-400 focus:ring-offset-1
         `}
         aria-label={option.label}
         aria-pressed={isSelected}
       >
         <Icon 
-          size={compact ? 20 : 24} 
-          className={`transition-all duration-300 ${
-            isSelected 
-              ? 'text-scout-accent-700 dark:text-scout-accent-300' 
-              : 'text-gray-600 dark:text-gray-400'
-          }`}
-        />
-        <span className={`text-sm font-medium ${compact ? 'ml-3' : 'mt-2 text-center'} ${
-          isSelected 
-            ? 'text-scout-accent-700 dark:text-scout-accent-300' 
-            : 'text-gray-800 dark:text-gray-200'
-        }`}>
-          {option.label}
-        </span>
-        {!compact && option.shortDesc && (
-          <span className={`text-xs mt-1 ${
+          size={20} 
+          className={`transition-all duration-200 ${
             isSelected 
               ? 'text-scout-accent-600 dark:text-scout-accent-400' 
               : 'text-gray-500 dark:text-gray-400'
-          }`}>
-            {option.shortDesc}
-          </span>
-        )}
+          }`}
+        />
+        <span className={`text-xs mt-1 ${
+          isSelected 
+            ? 'text-scout-accent-600 dark:text-scout-accent-400 font-medium' 
+            : 'text-gray-600 dark:text-gray-300'
+        }`}>
+          {option.label}
+        </span>
         {isSelected && (
-          <div className="absolute top-2 right-2">
-            <div className="w-2 h-2 bg-scout-accent-300 rounded-full animate-pulse"></div>
+          <div className="absolute -top-1 -right-1">
+            <div className="w-1.5 h-1.5 bg-scout-accent-300 rounded-full"></div>
           </div>
         )}
       </button>
     );
   };
 
-  // Enhanced 10JUN25: Importance slider component
+  // Enhanced 10JUN25: Clean slider component with scout-accent theme
   const ImportanceSlider = ({ category, icon: Icon }) => {
     const value = formData.cultural_importance[category.id];
     
     return (
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Icon size={20} className="text-scout-accent-600" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+      <div className="mb-3">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center">
+            <Icon size={16} className="text-scout-accent-600 mr-1.5" />
+            <span className="text-sm text-gray-700 dark:text-gray-300">
               {category.label}
             </span>
           </div>
-          <span className="text-sm font-semibold text-scout-accent-600 dark:text-scout-accent-400">
+          <span className="text-xs font-medium text-scout-accent-600 dark:text-scout-accent-400">
             {value}/5
           </span>
         </div>
-        <div className="relative">
-          <input
-            type="range"
-            min="1"
-            max="5"
-            step="1"
-            value={value}
-            onChange={(e) => handleImportanceChange(category.id, parseInt(e.target.value))}
-            className={`
-              w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none cursor-pointer
-              [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 
-              [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full 
-              [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg 
-              [&::-webkit-slider-thumb]:hover:shadow-xl [&::-webkit-slider-thumb]:transition-all
-              [&::-webkit-slider-thumb]:hover:scale-110
-            `}
-          />
-          <div 
-            className="absolute top-0 left-0 h-2 bg-scout-accent-300 rounded-full pointer-events-none transition-all duration-300"
-            style={{ width: `${(value - 1) * 25}%` }}
-          ></div>
-        </div>
+        <input
+          type="range"
+          min="1"
+          max="5"
+          step="1"
+          value={value}
+          onChange={(e) => handleImportanceChange(category.id, parseInt(e.target.value))}
+          className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-scout"
+          style={{
+            background: `linear-gradient(to right, #8fbc8f 0%, #8fbc8f ${(value - 1) * 25}%, #e5e7eb ${(value - 1) * 25}%, #e5e7eb 100%)`
+          }}
+        />
       </div>
     );
   };
@@ -475,29 +402,29 @@ export default function OnboardingCulture() {
         <OnboardingStepNavigation 
           currentStep="culture_preferences"
           completedSteps={progress.completedSteps}
-          className="mb-8"
+          className="mb-4"
         />
 
-        {/* Main Form */}
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} ${uiConfig.layout.spacing.card}`}>
+        {/* Main Form - Ultra compact padding */}
+        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-3 sm:p-4`}>
           
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className={`${uiConfig.font.size['2xl']} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading} mb-2`}>
+          {/* Header - Ultra compact */}
+          <div className="mb-4">
+            <h1 className="text-lg font-bold text-gray-800 dark:text-white">
               Culture & Lifestyle
             </h1>
-            <p className={`${uiConfig.font.size.base} ${uiConfig.colors.body}`}>
-              Tell us about your cultural preferences and lifestyle expectations.
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              Tell us about your cultural preferences.
             </p>
           </div>
 
-          {/* Expat Community Preference - Enhanced with visual options */}
-          <div className={uiConfig.layout.spacing.field}>
-            <label className={`${uiConfig.components.label} flex items-center`}>
-              <Users size={20} className="mr-2 text-scout-accent-600" />
+          {/* Expat Community Preference - Ultra compact 4 columns */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <Users size={18} className="mr-1.5 text-scout-accent-600" />
               Expat Community Preference
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 gap-1.5">
               {expatOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -512,13 +439,13 @@ export default function OnboardingCulture() {
             </div>
           </div>
 
-          {/* Pace of Life - Enhanced with icons */}
-          <div className={uiConfig.layout.spacing.field}>
-            <label className={`${uiConfig.components.label} flex items-center`}>
-              <Gauge size={20} className="mr-2 text-scout-accent-600" />
-              Preferred Pace of Life
+          {/* Pace of Life - Compact 3 columns */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <Gauge size={18} className="mr-1.5 text-scout-accent-600" />
+              Pace of Life
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-1.5">
               {paceOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -537,13 +464,13 @@ export default function OnboardingCulture() {
             </div>
           </div>
 
-          {/* Urban vs Rural - Enhanced with icons */}
-          <div className={uiConfig.layout.spacing.field}>
-            <label className={`${uiConfig.components.label} flex items-center`}>
-              <Home size={20} className="mr-2 text-scout-accent-600" />
+          {/* Urban vs Rural - Compact 3 columns */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <Home size={18} className="mr-1.5 text-scout-accent-600" />
               Living Environment
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-1.5">
               {urbanOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -562,37 +489,12 @@ export default function OnboardingCulture() {
             </div>
           </div>
 
-          {/* Community Values - New visual section */}
-          <div className={uiConfig.layout.spacing.field}>
-            <label className={`${uiConfig.components.label} flex items-center`}>
-              <Scale size={20} className="mr-2 text-scout-accent-600" />
-              Community Values
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {valuesOptions.map((option) => (
-                <OptionButton
-                  key={option.value}
-                  option={option}
-                  isSelected={formData.lifestyle_preferences.traditional_progressive === option.value}
-                  onClick={() => setFormData({
-                    ...formData,
-                    lifestyle_preferences: {
-                      ...formData.lifestyle_preferences,
-                      traditional_progressive: option.value
-                    }
-                  })}
-                  sectionName="values"
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Cultural Importance - Enhanced sliders */}
-          <div className={uiConfig.layout.spacing.field}>
-            <label className={`${uiConfig.components.label} mb-4`}>
+          {/* Cultural Importance - Compact sliders */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Cultural Amenities Importance
             </label>
-            <div className="space-y-4">
+            <div className="space-y-2">
               {culturalCategories.map((category) => (
                 <ImportanceSlider 
                   key={category.id} 
@@ -601,200 +503,199 @@ export default function OnboardingCulture() {
                 />
               ))}
             </div>
-            <p className={`${uiConfig.components.helpText} mt-3`}>
-              Rate how important each amenity is to you (1 = not important, 5 = very important)
-            </p>
+            <style jsx>{`
+              .slider-scout::-webkit-slider-thumb {
+                appearance: none;
+                width: 16px;
+                height: 16px;
+                background: #8fbc8f;
+                border-radius: 50%;
+                cursor: pointer;
+                border: 2px solid white;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+              }
+              .slider-scout::-moz-range-thumb {
+                width: 16px;
+                height: 16px;
+                background: #8fbc8f;
+                border-radius: 50%;
+                cursor: pointer;
+                border: 2px solid white;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+              }
+            `}</style>
           </div>
 
-          {/* Languages - Enhanced visual selection */}
-          <div className={uiConfig.layout.spacing.field}>
-            <label className={`${uiConfig.components.label} flex items-center`}>
-              <Languages size={20} className="mr-2 text-scout-accent-600" />
+          {/* Language Preferences - Compact dropdown */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <Languages size={18} className="mr-1.5 text-scout-accent-600" />
               Language Preferences
             </label>
             
-            {/* Language comfort options */}
-            <div className="space-y-3 mb-4">
-              <label className="flex items-center p-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-scout-accent-200 transition-all cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="language_comfort.english_only"
-                  checked={formData.language_comfort.english_only}
-                  onChange={handleCheckboxChange}
-                  className={uiConfig.components.checkbox}
-                />
-                <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  I prefer English-only destinations
-                </span>
-              </label>
-              
-              <label className={`flex items-center p-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-scout-accent-200 transition-all cursor-pointer ${
-                formData.language_comfort.english_only ? 'opacity-50 cursor-not-allowed' : ''
-              }`}>
-                <input
-                  type="checkbox"
-                  name="language_comfort.willing_to_learn"
-                  checked={formData.language_comfort.willing_to_learn}
-                  onChange={handleCheckboxChange}
-                  disabled={formData.language_comfort.english_only}
-                  className={uiConfig.components.checkbox}
-                />
-                <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  I'm willing to learn a new language
-                </span>
-              </label>
-            </div>
+            {/* Language comfort dropdown */}
+            <select
+              name="language_comfort_level"
+              value={
+                formData.language_comfort.english_only ? 'english_only' :
+                formData.language_comfort.willing_to_learn ? 'willing_to_learn' :
+                'comfortable'
+              }
+              onChange={(e) => {
+                const value = e.target.value;
+                setFormData(prev => ({
+                  ...prev,
+                  language_comfort: {
+                    ...prev.language_comfort,
+                    english_only: value === 'english_only',
+                    willing_to_learn: value === 'willing_to_learn' || value === 'english_only'
+                  }
+                }));
+              }}
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700"
+            >
+              <option value="english_only">English-only destinations</option>
+              <option value="willing_to_learn">Willing to learn new language</option>
+              <option value="comfortable">Comfortable with any language</option>
+            </select>
 
-            {/* Languages you speak */}
+            {/* Languages you speak - Three columns */}
             {!formData.language_comfort.english_only && (
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Languages you already speak:
+              <div className="mt-2">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">
+                  Languages you speak:
                 </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {languages.map((language) => (
-                    <button
-                      key={language.id}
-                      type="button"
-                      onClick={() => handleLanguageToggle(language.id)}
-                      className={`
-                        flex items-center justify-center p-3 rounded-lg border-2 transition-all duration-200
-                        ${formData.language_comfort.already_speak.includes(language.id)
-                          ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-scout-accent-200'
-                        }
-                      `}
-                    >
-                      <span className="mr-2">{language.flag}</span>
-                      <span className={`text-sm font-medium ${
-                        formData.language_comfort.already_speak.includes(language.id)
-                          ? 'text-scout-accent-700 dark:text-scout-accent-300'
-                          : 'text-gray-700 dark:text-gray-300'
-                      }`}>
-                        {language.label}
-                      </span>
-                    </button>
-                  ))}
-                  
-                  {/* Add custom language button */}
-                  <button
-                    type="button"
-                    onClick={() => setShowLanguageInput(true)}
-                    className="flex items-center justify-center p-3 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-scout-accent-300 transition-all duration-200"
-                  >
-                    <Plus size={20} className="mr-2 text-gray-500" />
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Add Other
-                    </span>
-                  </button>
-                </div>
-
-                {/* Custom language input */}
-                {showLanguageInput && (
-                  <div className="flex space-x-2 mt-3">
-                    <input
-                      type="text"
-                      name="language_comfort.additional_language"
-                      value={formData.language_comfort.additional_language || ''}
-                      onChange={handleInputChange}
-                      placeholder="Enter language name"
-                      className={`flex-1 ${uiConfig.components.input}`}
-                      autoFocus
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAdditionalLanguageAdd}
-                      disabled={!(formData.language_comfort.additional_language || '').trim()}
-                      className="px-4 py-2 bg-scout-accent-300 text-white rounded-lg hover:bg-scout-accent-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                    >
-                      <Check size={20} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowLanguageInput(false);
-                        setFormData(prev => ({
-                          ...prev,
-                          language_comfort: {
-                            ...prev.language_comfort,
-                            additional_language: ''
-                          }
-                        }));
+                <div className="grid grid-cols-3 gap-1.5">
+                  {/* Primary Language */}
+                  <div>
+                    <label className="text-xs text-gray-500 dark:text-gray-400">Primary</label>
+                    <select
+                      value={formData.language_comfort.already_speak[0] || ''}
+                      onChange={(e) => {
+                        const newLanguages = [...formData.language_comfort.already_speak];
+                        newLanguages[0] = e.target.value;
+                        // Remove duplicates and empty values
+                        const uniqueLanguages = [...new Set(newLanguages.filter(Boolean))];
+                        handleLanguageChange(uniqueLanguages);
                       }}
-                      className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
+                      className="w-full mt-0.5 px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
                     >
-                      <X size={20} />
-                    </button>
+                      <option value="">None</option>
+                      {languages.map(lang => (
+                        <option key={lang.id} value={lang.id}>
+                          {lang.flag} {lang.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                )}
+
+                  {/* Secondary Language */}
+                  <div>
+                    <label className="text-xs text-gray-500 dark:text-gray-400">Secondary</label>
+                    <select
+                      value={formData.language_comfort.already_speak[1] || ''}
+                      onChange={(e) => {
+                        const newLanguages = [...formData.language_comfort.already_speak];
+                        newLanguages[1] = e.target.value;
+                        // Remove duplicates and empty values
+                        const uniqueLanguages = [...new Set(newLanguages.filter(Boolean))];
+                        handleLanguageChange(uniqueLanguages);
+                      }}
+                      className="w-full mt-0.5 px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
+                    >
+                      <option value="">None</option>
+                      {languages.map(lang => (
+                        <option key={lang.id} value={lang.id}>
+                          {lang.flag} {lang.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Optional Language */}
+                  <div>
+                    <label className="text-xs text-gray-500 dark:text-gray-400">Optional</label>
+                    <select
+                      value={formData.language_comfort.already_speak[2] || ''}
+                      onChange={(e) => {
+                        const newLanguages = [...formData.language_comfort.already_speak];
+                        newLanguages[2] = e.target.value;
+                        // Remove duplicates and empty values
+                        const uniqueLanguages = [...new Set(newLanguages.filter(Boolean))];
+                        handleLanguageChange(uniqueLanguages);
+                      }}
+                      className="w-full mt-0.5 px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
+                    >
+                      <option value="">None</option>
+                      {languages.map(lang => (
+                        <option key={lang.id} value={lang.id}>
+                          {lang.flag} {lang.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Summary Section - Added 10JUN25 */}
+          {/* Summary Section - Ultra compact */}
           {(formData.language_comfort.already_speak.length > 0 || 
             formData.expat_community_preference !== 'moderate' ||
             Object.values(formData.cultural_importance).some(v => v >= 4)) && (
-            <div className="mt-6 p-4 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
-              <h3 className="text-sm font-medium text-scout-accent-700 dark:text-scout-accent-300 mb-2">
-                Your Culture Profile:
-              </h3>
-              <div className="text-xs text-scout-accent-600 dark:text-scout-accent-400 space-y-1">
-                <p>• Community: {expatOptions.find(o => o.value === formData.expat_community_preference)?.label}</p>
-                <p>• Pace: {paceOptions.find(o => o.value === formData.lifestyle_preferences.pace_of_life)?.label}</p>
-                <p>• Environment: {urbanOptions.find(o => o.value === formData.lifestyle_preferences.urban_rural)?.label}</p>
-                {formData.language_comfort.already_speak.length > 0 && (
-                  <p>• Languages: {formData.language_comfort.already_speak.length} spoken</p>
-                )}
-                {Object.entries(formData.cultural_importance).filter(([_, v]) => v >= 4).length > 0 && (
-                  <p>• High priorities: {Object.entries(formData.cultural_importance).filter(([_, v]) => v >= 4).map(([k]) => 
-                    culturalCategories.find(c => c.id === k)?.label
-                  ).join(', ')}</p>
-                )}
-              </div>
+            <div className="mt-3 p-2 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded text-xs">
+              <span className="font-medium text-scout-accent-700 dark:text-scout-accent-300">Summary: </span>
+              <span className="text-scout-accent-600 dark:text-scout-accent-400">
+                {expatOptions.find(o => o.value === formData.expat_community_preference)?.label} community • 
+                {paceOptions.find(o => o.value === formData.lifestyle_preferences.pace_of_life)?.label} pace • 
+                {urbanOptions.find(o => o.value === formData.lifestyle_preferences.urban_rural)?.label}
+                {formData.language_comfort.already_speak.length > 0 && ` • ${formData.language_comfort.already_speak.map(langId => 
+                  languages.find(l => l.id === langId)?.label
+                ).filter(Boolean).join(', ')}`}
+              </span>
             </div>
           )}
 
-          {/* Bottom Navigation */}
-          <div className={uiConfig.bottomNavigation.styles.container}>
+          {/* Bottom Navigation - Compact */}
+          <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={handleBack}
               disabled={loading}
-              className={uiConfig.bottomNavigation.styles.backButton}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              <ChevronLeft size={16} className="mr-2" />
+              <ChevronLeft size={14} className="mr-1.5" />
               Back
             </button>
             
             <button
               type="submit"
               disabled={loading}
-              className={uiConfig.bottomNavigation.styles.nextButton}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-scout-accent-300 rounded-md hover:bg-scout-accent-400 disabled:opacity-50"
             >
               {loading ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1.5"></div>
                   Saving...
                 </>
               ) : (
                 <>
                   Continue
-                  <ChevronRight size={16} className="ml-2" />
+                  <ChevronRight size={14} className="ml-1.5" />
                 </>
               )}
             </button>
           </div>
         </form>
 
-        {/* Progress Indicator */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+        {/* Progress Indicator - Compact */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             Step 4 of 7 • {Math.round((4/7) * 100)}% complete
           </p>
-          <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div className="mt-1 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
             <div 
-              className="bg-scout-accent-300 h-2 rounded-full transition-all duration-500"
+              className="bg-scout-accent-300 h-1.5 rounded-full transition-all duration-500"
               style={{ width: `${Math.round((4/7) * 100)}%` }}
             ></div>
           </div>
