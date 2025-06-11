@@ -1,40 +1,77 @@
-// src/pages/onboarding/OnboardingCurrentStatus.jsx
-// Updated 10JUN25: Fixed data persistence and proper integration
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Calendar, Users, Globe, PawPrint } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
-import { ChevronRight, ChevronLeft, User, Users, Home, Globe2, Calendar, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { uiConfig } from '../../styles/uiConfig';
+
+// Option Button Component - 10JUN25
+const OptionButton = ({ label, description, isSelected, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`p-3 rounded-md border-2 transition-all text-center ${
+      isSelected
+        ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 ring-2 ring-scout-accent-300 ring-offset-1'
+        : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
+    }`}
+  >
+    <div className={`text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
+    {description && <div className={`text-xs mt-1 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
+  </button>
+);
 
 export default function OnboardingCurrentStatus() {
-  const navigate = useNavigate();
-  const currentYear = new Date().getFullYear();
+  const [formData, setFormData] = useState({
+    retirement_timeline: {
+      status: 'planning',
+      target_year: new Date().getFullYear() + 5,
+      flexibility: 'somewhat_flexible'
+    },
+    family_situation: 'solo', // Simple string instead of object
+    pet_owner: [],
+    citizenship: {
+      primary_citizenship: 'us',
+      dual_citizenship: false,
+      secondary_citizenship: ''
+    },
+    partner_citizenship: {
+      primary_citizenship: 'us',
+      dual_citizenship: false,
+      secondary_citizenship: ''
+    }
+  });
   
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [completedSteps, setCompletedSteps] = useState({});
-  
-  // Updated form structure to match your requirements
-  const [formData, setFormData] = useState({
-    retirement_timeline: {
-      status: '',
-      target_year: currentYear + 5
-    },
-    family_situation: {
-      status: '',
-      dependents: 0
-    },
-    citizenship: {
-      primary_citizenship: '',
-      dual_citizenship: false,
-      other_citizenships: []
-    }
-  });
+  const [progress, setProgress] = useState({ completedSteps: {} });
+  const navigate = useNavigate();
+  const currentYear = new Date().getFullYear();
 
-  // Load existing data on mount
+  // Country list - Professional format without flags
+  const countries = [
+    { id: 'us', label: 'United States' },
+    { id: 'uk', label: 'United Kingdom' },
+    { id: 'ca', label: 'Canada' },
+    { id: 'au', label: 'Australia' },
+    { id: 'de', label: 'Germany' },
+    { id: 'fr', label: 'France' },
+    { id: 'es', label: 'Spain' },
+    { id: 'it', label: 'Italy' },
+    { id: 'pt', label: 'Portugal' },
+    { id: 'nl', label: 'Netherlands' },
+    { id: 'ch', label: 'Switzerland' },
+    { id: 'se', label: 'Sweden' },
+    { id: 'no', label: 'Norway' },
+    { id: 'dk', label: 'Denmark' },
+    { id: 'ie', label: 'Ireland' },
+    { id: 'be', label: 'Belgium' },
+    { id: 'at', label: 'Austria' },
+    { id: 'other', label: 'Other' }
+  ];
+
+  // Load existing data if available
   useEffect(() => {
     const loadExistingData = async () => {
       try {
@@ -44,23 +81,31 @@ export default function OnboardingCurrentStatus() {
           return;
         }
         
-        // Fetch existing onboarding data
-        const { success, progress, data } = await getOnboardingProgress(user.id);
+        const { success, data, progress: userProgress, error } = await getOnboardingProgress(user.id);
+        if (!success) {
+          console.error("Error loading existing data:", error);
+          setInitialLoading(false);
+          return;
+        }
         
-        if (success) {
-          setCompletedSteps(progress.completedSteps);
-          
-          // If current_status data exists, populate the form
-          if (data?.current_status) {
-            setFormData(prevData => ({
-              ...prevData,
-              ...data.current_status
-            }));
-          }
+        setProgress(userProgress);
+        
+        // If current status data exists, load it
+        if (data && data.current_status) {
+          setFormData(prev => ({
+            ...prev,
+            retirement_timeline: data.current_status.retirement_timeline || prev.retirement_timeline,
+            // Handle family_situation - could be string or object
+            family_situation: typeof data.current_status.family_situation === 'string'
+              ? data.current_status.family_situation
+              : (data.current_status.family_situation?.status || 'solo'),
+            pet_owner: data.current_status.pet_owner || [],
+            citizenship: data.current_status.citizenship || prev.citizenship,
+            partner_citizenship: data.current_status.partner_citizenship || prev.partner_citizenship
+          }));
         }
       } catch (err) {
-        console.error("Error loading existing data:", err);
-        toast.error('Failed to load your saved data');
+        console.error("Unexpected error loading data:", err);
       } finally {
         setInitialLoading(false);
       }
@@ -70,18 +115,40 @@ export default function OnboardingCurrentStatus() {
   }, [navigate]);
 
   const handleInputChange = (e) => {
-    const { name, type, value, checked } = e.target;
+    const { name, value, type, checked } = e.target;
     
-    // Handle nested object updates
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: type === 'checkbox' ? checked : value
-        }
-      }));
+      
+      // Special handling for dual citizenship checkbox
+      if (child === 'dual_citizenship') {
+        setFormData(prev => ({
+          ...prev,
+          [parent]: {
+            ...prev[parent],
+            [child]: checked,
+            secondary_citizenship: checked ? prev[parent].secondary_citizenship : ''
+          }
+        }));
+      } else if ((parent === 'citizenship' || parent === 'partner_citizenship') && child === 'primary_citizenship') {
+        // When primary citizenship changes, clear secondary if it's the same
+        setFormData(prev => ({
+          ...prev,
+          [parent]: {
+            ...prev[parent],
+            [child]: value,
+            secondary_citizenship: prev[parent].secondary_citizenship === value ? '' : prev[parent].secondary_citizenship
+          }
+        }));
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          [parent]: {
+            ...prev[parent],
+            [child]: type === 'checkbox' ? checked : value
+          }
+        }));
+      }
     } else {
       setFormData(prev => ({
         ...prev,
@@ -93,9 +160,12 @@ export default function OnboardingCurrentStatus() {
   const handleFamilyStatusChange = (status) => {
     setFormData(prev => ({
       ...prev,
-      family_situation: {
-        ...prev.family_situation,
-        status
+      family_situation: status,
+      // Reset partner citizenship when switching away from couple
+      partner_citizenship: status === 'couple' ? prev.partner_citizenship : {
+        primary_citizenship: 'us',
+        dual_citizenship: false,
+        secondary_citizenship: ''
       }
     }));
   };
@@ -110,17 +180,30 @@ export default function OnboardingCurrentStatus() {
     }));
   };
 
-  const isFormValid = () => {
-    return formData.retirement_timeline.status && 
-           formData.family_situation.status && 
-           formData.citizenship.primary_citizenship;
+  const handlePetChange = (petType) => {
+    setFormData(prev => ({
+      ...prev,
+      pet_owner: (prev.pet_owner || []).includes(petType)
+        ? (prev.pet_owner || []).filter(p => p !== petType)
+        : [...(prev.pet_owner || []), petType]
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!isFormValid()) {
-      toast.error('Please complete all required fields');
+    // Validate citizenship data
+    if (formData.citizenship.dual_citizenship && 
+        formData.citizenship.secondary_citizenship === formData.citizenship.primary_citizenship) {
+      toast.error('Secondary citizenship must be different from primary citizenship');
+      return;
+    }
+    
+    // Validate partner citizenship if couple
+    if (formData.family_situation === 'couple' &&
+        formData.partner_citizenship.dual_citizenship && 
+        formData.partner_citizenship.secondary_citizenship === formData.partner_citizenship.primary_citizenship) {
+      toast.error("Partner's secondary citizenship must be different from their primary citizenship");
       return;
     }
     
@@ -133,15 +216,35 @@ export default function OnboardingCurrentStatus() {
         return;
       }
       
-      // Save using the utility function
+      // Clean the form data before saving
+      const cleanedFormData = {
+        ...formData,
+        family_situation: {
+          status: formData.family_situation
+        },
+        citizenship: {
+          ...formData.citizenship,
+          secondary_citizenship: formData.citizenship.secondary_citizenship === formData.citizenship.primary_citizenship 
+            ? '' 
+            : formData.citizenship.secondary_citizenship
+        },
+        partner_citizenship: formData.family_situation === 'couple' ? {
+          ...formData.partner_citizenship,
+          secondary_citizenship: formData.partner_citizenship.secondary_citizenship === formData.partner_citizenship.primary_citizenship 
+            ? '' 
+            : formData.partner_citizenship.secondary_citizenship
+        } : undefined
+      };
+      
       const { success, error } = await saveOnboardingStep(
         user.id,
-        formData,
+        cleanedFormData,
         'current_status'
       );
       
       if (!success) {
         toast.error(`Failed to save: ${error.message}`);
+        setLoading(false);
         return;
       }
       
@@ -157,282 +260,456 @@ export default function OnboardingCurrentStatus() {
 
   if (initialLoading) {
     return (
-      <div className={`min-h-screen ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
         <div className="animate-pulse text-scout-accent-600 font-semibold">Loading...</div>
       </div>
     );
   }
 
-  // Generate retirement year options
+  // Generate retirement year options (current year to +30 years)
   const retirementYearOptions = [];
   for (let i = 0; i <= 30; i++) {
     retirementYearOptions.push(currentYear + i);
   }
 
-  // Country list for citizenship
-  const countries = [
-    'US', 'CA', 'GB', 'AU', 'NZ', 'DE', 'FR', 'ES', 'IT', 'PT', 
-    'NL', 'BE', 'CH', 'AT', 'SE', 'NO', 'DK', 'FI', 'IE', 'JP',
-    'KR', 'SG', 'HK', 'IN', 'BR', 'MX', 'AR', 'CL', 'CO', 'ZA'
-  ].sort();
+  // Check if couple is selected
+  const isCouple = formData.family_situation === 'couple';
 
   return (
-    <div className={`min-h-screen ${uiConfig.colors.page} p-4 pb-20`}>
-      <div className={`${uiConfig.layout.width.containerNarrow}`}>
-        {/* Navigation */}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="max-w-md mx-auto">
         <OnboardingStepNavigation 
-          currentStep="current_status"
-          completedSteps={completedSteps}
+          currentStep="current_status" 
+          completedSteps={progress.completedSteps} 
+          className="mb-4" 
         />
+        
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4">
+          {/* Header - mb-4 */}
+          <div className="mb-4">
+            <h1 className="text-lg font-bold text-gray-800 dark:text-white">Current Status</h1>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+              Tell us about your retirement timeline and family situation
+            </p>
+          </div>
 
-        {/* Title Section */}
-        <div className="mb-6 text-center">
-          <h1 className={`${uiConfig.font.size['2xl']} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading} mb-2`}>
-            Your Current Situation
-          </h1>
-          <p className={`${uiConfig.colors.body}`}>
-            Tell us about your current situation to personalize your retirement journey.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Retirement Timeline Section */}
-          <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} ${uiConfig.layout.spacing.card}`}>
-            <div className="flex items-center mb-4">
-              <Calendar className="h-5 w-5 text-scout-accent-600 mr-2" />
-              <h2 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>
-                Retirement Timeline
-              </h2>
-            </div>
-            
-            <div className="space-y-4">
-              <label className={uiConfig.components.label}>
-                Where are you in your retirement journey? *
-              </label>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleRetirementStatusChange('planning')}
-                  className={`${
-                    formData.retirement_timeline.status === 'planning'
-                      ? uiConfig.components.buttonVariants.selected
-                      : uiConfig.components.buttonVariants.unselected
-                  }`}
-                >
-                  <Calendar className="h-4 w-4 mb-1" />
-                  <span className="block">Planning</span>
-                  <span className="text-xs opacity-75">5+ years away</span>
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={() => handleRetirementStatusChange('retiring_soon')}
-                  className={`${
-                    formData.retirement_timeline.status === 'retiring_soon'
-                      ? uiConfig.components.buttonVariants.selected
-                      : uiConfig.components.buttonVariants.unselected
-                  }`}
-                >
-                  <Calendar className="h-4 w-4 mb-1" />
-                  <span className="block">Retiring Soon</span>
-                  <span className="text-xs opacity-75">Within 5 years</span>
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={() => handleRetirementStatusChange('already_retired')}
-                  className={`${
-                    formData.retirement_timeline.status === 'already_retired'
-                      ? uiConfig.components.buttonVariants.selected
-                      : uiConfig.components.buttonVariants.unselected
-                  }`}
-                >
-                  <Home className="h-4 w-4 mb-1" />
-                  <span className="block">Retired</span>
-                  <span className="text-xs opacity-75">Living the dream</span>
-                </button>
-              </div>
-              
-              {formData.retirement_timeline.status !== 'already_retired' && formData.retirement_timeline.status && (
-                <div className="mt-4">
-                  <label htmlFor="target_year" className={uiConfig.components.label}>
-                    Target retirement year
-                  </label>
-                  <select
-                    id="target_year"
-                    name="retirement_timeline.target_year"
-                    value={formData.retirement_timeline.target_year}
-                    onChange={handleInputChange}
-                    className={uiConfig.components.select}
-                  >
-                    {retirementYearOptions.map(year => (
-                      <option key={year} value={year}>{year}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
+          {/* Retirement Status - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <Calendar size={18} className="mr-1.5" />
+              Retirement Timeline
+            </label>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+              Where are you in your retirement journey? *
+            </p>
+            <div className="grid grid-cols-3 gap-1.5">
+              <OptionButton
+                label="Planning"
+                description="5+ years away"
+                isSelected={formData.retirement_timeline.status === 'planning'}
+                onClick={() => handleRetirementStatusChange('planning')}
+              />
+              <OptionButton
+                label="Retiring Soon"
+                description="Within 5 years"
+                isSelected={formData.retirement_timeline.status === 'retiring_soon'}
+                onClick={() => handleRetirementStatusChange('retiring_soon')}
+              />
+              <OptionButton
+                label="Retired"
+                description="Living the dream"
+                isSelected={formData.retirement_timeline.status === 'already_retired'}
+                onClick={() => handleRetirementStatusChange('already_retired')}
+              />
             </div>
           </div>
 
-          {/* Family Situation Section */}
-          <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} ${uiConfig.layout.spacing.card}`}>
-            <div className="flex items-center mb-4">
-              <Users className="h-5 w-5 text-scout-accent-600 mr-2" />
-              <h2 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>
-                Family Situation
-              </h2>
-            </div>
-            
-            <div className="space-y-4">
-              <label className={uiConfig.components.label}>
-                Who's joining you on this adventure? *
+          {/* Target Year (if not already retired) - mb-4 */}
+          {formData.retirement_timeline.status !== 'already_retired' && (
+            <div className="mb-4">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                Target Retirement Year
               </label>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleFamilyStatusChange('solo')}
-                  className={`${
-                    formData.family_situation.status === 'solo'
-                      ? uiConfig.components.buttonVariants.selected
-                      : uiConfig.components.buttonVariants.unselected
-                  }`}
-                >
-                  <User className="h-4 w-4 mb-1" />
-                  <span className="block">Solo</span>
-                  <span className="text-xs opacity-75">Just me</span>
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={() => handleFamilyStatusChange('couple')}
-                  className={`${
-                    formData.family_situation.status === 'couple'
-                      ? uiConfig.components.buttonVariants.selected
-                      : uiConfig.components.buttonVariants.unselected
-                  }`}
-                >
-                  <Users className="h-4 w-4 mb-1" />
-                  <span className="block">Couple</span>
-                  <span className="text-xs opacity-75">Me & partner</span>
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={() => handleFamilyStatusChange('family')}
-                  className={`${
-                    formData.family_situation.status === 'family'
-                      ? uiConfig.components.buttonVariants.selected
-                      : uiConfig.components.buttonVariants.unselected
-                  }`}
-                >
-                  <Home className="h-4 w-4 mb-1" />
-                  <span className="block">Family</span>
-                  <span className="text-xs opacity-75">With dependents</span>
-                </button>
-              </div>
-              
-              {formData.family_situation.status === 'family' && (
-                <div className="mt-4">
-                  <label htmlFor="dependents" className={uiConfig.components.label}>
-                    Number of dependents
-                  </label>
-                  <input
-                    type="number"
-                    id="dependents"
-                    name="family_situation.dependents"
-                    min="0"
-                    max="10"
-                    value={formData.family_situation.dependents}
-                    onChange={handleInputChange}
-                    className={uiConfig.components.input}
-                  />
-                </div>
-              )}
+              <select
+                name="retirement_timeline.target_year"
+                value={formData.retirement_timeline.target_year}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+              >
+                {retirementYearOptions.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Family Situation - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <Users size={18} className="mr-1.5" />
+              Family Situation
+            </label>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+              Who's joining you on this adventure? *
+            </p>
+            <div className="grid grid-cols-3 gap-1.5">
+              <OptionButton
+                label="Solo"
+                description="Just me"
+                isSelected={formData.family_situation === 'solo'}
+                onClick={() => handleFamilyStatusChange('solo')}
+              />
+              <OptionButton
+                label="Couple"
+                description="Me & partner"
+                isSelected={formData.family_situation === 'couple'}
+                onClick={() => handleFamilyStatusChange('couple')}
+              />
+              <OptionButton
+                label="Family"
+                description="With dependents"
+                isSelected={formData.family_situation === 'family'}
+                onClick={() => handleFamilyStatusChange('family')}
+              />
             </div>
           </div>
 
-          {/* Citizenship Section */}
-          <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} ${uiConfig.layout.spacing.card}`}>
-            <div className="flex items-center mb-4">
-              <Globe2 className="h-5 w-5 text-scout-accent-600 mr-2" />
-              <h2 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>
-                Citizenship
-              </h2>
+          {/* Pet Owner - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <PawPrint size={18} className="mr-1.5" />
+              Pet Owner
+            </label>
+            <div className="grid grid-cols-3 gap-1.5">
+              <OptionButton
+                label="Cat"
+                isSelected={formData.pet_owner?.includes('cat') || false}
+                onClick={() => handlePetChange('cat')}
+              />
+              <OptionButton
+                label="Dog"
+                isSelected={formData.pet_owner?.includes('dog') || false}
+                onClick={() => handlePetChange('dog')}
+              />
+              <OptionButton
+                label="Other"
+                isSelected={formData.pet_owner?.includes('other') || false}
+                onClick={() => handlePetChange('other')}
+              />
             </div>
+          </div>
+
+          {/* Citizenship - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <Globe size={18} className="mr-1.5" />
+              Citizenship
+            </label>
             
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="primary_citizenship" className={uiConfig.components.labelRequired}>
-                  Primary citizenship
-                </label>
+            {isCouple ? (
+              <>
+                {/* Couple Layout - Two columns */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Your Citizenship */}
+                  <div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                      Your citizenship *
+                    </p>
+                    <select
+                      name="citizenship.primary_citizenship"
+                      value={formData.citizenship.primary_citizenship}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                    >
+                      {countries.map(country => (
+                        <option key={country.id} value={country.id}>
+                          {country.label}
+                        </option>
+                      ))}
+                    </select>
+                    
+                    {/* Your Dual Citizenship */}
+                    <div className="mt-2 flex items-center">
+                      <input
+                        id="dual_citizenship"
+                        name="citizenship.dual_citizenship"
+                        type="checkbox"
+                        checked={formData.citizenship.dual_citizenship}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-2 focus:ring-scout-accent-300 focus:ring-offset-0 cursor-pointer"
+                        style={{ 
+                          accentColor: '#8fbc8f',
+                          WebkitAppearance: 'none',
+                          appearance: 'none',
+                          backgroundColor: formData.citizenship.dual_citizenship ? '#8fbc8f' : 'transparent',
+                          border: formData.citizenship.dual_citizenship ? '1px solid #8fbc8f' : '1px solid #d1d5db',
+                          borderRadius: '0.25rem',
+                          backgroundImage: formData.citizenship.dual_citizenship 
+                            ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
+                            : 'none',
+                          backgroundSize: '100% 100%',
+                          backgroundPosition: 'center',
+                          backgroundRepeat: 'no-repeat',
+                          transition: 'all 0.15s ease-in-out'
+                        }}
+                      />
+                      <label htmlFor="dual_citizenship" className="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                        Dual citizenship
+                      </label>
+                    </div>
+                    
+                    {/* Your Secondary */}
+                    {formData.citizenship.dual_citizenship && (
+                      <select
+                        name="citizenship.secondary_citizenship"
+                        value={formData.citizenship.secondary_citizenship === formData.citizenship.primary_citizenship ? '' : formData.citizenship.secondary_citizenship}
+                        onChange={(e) => {
+                          if (e.target.value !== formData.citizenship.primary_citizenship) {
+                            handleInputChange(e);
+                          }
+                        }}
+                        className="w-full mt-2 px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                      >
+                        <option value="">Select secondary</option>
+                        {countries
+                          .filter(country => country.id !== formData.citizenship.primary_citizenship)
+                          .map(country => (
+                            <option key={`secondary-${country.id}`} value={country.id}>
+                              {country.label}
+                            </option>
+                          ))}
+                        <option value="other">Other</option>
+                      </select>
+                    )}
+                  </div>
+                  
+                  {/* Partner's Citizenship */}
+                  <div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                      Partner's citizenship *
+                    </p>
+                    <select
+                      name="partner_citizenship.primary_citizenship"
+                      value={formData.partner_citizenship.primary_citizenship}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                    >
+                      {countries.map(country => (
+                        <option key={`partner-${country.id}`} value={country.id}>
+                          {country.label}
+                        </option>
+                      ))}
+                    </select>
+                    
+                    {/* Partner's Dual Citizenship */}
+                    <div className="mt-2 flex items-center">
+                      <input
+                        id="partner_dual_citizenship"
+                        name="partner_citizenship.dual_citizenship"
+                        type="checkbox"
+                        checked={formData.partner_citizenship.dual_citizenship}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-2 focus:ring-scout-accent-300 focus:ring-offset-0 cursor-pointer"
+                        style={{ 
+                          accentColor: '#8fbc8f',
+                          WebkitAppearance: 'none',
+                          appearance: 'none',
+                          backgroundColor: formData.partner_citizenship.dual_citizenship ? '#8fbc8f' : 'transparent',
+                          border: formData.partner_citizenship.dual_citizenship ? '1px solid #8fbc8f' : '1px solid #d1d5db',
+                          borderRadius: '0.25rem',
+                          backgroundImage: formData.partner_citizenship.dual_citizenship 
+                            ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
+                            : 'none',
+                          backgroundSize: '100% 100%',
+                          backgroundPosition: 'center',
+                          backgroundRepeat: 'no-repeat',
+                          transition: 'all 0.15s ease-in-out'
+                        }}
+                      />
+                      <label htmlFor="partner_dual_citizenship" className="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                        Dual citizenship
+                      </label>
+                    </div>
+                    
+                    {/* Partner's Secondary */}
+                    {formData.partner_citizenship.dual_citizenship && (
+                      <select
+                        name="partner_citizenship.secondary_citizenship"
+                        value={formData.partner_citizenship.secondary_citizenship === formData.partner_citizenship.primary_citizenship ? '' : formData.partner_citizenship.secondary_citizenship}
+                        onChange={(e) => {
+                          if (e.target.value !== formData.partner_citizenship.primary_citizenship) {
+                            handleInputChange(e);
+                          }
+                        }}
+                        className="w-full mt-2 px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                      >
+                        <option value="">Select secondary</option>
+                        {countries
+                          .filter(country => country.id !== formData.partner_citizenship.primary_citizenship)
+                          .map(country => (
+                            <option key={`partner-secondary-${country.id}`} value={country.id}>
+                              {country.label}
+                            </option>
+                          ))}
+                        <option value="other">Other</option>
+                      </select>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Solo/Family Layout - Single column */}
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                  Primary citizenship *
+                </p>
                 <select
-                  id="primary_citizenship"
                   name="citizenship.primary_citizenship"
                   value={formData.citizenship.primary_citizenship}
                   onChange={handleInputChange}
-                  className={uiConfig.components.select}
-                  required
+                  className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
                 >
-                  <option value="">Select your citizenship</option>
                   {countries.map(country => (
-                    <option key={country} value={country}>{country}</option>
+                    <option key={country.id} value={country.id}>
+                      {country.label}
+                    </option>
                   ))}
                 </select>
-              </div>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="dual_citizenship"
-                  name="citizenship.dual_citizenship"
-                  checked={formData.citizenship.dual_citizenship}
-                  onChange={handleInputChange}
-                  className={uiConfig.components.checkbox}
-                />
-                <label htmlFor="dual_citizenship" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                  I have dual/multiple citizenship
-                </label>
-              </div>
-            </div>
+                
+                {/* Dual Citizenship Checkbox - White checkmark via browser default */}
+                <div className="mt-2 flex items-center">
+                  <input
+                    id="dual_citizenship"
+                    name="citizenship.dual_citizenship"
+                    type="checkbox"
+                    checked={formData.citizenship.dual_citizenship}
+                    onChange={handleInputChange}
+                    className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-2 focus:ring-scout-accent-300 focus:ring-offset-0 cursor-pointer"
+                    style={{ 
+                      accentColor: '#8fbc8f',
+                      WebkitAppearance: 'none',
+                      appearance: 'none',
+                      backgroundColor: formData.citizenship.dual_citizenship ? '#8fbc8f' : 'transparent',
+                      border: formData.citizenship.dual_citizenship ? '1px solid #8fbc8f' : '1px solid #d1d5db',
+                      borderRadius: '0.25rem',
+                      backgroundImage: formData.citizenship.dual_citizenship 
+                        ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
+                        : 'none',
+                      backgroundSize: '100% 100%',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat',
+                      transition: 'all 0.15s ease-in-out'
+                    }}
+                  />
+                  <label htmlFor="dual_citizenship" className="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                    I have dual/multiple citizenship
+                  </label>
+                </div>
+                
+                {/* Secondary Citizenship Dropdown */}
+                {formData.citizenship.dual_citizenship && (
+                  <div className="mt-3">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                      <Globe size={18} className="mr-1.5" />
+                      Secondary Citizenship
+                    </label>
+                    {formData.citizenship.secondary_citizenship === formData.citizenship.primary_citizenship && (
+                      <p className="text-xs text-red-600 dark:text-red-400 mb-2">
+                        Secondary citizenship cannot be the same as primary. Please select a different country.
+                      </p>
+                    )}
+                    <select
+                      name="citizenship.secondary_citizenship"
+                      value={
+                        formData.citizenship.secondary_citizenship === formData.citizenship.primary_citizenship 
+                          ? '' 
+                          : formData.citizenship.secondary_citizenship
+                      }
+                      onChange={(e) => {
+                        if (e.target.value !== formData.citizenship.primary_citizenship) {
+                          handleInputChange(e);
+                        }
+                      }}
+                      className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                    >
+                      <option value="">Select secondary citizenship</option>
+                      {countries
+                        .filter(country => country.id !== formData.citizenship.primary_citizenship)
+                        .map(country => (
+                          <option key={`secondary-${country.id}`} value={country.id}>
+                            {country.label}
+                          </option>
+                        ))}
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
-          {/* Professional tip */}
-          <div className="bg-scout-accent-50 dark:bg-scout-accent-900/20 border border-scout-accent-200 dark:border-scout-accent-800 rounded-lg p-4">
+          {/* Summary Section - mb-4 */}
+          {(formData.retirement_timeline.status || formData.family_situation) && (
+            <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <div className="text-sm text-gray-600 dark:text-gray-300">
+                <span className="font-medium">Summary:</span>
+                <div className="mt-1 text-xs">
+                  {formData.retirement_timeline.status === 'planning' && 'Planning for retirement (5+ years)'}
+                  {formData.retirement_timeline.status === 'retiring_soon' && 'Retiring within 5 years'}
+                  {formData.retirement_timeline.status === 'already_retired' && 'Already retired'}
+                  {formData.retirement_timeline.status !== 'already_retired' && 
+                    ` in ${formData.retirement_timeline.target_year}`}
+                  {' • '}
+                  {formData.family_situation === 'solo' && 'Solo'}
+                  {formData.family_situation === 'couple' && 'Couple'}
+                  {formData.family_situation === 'family' && 'Family'}
+                  {formData.pet_owner?.length > 0 && ` with ${formData.pet_owner.join(', ')}`}
+                  {' • '}
+                  {countries.find(c => c.id === formData.citizenship.primary_citizenship)?.label || 'US'} citizen
+                  {formData.citizenship.dual_citizenship && ` + ${countries.find(c => c.id === formData.citizenship.secondary_citizenship && c.id !== formData.citizenship.primary_citizenship)?.label || ''}`}
+                  {formData.family_situation === 'couple' && (
+                    <>
+                      {' • Partner: '}
+                      {countries.find(c => c.id === formData.partner_citizenship.primary_citizenship)?.label || 'US'} citizen
+                      {formData.partner_citizenship.dual_citizenship && ` + ${countries.find(c => c.id === formData.partner_citizenship.secondary_citizenship && c.id !== formData.partner_citizenship.primary_citizenship)?.label || ''}`}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Pro Tip */}
+          <div className="mb-4 p-3 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
             <div className="flex items-start">
-              <Info className="h-5 w-5 text-scout-accent-600 dark:text-scout-accent-400 mr-3 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-scout-accent-700 dark:text-scout-accent-300">
-                <p className="font-medium mb-1">Pro Tip:</p>
-                <p>Your citizenship affects visa requirements, tax implications, and healthcare access in different countries. We'll use this to provide personalized recommendations.</p>
+              <div className="mr-2">
+                <svg className="h-5 w-5 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-gray-700 dark:text-gray-300">
+                  <span className="font-medium">Pro Tip:</span> Your citizenship affects visa requirements, tax implications, and healthcare access in different countries. We'll use this to provide personalized recommendations.
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Navigation buttons */}
-          <div className="flex justify-between pt-6">
+          {/* Bottom Navigation */}
+          <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
-              onClick={() => navigate('/onboarding/progress')}
-              className={uiConfig.bottomNavigation.styles.backButton}
+              onClick={() => navigate('/welcome')}
+              className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
             >
-              <ChevronLeft className="mr-2 h-4 w-4" />
               Back
             </button>
-            
             <button
               type="submit"
-              disabled={loading || !isFormValid()}
-              className={`${uiConfig.bottomNavigation.styles.nextButton} ${!isFormValid() ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={loading}
+              className="px-6 py-2 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
             >
-              {loading ? (
-                'Saving...'
-              ) : (
-                <>
-                  Continue
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </>
-              )}
+              {loading ? 'Saving...' : 'Continue'}
             </button>
           </div>
         </form>
