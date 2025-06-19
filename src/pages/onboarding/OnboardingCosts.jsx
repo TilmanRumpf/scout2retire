@@ -1,13 +1,31 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { DollarSign, Home, TrendingUp, AlertCircle } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
+import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
 import toast from 'react-hot-toast';
+
+// Option Button Component
+const OptionButton = ({ label, description, isSelected, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`p-3 rounded-md border-2 transition-all text-center ${
+      isSelected
+        ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
+        : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
+    }`}
+  >
+    <div className={`text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
+    {description && <div className={`text-xs mt-1 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
+  </button>
+);
 
 export default function OnboardingCosts() {
   const [formData, setFormData] = useState({
     monthly_budget: 2000,
-    housing_preference: 'rent', // rent, buy, either
+    housing_preference: [],
     housing_budget_percentage: 30,
     cost_priorities: {
       food: 3,
@@ -22,6 +40,7 @@ export default function OnboardingCosts() {
   
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [progress, setProgress] = useState({ completedSteps: {} });
   const navigate = useNavigate();
 
   // Load existing data if available
@@ -34,16 +53,25 @@ export default function OnboardingCosts() {
           return;
         }
         
-        const { success, data, error } = await getOnboardingProgress(user.id);
+        const { success, data, progress: userProgress, error } = await getOnboardingProgress(user.id);
         if (!success) {
           console.error("Error loading existing data:", error);
           setInitialLoading(false);
           return;
         }
         
-        // If cost data exists, load it
-        if (data && data.budget) {
-          setFormData(data.budget);
+        setProgress(userProgress);
+        
+        // If costs data exists, load it
+        if (data && data.costs) {
+          // Convert single values to arrays for housing_preference if needed
+          const loadedData = data.costs;
+          setFormData({
+            ...loadedData,
+            housing_preference: Array.isArray(loadedData.housing_preference) 
+              ? loadedData.housing_preference 
+              : (loadedData.housing_preference ? [loadedData.housing_preference] : [])
+          });
         }
       } catch (err) {
         console.error("Unexpected error loading data:", err);
@@ -56,37 +84,44 @@ export default function OnboardingCosts() {
   }, [navigate]);
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
     
-    if (type === 'checkbox') {
-      const arrayName = name.split('.')[0];
-      const arrayValue = name.split('.')[1];
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'number' ? Number(value) : value
+    }));
+  };
+
+  const handleHousingToggle = (value) => {
+    setFormData(prev => {
+      const currentPreferences = prev.housing_preference || [];
+      const isSelected = currentPreferences.includes(value);
       
-      setFormData(prev => {
-        const currentArray = [...(prev[arrayName] || [])];
-        
-        if (checked) {
-          if (!currentArray.includes(arrayValue)) {
-            currentArray.push(arrayValue);
-          }
-        } else {
-          const index = currentArray.indexOf(arrayValue);
-          if (index !== -1) {
-            currentArray.splice(index, 1);
-          }
-        }
-        
-        return {
-          ...prev,
-          [arrayName]: currentArray
-        };
-      });
-    } else {
-      setFormData(prev => ({
+      return {
         ...prev,
-        [name]: type === 'number' ? Number(value) : value
-      }));
-    }
+        housing_preference: isSelected 
+          ? currentPreferences.filter(v => v !== value)
+          : [...currentPreferences, value]
+      };
+    });
+  };
+
+  const handleCompromiseToggle = (factor) => {
+    setFormData(prev => ({
+      ...prev,
+      willing_to_compromise: prev.willing_to_compromise.includes(factor)
+        ? prev.willing_to_compromise.filter(f => f !== factor)
+        : [...prev.willing_to_compromise, factor]
+    }));
+  };
+
+  const handleDealBreakerToggle = (factor) => {
+    setFormData(prev => ({
+      ...prev,
+      deal_breakers: prev.deal_breakers.includes(factor)
+        ? prev.deal_breakers.filter(f => f !== factor)
+        : [...prev.deal_breakers, factor]
+    }));
   };
 
   const handlePriorityChange = (category, value) => {
@@ -113,7 +148,7 @@ export default function OnboardingCosts() {
       const { success, error } = await saveOnboardingStep(
         user.id,
         formData,
-        'budget'
+        'costs' // Changed from 'budget' to 'costs'
       );
       
       if (!success) {
@@ -122,7 +157,7 @@ export default function OnboardingCosts() {
         return;
       }
       
-      toast.success('Budget preferences saved!');
+      toast.success('Budget & cost preferences saved!');
       navigate('/onboarding/review');
     } catch (err) {
       toast.error('An unexpected error occurred');
@@ -135,119 +170,146 @@ export default function OnboardingCosts() {
   if (initialLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
-        <div className="animate-pulse text-green-600 font-semibold">Loading...</div>
+        <div className="animate-pulse text-scout-accent-600 font-semibold">Loading...</div>
       </div>
     );
   }
 
-  // Cost category options for priorities
-  const costCategories = [
-    { id: 'food', label: 'Food & Dining' },
-    { id: 'healthcare', label: 'Healthcare' },
-    { id: 'entertainment', label: 'Entertainment & Activities' },
-    { id: 'transportation', label: 'Transportation' },
-    { id: 'utilities', label: 'Utilities & Services' }
+  // Housing options
+  const housingOptions = [
+    { value: 'rent', label: 'Rent' },
+    { value: 'buy', label: 'Buy' },
+    { value: 'either', label: 'Either' }
   ];
 
-  // Options for compromise and deal breakers
-  const costFactors = [
-    { id: 'high_food', label: 'High food costs' },
-    { id: 'high_healthcare', label: 'Expensive healthcare' },
-    { id: 'high_rent', label: 'High housing costs' },
-    { id: 'high_taxes', label: 'High taxes' },
-    { id: 'expensive_utilities', label: 'Expensive utilities' },
-    { id: 'high_transportation', label: 'Expensive transportation' }
+  // Cost categories with icons
+  const costCategories = [
+    { id: 'healthcare', label: 'Healthcare', icon: DollarSign },
+    { id: 'food', label: 'Food & Dining', icon: DollarSign },
+    { id: 'transportation', label: 'Transportation', icon: DollarSign },
+    { id: 'utilities', label: 'Utilities', icon: DollarSign },
+    { id: 'entertainment', label: 'Entertainment', icon: DollarSign }
   ];
+
+  // Compromise options
+  const compromiseOptions = [
+    { id: 'high_food', label: 'High Food' },
+    { id: 'high_healthcare', label: 'Healthcare' },
+    { id: 'high_rent', label: 'High Rent' },
+    { id: 'high_taxes', label: 'High Taxes' },
+    { id: 'expensive_utilities', label: 'Utilities' },
+    { id: 'high_transport', label: 'Transport' }
+  ];
+
+  // Deal breaker options
+  const dealBreakerOptions = [
+    { id: 'very_high_cost', label: 'Very High Cost' },
+    { id: 'poor_healthcare', label: 'Poor Healthcare' },
+    { id: 'no_affordable_housing', label: 'No Housing' },
+    { id: 'extreme_taxes', label: 'Extreme Taxes' },
+    { id: 'unsafe_area', label: 'Unsafe Area' },
+    { id: 'no_infrastructure', label: 'No Infrastructure' }
+  ];
+
+  // Simple slider component - matching culture/hobbies pages
+  const ImportanceSlider = ({ category, icon: Icon }) => {
+    const value = formData.cost_priorities[category.id];
+    
+    return (
+      <div className="mb-3">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center">
+            <Icon size={16} className="text-scout-accent-600 mr-1.5" />
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+              {category.label}
+            </span>
+          </div>
+          <span className="text-xs font-medium text-scout-accent-600 dark:text-scout-accent-400">
+            {value}/5
+          </span>
+        </div>
+        <input
+          type="range"
+          min="1"
+          max="5"
+          step="1"
+          value={value}
+          onChange={(e) => handlePriorityChange(category.id, parseInt(e.target.value))}
+          className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
+          style={{
+            background: `linear-gradient(to right, #8fbc8f 0%, #8fbc8f ${(value - 1) * 25}%, #e5e7eb ${(value - 1) * 25}%, #e5e7eb 100%)`
+          }}
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-md mx-auto">
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <button
-              onClick={() => navigate('/onboarding/hobbies')}
-              className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
-            <div className="flex space-x-1">
-              {[1, 2, 3, 4, 5, 6].map((step) => (
-                <div
-                  key={step}
-                  className={`w-8 h-1 rounded-full ${
-                    step === 6
-                      ? 'bg-green-600 dark:bg-green-400'
-                      : step < 6
-                        ? 'bg-gray-400 dark:bg-gray-600'
-                        : 'bg-gray-200 dark:bg-gray-700'
-                  }`}
-                ></div>
-              ))}
-            </div>
-            <div className="w-5"></div> {/* Spacer to balance the back button */}
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Budget & Costs</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Help us understand your budget preferences for retirement.
-          </p>
-        </div>
+        <OnboardingStepNavigation 
+          currentStep="budget" 
+          completedSteps={progress.completedSteps} 
+          className="mb-4" 
+        />
         
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4">
+          {/* Header - mb-4 */}
+          <div className="mb-4">
+            <h1 className="text-lg font-bold text-gray-800 dark:text-white">Budget & Costs</h1>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+              Help us understand your budget and cost preferences
+            </p>
+          </div>
+
+          {/* Monthly Budget - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <DollarSign size={18} className="mr-1.5" />
               Monthly Budget (USD)
             </label>
-            <div className="relative mt-1 rounded-md shadow-sm">
+            <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-500 dark:text-gray-400 sm:text-sm">$</span>
+                <span className="text-gray-500 dark:text-gray-400 text-sm">$</span>
               </div>
               <input
                 type="number"
                 name="monthly_budget"
                 min="500"
-                max="10000"
+                max="50000"
                 step="100"
                 value={formData.monthly_budget}
                 onChange={handleInputChange}
-                className="pl-7 block w-full rounded-md border-gray-300 dark:border-gray-600 py-3 dark:bg-gray-700 text-gray-800 dark:text-white focus:border-green-500 focus:ring-green-500"
+                className="pl-7 w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
               />
             </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Your total monthly budget for all expenses.
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+              Your total monthly budget for all expenses
             </p>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+
+          {/* Housing Preference - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <Home size={18} className="mr-1.5" />
               Housing Preference
             </label>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { value: 'rent', label: 'Rent' },
-                { value: 'buy', label: 'Buy' },
-                { value: 'either', label: 'Either' }
-              ].map((option) => (
-                <button
+            <div className="grid grid-cols-3 gap-1.5">
+              {housingOptions.map((option) => (
+                <OptionButton
                   key={option.value}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, housing_preference: option.value })}
-                  className={`py-3 px-4 rounded-lg border text-center ${
-                    formData.housing_preference === option.value
-                      ? 'border-green-600 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
-                      : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  {option.label}
-                </button>
+                  label={option.label}
+                  isSelected={formData.housing_preference.includes(option.value)}
+                  onClick={() => handleHousingToggle(option.value)}
+                />
               ))}
             </div>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Housing Budget (% of total)
+
+          {/* Housing Budget Percentage - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+              Housing Budget ({formData.housing_budget_percentage}% of total)
             </label>
             <input
               type="range"
@@ -257,112 +319,125 @@ export default function OnboardingCosts() {
               step="5"
               value={formData.housing_budget_percentage}
               onChange={handleInputChange}
-              className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
+              style={{
+                background: `linear-gradient(to right, #8fbc8f 0%, #8fbc8f ${((formData.housing_budget_percentage - 10) / 60) * 100}%, #e5e7eb ${((formData.housing_budget_percentage - 10) / 60) * 100}%, #e5e7eb 100%)`
+              }}
             />
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
               <span>10%</span>
-              <span>{formData.housing_budget_percentage}%</span>
+              <span>${Math.round(formData.monthly_budget * formData.housing_budget_percentage / 100)}/mo</span>
               <span>70%</span>
             </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Approximate percentage of your budget allocated to housing.
-            </p>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-              Cost Priorities (1-5 scale)
+
+          {/* Cost Priorities - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+              Cost Priorities
             </label>
-            <div className="space-y-4">
+            <div className="space-y-2">
               {costCategories.map((category) => (
-                <div key={category.id} className="flex flex-col">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-700 dark:text-gray-300">{category.label}</span>
-                    <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                      {formData.cost_priorities[category.id]} / 5
-                    </span>
-                  </div>
-                  <div className="flex space-x-2">
-                    {[1, 2, 3, 4, 5].map((value) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => handlePriorityChange(category.id, value)}
-                        className={`flex-1 py-2 rounded-md ${
-                          formData.cost_priorities[category.id] === value
-                            ? 'bg-green-600 text-white'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-                        }`}
-                      >
-                        {value}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <ImportanceSlider 
+                  key={category.id} 
+                  category={category} 
+                  icon={category.icon}
+                />
               ))}
             </div>
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              Rate how important each category is to you (1 = least important, 5 = most important).
-            </p>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+
+          {/* Willing to Compromise - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <TrendingUp size={18} className="mr-1.5" />
               Willing to Compromise On
             </label>
-            <div className="grid grid-cols-1 gap-2">
-              {costFactors.map((factor) => (
-                <div key={factor.id} className="flex items-center">
-                  <input
-                    id={`compromise.${factor.id}`}
-                    name={`willing_to_compromise.${factor.id}`}
-                    type="checkbox"
-                    checked={formData.willing_to_compromise.includes(factor.id)}
-                    onChange={handleInputChange}
-                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor={`compromise.${factor.id}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                    {factor.label}
-                  </label>
-                </div>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+              Select areas where you're flexible on costs
+            </p>
+            <div className="grid grid-cols-3 gap-1.5">
+              {compromiseOptions.map((option) => (
+                <OptionButton
+                  key={option.id}
+                  label={option.label}
+                  isSelected={formData.willing_to_compromise.includes(option.id)}
+                  onClick={() => handleCompromiseToggle(option.id)}
+                />
               ))}
             </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Select areas where you're willing to spend more if necessary.
-            </p>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+
+          {/* Deal Breakers - mb-4 */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <AlertCircle size={18} className="mr-1.5" />
               Deal Breakers
             </label>
-            <div className="grid grid-cols-1 gap-2">
-              {costFactors.map((factor) => (
-                <div key={factor.id} className="flex items-center">
-                  <input
-                    id={`dealbreaker.${factor.id}`}
-                    name={`deal_breakers.${factor.id}`}
-                    type="checkbox"
-                    checked={formData.deal_breakers.includes(factor.id)}
-                    onChange={handleInputChange}
-                    className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor={`dealbreaker.${factor.id}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                    {factor.label}
-                  </label>
-                </div>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+              Factors that would eliminate a location
+            </p>
+            <div className="grid grid-cols-3 gap-1.5">
+              {dealBreakerOptions.map((option) => (
+                <OptionButton
+                  key={option.id}
+                  label={option.label}
+                  isSelected={formData.deal_breakers.includes(option.id)}
+                  onClick={() => handleDealBreakerToggle(option.id)}
+                />
               ))}
             </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Select cost factors that would eliminate a location from consideration.
-            </p>
           </div>
-          
-          <div className="pt-4">
+
+          {/* Summary Section - mb-4 */}
+          <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              <span className="font-medium">Summary:</span>
+              <div className="mt-1 text-xs space-y-1">
+                <div>• Monthly budget: ${formData.monthly_budget}</div>
+                <div>• Housing budget: ${Math.round(formData.monthly_budget * formData.housing_budget_percentage / 100)} ({formData.housing_budget_percentage}%)</div>
+                {formData.housing_preference.length > 0 && (
+                  <div>• Housing: {formData.housing_preference.join(', ')}</div>
+                )}
+                {formData.willing_to_compromise.length > 0 && (
+                  <div>• Flexible on: {formData.willing_to_compromise.length} areas</div>
+                )}
+                {formData.deal_breakers.length > 0 && (
+                  <div>• Deal breakers: {formData.deal_breakers.length} factors</div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Pro Tip */}
+          <div className="mb-4 p-3 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
+            <div className="flex items-start">
+              <div className="mr-2">
+                <svg className="h-5 w-5 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-gray-700 dark:text-gray-300">
+                  <span className="font-medium">Pro Tip:</span> Consider both current costs and future inflation. Many retirees find that healthcare becomes a larger portion of their budget over time.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Navigation */}
+          <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              onClick={() => navigate('/onboarding/administration')}
+              className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+            >
+              Back
+            </button>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50"
+              className="px-6 py-2 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
             >
               {loading ? 'Saving...' : 'Continue'}
             </button>
