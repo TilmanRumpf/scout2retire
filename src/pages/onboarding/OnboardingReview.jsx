@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../../utils/authUtils';
 import { getOnboardingProgress, completeOnboarding } from '../../utils/onboardingUtils';
+import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
 import toast from 'react-hot-toast';
 
 export default function OnboardingReview() {
   const [onboardingData, setOnboardingData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [progress, setProgress] = useState({ completedSteps: {} });
   const navigate = useNavigate();
 
   // Load all onboarding data
@@ -20,7 +22,7 @@ export default function OnboardingReview() {
           return;
         }
         
-        const { success, data, error } = await getOnboardingProgress(user.id);
+        const { success, data, progress: userProgress, error } = await getOnboardingProgress(user.id);
         if (!success) {
           console.error("Error loading onboarding data:", error);
           setInitialLoading(false);
@@ -28,6 +30,7 @@ export default function OnboardingReview() {
         }
         
         setOnboardingData(data);
+        setProgress(userProgress);
       } catch (err) {
         console.error("Unexpected error loading data:", err);
       } finally {
@@ -72,183 +75,198 @@ export default function OnboardingReview() {
     switch (section) {
       case 'current_status':
         return (
-          <div className="space-y-2">
+          <div className="space-y-1 text-xs">
             <p>
-              <span className="font-medium">Retirement Status:</span>{' '}
-              {data.retirement_timeline.status === 'planning' && 'Planning for Retirement'}
-              {data.retirement_timeline.status === 'retiring_soon' && 'Retiring Within a Year'}
-              {data.retirement_timeline.status === 'already_retired' && 'Already Retired'}
+              <span className="font-medium">Status:</span>{' '}
+              {data.retirement_timeline?.status === 'planning' && 'Planning for retirement'}
+              {data.retirement_timeline?.status === 'retiring_soon' && 'Retiring soon'}
+              {data.retirement_timeline?.status === 'already_retired' && 'Already retired'}
             </p>
-            {data.retirement_timeline.status !== 'already_retired' && (
+            {data.retirement_timeline?.target_year && (
               <p>
                 <span className="font-medium">Target Year:</span>{' '}
                 {data.retirement_timeline.target_year}
               </p>
             )}
             <p>
-              <span className="font-medium">Family Situation:</span>{' '}
-              {data.family_situation.status === 'solo' && 'Solo'}
-              {data.family_situation.status === 'couple' && 'Couple'}
-              {data.family_situation.status === 'family' && 'Family'}
+              <span className="font-medium">Family:</span>{' '}
+              {data.family_situation?.status || data.family_situation || 'Not specified'}
             </p>
             <p>
-              <span className="font-medium">Primary Citizenship:</span>{' '}
-              {data.citizenship.primary_citizenship.toUpperCase()}
+              <span className="font-medium">Citizenship:</span>{' '}
+              {data.citizenship?.primary_citizenship?.toUpperCase() || 'Not specified'}
             </p>
           </div>
         );
         
       case 'region_preferences':
         return (
-          <div className="space-y-2">
-            <p>
-              <span className="font-medium">Continents:</span>{' '}
-              {data.continents.length > 0
-                ? data.continents.map(c => c.charAt(0).toUpperCase() + c.slice(1).replace('_', ' ')).join(', ')
-                : 'No specific preference'}
-            </p>
-            <p>
-              <span className="font-medium">Countries:</span>{' '}
-              {data.countries.length > 0
-                ? data.countries.map(c => c.charAt(0).toUpperCase() + c.slice(1).replace('_', ' ')).join(', ')
-                : 'No specific preference'}
-            </p>
-            <p>
-              <span className="font-medium">Water Proximity:</span>{' '}
-              {data.proximity_to_water === 'coastal' && 'Coastal'}
-              {data.proximity_to_water === 'near_water' && 'Near Lakes/Rivers'}
-              {data.proximity_to_water === 'inland' && 'Inland'}
-            </p>
-            <p>
-              <span className="font-medium">Environment:</span>{' '}
-              {data.preferred_environment.charAt(0).toUpperCase() + data.preferred_environment.slice(1)}
-            </p>
+          <div className="space-y-1 text-xs">
+            {data.regions && data.regions.length > 0 && (
+              <p>
+                <span className="font-medium">Regions:</span>{' '}
+                {data.regions.join(', ')}
+              </p>
+            )}
+            {data.countries && data.countries.length > 0 && (
+              <p>
+                <span className="font-medium">Countries:</span>{' '}
+                {data.countries.join(', ')}
+              </p>
+            )}
+            {data.geographic_features && data.geographic_features.length > 0 && (
+              <p>
+                <span className="font-medium">Features:</span>{' '}
+                {data.geographic_features.join(', ')}
+              </p>
+            )}
+            {data.vegetation_types && data.vegetation_types.length > 0 && (
+              <p>
+                <span className="font-medium">Vegetation:</span>{' '}
+                {data.vegetation_types.join(', ')}
+              </p>
+            )}
           </div>
         );
         
       case 'climate_preferences':
         return (
-          <div className="space-y-2">
-            <p>
-              <span className="font-medium">Temperature:</span>{' '}
-              {data.temperature_preference.charAt(0).toUpperCase() + data.temperature_preference.slice(1)}
-            </p>
-            <p>
-              <span className="font-medium">Temperature Range:</span>{' '}
-              {data.min_temperature}°C to {data.max_temperature}°C
-            </p>
-            <p>
-              <span className="font-medium">Rainfall:</span>{' '}
-              {data.rainfall_preference.charAt(0).toUpperCase() + data.rainfall_preference.slice(1)}
-            </p>
-            <p>
-              <span className="font-medium">Sunshine:</span>{' '}
-              {data.sunshine_hours === 'low' && 'Low (<4 hrs/day)'}
-              {data.sunshine_hours === 'moderate' && 'Moderate (4-7 hrs/day)'}
-              {data.sunshine_hours === 'high' && 'High (8+ hrs/day)'}
-            </p>
+          <div className="space-y-1 text-xs">
+            {data.summer_climate_preference && data.summer_climate_preference.length > 0 && (
+              <p>
+                <span className="font-medium">Summer:</span>{' '}
+                {data.summer_climate_preference.join(', ')}
+              </p>
+            )}
+            {data.winter_climate_preference && data.winter_climate_preference.length > 0 && (
+              <p>
+                <span className="font-medium">Winter:</span>{' '}
+                {data.winter_climate_preference.join(', ')}
+              </p>
+            )}
+            {data.humidity_level && data.humidity_level.length > 0 && (
+              <p>
+                <span className="font-medium">Humidity:</span>{' '}
+                {data.humidity_level.join(', ')}
+              </p>
+            )}
+            {data.sunshine && data.sunshine.length > 0 && (
+              <p>
+                <span className="font-medium">Sunshine:</span>{' '}
+                {data.sunshine.join(', ')}
+              </p>
+            )}
           </div>
         );
         
       case 'culture_preferences':
         return (
-          <div className="space-y-2">
-            <p>
-              <span className="font-medium">Expat Community:</span>{' '}
-              {data.expat_community_preference === 'none' && 'No expat community needed'}
-              {data.expat_community_preference === 'small' && 'Small expat community'}
-              {data.expat_community_preference === 'moderate' && 'Moderate expat presence'}
-              {data.expat_community_preference === 'large' && 'Large international community'}
-            </p>
-            <p>
-              <span className="font-medium">Language Preference:</span>{' '}
-              {data.language_comfort.english_only 
-                ? 'Prefer English-speaking locations' 
-                : data.language_comfort.willing_to_learn 
-                  ? 'Willing to learn local language' 
-                  : 'No specific language preference'}
-            </p>
-            {data.language_comfort.already_speak.length > 0 && (
+          <div className="space-y-1 text-xs">
+            {data.expat_community_preference && data.expat_community_preference.length > 0 && (
               <p>
-                <span className="font-medium">Languages Spoken:</span>{' '}
-                {data.language_comfort.already_speak.map(l => l.charAt(0).toUpperCase() + l.slice(1)).join(', ')}
+                <span className="font-medium">Expat Community:</span>{' '}
+                {data.expat_community_preference.join(', ')}
               </p>
             )}
-            <p>
-              <span className="font-medium">Lifestyle:</span>{' '}
-              {data.lifestyle_preferences.pace_of_life === 'slow' && 'Relaxed pace, '}
-              {data.lifestyle_preferences.pace_of_life === 'moderate' && 'Moderate pace, '}
-              {data.lifestyle_preferences.pace_of_life === 'fast' && 'Fast-paced, '}
-              {data.lifestyle_preferences.urban_rural === 'urban' && 'Urban setting, '}
-              {data.lifestyle_preferences.urban_rural === 'suburban' && 'Suburban setting, '}
-              {data.lifestyle_preferences.urban_rural === 'rural' && 'Rural setting, '}
-              {data.lifestyle_preferences.traditional_progressive === 'traditional' && 'Traditional values'}
-              {data.lifestyle_preferences.traditional_progressive === 'balanced' && 'Balanced values'}
-              {data.lifestyle_preferences.traditional_progressive === 'progressive' && 'Progressive values'}
-            </p>
+            {data.lifestyle_preferences?.pace_of_life && data.lifestyle_preferences.pace_of_life.length > 0 && (
+              <p>
+                <span className="font-medium">Pace:</span>{' '}
+                {data.lifestyle_preferences.pace_of_life.join(', ')}
+              </p>
+            )}
+            {data.lifestyle_preferences?.urban_rural && data.lifestyle_preferences.urban_rural.length > 0 && (
+              <p>
+                <span className="font-medium">Setting:</span>{' '}
+                {data.lifestyle_preferences.urban_rural.join(', ')}
+              </p>
+            )}
+            {data.language_comfort?.already_speak && data.language_comfort.already_speak.length > 0 && (
+              <p>
+                <span className="font-medium">Languages:</span>{' '}
+                {data.language_comfort.already_speak.join(', ')}
+              </p>
+            )}
           </div>
         );
         
       case 'hobbies':
         return (
-          <div className="space-y-2">
-            {data.activities.length > 0 && (
+          <div className="space-y-1 text-xs">
+            {data.activities && data.activities.length > 0 && (
               <p>
                 <span className="font-medium">Activities:</span>{' '}
-                {data.activities.map(a => a.charAt(0).toUpperCase() + a.slice(1).replace('_', ' ')).join(', ')}
+                {data.activities.map(a => a.replace(/_/g, ' ')).join(', ')}
               </p>
             )}
-            {data.interests.length > 0 && (
+            {data.interests && data.interests.length > 0 && (
               <p>
                 <span className="font-medium">Interests:</span>{' '}
-                {data.interests.map(i => i.charAt(0).toUpperCase() + i.slice(1).replace('_', ' ')).join(', ')}
+                {data.interests.map(i => i.replace(/_/g, ' ')).join(', ')}
               </p>
             )}
             <p>
-              <span className="font-medium">Social Style:</span>{' '}
-              {data.social_preference === 'social' && 'Very Social'}
-              {data.social_preference === 'balanced' && 'Balanced'}
-              {data.social_preference === 'private' && 'Private'}
+              <span className="font-medium">Social:</span>{' '}
+              {data.social_preference || 'Not specified'}
             </p>
             <p>
               <span className="font-medium">Travel:</span>{' '}
-              {data.travel_frequency === 'frequent' && 'Frequent travel'}
-              {data.travel_frequency === 'occasional' && 'Occasional travel'}
-              {data.travel_frequency === 'rare' && 'Rare travel'}
+              {data.travel_frequency || 'Not specified'}
             </p>
-            {data.pet_owner && (
+          </div>
+        );
+        
+      case 'administration':
+        return (
+          <div className="space-y-1 text-xs">
+            {data.health?.healthcare_access && data.health.healthcare_access.length > 0 && (
               <p>
-                <span className="font-medium">Pets:</span>{' '}
-                {data.pet_types.length > 0 
-                  ? data.pet_types.map(p => p.charAt(0).toUpperCase() + p.slice(1).replace('_', ' ')).join(', ') 
-                  : 'Pet owner (unspecified)'}
+                <span className="font-medium">Healthcare:</span>{' '}
+                {data.health.healthcare_access.join(', ')}
+              </p>
+            )}
+            {data.safety?.crime_tolerance && data.safety.crime_tolerance.length > 0 && (
+              <p>
+                <span className="font-medium">Safety:</span>{' '}
+                {data.safety.crime_tolerance.join(', ')}
+              </p>
+            )}
+            {data.governance?.tax_complexity && data.governance.tax_complexity.length > 0 && (
+              <p>
+                <span className="font-medium">Tax System:</span>{' '}
+                {data.governance.tax_complexity.join(', ')}
+              </p>
+            )}
+            {data.immigration?.residency_goal && data.immigration.residency_goal.length > 0 && (
+              <p>
+                <span className="font-medium">Residency:</span>{' '}
+                {data.immigration.residency_goal.join(', ')}
               </p>
             )}
           </div>
         );
         
-      case 'budget':
+      case 'costs':
         return (
-          <div className="space-y-2">
+          <div className="space-y-1 text-xs">
             <p>
               <span className="font-medium">Monthly Budget:</span>{' '}
-              ${data.monthly_budget.toLocaleString()}
+              ${data.total_monthly_budget?.toLocaleString() || '0'}
+              {data.total_monthly_budget >= 5000 && '+'}
             </p>
             <p>
-              <span className="font-medium">Housing:</span>{' '}
-              {data.housing_preference === 'rent' && 'Prefer to Rent'}
-              {data.housing_preference === 'buy' && 'Prefer to Buy'}
-              {data.housing_preference === 'either' && 'Open to Either'}
-              {', '}
-              {data.housing_budget_percentage}% of budget
+              <span className="font-medium">Max Rent:</span>{' '}
+              ${data.max_monthly_rent?.toLocaleString() || '0'}
+              {data.max_monthly_rent >= 2000 && '+'}
             </p>
             <p>
-              <span className="font-medium">Cost Priorities:</span>{' '}
-              {Object.entries(data.cost_priorities)
-                .sort(([, a], [, b]) => b - a)
-                .slice(0, 3)
-                .map(([key, value]) => `${key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ')} (${value}/5)`)
-                .join(', ')}
+              <span className="font-medium">Max Home Price:</span>{' '}
+              ${data.max_home_price?.toLocaleString() || '0'}
+              {data.max_home_price >= 500000 && '+'}
+            </p>
+            <p>
+              <span className="font-medium">Healthcare Budget:</span>{' '}
+              ${data.monthly_healthcare_budget || '0'}/month
+              {data.monthly_healthcare_budget >= 1500 && '+'}
             </p>
           </div>
         );
@@ -261,169 +279,108 @@ export default function OnboardingReview() {
   if (initialLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
-        <div className="animate-pulse text-green-600 font-semibold">Loading your preferences...</div>
+        <div className="animate-pulse text-scout-accent-600 font-semibold">Loading your preferences...</div>
       </div>
     );
   }
 
-  // Check if we have the necessary data
+  // Check if we have the necessary data - updated to match new structure
   const allSectionsComplete = onboardingData &&
     onboardingData.current_status &&
     onboardingData.region_preferences &&
     onboardingData.climate_preferences &&
     onboardingData.culture_preferences &&
     onboardingData.hobbies &&
-    onboardingData.budget;
+    onboardingData.administration &&
+    onboardingData.costs;
+
+  const sections = [
+    { key: 'current_status', title: 'Current Status', path: '/onboarding/current-status' },
+    { key: 'region_preferences', title: 'Region Preferences', path: '/onboarding/region' },
+    { key: 'climate_preferences', title: 'Climate Preferences', path: '/onboarding/climate' },
+    { key: 'culture_preferences', title: 'Culture & Lifestyle', path: '/onboarding/culture' },
+    { key: 'hobbies', title: 'Hobbies & Interests', path: '/onboarding/hobbies' },
+    { key: 'administration', title: 'Administrative Preferences', path: '/onboarding/administration' },
+    { key: 'costs', title: 'Budget & Costs', path: '/onboarding/costs' }
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-md mx-auto">
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-4">
+        <OnboardingStepNavigation 
+          currentStep="review" 
+          completedSteps={progress.completedSteps} 
+          className="mb-4" 
+        />
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4">
+          {/* Header */}
+          <div className="mb-4">
+            <h1 className="text-lg font-bold text-gray-800 dark:text-white">Review Your Preferences</h1>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+              Review and confirm your retirement preferences
+            </p>
+          </div>
+
+          {!allSectionsComplete ? (
+            <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <p className="text-xs text-yellow-800 dark:text-yellow-200">
+                Some sections are incomplete. Please complete all sections for the best experience.
+              </p>
+            </div>
+          ) : null}
+
+          {/* Section Cards */}
+          <div className="space-y-3">
+            {sections.map((section) => (
+              <div key={section.key} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h3 className="text-sm font-medium text-gray-800 dark:text-white mb-2">
+                      {section.title}
+                    </h3>
+                    <div className="text-gray-700 dark:text-gray-300">
+                      {formatSectionData(section.key, onboardingData?.[section.key])}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate(section.path)}
+                    className="ml-3 text-xs text-scout-accent-600 dark:text-scout-accent-400 hover:underline"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Complete Button */}
+          <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button
-              onClick={() => navigate('/onboarding/costs')}
-              className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+              onClick={handleComplete}
+              disabled={loading || !allSectionsComplete}
+              className="w-full px-6 py-2 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-              </svg>
+              {loading ? 'Processing...' : 'Complete & View Recommendations'}
             </button>
-            <div className="flex space-x-1">
-              {[1, 2, 3, 4, 5, 6].map((step) => (
-                <div
-                  key={step}
-                  className={`w-8 h-1 rounded-full bg-gray-400 dark:bg-gray-600`}
-                ></div>
-              ))}
-            </div>
-            <div className="w-5"></div> {/* Spacer to balance the back button */}
+            {!allSectionsComplete && (
+              <p className="mt-2 text-xs text-center text-yellow-600 dark:text-yellow-400">
+                Please complete all sections before proceeding.
+              </p>
+            )}
           </div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Review Your Preferences</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Review and confirm your retirement preferences before we generate your personalized recommendations.
-          </p>
-        </div>
 
-        {!allSectionsComplete ? (
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
-            <p className="text-yellow-800 dark:text-yellow-200">
-              It looks like some onboarding sections are incomplete. Please go back and complete all sections for the best experience.
-            </p>
+          {/* Bottom Navigation */}
+          <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              onClick={() => navigate('/onboarding/costs')}
+              className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+            >
+              Back
+            </button>
+            <div></div>
           </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-                Current Status
-              </h2>
-              <div className="text-sm text-gray-700 dark:text-gray-300">
-                {formatSectionData('current_status', onboardingData.current_status)}
-              </div>
-              <button
-                onClick={() => navigate('/onboarding/current-status')}
-                className="mt-4 text-sm text-green-600 dark:text-green-400 hover:underline"
-              >
-                Edit
-              </button>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-                Region Preferences
-              </h2>
-              <div className="text-sm text-gray-700 dark:text-gray-300">
-                {formatSectionData('region_preferences', onboardingData.region_preferences)}
-              </div>
-              <button
-                onClick={() => navigate('/onboarding/region')}
-                className="mt-4 text-sm text-green-600 dark:text-green-400 hover:underline"
-              >
-                Edit
-              </button>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-                Climate Preferences
-              </h2>
-              <div className="text-sm text-gray-700 dark:text-gray-300">
-                {formatSectionData('climate_preferences', onboardingData.climate_preferences)}
-              </div>
-              <button
-                onClick={() => navigate('/onboarding/climate')}
-                className="mt-4 text-sm text-green-600 dark:text-green-400 hover:underline"
-              >
-                Edit
-              </button>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-                Culture & Lifestyle
-              </h2>
-              <div className="text-sm text-gray-700 dark:text-gray-300">
-                {formatSectionData('culture_preferences', onboardingData.culture_preferences)}
-              </div>
-              <button
-                onClick={() => navigate('/onboarding/culture')}
-                className="mt-4 text-sm text-green-600 dark:text-green-400 hover:underline"
-              >
-                Edit
-              </button>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-                Hobbies & Interests
-              </h2>
-              <div className="text-sm text-gray-700 dark:text-gray-300">
-                {formatSectionData('hobbies', onboardingData.hobbies)}
-              </div>
-              <button
-                onClick={() => navigate('/onboarding/hobbies')}
-                className="mt-4 text-sm text-green-600 dark:text-green-400 hover:underline"
-              >
-                Edit
-              </button>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-                Budget & Costs
-              </h2>
-              <div className="text-sm text-gray-700 dark:text-gray-300">
-                {formatSectionData('budget', onboardingData.budget)}
-              </div>
-              <button
-                onClick={() => navigate('/onboarding/costs')}
-                className="mt-4 text-sm text-green-600 dark:text-green-400 hover:underline"
-              >
-                Edit
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-            Ready to Find Your Ideal Retirement Locations?
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            We'll use your preferences to identify and rank the best retirement destinations for you. 
-            You can always update your preferences later.
-          </p>
-          <button
-            onClick={handleComplete}
-            disabled={loading || !allSectionsComplete}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50"
-          >
-            {loading ? 'Processing...' : 'Complete & View Recommendations'}
-          </button>
-          {!allSectionsComplete && (
-            <p className="mt-4 text-sm text-center text-yellow-600 dark:text-yellow-400">
-              Please complete all onboarding sections before proceeding.
-            </p>
-          )}
         </div>
       </div>
     </div>

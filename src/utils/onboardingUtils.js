@@ -1,5 +1,5 @@
 // src/utils/onboardingUtils.js
-// Updated 10JUN25: Fixed to match exact 7-step flow
+// Updated 19JUN25: Fixed to use 'costs' to match database column name
 import supabase from './supabaseClient';
 
 // Onboarding helpers
@@ -79,7 +79,7 @@ export const getOnboardingProgress = async (userId) => {
       .select('*')
       .eq('user_id', userId);
     
-    // Define the expected steps - Updated 10JUN25: Exact 7 steps from spreadsheet
+    // Define the expected steps - Updated 19JUN25: Using 'costs' to match database
     const steps = [
       'current_status',
       'region_preferences',
@@ -87,7 +87,7 @@ export const getOnboardingProgress = async (userId) => {
       'culture_preferences',
       'hobbies',
       'administration',
-      'budget'
+      'costs'  // Changed from 'budget' to 'costs'
     ];
     
     // If no data exists yet or data is empty array
@@ -158,7 +158,7 @@ export const getNextIncompleteStep = async (userId) => {
       { key: 'culture_preferences', path: '/onboarding/culture' },
       { key: 'hobbies', path: '/onboarding/hobbies' },
       { key: 'administration', path: '/onboarding/administration' },
-      { key: 'budget', path: '/onboarding/costs' }
+      { key: 'costs', path: '/onboarding/costs' }  // Changed from 'budget' to 'costs'
     ];
     
     for (const step of stepOrder) {
@@ -193,7 +193,7 @@ export const canAccessStep = async (userId, stepKey) => {
       'culture_preferences',
       'hobbies',
       'administration',
-      'budget'
+      'costs'  // Changed from 'budget' to 'costs'
     ];
     
     const currentStepIndex = stepOrder.indexOf(stepKey);
