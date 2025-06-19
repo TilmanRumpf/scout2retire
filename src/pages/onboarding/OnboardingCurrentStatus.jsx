@@ -254,7 +254,7 @@ export default function OnboardingCurrentStatus() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
+      <div className="min-h-[100svh] bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
         <div className="animate-pulse text-scout-accent-600 font-semibold">Loading...</div>
       </div>
     );
@@ -268,7 +268,7 @@ export default function OnboardingCurrentStatus() {
   const isCouple = formData.family_situation === 'couple';
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 sm:pb-4">
+    <div className="min-h-[100svh] bg-gray-50 dark:bg-gray-900 pb-20 sm:pb-4">
       <div className="max-w-md mx-auto p-4 sm:p-4">
         <OnboardingStepNavigation 
           currentStep="current_status" 
