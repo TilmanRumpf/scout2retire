@@ -209,7 +209,7 @@ export default function OnboardingHobbies() {
       }
       
       toast.success('Hobbies, health & interests saved!');
-      navigate('/onboarding/budget');
+      navigate('/onboarding/administration'); // FIXED: Changed from '/onboarding/budget' to '/onboarding/administration'
     } catch (err) {
       toast.error('An unexpected error occurred');
       console.error(err);
