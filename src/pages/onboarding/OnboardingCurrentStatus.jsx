@@ -6,19 +6,19 @@ import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardin
 import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
 import toast from 'react-hot-toast';
 
-// Option Button Component - 10JUN25
+// Option Button Component - Optimized for mobile
 const OptionButton = ({ label, description, isSelected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`p-3 rounded-md border-2 transition-all text-center ${
+    className={`p-2 sm:p-2.5 rounded-md border-2 transition-all text-center min-h-[44px] ${
       isSelected
         ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
         : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
     }`}
   >
-    <div className={`text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
-    {description && <div className={`text-xs mt-1 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
+    <div className={`text-xs sm:text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
+    {description && <div className={`text-[10px] sm:text-xs mt-0.5 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
   </button>
 );
 
@@ -29,7 +29,7 @@ export default function OnboardingCurrentStatus() {
       target_year: new Date().getFullYear() + 5,
       flexibility: 'somewhat_flexible'
     },
-    family_situation: 'solo', // Simple string instead of object
+    family_situation: 'solo',
     pet_owner: [],
     citizenship: {
       primary_citizenship: 'us',
@@ -49,7 +49,6 @@ export default function OnboardingCurrentStatus() {
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
 
-  // Country list - Professional format without flags
   const countries = [
     { id: 'us', label: 'United States' },
     { id: 'uk', label: 'United Kingdom' },
@@ -71,7 +70,6 @@ export default function OnboardingCurrentStatus() {
     { id: 'other', label: 'Other' }
   ];
 
-  // Load existing data if available
   useEffect(() => {
     const loadExistingData = async () => {
       try {
@@ -90,12 +88,10 @@ export default function OnboardingCurrentStatus() {
         
         setProgress(userProgress);
         
-        // If current status data exists, load it
         if (data && data.current_status) {
           setFormData(prev => ({
             ...prev,
             retirement_timeline: data.current_status.retirement_timeline || prev.retirement_timeline,
-            // Handle family_situation - could be string or object
             family_situation: typeof data.current_status.family_situation === 'string'
               ? data.current_status.family_situation
               : (data.current_status.family_situation?.status || 'solo'),
@@ -120,7 +116,6 @@ export default function OnboardingCurrentStatus() {
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
       
-      // Special handling for dual citizenship checkbox
       if (child === 'dual_citizenship') {
         setFormData(prev => ({
           ...prev,
@@ -131,7 +126,6 @@ export default function OnboardingCurrentStatus() {
           }
         }));
       } else if ((parent === 'citizenship' || parent === 'partner_citizenship') && child === 'primary_citizenship') {
-        // When primary citizenship changes, clear secondary if it's the same
         setFormData(prev => ({
           ...prev,
           [parent]: {
@@ -161,7 +155,6 @@ export default function OnboardingCurrentStatus() {
     setFormData(prev => ({
       ...prev,
       family_situation: status,
-      // Reset partner citizenship when switching away from couple
       partner_citizenship: status === 'couple' ? prev.partner_citizenship : {
         primary_citizenship: 'us',
         dual_citizenship: false,
@@ -189,17 +182,19 @@ export default function OnboardingCurrentStatus() {
     }));
   };
 
+  const handleSkip = () => {
+    navigate('/onboarding/region');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate citizenship data
     if (formData.citizenship.dual_citizenship && 
         formData.citizenship.secondary_citizenship === formData.citizenship.primary_citizenship) {
       toast.error('Secondary citizenship must be different from primary citizenship');
       return;
     }
     
-    // Validate partner citizenship if couple
     if (formData.family_situation === 'couple' &&
         formData.partner_citizenship.dual_citizenship && 
         formData.partner_citizenship.secondary_citizenship === formData.partner_citizenship.primary_citizenship) {
@@ -216,7 +211,6 @@ export default function OnboardingCurrentStatus() {
         return;
       }
       
-      // Clean the form data before saving
       const cleanedFormData = {
         ...formData,
         family_situation: {
@@ -266,40 +260,38 @@ export default function OnboardingCurrentStatus() {
     );
   }
 
-  // Generate retirement year options (current year to +30 years)
   const retirementYearOptions = [];
   for (let i = 0; i <= 30; i++) {
     retirementYearOptions.push(currentYear + i);
   }
 
-  // Check if couple is selected
   const isCouple = formData.family_situation === 'couple';
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="max-w-md mx-auto">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 sm:pb-4">
+      <div className="max-w-md mx-auto p-4 sm:p-4">
         <OnboardingStepNavigation 
           currentStep="current_status" 
           completedSteps={progress.completedSteps} 
-          className="mb-4" 
+          className="mb-3" 
         />
         
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4">
-          {/* Header - mb-4 */}
-          <div className="mb-4">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5">
+          {/* Header */}
+          <div className="mb-3">
             <h1 className="text-lg font-bold text-gray-800 dark:text-white">Current Status</h1>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
               Tell us about your retirement timeline and family situation
             </p>
           </div>
 
-          {/* Retirement Status - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Calendar size={18} className="mr-1.5" />
+          {/* Retirement Status */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+              <Calendar size={16} className="mr-1.5" />
               Retirement Timeline
             </label>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
               Where are you in your retirement journey? *
             </p>
             <div className="grid grid-cols-3 gap-1.5">
@@ -324,17 +316,17 @@ export default function OnboardingCurrentStatus() {
             </div>
           </div>
 
-          {/* Target Year (if not already retired) - mb-4 */}
+          {/* Target Year */}
           {formData.retirement_timeline.status !== 'already_retired' && (
-            <div className="mb-4">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+            <div className="mb-3">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
                 Target Retirement Year
               </label>
               <select
                 name="retirement_timeline.target_year"
                 value={formData.retirement_timeline.target_year}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white h-[44px]"
               >
                 {retirementYearOptions.map(year => (
                   <option key={year} value={year}>{year}</option>
@@ -343,13 +335,13 @@ export default function OnboardingCurrentStatus() {
             </div>
           )}
 
-          {/* Family Situation - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Users size={18} className="mr-1.5" />
+          {/* Family Situation */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+              <Users size={16} className="mr-1.5" />
               Family Situation
             </label>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
               Who's joining you on this adventure? *
             </p>
             <div className="grid grid-cols-3 gap-1.5">
@@ -374,27 +366,25 @@ export default function OnboardingCurrentStatus() {
             </div>
           </div>
 
-          {/* Citizenship - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Globe size={18} className="mr-1.5" />
+          {/* Citizenship */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+              <Globe size={16} className="mr-1.5" />
               Citizenship
             </label>
             
             {isCouple ? (
               <>
-                {/* Couple Layout - Two columns */}
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Your Citizenship */}
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">
                       Your citizenship *
                     </p>
                     <select
                       name="citizenship.primary_citizenship"
                       value={formData.citizenship.primary_citizenship}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                      className="w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white h-[44px]"
                     >
                       {countries.map(country => (
                         <option key={country.id} value={country.id}>
@@ -403,8 +393,7 @@ export default function OnboardingCurrentStatus() {
                       ))}
                     </select>
                     
-                    {/* Your Dual Citizenship */}
-                    <div className="mt-2 flex items-center">
+                    <div className="mt-1.5 flex items-center">
                       <input
                         id="dual_citizenship"
                         name="citizenship.dual_citizenship"
@@ -428,12 +417,11 @@ export default function OnboardingCurrentStatus() {
                           transition: 'all 0.15s ease-in-out'
                         }}
                       />
-                      <label htmlFor="dual_citizenship" className="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                      <label htmlFor="dual_citizenship" className="ml-1.5 text-[11px] text-gray-700 dark:text-gray-300 cursor-pointer">
                         Dual citizenship
                       </label>
                     </div>
                     
-                    {/* Your Secondary */}
                     {formData.citizenship.dual_citizenship && (
                       <select
                         name="citizenship.secondary_citizenship"
@@ -443,7 +431,7 @@ export default function OnboardingCurrentStatus() {
                             handleInputChange(e);
                           }
                         }}
-                        className="w-full mt-2 px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                        className="w-full mt-1.5 px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white h-[44px]"
                       >
                         <option value="">Select secondary</option>
                         {countries
@@ -458,16 +446,15 @@ export default function OnboardingCurrentStatus() {
                     )}
                   </div>
                   
-                  {/* Partner's Citizenship */}
                   <div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">
                       Partner's citizenship *
                     </p>
                     <select
                       name="partner_citizenship.primary_citizenship"
                       value={formData.partner_citizenship.primary_citizenship}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                      className="w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white h-[44px]"
                     >
                       {countries.map(country => (
                         <option key={`partner-${country.id}`} value={country.id}>
@@ -476,8 +463,7 @@ export default function OnboardingCurrentStatus() {
                       ))}
                     </select>
                     
-                    {/* Partner's Dual Citizenship */}
-                    <div className="mt-2 flex items-center">
+                    <div className="mt-1.5 flex items-center">
                       <input
                         id="partner_dual_citizenship"
                         name="partner_citizenship.dual_citizenship"
@@ -501,12 +487,11 @@ export default function OnboardingCurrentStatus() {
                           transition: 'all 0.15s ease-in-out'
                         }}
                       />
-                      <label htmlFor="partner_dual_citizenship" className="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                      <label htmlFor="partner_dual_citizenship" className="ml-1.5 text-[11px] text-gray-700 dark:text-gray-300 cursor-pointer">
                         Dual citizenship
                       </label>
                     </div>
                     
-                    {/* Partner's Secondary */}
                     {formData.partner_citizenship.dual_citizenship && (
                       <select
                         name="partner_citizenship.secondary_citizenship"
@@ -516,7 +501,7 @@ export default function OnboardingCurrentStatus() {
                             handleInputChange(e);
                           }
                         }}
-                        className="w-full mt-2 px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                        className="w-full mt-1.5 px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white h-[44px]"
                       >
                         <option value="">Select secondary</option>
                         {countries
@@ -534,15 +519,14 @@ export default function OnboardingCurrentStatus() {
               </>
             ) : (
               <>
-                {/* Solo/Family Layout - Single column */}
-                <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
                   Primary citizenship *
                 </p>
                 <select
                   name="citizenship.primary_citizenship"
                   value={formData.citizenship.primary_citizenship}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white h-[44px]"
                 >
                   {countries.map(country => (
                     <option key={country.id} value={country.id}>
@@ -551,7 +535,6 @@ export default function OnboardingCurrentStatus() {
                   ))}
                 </select>
                 
-                {/* Dual Citizenship Checkbox - White checkmark via browser default */}
                 <div className="mt-2 flex items-center">
                   <input
                     id="dual_citizenship"
@@ -559,7 +542,7 @@ export default function OnboardingCurrentStatus() {
                     type="checkbox"
                     checked={formData.citizenship.dual_citizenship}
                     onChange={handleInputChange}
-                                            className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
+                    className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
                     style={{ 
                       accentColor: '#8fbc8f',
                       WebkitAppearance: 'none',
@@ -581,15 +564,14 @@ export default function OnboardingCurrentStatus() {
                   </label>
                 </div>
                 
-                {/* Secondary Citizenship Dropdown */}
                 {formData.citizenship.dual_citizenship && (
-                  <div className="mt-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                      <Globe size={18} className="mr-1.5" />
+                  <div className="mt-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+                      <Globe size={16} className="mr-1.5" />
                       Secondary Citizenship
                     </label>
                     {formData.citizenship.secondary_citizenship === formData.citizenship.primary_citizenship && (
-                      <p className="text-xs text-red-600 dark:text-red-400 mb-2">
+                      <p className="text-xs text-red-600 dark:text-red-400 mb-1.5">
                         Secondary citizenship cannot be the same as primary. Please select a different country.
                       </p>
                     )}
@@ -605,7 +587,7 @@ export default function OnboardingCurrentStatus() {
                           handleInputChange(e);
                         }
                       }}
-                      className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white h-[44px]"
                     >
                       <option value="">Select secondary citizenship</option>
                       {countries
@@ -623,10 +605,10 @@ export default function OnboardingCurrentStatus() {
             )}
           </div>
 
-          {/* Pet Owner - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <PawPrint size={18} className="mr-1.5" />
+          {/* Pet Owner */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+              <PawPrint size={16} className="mr-1.5" />
               Pet Owner
             </label>
             <div className="grid grid-cols-3 gap-1.5">
@@ -648,12 +630,12 @@ export default function OnboardingCurrentStatus() {
             </div>
           </div>
 
-          {/* Summary Section - mb-4 */}
+          {/* Summary Section */}
           {(formData.retirement_timeline.status || formData.family_situation) && (
-            <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <div className="mb-3 p-2.5 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
               <div className="text-sm text-gray-600 dark:text-gray-300">
                 <span className="font-medium">Summary:</span>
-                <div className="mt-1 text-xs">
+                <div className="mt-0.5 text-xs">
                   {formData.retirement_timeline.status === 'planning' && 'Planning for retirement (5+ years)'}
                   {formData.retirement_timeline.status === 'retiring_soon' && 'Retiring within 5 years'}
                   {formData.retirement_timeline.status === 'already_retired' && 'Already retired'}
@@ -680,39 +662,53 @@ export default function OnboardingCurrentStatus() {
           )}
 
           {/* Pro Tip */}
-          <div className="mb-4 p-3 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
+          <div className="mb-3 p-2.5 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
             <div className="flex items-start">
               <div className="mr-2">
-                <svg className="h-5 w-5 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="h-4 w-4 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
               </div>
               <div>
                 <p className="text-xs text-gray-700 dark:text-gray-300">
-                  <span className="font-medium">Pro Tip:</span> Your citizenship affects visa requirements, tax implications, and healthcare access in different countries. We'll use this to provide personalized recommendations.
+                  <span className="font-medium">Pro Tip:</span> Your citizenship affects visa requirements, tax implications, and healthcare access in different countries.
                 </p>
               </div>
             </div>
           </div>
-
-          {/* Bottom Navigation */}
-          <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-            <button
-              type="button"
-              onClick={() => navigate('/welcome')}
-              className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
-            >
-              Back
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-2 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : 'Continue'}
-            </button>
-          </div>
         </form>
+
+        {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
+        <div className="fixed sm:sticky bottom-0 left-0 right-0 sm:relative bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-4">
+          <div className="max-w-md mx-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3 shadow-lg sm:shadow-none">
+              <div className="flex justify-between items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/welcome')}
+                  className="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white font-medium transition-colors min-h-[44px]"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSkip}
+                  className="px-4 py-2.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-colors min-h-[44px]"
+                >
+                  Skip
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  onClick={handleSubmit}
+                  className="px-6 py-2.5 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50 min-h-[44px]"
+                >
+                  {loading ? 'Saving...' : 'Continue →'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

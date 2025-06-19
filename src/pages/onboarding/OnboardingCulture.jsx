@@ -264,9 +264,9 @@ export default function OnboardingCulture() {
 
   // Urban/Rural options
   const urbanOptions = [
-    { value: 'urban', label: 'Urban' },
-    { value: 'suburban', label: 'Suburban' },
-    { value: 'rural', label: 'Rural' }
+  { value: 'rural', label: 'Rural' },
+  { value: 'suburban', label: 'Suburban' },
+  { value: 'urban', label: 'Urban' }
   ];
 
   // Simple slider component

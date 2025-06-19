@@ -1,16 +1,17 @@
 // pages/Profile.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getCurrentUser, signOut } from '../utils/authUtils';  // Fixed: was ../../../utils/authUtils
+import { getCurrentUser, signOut } from '../utils/authUtils';
 import QuickNav from '../components/QuickNav';
 import toast from 'react-hot-toast';
-import supabase from '../utils/supabaseClient';  // Fixed path
+import supabase from '../utils/supabaseClient';
 
 export default function Profile() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [retakingOnboarding, setRetakingOnboarding] = useState(false);
+  const [favoritesCount, setFavoritesCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,10 +27,32 @@ export default function Profile() {
       }
       setUser(currentUser);
       setProfile(userProfile);
+      
+      // Load favorites count
+      await loadFavoritesCount(currentUser.id);
     } catch (err) {
       console.error("Error loading user data:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Load favorites count
+  const loadFavoritesCount = async (userId) => {
+    try {
+      const { count, error } = await supabase
+        .from('saved_locations')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId);
+      
+      if (error) {
+        console.error('Error loading favorites count:', error);
+        return;
+      }
+      
+      setFavoritesCount(count || 0);
+    } catch (err) {
+      console.error('Error loading favorites:', err);
     }
   };
 
@@ -39,24 +62,24 @@ export default function Profile() {
     
     setRetakingOnboarding(true);
     try {
-      // Only reset onboarding_completed to false - keep all existing responses
+      // Set onboarding_completed to false so user can access onboarding pages
       const { error } = await supabase
         .from('users')
         .update({ onboarding_completed: false })
         .eq('id', user.id);
 
       if (error) {
-        toast.error('Failed to restart onboarding');
-        console.error('Error resetting onboarding:', error);
+        toast.error('Failed to access preferences');
+        console.error('Error updating onboarding status:', error);
         return;
       }
 
-      toast.success('Loading your preferences for review...');
+      toast.success('Loading your details & preferences...');
       
-      // Navigate to onboarding status page where they can see their progress
-      navigate('/onboarding/status');
+      // Navigate to current status page
+      navigate('/onboarding/current-status');
     } catch (err) {
-      console.error('Error retaking onboarding:', err);
+      console.error('Error navigating to preferences:', err);
       toast.error('An error occurred. Please try again.');
     } finally {
       setRetakingOnboarding(false);
@@ -73,7 +96,7 @@ export default function Profile() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
-        <div className="animate-pulse text-green-600 font-semibold">Loading profile...</div>
+        <div className="animate-pulse text-scout-accent-600 font-semibold">Loading profile...</div>
       </div>
     );
   }
@@ -95,7 +118,7 @@ export default function Profile() {
             </h2>
             <Link
               to="/settings"
-              className="text-sm text-green-600 dark:text-green-400 hover:underline"
+              className="text-sm text-scout-accent-600 dark:text-scout-accent-400 hover:underline"
             >
               Edit
             </Link>
@@ -139,9 +162,8 @@ export default function Profile() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Favorites</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {/* TODO: Add favorites count */}
-                0
+              <p className="text-2xl font-bold text-scout-accent-600 dark:text-scout-accent-400">
+                {favoritesCount}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Towns you've added to favorites
@@ -175,7 +197,7 @@ export default function Profile() {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
-              {retakingOnboarding ? 'Loading...' : 'Update Preferences'}
+              {retakingOnboarding ? 'Loading...' : 'Update Details & Preferences'}
             </button>
             
             <Link
@@ -186,7 +208,7 @@ export default function Profile() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              App Settings
+              Settings & Account
             </Link>
             
             <button

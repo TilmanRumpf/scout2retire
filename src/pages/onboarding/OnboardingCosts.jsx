@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DollarSign, Home, TrendingUp, AlertCircle } from 'lucide-react';
+import { DollarSign, Home, Heart, Car } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
@@ -23,29 +23,31 @@ const OptionButton = ({ label, description, isSelected, onClick }) => (
 );
 
 export default function OnboardingCosts() {
-  const [formData, setFormData] = useState({
-    monthly_budget: 2000,
-    housing_preference: [],
-    housing_budget_percentage: 30,
-    cost_priorities: {
-      food: 3,
-      entertainment: 2,
-      healthcare: 4,
-      transportation: 3,
-      utilities: 3
-    },
-    willing_to_compromise: [],
-    deal_breakers: []
-  });
-  
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [progress, setProgress] = useState({ completedSteps: {} });
-  const navigate = useNavigate();
+  
+  const [formData, setFormData] = useState({
+    total_monthly_budget: 3000,
+    max_monthly_rent: 1000,
+    max_home_price: 300000,
+    monthly_healthcare_budget: 800,
+    need_car: [],
+    property_tax_sensitive: false,
+    sales_tax_sensitive: false,
+    income_tax_sensitive: false
+  });
 
-  // Load existing data if available
+  // Car need options
+  const carOptions = [
+    { value: 'yes', label: 'Yes', description: 'Need a car' },
+    { value: 'no', label: 'No', description: 'No car needed' },
+    { value: 'maybe', label: 'Maybe', description: 'Depends on location' }
+  ];
+
   useEffect(() => {
-    const loadExistingData = async () => {
+    const loadData = async () => {
       try {
         const { user } = await getCurrentUser();
         if (!user) {
@@ -53,85 +55,53 @@ export default function OnboardingCosts() {
           return;
         }
         
-        const { success, data, progress: userProgress, error } = await getOnboardingProgress(user.id);
-        if (!success) {
-          console.error("Error loading existing data:", error);
-          setInitialLoading(false);
-          return;
-        }
-        
-        setProgress(userProgress);
-        
-        // If costs data exists, load it
-        if (data && data.costs) {
-          // Convert single values to arrays for housing_preference if needed
-          const loadedData = data.costs;
-          setFormData({
-            ...loadedData,
-            housing_preference: Array.isArray(loadedData.housing_preference) 
-              ? loadedData.housing_preference 
-              : (loadedData.housing_preference ? [loadedData.housing_preference] : [])
-          });
+        const { success, data, progress: userProgress } = await getOnboardingProgress(user.id);
+        if (success) {
+          setProgress(userProgress || { completedSteps: {} });
+          // Fixed: Changed from data.costs to data.budget
+          if (data && data.budget) {
+            setFormData(prev => ({ 
+              ...prev, 
+              ...data.budget,
+              need_car: data.budget.need_car || []
+            }));
+          }
         }
       } catch (err) {
-        console.error("Unexpected error loading data:", err);
+        console.error('Error:', err);
       } finally {
         setInitialLoading(false);
       }
     };
     
-    loadExistingData();
+    loadData();
   }, [navigate]);
 
   const handleInputChange = (e) => {
-    const { name, value, type } = e.target;
-    
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'number' ? Number(value) : value
+      [name]: type === 'checkbox' ? checked : (type === 'number' ? Number(value) : value)
     }));
   };
 
-  const handleHousingToggle = (value) => {
+  const handleSliderChange = (name, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: Number(value)
+    }));
+  };
+
+  const handleMultiSelect = (fieldName, value) => {
     setFormData(prev => {
-      const currentPreferences = prev.housing_preference || [];
-      const isSelected = currentPreferences.includes(value);
-      
+      const current = prev[fieldName] || [];
       return {
         ...prev,
-        housing_preference: isSelected 
-          ? currentPreferences.filter(v => v !== value)
-          : [...currentPreferences, value]
+        [fieldName]: current.includes(value) 
+          ? current.filter(v => v !== value)
+          : [...current, value]
       };
     });
-  };
-
-  const handleCompromiseToggle = (factor) => {
-    setFormData(prev => ({
-      ...prev,
-      willing_to_compromise: prev.willing_to_compromise.includes(factor)
-        ? prev.willing_to_compromise.filter(f => f !== factor)
-        : [...prev.willing_to_compromise, factor]
-    }));
-  };
-
-  const handleDealBreakerToggle = (factor) => {
-    setFormData(prev => ({
-      ...prev,
-      deal_breakers: prev.deal_breakers.includes(factor)
-        ? prev.deal_breakers.filter(f => f !== factor)
-        : [...prev.deal_breakers, factor]
-    }));
-  };
-
-  const handlePriorityChange = (category, value) => {
-    setFormData(prev => ({
-      ...prev,
-      cost_priorities: {
-        ...prev.cost_priorities,
-        [category]: value
-      }
-    }));
   };
 
   const handleSubmit = async (e) => {
@@ -145,19 +115,15 @@ export default function OnboardingCosts() {
         return;
       }
       
-      const { success, error } = await saveOnboardingStep(
-        user.id,
-        formData,
-        'costs' // Changed from 'budget' to 'costs'
-      );
+      // Fixed: Changed from 'costs' to 'budget' to match database key
+      const { success, error } = await saveOnboardingStep(user.id, formData, 'budget');
       
       if (!success) {
-        toast.error(`Failed to save: ${error.message}`);
-        setLoading(false);
+        toast.error(`Failed to save: ${error?.message || 'Unknown error'}`);
         return;
       }
       
-      toast.success('Budget & cost preferences saved!');
+      toast.success('Budget information saved!');
       navigate('/onboarding/review');
     } catch (err) {
       toast.error('An unexpected error occurred');
@@ -175,73 +141,15 @@ export default function OnboardingCosts() {
     );
   }
 
-  // Housing options
-  const housingOptions = [
-    { value: 'rent', label: 'Rent' },
-    { value: 'buy', label: 'Buy' },
-    { value: 'either', label: 'Either' }
-  ];
-
-  // Cost categories with icons
-  const costCategories = [
-    { id: 'healthcare', label: 'Healthcare', icon: DollarSign },
-    { id: 'food', label: 'Food & Dining', icon: DollarSign },
-    { id: 'transportation', label: 'Transportation', icon: DollarSign },
-    { id: 'utilities', label: 'Utilities', icon: DollarSign },
-    { id: 'entertainment', label: 'Entertainment', icon: DollarSign }
-  ];
-
-  // Compromise options
-  const compromiseOptions = [
-    { id: 'high_food', label: 'High Food' },
-    { id: 'high_healthcare', label: 'Healthcare' },
-    { id: 'high_rent', label: 'High Rent' },
-    { id: 'high_taxes', label: 'High Taxes' },
-    { id: 'expensive_utilities', label: 'Utilities' },
-    { id: 'high_transport', label: 'Transport' }
-  ];
-
-  // Deal breaker options
-  const dealBreakerOptions = [
-    { id: 'very_high_cost', label: 'Very High Cost' },
-    { id: 'poor_healthcare', label: 'Poor Healthcare' },
-    { id: 'no_affordable_housing', label: 'No Housing' },
-    { id: 'extreme_taxes', label: 'Extreme Taxes' },
-    { id: 'unsafe_area', label: 'Unsafe Area' },
-    { id: 'no_infrastructure', label: 'No Infrastructure' }
-  ];
-
-  // Simple slider component - matching culture/hobbies pages
-  const ImportanceSlider = ({ category, icon: Icon }) => {
-    const value = formData.cost_priorities[category.id];
-    
-    return (
-      <div className="mb-3">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center">
-            <Icon size={16} className="text-scout-accent-600 mr-1.5" />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
-              {category.label}
-            </span>
-          </div>
-          <span className="text-xs font-medium text-scout-accent-600 dark:text-scout-accent-400">
-            {value}/5
-          </span>
-        </div>
-        <input
-          type="range"
-          min="1"
-          max="5"
-          step="1"
-          value={value}
-          onChange={(e) => handlePriorityChange(category.id, parseInt(e.target.value))}
-          className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
-          style={{
-            background: `linear-gradient(to right, #8fbc8f 0%, #8fbc8f ${(value - 1) * 25}%, #e5e7eb ${(value - 1) * 25}%, #e5e7eb 100%)`
-          }}
-        />
-      </div>
-    );
+  // Format currency (TODO: Add currency conversion based on user location)
+  const formatCurrency = (value) => `$${value.toLocaleString()}`;
+  
+  // Format home price for display
+  const formatHomePrice = (value) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`;
+    }
+    return `$${(value / 1000).toFixed(0)}k`;
   };
 
   return (
@@ -254,156 +162,276 @@ export default function OnboardingCosts() {
         />
         
         <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4">
-          {/* Header - mb-4 */}
+          {/* Header */}
           <div className="mb-4">
             <h1 className="text-lg font-bold text-gray-800 dark:text-white">Budget & Costs</h1>
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-              Help us understand your budget and cost preferences
+              Set your budget limits for retirement locations
             </p>
           </div>
 
-          {/* Monthly Budget - mb-4 */}
+          {/* Total Monthly Budget Slider */}
           <div className="mb-4">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
               <DollarSign size={18} className="mr-1.5" />
-              Monthly Budget (USD)
+              Total Monthly Budget
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-500 dark:text-gray-400 text-sm">$</span>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+              Your total available monthly budget
+            </p>
+            <div className="mb-2">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-500 dark:text-gray-400">$1,500</span>
+                <span className="text-sm font-medium text-scout-accent-600 dark:text-scout-accent-400">
+                  {formatCurrency(formData.total_monthly_budget)}{formData.total_monthly_budget >= 5000 && '+'}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">$5,000+</span>
               </div>
               <input
-                type="number"
-                name="monthly_budget"
-                min="500"
-                max="50000"
+                type="range"
+                min="1500"
+                max="5000"
                 step="100"
-                value={formData.monthly_budget}
-                onChange={handleInputChange}
-                className="pl-7 w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                value={Math.min(formData.total_monthly_budget, 5000)}
+                onChange={(e) => handleSliderChange('total_monthly_budget', e.target.value)}
+                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, #8fbc8f 0%, #8fbc8f ${((Math.min(formData.total_monthly_budget, 5000) - 1500) / 3500) * 100}%, #e5e7eb ${((Math.min(formData.total_monthly_budget, 5000) - 1500) / 3500) * 100}%, #e5e7eb 100%)`
+                }}
               />
             </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-              Your total monthly budget for all expenses
-            </p>
           </div>
 
-          {/* Housing Preference - mb-4 */}
+          {/* Housing Costs */}
           <div className="mb-4">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
               <Home size={18} className="mr-1.5" />
-              Housing Preference
+              Housing Budget
             </label>
+            
+            {/* Maximum Monthly Rent Slider */}
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+              Maximum monthly rent
+            </p>
+            <div className="mb-3">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-500 dark:text-gray-400">$500</span>
+                <span className="text-sm font-medium text-scout-accent-600 dark:text-scout-accent-400">
+                  {formatCurrency(formData.max_monthly_rent)}{formData.max_monthly_rent >= 2000 && '+'}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">$2,000+</span>
+              </div>
+              <input
+                type="range"
+                min="500"
+                max="2000"
+                step="50"
+                value={Math.min(formData.max_monthly_rent, 2000)}
+                onChange={(e) => handleSliderChange('max_monthly_rent', e.target.value)}
+                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, #8fbc8f 0%, #8fbc8f ${((Math.min(formData.max_monthly_rent, 2000) - 500) / 1500) * 100}%, #e5e7eb ${((Math.min(formData.max_monthly_rent, 2000) - 500) / 1500) * 100}%, #e5e7eb 100%)`
+                }}
+              />
+            </div>
+
+            {/* Maximum Home Purchase Price Slider */}
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+              Maximum home purchase price
+            </p>
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-500 dark:text-gray-400">$100k</span>
+                <span className="text-sm font-medium text-scout-accent-600 dark:text-scout-accent-400">
+                  {formatHomePrice(formData.max_home_price)}{formData.max_home_price >= 500000 && '+'}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">$500k+</span>
+              </div>
+              <input
+                type="range"
+                min="100000"
+                max="500000"
+                step="10000"
+                value={Math.min(formData.max_home_price, 500000)}
+                onChange={(e) => handleSliderChange('max_home_price', e.target.value)}
+                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, #8fbc8f 0%, #8fbc8f ${((Math.min(formData.max_home_price, 500000) - 100000) / 400000) * 100}%, #e5e7eb ${((Math.min(formData.max_home_price, 500000) - 100000) / 400000) * 100}%, #e5e7eb 100%)`
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Healthcare Budget Slider */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <Heart size={18} className="mr-1.5" />
+              Healthcare Budget
+            </label>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+              Monthly healthcare budget including insurance
+            </p>
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-500 dark:text-gray-400">$500</span>
+                <span className="text-sm font-medium text-scout-accent-600 dark:text-scout-accent-400">
+                  {formatCurrency(formData.monthly_healthcare_budget)}{formData.monthly_healthcare_budget >= 1500 && '+'}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">$1,500+</span>
+              </div>
+              <input
+                type="range"
+                min="500"
+                max="1500"
+                step="50"
+                value={Math.min(formData.monthly_healthcare_budget, 1500)}
+                onChange={(e) => handleSliderChange('monthly_healthcare_budget', e.target.value)}
+                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, #8fbc8f 0%, #8fbc8f ${((Math.min(formData.monthly_healthcare_budget, 1500) - 500) / 1000) * 100}%, #e5e7eb ${((Math.min(formData.monthly_healthcare_budget, 1500) - 500) / 1000) * 100}%, #e5e7eb 100%)`
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Transportation */}
+          <div className="mb-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+              <Car size={18} className="mr-1.5" />
+              Transportation Needs
+            </label>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+              Will you need a car?
+            </p>
             <div className="grid grid-cols-3 gap-1.5">
-              {housingOptions.map((option) => (
+              {carOptions.map((option) => (
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.housing_preference.includes(option.value)}
-                  onClick={() => handleHousingToggle(option.value)}
+                  description={option.description}
+                  isSelected={formData.need_car.includes(option.value)}
+                  onClick={() => handleMultiSelect('need_car', option.value)}
                 />
               ))}
             </div>
           </div>
 
-          {/* Housing Budget Percentage - mb-4 */}
+          {/* Tax Sensitivity */}
           <div className="mb-4">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-              Housing Budget ({formData.housing_budget_percentage}% of total)
+              Tax Considerations
             </label>
-            <input
-              type="range"
-              name="housing_budget_percentage"
-              min="10"
-              max="70"
-              step="5"
-              value={formData.housing_budget_percentage}
-              onChange={handleInputChange}
-              className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
-              style={{
-                background: `linear-gradient(to right, #8fbc8f 0%, #8fbc8f ${((formData.housing_budget_percentage - 10) / 60) * 100}%, #e5e7eb ${((formData.housing_budget_percentage - 10) / 60) * 100}%, #e5e7eb 100%)`
-              }}
-            />
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-              <span>10%</span>
-              <span>${Math.round(formData.monthly_budget * formData.housing_budget_percentage / 100)}/mo</span>
-              <span>70%</span>
-            </div>
-          </div>
-
-          {/* Cost Priorities - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-              Cost Priorities
-            </label>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+              Which taxes are important to minimize?
+            </p>
             <div className="space-y-2">
-              {costCategories.map((category) => (
-                <ImportanceSlider 
-                  key={category.id} 
-                  category={category} 
-                  icon={category.icon}
+              <div className="flex items-center">
+                <input
+                  id="property_tax_sensitive"
+                  type="checkbox"
+                  checked={formData.property_tax_sensitive}
+                  onChange={handleInputChange}
+                  name="property_tax_sensitive"
+                  className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
+                  style={{ 
+                    accentColor: '#8fbc8f',
+                    WebkitAppearance: 'none',
+                    appearance: 'none',
+                    backgroundColor: formData.property_tax_sensitive ? '#8fbc8f' : 'transparent',
+                    border: formData.property_tax_sensitive ? '1px solid #8fbc8f' : '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    backgroundImage: formData.property_tax_sensitive 
+                      ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
+                      : 'none',
+                    backgroundSize: '100% 100%',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    transition: 'all 0.15s ease-in-out'
+                  }}
                 />
-              ))}
+                <label htmlFor="property_tax_sensitive" className="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                  Property tax rates are important to me
+                </label>
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  id="sales_tax_sensitive"
+                  type="checkbox"
+                  checked={formData.sales_tax_sensitive}
+                  onChange={handleInputChange}
+                  name="sales_tax_sensitive"
+                  className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
+                  style={{ 
+                    accentColor: '#8fbc8f',
+                    WebkitAppearance: 'none',
+                    appearance: 'none',
+                    backgroundColor: formData.sales_tax_sensitive ? '#8fbc8f' : 'transparent',
+                    border: formData.sales_tax_sensitive ? '1px solid #8fbc8f' : '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    backgroundImage: formData.sales_tax_sensitive 
+                      ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
+                      : 'none',
+                    backgroundSize: '100% 100%',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    transition: 'all 0.15s ease-in-out'
+                  }}
+                />
+                <label htmlFor="sales_tax_sensitive" className="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                  Sales tax rates are important to me
+                </label>
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  id="income_tax_sensitive"
+                  type="checkbox"
+                  checked={formData.income_tax_sensitive}
+                  onChange={handleInputChange}
+                  name="income_tax_sensitive"
+                  className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
+                  style={{ 
+                    accentColor: '#8fbc8f',
+                    WebkitAppearance: 'none',
+                    appearance: 'none',
+                    backgroundColor: formData.income_tax_sensitive ? '#8fbc8f' : 'transparent',
+                    border: formData.income_tax_sensitive ? '1px solid #8fbc8f' : '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    backgroundImage: formData.income_tax_sensitive 
+                      ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
+                      : 'none',
+                    backgroundSize: '100% 100%',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    transition: 'all 0.15s ease-in-out'
+                  }}
+                />
+                <label htmlFor="income_tax_sensitive" className="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                  State income tax rates are important to me
+                </label>
+              </div>
             </div>
           </div>
 
-          {/* Willing to Compromise - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <TrendingUp size={18} className="mr-1.5" />
-              Willing to Compromise On
-            </label>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-              Select areas where you're flexible on costs
-            </p>
-            <div className="grid grid-cols-3 gap-1.5">
-              {compromiseOptions.map((option) => (
-                <OptionButton
-                  key={option.id}
-                  label={option.label}
-                  isSelected={formData.willing_to_compromise.includes(option.id)}
-                  onClick={() => handleCompromiseToggle(option.id)}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Deal Breakers - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <AlertCircle size={18} className="mr-1.5" />
-              Deal Breakers
-            </label>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-              Factors that would eliminate a location
-            </p>
-            <div className="grid grid-cols-3 gap-1.5">
-              {dealBreakerOptions.map((option) => (
-                <OptionButton
-                  key={option.id}
-                  label={option.label}
-                  isSelected={formData.deal_breakers.includes(option.id)}
-                  onClick={() => handleDealBreakerToggle(option.id)}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Summary Section - mb-4 */}
+          {/* Summary Section */}
           <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
             <div className="text-sm text-gray-600 dark:text-gray-300">
-              <span className="font-medium">Summary:</span>
+              <span className="font-medium">Budget Summary:</span>
               <div className="mt-1 text-xs space-y-1">
-                <div>• Monthly budget: ${formData.monthly_budget}</div>
-                <div>• Housing budget: ${Math.round(formData.monthly_budget * formData.housing_budget_percentage / 100)} ({formData.housing_budget_percentage}%)</div>
-                {formData.housing_preference.length > 0 && (
-                  <div>• Housing: {formData.housing_preference.join(', ')}</div>
+                <div>• Total monthly: {formatCurrency(formData.total_monthly_budget)}{formData.total_monthly_budget >= 5000 && '+'}</div>
+                <div>• Max rent: {formatCurrency(formData.max_monthly_rent)}{formData.max_monthly_rent >= 2000 && '+'}</div>
+                <div>• Max home price: {formatHomePrice(formData.max_home_price)}{formData.max_home_price >= 500000 && '+'}</div>
+                <div>• Healthcare: {formatCurrency(formData.monthly_healthcare_budget)}{formData.monthly_healthcare_budget >= 1500 && '+'}/month</div>
+                {formData.need_car.length > 0 && (
+                  <div>• Transportation: {formData.need_car.join(', ')}</div>
                 )}
-                {formData.willing_to_compromise.length > 0 && (
-                  <div>• Flexible on: {formData.willing_to_compromise.length} areas</div>
-                )}
-                {formData.deal_breakers.length > 0 && (
-                  <div>• Deal breakers: {formData.deal_breakers.length} factors</div>
+                {(formData.property_tax_sensitive || formData.sales_tax_sensitive || formData.income_tax_sensitive) && (
+                  <div>• Tax concerns: {[
+                    formData.property_tax_sensitive && 'property',
+                    formData.sales_tax_sensitive && 'sales',
+                    formData.income_tax_sensitive && 'income'
+                  ].filter(Boolean).join(', ')}</div>
                 )}
               </div>
             </div>
@@ -419,7 +447,7 @@ export default function OnboardingCosts() {
               </div>
               <div>
                 <p className="text-xs text-gray-700 dark:text-gray-300">
-                  <span className="font-medium">Pro Tip:</span> Consider both current costs and future inflation. Many retirees find that healthcare becomes a larger portion of their budget over time.
+                  <span className="font-medium">Pro Tip:</span> These budgets will be matched against actual costs in your home currency. Locations exceeding your budget will be filtered out.
                 </p>
               </div>
             </div>

@@ -36,6 +36,34 @@ module.exports = {
           900: '#1d3720',  // Deepest sage
           950: '#101e13',  // Nearly black with sage undertone
           DEFAULT: '#8fbc8f', // Makes bg-scout-accent work perfectly
+        },
+        // Progress/In-Progress colors - warm peach/coral based on #FBB982
+        'scout-progress': {
+          50:  '#FEF5ED',  // Lightest - almost white with hint of peach
+          100: '#FDE6D6',  // Very light peach - backgrounds
+          200: '#FBD4B4',  // Light peach - progress bars
+          300: '#FBB982',  // Your base color - borders
+          400: '#F9A05C',  // Slightly deeper - hover states
+          500: '#F78B3F',  // Medium coral - text/icons
+          600: '#E57230',  // Deeper coral - active states
+          700: '#C45A24',  // Dark coral - dark mode
+          800: '#9A461E',  // Very dark
+          900: '#7A3819',  // Darkest
+          DEFAULT: '#FBB982', // Makes bg-scout-progress work
+        },
+        // Navigation colors - sage tones for hamburger menu
+        'scout-nav': {
+          50:  '#F5F7F5',  // Lightest sage
+          100: '#E8EDE8',  // Very light sage
+          200: '#D3DED3',  // Light sage
+          300: '#B3C6B3',  // Soft sage
+          400: '#9BB89B',  // Light-medium sage
+          500: '#8FAF8F',  // Medium sage - main hamburger color
+          600: '#7A9A7A',  // Darker sage - hover
+          700: '#658565',  // Deep sage - active
+          800: '#4F684F',  // Very dark sage
+          900: '#3F523F',  // Darkest sage
+          DEFAULT: '#8FAF8F', // Makes text-scout-nav work
         }
       },
       fontFamily: {
