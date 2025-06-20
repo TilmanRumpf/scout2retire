@@ -11,38 +11,37 @@ const OptionButton = ({ label, description, isSelected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`p-3 rounded-md border-2 transition-all text-center ${
+    className={`p-2 sm:p-2.5 rounded-md border-2 transition-all text-center min-h-[44px] ${
       isSelected
         ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
         : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
     }`}
   >
-    <div className={`text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
-    {description && <div className={`text-xs mt-1 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
+    <div className={`text-xs sm:text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
+    {description && <div className={`text-[10px] sm:text-xs mt-0.5 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
   </button>
 );
 
 export default function OnboardingAdministration() {
   const [formData, setFormData] = useState({
     health: {
-      insurance_priority: [],
-      healthcare_access: [],
-      chronic_conditions: false,
-      prescription_needs: false
+      healthcare_quality: [],
+      insurance_importance: [],
+      special_medical_needs: false
     },
     safety: {
-      crime_tolerance: [],
-      political_stability: [],
-      emergency_services: []
+      safety_importance: [],
+      emergency_services: [],
+      political_stability: []
     },
     governance: {
-      tax_complexity: [],
-      bureaucracy_tolerance: []
+      tax_preference: [],
+      government_efficiency: []
     },
     immigration: {
-      visa_complexity: [],
-      residency_goal: [],
-      documentation_comfort: []
+      visa_preference: [],
+      stay_duration: [],
+      residency_path: []
     }
   });
   
@@ -70,52 +69,42 @@ export default function OnboardingAdministration() {
         
         setProgress(userProgress);
         
-        // If administration data exists, load it
+        // If administration data exists, load it with proper conversion
         if (data && data.administration) {
-          // Convert single values to arrays if needed
           const loadedData = data.administration;
+          
+          // Map old data structure to new simplified structure
           const convertedData = {
             health: {
-              insurance_priority: Array.isArray(loadedData.health?.insurance_priority) 
-                ? loadedData.health.insurance_priority 
-                : (loadedData.health?.insurance_priority ? [loadedData.health.insurance_priority] : []),
-              healthcare_access: Array.isArray(loadedData.health?.healthcare_access) 
-                ? loadedData.health.healthcare_access 
-                : (loadedData.health?.healthcare_access ? [loadedData.health.healthcare_access] : []),
-              chronic_conditions: loadedData.health?.chronic_conditions || false,
-              prescription_needs: loadedData.health?.prescription_needs || false
+              healthcare_quality: loadedData.health?.healthcare_access || [],
+              insurance_importance: loadedData.health?.insurance_priority || [],
+              special_medical_needs: loadedData.health?.chronic_conditions || loadedData.health?.prescription_needs || false
             },
             safety: {
-              crime_tolerance: Array.isArray(loadedData.safety?.crime_tolerance) 
-                ? loadedData.safety.crime_tolerance 
-                : (loadedData.safety?.crime_tolerance ? [loadedData.safety.crime_tolerance] : []),
-              political_stability: Array.isArray(loadedData.safety?.political_stability) 
-                ? loadedData.safety.political_stability 
-                : (loadedData.safety?.political_stability ? [loadedData.safety.political_stability] : []),
-              emergency_services: Array.isArray(loadedData.safety?.emergency_services) 
-                ? loadedData.safety.emergency_services 
-                : (loadedData.safety?.emergency_services ? [loadedData.safety.emergency_services] : [])
+              safety_importance: loadedData.safety?.crime_tolerance || [],
+              emergency_services: loadedData.safety?.emergency_services || [],
+              political_stability: loadedData.safety?.political_stability || []
             },
             governance: {
-              tax_complexity: Array.isArray(loadedData.governance?.tax_complexity) 
-                ? loadedData.governance.tax_complexity 
-                : (loadedData.governance?.tax_complexity ? [loadedData.governance.tax_complexity] : []),
-              bureaucracy_tolerance: Array.isArray(loadedData.governance?.bureaucracy_tolerance) 
-                ? loadedData.governance.bureaucracy_tolerance 
-                : (loadedData.governance?.bureaucracy_tolerance ? [loadedData.governance.bureaucracy_tolerance] : [])
+              tax_preference: loadedData.governance?.tax_complexity || [],
+              government_efficiency: loadedData.governance?.bureaucracy_tolerance || []
             },
             immigration: {
-              visa_complexity: Array.isArray(loadedData.immigration?.visa_complexity) 
-                ? loadedData.immigration.visa_complexity 
-                : (loadedData.immigration?.visa_complexity ? [loadedData.immigration.visa_complexity] : []),
-              residency_goal: Array.isArray(loadedData.immigration?.residency_goal) 
-                ? loadedData.immigration.residency_goal 
-                : (loadedData.immigration?.residency_goal ? [loadedData.immigration.residency_goal] : []),
-              documentation_comfort: Array.isArray(loadedData.immigration?.documentation_comfort) 
-                ? loadedData.immigration.documentation_comfort 
-                : (loadedData.immigration?.documentation_comfort ? [loadedData.immigration.documentation_comfort] : [])
+              visa_preference: loadedData.immigration?.visa_complexity || [],
+              stay_duration: loadedData.immigration?.residency_goal || [],
+              residency_path: []
             }
           };
+          
+          // Ensure all fields are arrays
+          Object.keys(convertedData).forEach(section => {
+            Object.keys(convertedData[section]).forEach(field => {
+              if (field !== 'special_medical_needs' && !Array.isArray(convertedData[section][field])) {
+                convertedData[section][field] = convertedData[section][field] ? [convertedData[section][field]] : [];
+              }
+            });
+          });
+          
           setFormData(convertedData);
         }
       } catch (err) {
@@ -155,6 +144,10 @@ export default function OnboardingAdministration() {
     }));
   };
 
+  const handleSkip = () => {
+    navigate('/onboarding/costs');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -190,221 +183,136 @@ export default function OnboardingAdministration() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
+      <div className="min-h-[100svh] bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
         <div className="animate-pulse text-scout-accent-600 font-semibold">Loading...</div>
       </div>
     );
   }
 
-  // Option configurations
-  const insuranceOptions = [
-    { value: 'high', label: 'High Priority' },
-    { value: 'medium', label: 'Moderate' },
-    { value: 'low', label: 'Low Priority' }
+  // Standardized options for all quality selections
+  const qualityOptions = [
+    { value: 'excellent', label: 'Good' },
+    { value: 'good', label: 'Functional' },
+    { value: 'basic', label: 'Basic' }
   ];
 
-  const healthcareOptions = [
-    { value: 'excellent', label: 'World-Class' },
-    { value: 'good', label: 'Good Quality' },
-    { value: 'basic', label: 'Basic Care' }
+  const stayDurationOptions = [
+    { value: 'short', label: '1-2 Years' },
+    { value: 'medium', label: '3-5 Years' },
+    { value: 'long', label: '5+ Years' }
   ];
 
-  const crimeToleranceOptions = [
-    { value: 'low', label: 'Very Safe' },
-    { value: 'medium', label: 'Moderate' },
-    { value: 'high', label: 'Adaptable' }
-  ];
-
-  const politicalStabilityOptions = [
-    { value: 'high', label: 'Very Important' },
-    { value: 'medium', label: 'Moderate' },
-    { value: 'low', label: 'Flexible' }
-  ];
-
-  const emergencyServicesOptions = [
-    { value: 'excellent', label: 'World-Class' },
-    { value: 'good', label: 'Good Quality' },
-    { value: 'basic', label: 'Basic Services' }
-  ];
-
-  const taxComplexityOptions = [
-    { value: 'simple', label: 'Simple' },
-    { value: 'moderate', label: 'Moderate' },
-    { value: 'complex', label: 'Complex OK' }
-  ];
-
-  const bureaucracyOptions = [
-    { value: 'low', label: 'Minimal' },
-    { value: 'medium', label: 'Moderate' },
-    { value: 'high', label: 'Patient' }
-  ];
-
-  const visaComplexityOptions = [
-    { value: 'simple', label: 'Simple Only' },
-    { value: 'moderate', label: 'Moderate' },
-    { value: 'complex', label: 'Complex OK' }
-  ];
-
-  const residencyGoalOptions = [
-    { value: 'temporary', label: 'Temporary', description: '1-5 years' },
-    { value: 'permanent', label: 'Permanent' },
+  const residencyPathOptions = [
+    { value: 'seasonal', label: 'Seasonal' },
+    { value: 'residence', label: 'Residence' },
     { value: 'citizenship', label: 'Citizenship' }
   ];
 
-  const documentationOptions = [
-    { value: 'high', label: 'Comfortable' },
-    { value: 'medium', label: 'Moderate' },
-    { value: 'low', label: 'Prefer Simple' }
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="max-w-md mx-auto">
+    <div className="min-h-[100svh] bg-gray-50 dark:bg-gray-900 pb-20 sm:pb-4">
+      <div className="max-w-md mx-auto p-4 sm:p-4">
         <OnboardingStepNavigation 
           currentStep="administration" 
           completedSteps={progress.completedSteps} 
-          className="mb-4" 
+          className="mb-3" 
         />
         
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4">
-          {/* Header - mb-4 */}
-          <div className="mb-4">
-            <h1 className="text-lg font-bold text-gray-800 dark:text-white">Administrative Preferences</h1>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-              Select all options that apply to your preferences
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5">
+          {/* Header */}
+          <div className="mb-3">
+            <h1 className="text-lg font-bold text-gray-800 dark:text-white">Healthcare & Administration</h1>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+              Tell us about your healthcare and administrative preferences
             </p>
           </div>
 
-          {/* Health & Medical - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Heart size={18} className="mr-1.5" />
-              Health & Medical
+          {/* Health & Medical */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+              <Heart size={16} className="mr-1.5" />
+              Healthcare Preferences
             </label>
             
-            {/* Insurance Priority */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Health insurance priority</p>
-            <div className="grid grid-cols-3 gap-1.5 mb-3">
-              {insuranceOptions.map((option) => (
+            {/* Healthcare Quality */}
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Healthcare Quality</p>
+            <div className="grid grid-cols-3 gap-1.5 mb-2.5">
+              {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.health.insurance_priority.includes(option.value)}
-                  onClick={() => handleNestedToggle('health', 'insurance_priority', option.value)}
+                  isSelected={formData.health.healthcare_quality.includes(option.value)}
+                  onClick={() => handleNestedToggle('health', 'healthcare_quality', option.value)}
                 />
               ))}
             </div>
 
-            {/* Healthcare Access */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Healthcare quality requirements</p>
-            <div className="grid grid-cols-3 gap-1.5 mb-3">
-              {healthcareOptions.map((option) => (
+            {/* Health Insurance */}
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Health Insurance</p>
+            <div className="grid grid-cols-3 gap-1.5 mb-2.5">
+              {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.health.healthcare_access.includes(option.value)}
-                  onClick={() => handleNestedToggle('health', 'healthcare_access', option.value)}
+                  isSelected={formData.health.insurance_importance.includes(option.value)}
+                  onClick={() => handleNestedToggle('health', 'insurance_importance', option.value)}
                 />
               ))}
             </div>
 
-            {/* Health Checkboxes */}
-            <div className="space-y-2">
-              <div className="flex items-center">
-                <input
-                  id="chronic_conditions"
-                  type="checkbox"
-                  checked={formData.health.chronic_conditions}
-                  onChange={(e) => handleCheckboxChange('health', 'chronic_conditions', e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
-                  style={{ 
-                    accentColor: '#8fbc8f',
-                    WebkitAppearance: 'none',
-                    appearance: 'none',
-                    backgroundColor: formData.health.chronic_conditions ? '#8fbc8f' : 'transparent',
-                    border: formData.health.chronic_conditions ? '1px solid #8fbc8f' : '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
-                    backgroundImage: formData.health.chronic_conditions 
-                      ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
-                      : 'none',
-                    backgroundSize: '100% 100%',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                    transition: 'all 0.15s ease-in-out'
-                  }}
-                />
-                <label htmlFor="chronic_conditions" className="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
-                  I have chronic conditions requiring ongoing care
-                </label>
-              </div>
-              
-              <div className="flex items-center">
-                <input
-                  id="prescription_needs"
-                  type="checkbox"
-                  checked={formData.health.prescription_needs}
-                  onChange={(e) => handleCheckboxChange('health', 'prescription_needs', e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
-                  style={{ 
-                    accentColor: '#8fbc8f',
-                    WebkitAppearance: 'none',
-                    appearance: 'none',
-                    backgroundColor: formData.health.prescription_needs ? '#8fbc8f' : 'transparent',
-                    border: formData.health.prescription_needs ? '1px solid #8fbc8f' : '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
-                    backgroundImage: formData.health.prescription_needs 
-                      ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
-                      : 'none',
-                    backgroundSize: '100% 100%',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                    transition: 'all 0.15s ease-in-out'
-                  }}
-                />
-                <label htmlFor="prescription_needs" className="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
-                  I require reliable prescription medication access
-                </label>
-              </div>
+            {/* Special Medical Needs */}
+            <div className="flex items-center">
+              <input
+                id="special_medical_needs"
+                type="checkbox"
+                checked={formData.health.special_medical_needs}
+                onChange={(e) => handleCheckboxChange('health', 'special_medical_needs', e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
+                style={{ 
+                  accentColor: '#8fbc8f',
+                  WebkitAppearance: 'none',
+                  appearance: 'none',
+                  backgroundColor: formData.health.special_medical_needs ? '#8fbc8f' : 'transparent',
+                  border: formData.health.special_medical_needs ? '1px solid #8fbc8f' : '1px solid #d1d5db',
+                  borderRadius: '0.25rem',
+                  backgroundImage: formData.health.special_medical_needs 
+                    ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
+                    : 'none',
+                  backgroundSize: '100% 100%',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                  transition: 'all 0.15s ease-in-out'
+                }}
+              />
+              <label htmlFor="special_medical_needs" className="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                I have special medical needs or require regular prescriptions
+              </label>
             </div>
           </div>
 
-          {/* Safety & Security - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Shield size={18} className="mr-1.5" />
+          {/* Safety & Security */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+              <Shield size={16} className="mr-1.5" />
               Safety & Security
             </label>
             
-            {/* Crime Tolerance */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Crime tolerance level</p>
-            <div className="grid grid-cols-3 gap-1.5 mb-3">
-              {crimeToleranceOptions.map((option) => (
+            {/* Quality of Safety */}
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Quality of Safety</p>
+            <div className="grid grid-cols-3 gap-1.5 mb-2.5">
+              {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.safety.crime_tolerance.includes(option.value)}
-                  onClick={() => handleNestedToggle('safety', 'crime_tolerance', option.value)}
-                />
-              ))}
-            </div>
-
-            {/* Political Stability */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Political stability importance</p>
-            <div className="grid grid-cols-3 gap-1.5 mb-3">
-              {politicalStabilityOptions.map((option) => (
-                <OptionButton
-                  key={option.value}
-                  label={option.label}
-                  isSelected={formData.safety.political_stability.includes(option.value)}
-                  onClick={() => handleNestedToggle('safety', 'political_stability', option.value)}
+                  isSelected={formData.safety.safety_importance.includes(option.value)}
+                  onClick={() => handleNestedToggle('safety', 'safety_importance', option.value)}
                 />
               ))}
             </div>
 
             {/* Emergency Services */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Emergency services quality</p>
-            <div className="grid grid-cols-3 gap-1.5">
-              {emergencyServicesOptions.map((option) => (
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Emergency Services</p>
+            <div className="grid grid-cols-3 gap-1.5 mb-2.5">
+              {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
                   label={option.label}
@@ -413,160 +321,180 @@ export default function OnboardingAdministration() {
                 />
               ))}
             </div>
+
+            {/* Political Stability Rating */}
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Political Stability Rating</p>
+            <div className="grid grid-cols-3 gap-1.5">
+              {qualityOptions.map((option) => (
+                <OptionButton
+                  key={option.value}
+                  label={option.label}
+                  isSelected={formData.safety.political_stability.includes(option.value)}
+                  onClick={() => handleNestedToggle('safety', 'political_stability', option.value)}
+                />
+              ))}
+            </div>
           </div>
 
-          {/* Governance & Legal - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Building size={18} className="mr-1.5" />
-              Governance & Legal
+          {/* Governance & Legal */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+              <Building size={16} className="mr-1.5" />
+              Government & Taxes
             </label>
             
-            {/* Tax Complexity */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Tax system complexity preference</p>
-            <div className="grid grid-cols-3 gap-1.5 mb-3">
-              {taxComplexityOptions.map((option) => (
+            {/* Tax System Quality */}
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Tax System Quality</p>
+            <div className="grid grid-cols-3 gap-1.5 mb-2.5">
+              {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.governance.tax_complexity.includes(option.value)}
-                  onClick={() => handleNestedToggle('governance', 'tax_complexity', option.value)}
+                  isSelected={formData.governance.tax_preference.includes(option.value)}
+                  onClick={() => handleNestedToggle('governance', 'tax_preference', option.value)}
                 />
               ))}
             </div>
 
-            {/* Bureaucracy Tolerance */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Bureaucracy tolerance</p>
+            {/* Government Efficiency */}
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Government Efficiency</p>
             <div className="grid grid-cols-3 gap-1.5">
-              {bureaucracyOptions.map((option) => (
+              {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.governance.bureaucracy_tolerance.includes(option.value)}
-                  onClick={() => handleNestedToggle('governance', 'bureaucracy_tolerance', option.value)}
+                  isSelected={formData.governance.government_efficiency.includes(option.value)}
+                  onClick={() => handleNestedToggle('governance', 'government_efficiency', option.value)}
                 />
               ))}
             </div>
           </div>
 
-          {/* Immigration & Residency - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <FileText size={18} className="mr-1.5" />
-              Immigration & Residency
+          {/* Immigration & Residency */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+              <FileText size={16} className="mr-1.5" />
+              Visa & Residency
             </label>
             
-            {/* Visa Complexity */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Visa process complexity tolerance</p>
-            <div className="grid grid-cols-3 gap-1.5 mb-3">
-              {visaComplexityOptions.map((option) => (
+            {/* Visa Process */}
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Visa Process</p>
+            <div className="grid grid-cols-3 gap-1.5 mb-2.5">
+              {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.immigration.visa_complexity.includes(option.value)}
-                  onClick={() => handleNestedToggle('immigration', 'visa_complexity', option.value)}
+                  isSelected={formData.immigration.visa_preference.includes(option.value)}
+                  onClick={() => handleNestedToggle('immigration', 'visa_preference', option.value)}
                 />
               ))}
             </div>
 
-            {/* Residency Goal */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Residency goal</p>
-            <div className="grid grid-cols-3 gap-1.5 mb-3">
-              {residencyGoalOptions.map((option) => (
+            {/* Stay Duration */}
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">How long do you plan to stay?</p>
+            <div className="grid grid-cols-3 gap-1.5 mb-2.5">
+              {stayDurationOptions.map((option) => (
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  description={option.description}
-                  isSelected={formData.immigration.residency_goal.includes(option.value)}
-                  onClick={() => handleNestedToggle('immigration', 'residency_goal', option.value)}
+                  isSelected={formData.immigration.stay_duration.includes(option.value)}
+                  onClick={() => handleNestedToggle('immigration', 'stay_duration', option.value)}
                 />
               ))}
             </div>
 
-            {/* Documentation Comfort */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Documentation comfort level</p>
+            {/* Residency Path */}
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Residency goals</p>
             <div className="grid grid-cols-3 gap-1.5">
-              {documentationOptions.map((option) => (
+              {residencyPathOptions.map((option) => (
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.immigration.documentation_comfort.includes(option.value)}
-                  onClick={() => handleNestedToggle('immigration', 'documentation_comfort', option.value)}
+                  isSelected={formData.immigration.residency_path.includes(option.value)}
+                  onClick={() => handleNestedToggle('immigration', 'residency_path', option.value)}
                 />
               ))}
             </div>
           </div>
 
-          {/* Summary Section - mb-4 */}
-          <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              <span className="font-medium">Summary:</span>
-              <div className="mt-1 text-xs space-y-1">
-                {formData.health.healthcare_access.length > 0 && (
-                  <div>• Healthcare: {formData.health.healthcare_access.join(', ')}</div>
-                )}
-                {formData.health.insurance_priority.length > 0 && (
-                  <div>• Insurance: {formData.health.insurance_priority.join(', ')}</div>
-                )}
-                {formData.safety.crime_tolerance.length > 0 && (
-                  <div>• Crime tolerance: {formData.safety.crime_tolerance.join(', ')}</div>
-                )}
-                {formData.safety.political_stability.length > 0 && (
-                  <div>• Political stability: {formData.safety.political_stability.join(', ')}</div>
-                )}
-                {formData.governance.tax_complexity.length > 0 && (
-                  <div>• Tax system: {formData.governance.tax_complexity.join(', ')}</div>
-                )}
-                {formData.governance.bureaucracy_tolerance.length > 0 && (
-                  <div>• Bureaucracy: {formData.governance.bureaucracy_tolerance.join(', ')}</div>
-                )}
-                {formData.immigration.residency_goal.length > 0 && (
-                  <div>• Residency goals: {formData.immigration.residency_goal.join(', ')}</div>
-                )}
-                {(formData.health.chronic_conditions || formData.health.prescription_needs) && (
-                  <div>• Special needs: {[
-                    formData.health.chronic_conditions && 'chronic care',
-                    formData.health.prescription_needs && 'prescriptions'
-                  ].filter(Boolean).join(', ')}</div>
-                )}
-              </div>
+          {/* Summary Section */}
+          <div className="mb-3 p-2.5 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <h3 className="font-medium text-gray-800 dark:text-white mb-1.5 text-sm">
+              Your Administrative Preferences:
+            </h3>
+            <div className="space-y-0.5 text-xs text-gray-600 dark:text-gray-300">
+              {formData.health.healthcare_quality.length > 0 && (
+                <div><span className="font-medium">Healthcare:</span> {formData.health.healthcare_quality.join(', ')}</div>
+              )}
+              {formData.health.insurance_importance.length > 0 && (
+                <div><span className="font-medium">Insurance:</span> {formData.health.insurance_importance.join(', ')}</div>
+              )}
+              {formData.safety.safety_importance.length > 0 && (
+                <div><span className="font-medium">Safety:</span> {formData.safety.safety_importance.join(', ')}</div>
+              )}
+              {formData.governance.tax_preference.length > 0 && (
+                <div><span className="font-medium">Tax system:</span> {formData.governance.tax_preference.join(', ')}</div>
+              )}
+              {formData.immigration.stay_duration.length > 0 && (
+                <div><span className="font-medium">Stay duration:</span> {formData.immigration.stay_duration.join(', ')}</div>
+              )}
+              {formData.immigration.residency_path.length > 0 && (
+                <div><span className="font-medium">Goals:</span> {formData.immigration.residency_path.join(', ')}</div>
+              )}
+              {formData.health.special_medical_needs && (
+                <div><span className="font-medium">Special needs:</span> Medical care required</div>
+              )}
             </div>
           </div>
 
           {/* Pro Tip */}
-          <div className="mb-4 p-3 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
+          <div className="mb-3 p-2.5 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
             <div className="flex items-start">
               <div className="mr-2">
-                <svg className="h-5 w-5 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="h-4 w-4 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
               </div>
               <div>
                 <p className="text-xs text-gray-700 dark:text-gray-300">
-                  <span className="font-medium">Pro Tip:</span> Select multiple options to keep your choices flexible. This helps us find locations that match various combinations of your preferences.
+                  <span className="font-medium">Pro Tip:</span> These preferences help us identify locations with the right infrastructure and policies for your needs.
                 </p>
               </div>
             </div>
           </div>
-
-          {/* Bottom Navigation */}
-          <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-            <button
-              type="button"
-              onClick={() => navigate('/onboarding/hobbies')}
-              className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
-            >
-              Back
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-2 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : 'Continue'}
-            </button>
-          </div>
         </form>
+
+        {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
+        <div className="fixed sm:sticky bottom-0 left-0 right-0 sm:relative bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-4">
+          <div className="max-w-md mx-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3 shadow-lg sm:shadow-none">
+              <div className="flex justify-between items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/onboarding/hobbies')}
+                  className="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white font-medium transition-colors min-h-[44px]"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSkip}
+                  className="px-4 py-2.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-colors min-h-[44px]"
+                >
+                  Skip
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  onClick={handleSubmit}
+                  className="px-6 py-2.5 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50 min-h-[44px]"
+                >
+                  {loading ? 'Saving...' : 'Next →'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
