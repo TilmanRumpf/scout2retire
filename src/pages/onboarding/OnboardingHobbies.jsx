@@ -11,14 +11,14 @@ const OptionButton = ({ label, description, isSelected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`p-3 rounded-md border-2 transition-all text-center ${
+    className={`p-2 sm:p-2.5 rounded-md border-2 transition-all text-center min-h-[44px] ${
       isSelected
         ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
         : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
     }`}
   >
-    <div className={`text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
-    {description && <div className={`text-xs mt-1 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
+    <div className={`text-xs sm:text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
+    {description && <div className={`text-[10px] sm:text-xs mt-0.5 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
   </button>
 );
 
@@ -42,23 +42,20 @@ export default function OnboardingHobbies() {
   const [progress, setProgress] = useState({ completedSteps: {} });
   const navigate = useNavigate();
 
-  // Activity options
+  // Activity options - removed fitness, yoga, dancing
   const activityOptions = [
     { id: 'walking', label: 'Walking' },
     { id: 'swimming', label: 'Swimming' },
     { id: 'cycling', label: 'Cycling' },
     { id: 'golf', label: 'Golf' },
     { id: 'tennis', label: 'Tennis' },
-    { id: 'fitness', label: 'Fitness' },
-    { id: 'yoga', label: 'Yoga' },
-    { id: 'dancing', label: 'Dancing' },
     { id: 'water_sports', label: 'Water Sports' },
     { id: 'winter_sports', label: 'Winter Sports' },
     { id: 'fishing', label: 'Fishing' },
     { id: 'gardening', label: 'Gardening' }
   ];
 
-  // Interest options
+  // Interest options - removed games, technology, language
   const interestOptions = [
     { id: 'arts', label: 'Arts & Crafts' },
     { id: 'music', label: 'Music' },
@@ -67,18 +64,14 @@ export default function OnboardingHobbies() {
     { id: 'cooking', label: 'Cooking' },
     { id: 'wine', label: 'Wine' },
     { id: 'history', label: 'History' },
-    { id: 'language', label: 'Languages' },
     { id: 'photography', label: 'Photography' },
-    { id: 'volunteering', label: 'Volunteering' },
-    { id: 'technology', label: 'Technology' },
-    { id: 'games', label: 'Games' }
+    { id: 'volunteering', label: 'Volunteering' }
   ];
 
-  // Health consideration options
+  // Health consideration options - removed checkups
   const healthOptions = [
     { id: 'mobility', label: 'Mobility' },
     { id: 'chronic_condition', label: 'Chronic' },
-    { id: 'regular_checkups', label: 'Checkups' },
     { id: 'specialist_care', label: 'Specialist' },
     { id: 'medication_access', label: 'Medication' },
     { id: 'allergy_concerns', label: 'Allergies' },
@@ -185,6 +178,10 @@ export default function OnboardingHobbies() {
     }));
   };
 
+  const handleSkip = () => {
+    navigate('/onboarding/administration');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -209,7 +206,7 @@ export default function OnboardingHobbies() {
       }
       
       toast.success('Hobbies, health & interests saved!');
-      navigate('/onboarding/administration'); // FIXED: Changed from '/onboarding/budget' to '/onboarding/administration'
+      navigate('/onboarding/administration');
     } catch (err) {
       toast.error('An unexpected error occurred');
       console.error(err);
@@ -220,7 +217,7 @@ export default function OnboardingHobbies() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
+      <div className="min-h-[100svh] bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
         <div className="animate-pulse text-scout-accent-600 font-semibold">Loading...</div>
       </div>
     );
@@ -231,11 +228,11 @@ export default function OnboardingHobbies() {
     const value = formData.lifestyle_importance[category.id];
     
     return (
-      <div className="mb-3">
+      <div className="mb-2">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center">
             <Icon size={16} className="text-scout-accent-600 mr-1.5" />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
+            <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
               {category.label}
             </span>
           </div>
@@ -260,27 +257,27 @@ export default function OnboardingHobbies() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="max-w-md mx-auto">
+    <div className="min-h-[100svh] bg-gray-50 dark:bg-gray-900 pb-20 sm:pb-4">
+      <div className="max-w-md mx-auto p-4 sm:p-4">
         <OnboardingStepNavigation 
           currentStep="hobbies" 
           completedSteps={progress.completedSteps} 
-          className="mb-4" 
+          className="mb-3" 
         />
         
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4">
-          {/* Header - mb-4 */}
-          <div className="mb-4">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5">
+          {/* Header */}
+          <div className="mb-3">
             <h1 className="text-lg font-bold text-gray-800 dark:text-white">Hobbies, Health & Interests</h1>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
               Share your activities and lifestyle preferences
             </p>
           </div>
 
-          {/* Physical Activities - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Activity size={18} className="mr-1.5" />
+          {/* Physical Activities */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+              <Activity size={16} className="mr-1.5" />
               Physical Activities
             </label>
             <div className="grid grid-cols-3 gap-1.5">
@@ -295,10 +292,10 @@ export default function OnboardingHobbies() {
             </div>
           </div>
 
-          {/* Hobbies & Interests - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Heart size={18} className="mr-1.5" />
+          {/* Hobbies & Interests */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+              <Heart size={16} className="mr-1.5" />
               Hobbies & Interests
             </label>
             <div className="grid grid-cols-3 gap-1.5">
@@ -313,10 +310,10 @@ export default function OnboardingHobbies() {
             </div>
           </div>
 
-          {/* Social Preference - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Users size={18} className="mr-1.5" />
+          {/* Social Preference */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+              <Users size={16} className="mr-1.5" />
               Social Preference
             </label>
             <div className="grid grid-cols-3 gap-1.5">
@@ -331,10 +328,10 @@ export default function OnboardingHobbies() {
             </div>
           </div>
 
-          {/* Travel Frequency - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Plane size={18} className="mr-1.5" />
+          {/* Travel Frequency */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+              <Plane size={16} className="mr-1.5" />
               Travel Frequency
             </label>
             <div className="grid grid-cols-3 gap-1.5">
@@ -349,10 +346,10 @@ export default function OnboardingHobbies() {
             </div>
           </div>
 
-          {/* Health Considerations - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Stethoscope size={18} className="mr-1.5" />
+          {/* Health Considerations */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+              <Stethoscope size={16} className="mr-1.5" />
               Health Considerations
             </label>
             <div className="grid grid-cols-3 gap-1.5">
@@ -367,12 +364,12 @@ export default function OnboardingHobbies() {
             </div>
           </div>
 
-          {/* Lifestyle Importance - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+          {/* Lifestyle Importance */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
               Lifestyle Importance
             </label>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {lifestyleCategories.map((category) => (
                 <ImportanceSlider 
                   key={category.id} 
@@ -383,39 +380,39 @@ export default function OnboardingHobbies() {
             </div>
           </div>
 
-          {/* Summary Section - mb-4 */}
+          {/* Summary Section */}
           {(formData.activities.length > 0 || 
             formData.interests.length > 0 ||
             formData.health_considerations.length > 0) && (
-            <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-              <div className="text-sm text-gray-600 dark:text-gray-300">
-                <span className="font-medium">Summary:</span>
-                <div className="mt-1 text-xs space-y-1">
-                  {formData.activities.length > 0 && (
-                    <div>• Activities: {formData.activities.map(id => 
-                      activityOptions.find(a => a.id === id)?.label
-                    ).filter(Boolean).join(', ')}</div>
-                  )}
-                  {formData.interests.length > 0 && (
-                    <div>• Interests: {formData.interests.map(id => 
-                      interestOptions.find(i => i.id === id)?.label
-                    ).filter(Boolean).join(', ')}</div>
-                  )}
-                  {formData.health_considerations.length > 0 && (
-                    <div>• Health: {formData.health_considerations.length} considerations</div>
-                  )}
-                  <div>• Social: {formData.social_preference}</div>
-                  <div>• Travel: {formData.travel_frequency}</div>
-                </div>
+            <div className="mb-3 p-2.5 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <h3 className="font-medium text-gray-800 dark:text-white mb-1.5 text-sm">
+                Your Activities & Preferences:
+              </h3>
+              <div className="space-y-0.5 text-xs text-gray-600 dark:text-gray-300">
+                {formData.activities.length > 0 && (
+                  <div><span className="font-medium">Activities:</span> {formData.activities.map(id => 
+                    activityOptions.find(a => a.id === id)?.label
+                  ).filter(Boolean).join(', ')}</div>
+                )}
+                {formData.interests.length > 0 && (
+                  <div><span className="font-medium">Interests:</span> {formData.interests.map(id => 
+                    interestOptions.find(i => i.id === id)?.label
+                  ).filter(Boolean).join(', ')}</div>
+                )}
+                {formData.health_considerations.length > 0 && (
+                  <div><span className="font-medium">Health:</span> {formData.health_considerations.length} considerations</div>
+                )}
+                <div><span className="font-medium">Social:</span> {formData.social_preference}</div>
+                <div><span className="font-medium">Travel:</span> {formData.travel_frequency}</div>
               </div>
             </div>
           )}
 
           {/* Pro Tip */}
-          <div className="mb-4 p-3 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
+          <div className="mb-3 p-2.5 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
             <div className="flex items-start">
               <div className="mr-2">
-                <svg className="h-5 w-5 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="h-4 w-4 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -426,25 +423,39 @@ export default function OnboardingHobbies() {
               </div>
             </div>
           </div>
-
-          {/* Bottom Navigation */}
-          <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-            <button
-              type="button"
-              onClick={() => navigate('/onboarding/culture')}
-              className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
-            >
-              Back
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-2 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : 'Continue'}
-            </button>
-          </div>
         </form>
+
+        {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
+        <div className="fixed sm:sticky bottom-0 left-0 right-0 sm:relative bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-4">
+          <div className="max-w-md mx-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3 shadow-lg sm:shadow-none">
+              <div className="flex justify-between items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/onboarding/culture')}
+                  className="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white font-medium transition-colors min-h-[44px]"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSkip}
+                  className="px-4 py-2.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-colors min-h-[44px]"
+                >
+                  Skip
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  onClick={handleSubmit}
+                  className="px-6 py-2.5 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50 min-h-[44px]"
+                >
+                  {loading ? 'Saving...' : 'Next →'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
