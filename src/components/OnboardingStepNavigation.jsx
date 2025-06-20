@@ -178,13 +178,15 @@ const OnboardingStepNavigation = ({
           
           {/* Hamburger Menu Button */}
           <div className="flex flex-col items-center w-16 sm:w-20">
-            <button
-              onClick={() => setIsQuickNavOpen(!isQuickNavOpen)}
-              className="w-10 h-10 flex items-center justify-center text-scout-nav-500 hover:text-scout-nav-700 dark:text-scout-nav-400 dark:hover:text-scout-nav-600 transition-colors"
-              aria-label="Open navigation menu"
-            >
-              <Menu size={24} strokeWidth={2} />
-            </button>
+            <div className="flex justify-center mb-1">
+              <button
+                onClick={() => setIsQuickNavOpen(!isQuickNavOpen)}
+                className="w-10 h-10 rounded-full flex items-center justify-center text-scout-nav-500 hover:text-scout-nav-700 dark:text-scout-nav-400 dark:hover:text-scout-nav-600 transition-colors"
+                aria-label="Open navigation menu"
+              >
+                <Menu size={20} strokeWidth={2} />
+              </button>
+            </div>
             <div className="text-xs text-center mt-2 text-scout-nav-500 dark:text-scout-nav-400 font-normal">
               Menu
             </div>

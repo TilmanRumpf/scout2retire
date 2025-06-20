@@ -6,19 +6,19 @@ import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardin
 import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
 import toast from 'react-hot-toast';
 
-// Option Button Component
+// Option Button Component - Optimized for mobile
 const OptionButton = ({ label, description, isSelected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`p-3 rounded-md border-2 transition-all text-center ${
+    className={`p-2 sm:p-2.5 rounded-md border-2 transition-all text-center min-h-[44px] ${
       isSelected
         ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
         : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
     }`}
   >
-    <div className={`text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
-    {description && <div className={`text-xs mt-1 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
+    <div className={`text-xs sm:text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
+    {description && <div className={`text-[10px] sm:text-xs mt-0.5 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
   </button>
 );
 
@@ -30,13 +30,14 @@ const OnboardingRegion = () => {
   
   // Updated state arrays to only have 2 elements instead of 3
   const [selectedRegions, setSelectedRegions] = useState(['Recommended', 'Recommended']);
-  const [selectedCountries, setSelectedCountries] = useState(['Optional', 'Optional']);
-  const [selectedProvinces, setSelectedProvinces] = useState(['Optional', 'Optional']);
+  const [selectedCountries, setSelectedCountries] = useState(['Any', 'Any']);
+  const [selectedProvinces, setSelectedProvinces] = useState(['Any', 'Any']);
   const [selectedFeatures, setSelectedFeatures] = useState([]);
   const [selectedVegetation, setSelectedVegetation] = useState([]);
   
   // Added state to control visibility of dependent dropdowns
   const [showDependentDropdowns, setShowDependentDropdowns] = useState([false, false]);
+  const [showCountryDropdowns, setShowCountryDropdowns] = useState([false, false]);
 
   // Preserved all original data arrays
   const regions = [
@@ -65,14 +66,14 @@ const OnboardingRegion = () => {
     'Plains'
   ];
 
+  // Removed Alpine from vegetation types
   const vegetationTypes = [
     'Tropical',
     'Subtropical',
     'Mediterranean',
     'Forest',
     'Grassland',
-    'Desert',
-    'Alpine'
+    'Desert'
   ];
 
   // Preserved all original data mappings
@@ -210,7 +211,7 @@ const OnboardingRegion = () => {
     
     if (selectedRegion === 'Recommended') {
       const allCountries = Object.values(regionCountries).flat();
-      return ['Optional', ...new Set(allCountries)].sort();
+      return ['Any', ...new Set(allCountries)].sort();
     }
 
     let primaryCountries = [];
@@ -229,17 +230,17 @@ const OnboardingRegion = () => {
       .filter(country => !primaryCountries.includes(country))
       .sort();
 
-    return ['Optional', ...primaryCountries, ...nearbyCountriesList];
+    return ['Any', ...primaryCountries, ...nearbyCountriesList];
   };
 
   const getFilteredProvinces = (countryIndex) => {
     const selectedCountry = selectedCountries[countryIndex];
     
-    if (selectedCountry === 'Optional' || !countryProvinces[selectedCountry]) {
-      return ['Optional'];
+    if (selectedCountry === 'Any' || !countryProvinces[selectedCountry]) {
+      return ['Any'];
     }
 
-    return ['Optional', ...countryProvinces[selectedCountry]];
+    return ['Any', ...countryProvinces[selectedCountry]];
   };
 
   // Updated event handlers to always reset dependent selections
@@ -253,11 +254,16 @@ const OnboardingRegion = () => {
     newShowDependentDropdowns[index] = value !== 'Recommended';
     setShowDependentDropdowns(newShowDependentDropdowns);
     
+    // Show country dropdown when region is selected
+    const newShowCountryDropdowns = [...showCountryDropdowns];
+    newShowCountryDropdowns[index] = value !== 'Recommended';
+    setShowCountryDropdowns(newShowCountryDropdowns);
+    
     // ALWAYS reset country and province when region changes (even if same region)
     const newCountries = [...selectedCountries];
     const newProvinces = [...selectedProvinces];
-    newCountries[index] = 'Optional';
-    newProvinces[index] = 'Optional';
+    newCountries[index] = 'Any';
+    newProvinces[index] = 'Any';
     setSelectedCountries(newCountries);
     setSelectedProvinces(newProvinces);
   };
@@ -269,14 +275,30 @@ const OnboardingRegion = () => {
     
     // Reset province when country changes
     const newProvinces = [...selectedProvinces];
-    newProvinces[index] = 'Optional';
+    newProvinces[index] = 'Any';
     setSelectedProvinces(newProvinces);
+  };
+
+  const handleCountryBlur = (index) => {
+    // Hide country dropdown if it's still "Any"
+    if (selectedCountries[index] === 'Any') {
+      const newShowCountryDropdowns = [...showCountryDropdowns];
+      newShowCountryDropdowns[index] = false;
+      setShowCountryDropdowns(newShowCountryDropdowns);
+    }
   };
 
   const handleProvinceChange = (index, value) => {
     const newProvinces = [...selectedProvinces];
     newProvinces[index] = value;
     setSelectedProvinces(newProvinces);
+  };
+
+  const handleProvinceBlur = (index) => {
+    // Always hide province dropdown on blur - it's the last tier
+    const newShowCountryDropdowns = [...showCountryDropdowns];
+    newShowCountryDropdowns[index] = false;
+    setShowCountryDropdowns(newShowCountryDropdowns);
   };
 
   const handleFeatureToggle = (feature) => {
@@ -295,13 +317,17 @@ const OnboardingRegion = () => {
     );
   };
 
+  const handleSkip = () => {
+    navigate('/onboarding/climate');
+  };
+
   // Function to get the hierarchical display value
   const getDisplayValue = (index) => {
-    if (selectedProvinces[index] !== 'Optional') {
+    if (selectedProvinces[index] !== 'Any') {
       // Show "Country, Province"
       return `${selectedCountries[index]}, ${selectedProvinces[index]}`;
     }
-    if (selectedCountries[index] !== 'Optional') {
+    if (selectedCountries[index] !== 'Any') {
       // Show "Region, Country"
       return `${selectedRegions[index]}, ${selectedCountries[index]}`;
     }
@@ -320,6 +346,12 @@ const OnboardingRegion = () => {
     return index === 0 ? 'First Preference' : 'Optional Preference';
   };
 
+  // Check if provinces are available for the current country
+  const hasProvinces = (index) => {
+    const selectedCountry = selectedCountries[index];
+    return selectedCountry !== 'Any' && countryProvinces[selectedCountry];
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -335,8 +367,8 @@ const OnboardingRegion = () => {
       // Prepare form data for saving
       const formData = {
         regions: selectedRegions.filter(region => region !== 'Recommended'),
-        countries: selectedCountries.filter(country => country !== 'Optional'),
-        provinces: selectedProvinces.filter(province => province !== 'Optional'),
+        countries: selectedCountries.filter(country => country !== 'Any'),
+        provinces: selectedProvinces.filter(province => province !== 'Any'),
         geographic_features: selectedFeatures,
         vegetation_types: selectedVegetation
       };
@@ -365,40 +397,40 @@ const OnboardingRegion = () => {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
+      <div className="min-h-[100svh] bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
         <div className="animate-pulse text-scout-accent-600 font-semibold">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="max-w-md mx-auto">
+    <div className="min-h-[100svh] bg-gray-50 dark:bg-gray-900 pb-20 sm:pb-4">
+      <div className="max-w-md mx-auto p-4 sm:p-4">
         <OnboardingStepNavigation 
           currentStep="region_preferences" 
           completedSteps={progress.completedSteps} 
-          className="mb-4" 
+          className="mb-3" 
         />
         
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4">
-          {/* Header - mb-4 */}
-          <div className="mb-4">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5">
+          {/* Header */}
+          <div className="mb-3">
             <h1 className="text-lg font-bold text-gray-800 dark:text-white">Regional Preferences</h1>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
               All choices are optional - select "Recommended" to keep options open
             </p>
           </div>
 
-          {/* Geographical Preferences section - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Globe size={18} className="mr-1.5" />
+          {/* Geographical Preferences section */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+              <Globe size={16} className="mr-1.5" />
               Geographical Preferences
             </label>
             
-            <div className="space-y-4">
+            <div className="space-y-3">
               {[0, 1].map(index => (
-                <div key={index} className="space-y-3">
+                <div key={index} className="space-y-2">
                   {/* Region dropdown */}
                   <div>
                     <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
@@ -410,16 +442,16 @@ const OnboardingRegion = () => {
                         onChange={(e) => handleRegionChange(index, e.target.value)}
                         onFocus={() => {
                           // When user clicks dropdown, if they have made selections, reset them to allow re-selection
-                          if (selectedCountries[index] !== 'Optional' || selectedProvinces[index] !== 'Optional') {
+                          if (selectedCountries[index] !== 'Any' || selectedProvinces[index] !== 'Any') {
                             const newCountries = [...selectedCountries];
                             const newProvinces = [...selectedProvinces];
-                            newCountries[index] = 'Optional';
-                            newProvinces[index] = 'Optional';
+                            newCountries[index] = 'Any';
+                            newProvinces[index] = 'Any';
                             setSelectedCountries(newCountries);
                             setSelectedProvinces(newProvinces);
                           }
                         }}
-                        className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white appearance-none cursor-pointer focus:ring-0 focus:border-scout-accent-300 transition-colors"
+                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white appearance-none cursor-pointer focus:ring-0 focus:border-scout-accent-300 transition-colors h-[44px]"
                       >
                         {getAvailableRegions(index).map(region => (
                           <option key={region} value={region}>
@@ -428,8 +460,8 @@ const OnboardingRegion = () => {
                         ))}
                       </select>
                       {/* Show hierarchical selection as overlay text when selections are made */}
-                      {(selectedCountries[index] !== 'Optional' || selectedProvinces[index] !== 'Optional') && (
-                        <div className="absolute inset-0 px-4 py-2 text-sm text-gray-800 dark:text-white bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg pointer-events-none flex items-center">
+                      {(selectedCountries[index] !== 'Any' || selectedProvinces[index] !== 'Any') && (
+                        <div className="absolute inset-0 px-3 py-2 text-sm text-gray-800 dark:text-white bg-scout-accent-50 dark:bg-scout-accent-900/20 border border-scout-accent-200 dark:border-scout-accent-800 rounded-lg pointer-events-none flex items-center">
                           {getDisplayValue(index)}
                         </div>
                       )}
@@ -440,10 +472,10 @@ const OnboardingRegion = () => {
                     </div>
                   </div>
 
-                  {/* Country/State dropdown - stay visible until province is chosen */}
+                  {/* Country/State dropdown - only show when country dropdown should be visible */}
                   <div 
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      showDependentDropdowns[index] && selectedProvinces[index] === 'Optional' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                      showCountryDropdowns[index] && selectedCountries[index] === 'Any' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     }`}
                   >
                     <div>
@@ -454,7 +486,8 @@ const OnboardingRegion = () => {
                         <select
                           value={selectedCountries[index]}
                           onChange={(e) => handleCountryChange(index, e.target.value)}
-                          className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white appearance-none cursor-pointer focus:ring-0 focus:border-scout-accent-300 transition-colors"
+                          onBlur={() => handleCountryBlur(index)}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white appearance-none cursor-pointer focus:ring-0 focus:border-scout-accent-300 transition-colors h-[44px]"
                         >
                           {getFilteredCountries(index).map(country => (
                             <option key={country} value={country}>
@@ -470,10 +503,10 @@ const OnboardingRegion = () => {
                     </div>
                   </div>
 
-                  {/* Province dropdown - show when country chosen, hide when province chosen */}
+                  {/* Province dropdown - only show if provinces are available for the selected country AND country dropdown is still visible */}
                   <div 
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      showDependentDropdowns[index] && selectedCountries[index] !== 'Optional' && selectedProvinces[index] === 'Optional' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                      showCountryDropdowns[index] && selectedCountries[index] !== 'Any' && hasProvinces(index) && selectedProvinces[index] === 'Any' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     }`}
                   >
                     <div>
@@ -484,7 +517,8 @@ const OnboardingRegion = () => {
                         <select
                           value={selectedProvinces[index]}
                           onChange={(e) => handleProvinceChange(index, e.target.value)}
-                          className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white appearance-none cursor-pointer focus:ring-0 focus:border-scout-accent-300 transition-colors"
+                          onBlur={() => handleProvinceBlur(index)}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white appearance-none cursor-pointer focus:ring-0 focus:border-scout-accent-300 transition-colors h-[44px]"
                         >
                           {getFilteredProvinces(index).map(province => (
                             <option key={province} value={province}>
@@ -500,19 +534,19 @@ const OnboardingRegion = () => {
                     </div>
                   </div>
 
-                  {index === 0 && <div className="border-t border-gray-200 dark:border-gray-700 my-3"></div>}
+                  {index === 0 && <div className="border-t border-gray-200 dark:border-gray-700 my-2"></div>}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Geographic Features section - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <MapPin size={18} className="mr-1.5" />
+          {/* Geographic Features section */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+              <MapPin size={16} className="mr-1.5" />
               Geographic Features
             </label>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
               Select preferred geographic features (optional)
             </p>
             
@@ -528,13 +562,13 @@ const OnboardingRegion = () => {
             </div>
           </div>
 
-          {/* Vegetation section - mb-4 */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-              <Trees size={18} className="mr-1.5" />
+          {/* Vegetation section */}
+          <div className="mb-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+              <Trees size={16} className="mr-1.5" />
               Vegetation Types
             </label>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
               Select preferred vegetation types (optional)
             </p>
             
@@ -550,12 +584,12 @@ const OnboardingRegion = () => {
             </div>
           </div>
 
-          {/* Summary section - mb-4 */}
-          <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-            <h3 className="font-medium text-gray-800 dark:text-white mb-2 text-sm">
+          {/* Summary section */}
+          <div className="mb-3 p-2.5 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <h3 className="font-medium text-gray-800 dark:text-white mb-1.5 text-sm">
               Your Geographical Preferences:
             </h3>
-            <div className="space-y-1 text-xs text-gray-600 dark:text-gray-300">
+            <div className="space-y-0.5 text-xs text-gray-600 dark:text-gray-300">
               <div>
                 <span className="font-medium">Regions:</span>{' '}
                 {selectedRegions.filter(region => region !== 'Recommended').length > 0 
@@ -564,14 +598,14 @@ const OnboardingRegion = () => {
               </div>
               <div>
                 <span className="font-medium">Countries/States:</span>{' '}
-                {selectedCountries.filter(country => country !== 'Optional').length > 0 
-                  ? selectedCountries.filter(country => country !== 'Optional').join(', ') 
+                {selectedCountries.filter(country => country !== 'Any').length > 0 
+                  ? selectedCountries.filter(country => country !== 'Any').join(', ') 
                   : 'Any location'}
               </div>
               <div>
                 <span className="font-medium">Provinces:</span>{' '}
-                {selectedProvinces.filter(province => province !== 'Optional').length > 0 
-                  ? selectedProvinces.filter(province => province !== 'Optional').join(', ') 
+                {selectedProvinces.filter(province => province !== 'Any').length > 0 
+                  ? selectedProvinces.filter(province => province !== 'Any').join(', ') 
                   : 'Any province'}
               </div>
               <div>
@@ -590,10 +624,10 @@ const OnboardingRegion = () => {
           </div>
 
           {/* Pro Tip */}
-          <div className="mb-4 p-3 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
+          <div className="mb-3 p-2.5 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
             <div className="flex items-start">
               <div className="mr-2">
-                <svg className="h-5 w-5 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="h-4 w-4 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -604,25 +638,39 @@ const OnboardingRegion = () => {
               </div>
             </div>
           </div>
-
-          {/* Bottom Navigation */}
-          <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-            <button
-              type="button"
-              onClick={() => navigate('/onboarding/current-status')}
-              className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
-            >
-              Back
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-2 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : 'Continue'}
-            </button>
-          </div>
         </form>
+
+        {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
+        <div className="fixed sm:sticky bottom-0 left-0 right-0 sm:relative bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-4">
+          <div className="max-w-md mx-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3 shadow-lg sm:shadow-none">
+              <div className="flex justify-between items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/onboarding/current-status')}
+                  className="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white font-medium transition-colors min-h-[44px]"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSkip}
+                  className="px-4 py-2.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-colors min-h-[44px]"
+                >
+                  Skip
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  onClick={handleSubmit}
+                  className="px-6 py-2.5 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50 min-h-[44px]"
+                >
+                  {loading ? 'Saving...' : 'Next →'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

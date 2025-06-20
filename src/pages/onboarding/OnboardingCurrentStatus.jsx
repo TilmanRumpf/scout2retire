@@ -703,7 +703,7 @@ export default function OnboardingCurrentStatus() {
                   onClick={handleSubmit}
                   className="px-6 py-2.5 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50 min-h-[44px]"
                 >
-                  {loading ? 'Saving...' : 'Continue →'}
+                  {loading ? 'Saving...' : 'Next →'}
                 </button>
               </div>
             </div>
