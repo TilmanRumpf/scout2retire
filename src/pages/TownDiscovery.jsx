@@ -16,6 +16,7 @@ export default function TownDiscovery() {
   const [selectedTown, setSelectedTown] = useState(null);
   const [isPersonalized, setIsPersonalized] = useState(false);
   const [userPreferences, setUserPreferences] = useState(null);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -34,13 +35,16 @@ export default function TownDiscovery() {
       try {
         setLoading(true);
         
-        // Get current user
-        const { user } = await getCurrentUser();
+        // Get current user and their profile
+        const { user, profile } = await getCurrentUser();
         if (!user) {
           navigate('/welcome');
           return;
         }
         setUserId(user.id);
+        
+        // Check onboarding status from the profile
+        setOnboardingCompleted(profile?.onboarding_completed || false);
 
         // Get user's favorites
         const { success: favSuccess, favorites: userFavorites } = await fetchFavorites(user.id);
@@ -63,7 +67,7 @@ export default function TownDiscovery() {
         if (townSuccess) {
           setTowns(allTowns);
           setIsPersonalized(isPersonalizedResult);
-          setUserPreferences(userPrefs);
+          setUserPreferences(userPrefs); // Store the user preferences
           
           // Log personalization status
           if (isPersonalizedResult) {
@@ -72,7 +76,8 @@ export default function TownDiscovery() {
             console.log("Top 3 towns with scores:", allTowns.slice(0, 3).map(t => ({
               name: t.name,
               score: t.matchScore,
-              reasons: t.matchReasons
+              reasons: t.matchReasons,
+              categoryScores: t.categoryScores
             })));
           } else {
             console.log("ℹ️ Using general recommendations");
@@ -161,10 +166,17 @@ export default function TownDiscovery() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-xl font-bold text-gray-800 dark:text-white">Discover Towns</h1>
-              {isPersonalized && (
+              {isPersonalized && onboardingCompleted && (
                 <p className="text-sm text-green-600 dark:text-green-400 mt-1">
                   ✨ Personalized recommendations based on your preferences
                 </p>
+              )}
+              {onboardingCompleted && userPreferences && (
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Matching: Budget ${userPreferences.costs?.total_monthly_budget || 'Any'} • 
+                  Healthcare {userPreferences.administration?.healthcare_quality?.join('/') || 'Any'} • 
+                  {userPreferences.region_preferences?.countries?.length || 0} regions
+                </div>
               )}
             </div>
           </div>
@@ -179,8 +191,8 @@ export default function TownDiscovery() {
           </div>
         )}
 
-        {/* Personalization Status */}
-        {!isPersonalized && (
+        {/* Personalization Status - Only show if onboarding is NOT completed */}
+        {!onboardingCompleted && (
           <div className="bg-blue-100 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200 p-4 rounded-lg mb-6">
             <div className="flex items-center">
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -189,7 +201,7 @@ export default function TownDiscovery() {
               <span>
                 Complete your onboarding to get personalized recommendations!{' '}
                 <button 
-                  onClick={() => navigate('/onboarding')}
+                  onClick={() => navigate('/onboarding/status')}
                   className="underline hover:no-underline font-medium"
                 >
                   Start here
@@ -228,10 +240,14 @@ export default function TownDiscovery() {
                   )}
                 </div>
                 
-                {/* Match Score Badge */}
+                {/* Match Score Badge with Details */}
                 {selectedTownData.matchScore && (
                   <div className="absolute top-4 left-4">
-                    <div className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      selectedTownData.matchScore >= 80 ? 'bg-green-600 text-white' :
+                      selectedTownData.matchScore >= 60 ? 'bg-yellow-600 text-white' :
+                      'bg-orange-600 text-white'
+                    }`}>
                       {selectedTownData.matchScore}% match
                     </div>
                   </div>
@@ -261,10 +277,55 @@ export default function TownDiscovery() {
                     <div className="space-y-1">
                       {selectedTownData.matchReasons.map((reason, index) => (
                         <div key={index} className="flex items-center text-sm text-green-700 dark:text-green-300">
-                          <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
                           {reason}
+                        </div>
+                      ))}
+                    </div>
+                    {selectedTownData.warnings && selectedTownData.warnings.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {selectedTownData.warnings.map((warning, index) => (
+                          <div key={index} className="flex items-center text-sm text-orange-600 dark:text-orange-400">
+                            <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                            {warning}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Category Match Breakdown */}
+                {selectedTownData.categoryScores && (
+                  <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Match Breakdown</h4>
+                    <div className="space-y-2">
+                      {Object.entries(selectedTownData.categoryScores).map(([category, score]) => (
+                        <div key={category} className="flex items-center justify-between">
+                          <span className="text-xs text-gray-600 dark:text-gray-400 capitalize">{category}</span>
+                          <div className="flex items-center gap-2">
+                            <div className="w-24 h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full transition-all ${
+                                  score >= 80 ? 'bg-green-500' :
+                                  score >= 60 ? 'bg-yellow-500' :
+                                  'bg-orange-500'
+                                }`}
+                                style={{ width: `${score}%` }}
+                              />
+                            </div>
+                            <span className={`text-xs font-medium ${
+                              score >= 80 ? 'text-green-600 dark:text-green-400' :
+                              score >= 60 ? 'text-yellow-600 dark:text-yellow-400' :
+                              'text-orange-600 dark:text-orange-400'
+                            }`}>
+                              {score}%
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -359,10 +420,14 @@ export default function TownDiscovery() {
                   </div>
                 )}
                 
-                {/* Match Score */}
+                {/* Match Score with Category Breakdown */}
                 {town.matchScore && (
                   <div className="absolute top-2 left-2">
-                    <div className="bg-green-600 text-white px-2 py-1 rounded text-xs font-medium">
+                    <div className={`px-2 py-1 rounded text-xs font-medium ${
+                      town.matchScore >= 80 ? 'bg-green-600 text-white' :
+                      town.matchScore >= 60 ? 'bg-yellow-600 text-white' :
+                      'bg-orange-600 text-white'
+                    }`}>
                       {town.matchScore}% match
                     </div>
                   </div>
@@ -386,12 +451,40 @@ export default function TownDiscovery() {
                   <span className="text-sm text-gray-500 dark:text-gray-400">{town.country}</span>
                 </div>
                 
-                {/* Match Reasons */}
+                {/* Match Reasons & Warnings */}
                 {town.matchReasons && town.matchReasons.length > 0 && (
-                  <div className="mb-3">
-                    <div className="text-xs text-green-700 dark:text-green-300">
-                      {town.matchReasons[0]}
-                    </div>
+                  <div className="mb-3 space-y-1">
+                    {town.matchReasons.slice(0, 2).map((reason, index) => (
+                      <div key={index} className="text-xs text-green-700 dark:text-green-300 line-clamp-1">
+                        {reason}
+                      </div>
+                    ))}
+                    {town.warnings && town.warnings.length > 0 && (
+                      <div className="text-xs text-orange-600 dark:text-orange-400 line-clamp-1">
+                        {town.warnings[0]}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Category Scores Mini-Visualization */}
+                {town.categoryScores && (
+                  <div className="mb-3 flex gap-1 flex-wrap">
+                    {Object.entries(town.categoryScores).slice(0, 4).map(([category, score]) => (
+                      <div key={category} className="flex items-center gap-1">
+                        <span className="text-[10px] text-gray-500 capitalize">{category}:</span>
+                        <div className="w-8 h-1.5 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full transition-all ${
+                              score >= 80 ? 'bg-green-500' :
+                              score >= 60 ? 'bg-yellow-500' :
+                              'bg-orange-500'
+                            }`}
+                            style={{ width: `${score}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
                 
