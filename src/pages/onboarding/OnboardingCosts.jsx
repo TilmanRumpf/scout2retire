@@ -58,12 +58,13 @@ export default function OnboardingCosts() {
         const { success, data, progress: userProgress } = await getOnboardingProgress(user.id);
         if (success) {
           setProgress(userProgress || { completedSteps: {} });
-          // Fixed: Changed from data.costs to data.budget
-          if (data && data.budget) {
+          // FIXED: Check for both 'costs' and 'budget' for backward compatibility
+          if (data && (data.costs || data.budget)) {
+            const budgetData = data.costs || data.budget;
             setFormData(prev => ({ 
               ...prev, 
-              ...data.budget,
-              need_car: data.budget.need_car || []
+              ...budgetData,
+              need_car: budgetData.need_car || []
             }));
           }
         }
@@ -115,8 +116,8 @@ export default function OnboardingCosts() {
         return;
       }
       
-      // Fixed: Changed from 'costs' to 'budget' to match database key
-      const { success, error } = await saveOnboardingStep(user.id, formData, 'budget');
+      // FIXED: Changed from 'budget' to 'costs' to match database expectation
+      const { success, error } = await saveOnboardingStep(user.id, formData, 'costs');
       
       if (!success) {
         toast.error(`Failed to save: ${error?.message || 'Unknown error'}`);

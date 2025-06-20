@@ -24,25 +24,17 @@ const OptionButton = ({ label, description, isSelected, onClick }) => (
 
 export default function OnboardingAdministration() {
   const [formData, setFormData] = useState({
-    health: {
-      healthcare_quality: [],
-      insurance_importance: [],
-      special_medical_needs: false
-    },
-    safety: {
-      safety_importance: [],
-      emergency_services: [],
-      political_stability: []
-    },
-    governance: {
-      tax_preference: [],
-      government_efficiency: []
-    },
-    immigration: {
-      visa_preference: [],
-      stay_duration: [],
-      residency_path: []
-    }
+    healthcare_quality: [],
+    insurance_importance: [],
+    special_medical_needs: false,
+    safety_importance: [],
+    emergency_services: [],
+    political_stability: [],
+    tax_preference: [],
+    government_efficiency: [],
+    visa_preference: [],
+    stay_duration: [],
+    residency_path: []
   });
   
   const [loading, setLoading] = useState(false);
@@ -61,6 +53,9 @@ export default function OnboardingAdministration() {
         }
         
         const { success, data, progress: userProgress, error } = await getOnboardingProgress(user.id);
+        
+        console.log('Administration - Loading data:', { success, data, error }); // DEBUG
+        
         if (!success) {
           console.error("Error loading existing data:", error);
           setInitialLoading(false);
@@ -69,43 +64,35 @@ export default function OnboardingAdministration() {
         
         setProgress(userProgress);
         
-        // If administration data exists, load it with proper conversion
+        // If administration data exists, load it
         if (data && data.administration) {
-          const loadedData = data.administration;
+          console.log('Administration data found:', data.administration); // DEBUG
           
-          // Map old data structure to new simplified structure
-          const convertedData = {
-            health: {
-              healthcare_quality: loadedData.health?.healthcare_access || [],
-              insurance_importance: loadedData.health?.insurance_priority || [],
-              special_medical_needs: loadedData.health?.chronic_conditions || loadedData.health?.prescription_needs || false
-            },
-            safety: {
-              safety_importance: loadedData.safety?.crime_tolerance || [],
-              emergency_services: loadedData.safety?.emergency_services || [],
-              political_stability: loadedData.safety?.political_stability || []
-            },
-            governance: {
-              tax_preference: loadedData.governance?.tax_complexity || [],
-              government_efficiency: loadedData.governance?.bureaucracy_tolerance || []
-            },
-            immigration: {
-              visa_preference: loadedData.immigration?.visa_complexity || [],
-              stay_duration: loadedData.immigration?.residency_goal || [],
-              residency_path: []
+          // Handle both string and object data
+          let adminData = data.administration;
+          if (typeof adminData === 'string') {
+            try {
+              adminData = JSON.parse(adminData);
+            } catch (e) {
+              console.error('Failed to parse administration data:', e);
             }
-          };
+          }
           
-          // Ensure all fields are arrays
-          Object.keys(convertedData).forEach(section => {
-            Object.keys(convertedData[section]).forEach(field => {
-              if (field !== 'special_medical_needs' && !Array.isArray(convertedData[section][field])) {
-                convertedData[section][field] = convertedData[section][field] ? [convertedData[section][field]] : [];
-              }
-            });
-          });
-          
-          setFormData(convertedData);
+          setFormData(prev => ({
+            ...prev,
+            ...adminData,
+            // Ensure arrays are arrays
+            healthcare_quality: Array.isArray(adminData.healthcare_quality) ? adminData.healthcare_quality : [],
+            insurance_importance: Array.isArray(adminData.insurance_importance) ? adminData.insurance_importance : [],
+            safety_importance: Array.isArray(adminData.safety_importance) ? adminData.safety_importance : [],
+            emergency_services: Array.isArray(adminData.emergency_services) ? adminData.emergency_services : [],
+            political_stability: Array.isArray(adminData.political_stability) ? adminData.political_stability : [],
+            tax_preference: Array.isArray(adminData.tax_preference) ? adminData.tax_preference : [],
+            government_efficiency: Array.isArray(adminData.government_efficiency) ? adminData.government_efficiency : [],
+            visa_preference: Array.isArray(adminData.visa_preference) ? adminData.visa_preference : [],
+            stay_duration: Array.isArray(adminData.stay_duration) ? adminData.stay_duration : [],
+            residency_path: Array.isArray(adminData.residency_path) ? adminData.residency_path : []
+          }));
         }
       } catch (err) {
         console.error("Unexpected error loading data:", err);
@@ -117,30 +104,24 @@ export default function OnboardingAdministration() {
     loadExistingData();
   }, [navigate]);
 
-  const handleNestedToggle = (section, field, value) => {
+  const handleToggle = (field, value) => {
     setFormData(prev => {
-      const currentValues = prev[section][field] || [];
+      const currentValues = prev[field] || [];
       const isSelected = currentValues.includes(value);
       
       return {
         ...prev,
-        [section]: {
-          ...prev[section],
-          [field]: isSelected 
-            ? currentValues.filter(v => v !== value)
-            : [...currentValues, value]
-        }
+        [field]: isSelected 
+          ? currentValues.filter(v => v !== value)
+          : [...currentValues, value]
       };
     });
   };
 
-  const handleCheckboxChange = (section, field, value) => {
+  const handleCheckboxChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value
-      }
+      [field]: value
     }));
   };
 
@@ -159,23 +140,40 @@ export default function OnboardingAdministration() {
         return;
       }
       
-      const { success, error } = await saveOnboardingStep(
-        user.id,
-        formData,
-        'administration'
-      );
+      // Log what we're trying to save
+      console.log('Administration - Saving data:', formData); // DEBUG
+      
+      // Create a clean data object
+      const dataToSave = {
+        healthcare_quality: formData.healthcare_quality || [],
+        insurance_importance: formData.insurance_importance || [],
+        special_medical_needs: formData.special_medical_needs || false,
+        safety_importance: formData.safety_importance || [],
+        emergency_services: formData.emergency_services || [],
+        political_stability: formData.political_stability || [],
+        tax_preference: formData.tax_preference || [],
+        government_efficiency: formData.government_efficiency || [],
+        visa_preference: formData.visa_preference || [],
+        stay_duration: formData.stay_duration || [],
+        residency_path: formData.residency_path || []
+      };
+      
+      console.log('SENDING TO SUPABASE:', JSON.stringify(dataToSave, null, 2));
+      
+      const { success, error } = await saveOnboardingStep(user.id, dataToSave, 'administration');
+      
+      console.log('Administration - Save result:', { success, error }); // DEBUG
       
       if (!success) {
-        toast.error(`Failed to save: ${error.message}`);
-        setLoading(false);
+        toast.error(`Failed to save: ${error?.message || 'Unknown error'}`);
         return;
       }
       
       toast.success('Administration preferences saved!');
       navigate('/onboarding/costs');
     } catch (err) {
+      console.error('Administration - Save error:', err); // DEBUG
       toast.error('An unexpected error occurred');
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -191,8 +189,8 @@ export default function OnboardingAdministration() {
 
   // Standardized options for all quality selections
   const qualityOptions = [
-    { value: 'excellent', label: 'Good' },
-    { value: 'good', label: 'Functional' },
+    { value: 'good', label: 'Good' },
+    { value: 'functional', label: 'Functional' },
     { value: 'basic', label: 'Basic' }
   ];
 
@@ -240,8 +238,8 @@ export default function OnboardingAdministration() {
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.health.healthcare_quality.includes(option.value)}
-                  onClick={() => handleNestedToggle('health', 'healthcare_quality', option.value)}
+                  isSelected={formData.healthcare_quality.includes(option.value)}
+                  onClick={() => handleToggle('healthcare_quality', option.value)}
                 />
               ))}
             </div>
@@ -253,8 +251,8 @@ export default function OnboardingAdministration() {
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.health.insurance_importance.includes(option.value)}
-                  onClick={() => handleNestedToggle('health', 'insurance_importance', option.value)}
+                  isSelected={formData.insurance_importance.includes(option.value)}
+                  onClick={() => handleToggle('insurance_importance', option.value)}
                 />
               ))}
             </div>
@@ -264,17 +262,17 @@ export default function OnboardingAdministration() {
               <input
                 id="special_medical_needs"
                 type="checkbox"
-                checked={formData.health.special_medical_needs}
-                onChange={(e) => handleCheckboxChange('health', 'special_medical_needs', e.target.checked)}
+                checked={formData.special_medical_needs}
+                onChange={(e) => handleCheckboxChange('special_medical_needs', e.target.checked)}
                 className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
                 style={{ 
                   accentColor: '#8fbc8f',
                   WebkitAppearance: 'none',
                   appearance: 'none',
-                  backgroundColor: formData.health.special_medical_needs ? '#8fbc8f' : 'transparent',
-                  border: formData.health.special_medical_needs ? '1px solid #8fbc8f' : '1px solid #d1d5db',
+                  backgroundColor: formData.special_medical_needs ? '#8fbc8f' : 'transparent',
+                  border: formData.special_medical_needs ? '1px solid #8fbc8f' : '1px solid #d1d5db',
                   borderRadius: '0.25rem',
-                  backgroundImage: formData.health.special_medical_needs 
+                  backgroundImage: formData.special_medical_needs 
                     ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
                     : 'none',
                   backgroundSize: '100% 100%',
@@ -303,8 +301,8 @@ export default function OnboardingAdministration() {
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.safety.safety_importance.includes(option.value)}
-                  onClick={() => handleNestedToggle('safety', 'safety_importance', option.value)}
+                  isSelected={formData.safety_importance.includes(option.value)}
+                  onClick={() => handleToggle('safety_importance', option.value)}
                 />
               ))}
             </div>
@@ -316,8 +314,8 @@ export default function OnboardingAdministration() {
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.safety.emergency_services.includes(option.value)}
-                  onClick={() => handleNestedToggle('safety', 'emergency_services', option.value)}
+                  isSelected={formData.emergency_services.includes(option.value)}
+                  onClick={() => handleToggle('emergency_services', option.value)}
                 />
               ))}
             </div>
@@ -329,8 +327,8 @@ export default function OnboardingAdministration() {
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.safety.political_stability.includes(option.value)}
-                  onClick={() => handleNestedToggle('safety', 'political_stability', option.value)}
+                  isSelected={formData.political_stability.includes(option.value)}
+                  onClick={() => handleToggle('political_stability', option.value)}
                 />
               ))}
             </div>
@@ -350,8 +348,8 @@ export default function OnboardingAdministration() {
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.governance.tax_preference.includes(option.value)}
-                  onClick={() => handleNestedToggle('governance', 'tax_preference', option.value)}
+                  isSelected={formData.tax_preference.includes(option.value)}
+                  onClick={() => handleToggle('tax_preference', option.value)}
                 />
               ))}
             </div>
@@ -363,8 +361,8 @@ export default function OnboardingAdministration() {
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.governance.government_efficiency.includes(option.value)}
-                  onClick={() => handleNestedToggle('governance', 'government_efficiency', option.value)}
+                  isSelected={formData.government_efficiency.includes(option.value)}
+                  onClick={() => handleToggle('government_efficiency', option.value)}
                 />
               ))}
             </div>
@@ -384,8 +382,8 @@ export default function OnboardingAdministration() {
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.immigration.visa_preference.includes(option.value)}
-                  onClick={() => handleNestedToggle('immigration', 'visa_preference', option.value)}
+                  isSelected={formData.visa_preference.includes(option.value)}
+                  onClick={() => handleToggle('visa_preference', option.value)}
                 />
               ))}
             </div>
@@ -397,8 +395,8 @@ export default function OnboardingAdministration() {
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.immigration.stay_duration.includes(option.value)}
-                  onClick={() => handleNestedToggle('immigration', 'stay_duration', option.value)}
+                  isSelected={formData.stay_duration.includes(option.value)}
+                  onClick={() => handleToggle('stay_duration', option.value)}
                 />
               ))}
             </div>
@@ -410,8 +408,8 @@ export default function OnboardingAdministration() {
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  isSelected={formData.immigration.residency_path.includes(option.value)}
-                  onClick={() => handleNestedToggle('immigration', 'residency_path', option.value)}
+                  isSelected={formData.residency_path.includes(option.value)}
+                  onClick={() => handleToggle('residency_path', option.value)}
                 />
               ))}
             </div>
@@ -423,25 +421,25 @@ export default function OnboardingAdministration() {
               Your Administrative Preferences:
             </h3>
             <div className="space-y-0.5 text-xs text-gray-600 dark:text-gray-300">
-              {formData.health.healthcare_quality.length > 0 && (
-                <div><span className="font-medium">Healthcare:</span> {formData.health.healthcare_quality.join(', ')}</div>
+              {formData.healthcare_quality.length > 0 && (
+                <div><span className="font-medium">Healthcare:</span> {formData.healthcare_quality.join(', ')}</div>
               )}
-              {formData.health.insurance_importance.length > 0 && (
-                <div><span className="font-medium">Insurance:</span> {formData.health.insurance_importance.join(', ')}</div>
+              {formData.insurance_importance.length > 0 && (
+                <div><span className="font-medium">Insurance:</span> {formData.insurance_importance.join(', ')}</div>
               )}
-              {formData.safety.safety_importance.length > 0 && (
-                <div><span className="font-medium">Safety:</span> {formData.safety.safety_importance.join(', ')}</div>
+              {formData.safety_importance.length > 0 && (
+                <div><span className="font-medium">Safety:</span> {formData.safety_importance.join(', ')}</div>
               )}
-              {formData.governance.tax_preference.length > 0 && (
-                <div><span className="font-medium">Tax system:</span> {formData.governance.tax_preference.join(', ')}</div>
+              {formData.tax_preference.length > 0 && (
+                <div><span className="font-medium">Tax system:</span> {formData.tax_preference.join(', ')}</div>
               )}
-              {formData.immigration.stay_duration.length > 0 && (
-                <div><span className="font-medium">Stay duration:</span> {formData.immigration.stay_duration.join(', ')}</div>
+              {formData.stay_duration.length > 0 && (
+                <div><span className="font-medium">Stay duration:</span> {formData.stay_duration.join(', ')}</div>
               )}
-              {formData.immigration.residency_path.length > 0 && (
-                <div><span className="font-medium">Goals:</span> {formData.immigration.residency_path.join(', ')}</div>
+              {formData.residency_path.length > 0 && (
+                <div><span className="font-medium">Goals:</span> {formData.residency_path.join(', ')}</div>
               )}
-              {formData.health.special_medical_needs && (
+              {formData.special_medical_needs && (
                 <div><span className="font-medium">Special needs:</span> Medical care required</div>
               )}
             </div>
