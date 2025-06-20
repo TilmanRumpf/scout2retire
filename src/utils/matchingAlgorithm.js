@@ -17,11 +17,13 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       return await getFallbackTowns(limit, offset);
     }
 
+    console.log('User preferences loaded:', userPreferences);
+
     // 2. Get all towns with their data
     const { data: allTowns, error: townsError } = await supabase
       .from('towns')
       .select('*')
-      .limit(100); // Get more towns to score and rank
+      .limit(200); // Get more towns to score and rank
 
     if (townsError) {
       console.error('Error fetching towns:', townsError);
@@ -29,11 +31,16 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     }
 
     // 3. Score each town based on user preferences
-    const scoredTowns = allTowns.map(town => ({
-      ...town,
-      matchScore: calculateMatchScore(town, userPreferences),
-      matchReasons: getMatchReasons(town, userPreferences)
-    }));
+    const scoredTowns = allTowns.map(town => {
+      const scoreDetails = calculateDetailedMatchScore(town, userPreferences);
+      return {
+        ...town,
+        matchScore: scoreDetails.totalScore,
+        matchReasons: scoreDetails.reasons,
+        categoryScores: scoreDetails.categoryScores,
+        warnings: scoreDetails.warnings
+      };
+    });
 
     // 4. Sort by match score (highest first) and paginate
     const sortedTowns = scoredTowns
@@ -43,7 +50,11 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     console.log(`Personalized recommendations for user ${userId}:`, {
       totalScored: scoredTowns.length,
       returned: sortedTowns.length,
-      topScores: sortedTowns.slice(0, 3).map(t => ({ name: t.name, score: t.matchScore }))
+      topScores: sortedTowns.slice(0, 3).map(t => ({ 
+        name: t.name, 
+        score: t.matchScore,
+        categories: t.categoryScores 
+      }))
     });
 
     return {
@@ -60,295 +71,561 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
 };
 
 /**
- * Calculate match score between town and user preferences (0-100)
+ * Calculate detailed match score with all onboarding data
  */
-function calculateMatchScore(town, userPreferences) {
-  let totalScore = 0;
-  let totalWeight = 0;
+function calculateDetailedMatchScore(town, userPrefs) {
+  const scoreBreakdown = {
+    totalScore: 0,
+    categoryScores: {},
+    reasons: [],
+    warnings: []
+  };
 
-  // Budget matching (weight: 25)
-  if (userPreferences.budget && town.cost_index) {
-    const budgetScore = calculateBudgetScore(town.cost_index, userPreferences.budget);
-    totalScore += budgetScore * 25;
-    totalWeight += 25;
+  // Weight configuration for each category
+  const weights = {
+    budget: 20,
+    healthcare: 15,
+    safety: 15,
+    administration: 15,
+    climate: 10,
+    region: 10,
+    culture: 10,
+    hobbies: 5
+  };
+
+  // 1. BUDGET MATCHING (from costs)
+  if (userPrefs.costs) {
+    const budgetScore = calculateBudgetScore(town, userPrefs.costs);
+    scoreBreakdown.categoryScores.budget = budgetScore;
+    scoreBreakdown.totalScore += (budgetScore * weights.budget) / 100;
+    
+    if (budgetScore >= 80) {
+      scoreBreakdown.reasons.push(`💰 Perfect budget match: $${town.cost_index}/mo`);
+    } else if (budgetScore >= 60) {
+      scoreBreakdown.reasons.push(`💰 Within budget: $${town.cost_index}/mo`);
+    } else if (budgetScore < 40) {
+      scoreBreakdown.warnings.push(`⚠️ Outside budget range: $${town.cost_index}/mo`);
+    }
   }
 
-  // Climate matching (weight: 20)
-  if (userPreferences.climate_preferences && town.climate) {
-    const climateScore = calculateClimateScore(town.climate, userPreferences.climate_preferences);
-    totalScore += climateScore * 20;
-    totalWeight += 20;
+  // 2. HEALTHCARE MATCHING (from administration)
+  if (userPrefs.administration) {
+    const healthScore = calculateHealthcareScore(town, userPrefs.administration);
+    scoreBreakdown.categoryScores.healthcare = healthScore;
+    scoreBreakdown.totalScore += (healthScore * weights.healthcare) / 100;
+    
+    if (healthScore >= 80) {
+      scoreBreakdown.reasons.push(`🏥 Healthcare matches your "${userPrefs.administration.healthcare_quality?.join(', ')}" preference`);
+    } else if (healthScore < 50 && userPrefs.administration.special_medical_needs) {
+      scoreBreakdown.warnings.push(`⚠️ Healthcare may not meet your special medical needs`);
+    }
   }
 
-  // Region matching (weight: 15)
-  if (userPreferences.region_preferences && town.country) {
-    const regionScore = calculateRegionScore(town, userPreferences.region_preferences);
-    totalScore += regionScore * 15;
-    totalWeight += 15;
+  // 3. SAFETY & SECURITY MATCHING (from administration)
+  if (userPrefs.administration) {
+    const safetyScore = calculateSafetyScore(town, userPrefs.administration);
+    scoreBreakdown.categoryScores.safety = safetyScore;
+    scoreBreakdown.totalScore += (safetyScore * weights.safety) / 100;
+    
+    if (safetyScore >= 80) {
+      scoreBreakdown.reasons.push(`🛡️ Safety level matches your preferences`);
+    } else if (safetyScore < 50) {
+      scoreBreakdown.warnings.push(`⚠️ Safety level below your preferences`);
+    }
   }
 
-  // Culture/lifestyle matching (weight: 15)
-  if (userPreferences.culture_preferences && (town.description || town.expat_population)) {
-    const cultureScore = calculateCultureScore(town, userPreferences.culture_preferences);
-    totalScore += cultureScore * 15;
-    totalWeight += 15;
+  // 4. ADMINISTRATIVE MATCHING (visa, tax, government)
+  if (userPrefs.administration) {
+    const adminScore = calculateAdministrativeScore(town, userPrefs.administration);
+    scoreBreakdown.categoryScores.administration = adminScore;
+    scoreBreakdown.totalScore += (adminScore * weights.administration) / 100;
+    
+    if (adminScore >= 80) {
+      scoreBreakdown.reasons.push(`📋 Excellent visa & administrative match`);
+    }
+    
+    // Special handling for stay duration
+    if (userPrefs.administration.stay_duration?.includes('long') && town.residency_info) {
+      scoreBreakdown.reasons.push(`🏛️ Good for long-term residence`);
+    }
   }
 
-  // Hobbies/activities matching (weight: 10)
-  if (userPreferences.hobbies && town.description) {
-    const hobbiesScore = calculateHobbiesScore(town.description, userPreferences.hobbies);
-    totalScore += hobbiesScore * 10;
-    totalWeight += 10;
+  // 5. CLIMATE MATCHING
+  if (userPrefs.climate_preferences) {
+    const climateScore = calculateEnhancedClimateScore(town, userPrefs.climate_preferences);
+    scoreBreakdown.categoryScores.climate = climateScore;
+    scoreBreakdown.totalScore += (climateScore * weights.climate) / 100;
+    
+    if (climateScore >= 80) {
+      scoreBreakdown.reasons.push(`🌡️ Perfect climate match`);
+    }
   }
 
-  // Quality scores (weight: 15 total)
-  if (town.healthcare_score || town.safety_score) {
-    const qualityScore = calculateQualityScore(town);
-    totalScore += qualityScore * 15;
-    totalWeight += 15;
+  // 6. REGION MATCHING
+  if (userPrefs.region_preferences) {
+    const regionScore = calculateEnhancedRegionScore(town, userPrefs.region_preferences);
+    scoreBreakdown.categoryScores.region = regionScore;
+    scoreBreakdown.totalScore += (regionScore * weights.region) / 100;
+    
+    if (regionScore === 100) {
+      scoreBreakdown.reasons.push(`🌍 In your preferred region`);
+    }
   }
 
-  // Return weighted average, or 50 if no matching criteria
-  return totalWeight > 0 ? Math.round(totalScore / totalWeight) : 50;
+  // 7. CULTURE MATCHING
+  if (userPrefs.culture_preferences) {
+    const cultureScore = calculateEnhancedCultureScore(town, userPrefs.culture_preferences);
+    scoreBreakdown.categoryScores.culture = cultureScore;
+    scoreBreakdown.totalScore += (cultureScore * weights.culture) / 100;
+    
+    if (cultureScore >= 80) {
+      scoreBreakdown.reasons.push(`👥 Culture & lifestyle match`);
+    }
+  }
+
+  // 8. HOBBIES MATCHING
+  if (userPrefs.hobbies) {
+    const hobbiesScore = calculateEnhancedHobbiesScore(town, userPrefs.hobbies);
+    scoreBreakdown.categoryScores.hobbies = hobbiesScore;
+    scoreBreakdown.totalScore += (hobbiesScore * weights.hobbies) / 100;
+    
+    if (hobbiesScore >= 80) {
+      scoreBreakdown.reasons.push(`🎯 Great for your hobbies & interests`);
+    }
+  }
+
+  // Calculate final score
+  const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
+  scoreBreakdown.totalScore = Math.round((scoreBreakdown.totalScore / totalWeight) * 100);
+
+  // Limit reasons and warnings
+  scoreBreakdown.reasons = scoreBreakdown.reasons.slice(0, 4);
+  scoreBreakdown.warnings = scoreBreakdown.warnings.slice(0, 2);
+
+  return scoreBreakdown;
 }
 
 /**
- * Calculate budget compatibility score (0-100)
+ * Enhanced Budget Score Calculation
  */
-function calculateBudgetScore(townCost, userBudget) {
+function calculateBudgetScore(town, userCosts) {
+  if (!town.cost_index || !userCosts?.total_monthly_budget) return 50;
+
+  const townCost = parseInt(town.cost_index);
+  const userBudget = parseInt(userCosts.total_monthly_budget);
+
   if (!townCost || !userBudget) return 50;
 
-  // Parse budget ranges to numbers
-  const townCostNum = parseInt(townCost.toString().replace(/[^\d]/g, ''));
-  let userBudgetNum;
-  
-  // Handle different budget formats
-  if (typeof userBudget === 'string') {
-    if (userBudget.includes('under')) {
-      userBudgetNum = 1500; // Under $2000 -> prefer towns under $1500
-    } else if (userBudget.includes('2000-3000')) {
-      userBudgetNum = 2500;
-    } else if (userBudget.includes('3000-5000')) {
-      userBudgetNum = 4000;
-    } else if (userBudget.includes('over')) {
-      userBudgetNum = 6000; // Over $5000 -> prefer towns around $6000
-    } else {
-      userBudgetNum = parseInt(userBudget.toString().replace(/[^\d]/g, ''));
-    }
+  // If town cost is within budget, score based on how much under budget
+  if (townCost <= userBudget) {
+    const savingsPercent = ((userBudget - townCost) / userBudget) * 100;
+    
+    // Perfect score if 20-40% under budget (good value)
+    if (savingsPercent >= 20 && savingsPercent <= 40) return 100;
+    
+    // Still good if under budget but not too much
+    if (savingsPercent < 20) return 90;
+    
+    // Too cheap might mean lower quality
+    if (savingsPercent > 60) return 70;
+    
+    return 85;
   } else {
-    userBudgetNum = parseInt(userBudget.toString());
+    // Over budget - penalize based on how much over
+    const overPercent = ((townCost - userBudget) / userBudget) * 100;
+    
+    if (overPercent <= 10) return 70;  // Slightly over
+    if (overPercent <= 20) return 50;  // Moderately over
+    if (overPercent <= 30) return 30;  // Significantly over
+    return 10; // Way over budget
   }
-
-  if (!userBudgetNum || !townCostNum) return 50;
-
-  // Calculate score based on how close the costs are
-  const difference = Math.abs(townCostNum - userBudgetNum);
-  const maxDifference = userBudgetNum * 0.5; // 50% tolerance
-  
-  if (difference === 0) return 100;
-  if (difference >= maxDifference) return 0;
-  
-  return Math.round(100 - (difference / maxDifference) * 100);
 }
 
 /**
- * Calculate climate compatibility score (0-100)
+ * Healthcare Score based on quality preferences
  */
-function calculateClimateScore(townClimate, userClimatePrefs) {
-  if (!townClimate || !userClimatePrefs) return 50;
+function calculateHealthcareScore(town, adminPrefs) {
+  if (!town.healthcare_score || !adminPrefs.healthcare_quality) return 50;
 
-  const townClimateStr = townClimate.toLowerCase();
-  const userPrefsStr = Array.isArray(userClimatePrefs) 
-    ? userClimatePrefs.join(' ').toLowerCase()
-    : userClimatePrefs.toLowerCase();
-
-  // Define climate keywords
-  const climateKeywords = {
-    tropical: ['tropical', 'humid', 'hot', 'warm', 'rainforest'],
-    temperate: ['temperate', 'mild', 'moderate', 'spring', 'fall'],
-    dry: ['dry', 'desert', 'arid', 'low humidity'],
-    cool: ['cool', 'cold', 'winter', 'mountain', 'alpine'],
-    coastal: ['coastal', 'beach', 'ocean', 'sea', 'maritime']
+  const townHealthScore = parseInt(town.healthcare_score);
+  const userPrefs = adminPrefs.healthcare_quality;
+  
+  // Map user preferences to score ranges
+  const scoreRanges = {
+    'good': { min: 8, ideal: 9 },
+    'functional': { min: 6, ideal: 7 },
+    'basic': { min: 4, ideal: 5 }
   };
 
   let bestScore = 0;
 
-  // Check each climate type
-  Object.entries(climateKeywords).forEach(([climateType, keywords]) => {
-    const townMatches = keywords.some(keyword => townClimateStr.includes(keyword));
-    const userWants = keywords.some(keyword => userPrefsStr.includes(keyword));
-    
-    if (townMatches && userWants) {
+  userPrefs.forEach(pref => {
+    const range = scoreRanges[pref];
+    if (!range) return;
+
+    if (townHealthScore >= range.ideal) {
       bestScore = Math.max(bestScore, 100);
-    } else if (townMatches || userWants) {
-      bestScore = Math.max(bestScore, 30);
+    } else if (townHealthScore >= range.min) {
+      bestScore = Math.max(bestScore, 80);
+    } else if (townHealthScore >= range.min - 1) {
+      bestScore = Math.max(bestScore, 60);
     }
   });
 
-  return bestScore || 50;
+  // Special handling for special medical needs
+  if (adminPrefs.special_medical_needs && townHealthScore < 8) {
+    bestScore = Math.min(bestScore, 40); // Penalize low healthcare for special needs
+  }
+
+  return bestScore || 30;
 }
 
 /**
- * Calculate region compatibility score (0-100)
+ * Safety Score based on preferences
  */
-function calculateRegionScore(town, userRegionPrefs) {
-  if (!town.country || !userRegionPrefs) return 50;
+function calculateSafetyScore(town, adminPrefs) {
+  if (!town.safety_score || !adminPrefs.safety_importance) return 50;
+
+  const townSafetyScore = parseInt(town.safety_score);
+  const userPrefs = adminPrefs.safety_importance;
+  
+  const scoreRanges = {
+    'good': { min: 8, ideal: 9 },
+    'functional': { min: 6, ideal: 7 },
+    'basic': { min: 4, ideal: 5 }
+  };
+
+  let bestScore = 0;
+
+  userPrefs.forEach(pref => {
+    const range = scoreRanges[pref];
+    if (!range) return;
+
+    if (townSafetyScore >= range.ideal) {
+      bestScore = Math.max(bestScore, 100);
+    } else if (townSafetyScore >= range.min) {
+      bestScore = Math.max(bestScore, 80);
+    } else if (townSafetyScore >= range.min - 1) {
+      bestScore = Math.max(bestScore, 60);
+    }
+  });
+
+  // Also check political stability preference
+  if (adminPrefs.political_stability?.includes('good') && townSafetyScore < 7) {
+    bestScore = Math.min(bestScore, 50);
+  }
+
+  return bestScore || 30;
+}
+
+/**
+ * Administrative Score (visa, tax, government efficiency)
+ */
+function calculateAdministrativeScore(town, adminPrefs) {
+  let scores = [];
+  
+  // Visa ease scoring
+  if (adminPrefs.visa_preference && town.visa_info) {
+    const visaScore = calculateVisaScore(town.visa_info, adminPrefs.visa_preference);
+    scores.push(visaScore);
+  }
+  
+  // Tax system scoring
+  if (adminPrefs.tax_preference && town.tax_info) {
+    const taxScore = calculateTaxScore(town.tax_info, adminPrefs.tax_preference);
+    scores.push(taxScore);
+  }
+  
+  // Government efficiency
+  if (adminPrefs.government_efficiency && town.government_rating) {
+    const govScore = calculateGovernmentScore(town.government_rating, adminPrefs.government_efficiency);
+    scores.push(govScore);
+  }
+  
+  // Residency path matching
+  if (adminPrefs.residency_path && town.residency_info) {
+    const residencyScore = calculateResidencyScore(town.residency_info, adminPrefs.residency_path);
+    scores.push(residencyScore);
+  }
+
+  if (scores.length === 0) return 70; // Default decent score
+  
+  return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+}
+
+/**
+ * Helper functions for administrative scoring
+ */
+function calculateVisaScore(townVisaInfo, userVisaPrefs) {
+  const visaText = townVisaInfo.toLowerCase();
+  
+  if (userVisaPrefs.includes('good')) {
+    if (visaText.includes('easy') || visaText.includes('simple') || visaText.includes('visa-free')) return 100;
+    if (visaText.includes('straightforward') || visaText.includes('friendly')) return 80;
+  } else if (userVisaPrefs.includes('functional')) {
+    if (visaText.includes('moderate') || visaText.includes('standard')) return 90;
+  }
+  
+  return 60;
+}
+
+function calculateTaxScore(townTaxInfo, userTaxPrefs) {
+  const taxText = townTaxInfo.toLowerCase();
+  
+  if (userTaxPrefs.includes('good')) {
+    if (taxText.includes('low tax') || taxText.includes('tax haven') || taxText.includes('favorable')) return 100;
+    if (taxText.includes('moderate tax')) return 70;
+  }
+  
+  return 60;
+}
+
+function calculateGovernmentScore(townGovRating, userGovPrefs) {
+  // Similar logic to healthcare/safety scoring
+  return 70; // Placeholder
+}
+
+function calculateResidencyScore(townResidencyInfo, userResidencyPath) {
+  const residencyText = townResidencyInfo.toLowerCase();
+  
+  if (userResidencyPath.includes('citizenship')) {
+    if (residencyText.includes('citizenship') || residencyText.includes('naturalization')) return 100;
+  }
+  if (userResidencyPath.includes('residence')) {
+    if (residencyText.includes('permanent residence') || residencyText.includes('residency')) return 90;
+  }
+  if (userResidencyPath.includes('seasonal')) {
+    if (residencyText.includes('seasonal') || residencyText.includes('temporary')) return 85;
+  }
+  
+  return 60;
+}
+
+/**
+ * Enhanced Climate Score with detailed preferences
+ */
+function calculateEnhancedClimateScore(town, climatePrefs) {
+  if (!town.climate || !climatePrefs) return 50;
+
+  const townClimate = town.climate.toLowerCase();
+  let score = 50;
+
+  // Summer preferences
+  if (climatePrefs.summer_climate_preference) {
+    const summerPrefs = climatePrefs.summer_climate_preference.join(' ').toLowerCase();
+    if (summerPrefs.includes('warm') && townClimate.includes('warm')) score += 20;
+    if (summerPrefs.includes('hot') && townClimate.includes('hot')) score += 20;
+    if (summerPrefs.includes('mild') && townClimate.includes('mild')) score += 20;
+  }
+
+  // Winter preferences
+  if (climatePrefs.winter_climate_preference) {
+    const winterPrefs = climatePrefs.winter_climate_preference.join(' ').toLowerCase();
+    if (winterPrefs.includes('warm') && !townClimate.includes('cold')) score += 20;
+    if (winterPrefs.includes('cool') && townClimate.includes('cool')) score += 20;
+  }
+
+  // Humidity preferences
+  if (climatePrefs.humidity_level) {
+    const humidityPrefs = climatePrefs.humidity_level.join(' ').toLowerCase();
+    if (humidityPrefs.includes('balanced') && townClimate.includes('moderate')) score += 10;
+    if (humidityPrefs.includes('dry') && townClimate.includes('dry')) score += 10;
+  }
+
+  // Sunshine preferences
+  if (climatePrefs.sunshine) {
+    const sunshinePrefs = climatePrefs.sunshine.join(' ').toLowerCase();
+    if (sunshinePrefs.includes('mostly_sunny') && townClimate.includes('sunny')) score += 10;
+  }
+
+  return Math.min(score, 100);
+}
+
+/**
+ * Enhanced Region Score with detailed country/continent preferences
+ */
+function calculateEnhancedRegionScore(town, regionPrefs) {
+  if (!town.country || !regionPrefs) return 50;
 
   const townCountry = town.country.toLowerCase();
-  const userPrefsStr = Array.isArray(userRegionPrefs) 
-    ? userRegionPrefs.join(' ').toLowerCase()
-    : userRegionPrefs.toLowerCase();
 
   // Direct country match
-  if (userPrefsStr.includes(townCountry)) {
-    return 100;
+  if (regionPrefs.countries) {
+    const userCountries = regionPrefs.countries.map(c => c.toLowerCase());
+    if (userCountries.includes(townCountry)) return 100;
   }
 
-  // Regional matching
-  const regions = {
-    'central america': ['costa rica', 'panama', 'nicaragua', 'guatemala', 'belize'],
-    'south america': ['ecuador', 'colombia', 'peru', 'chile', 'argentina', 'uruguay'],
-    'southeast asia': ['thailand', 'malaysia', 'philippines', 'vietnam', 'cambodia'],
-    'europe': ['portugal', 'spain', 'italy', 'france', 'greece', 'cyprus'],
-    'caribbean': ['barbados', 'dominican republic', 'jamaica', 'bahamas'],
-    'north america': ['mexico', 'canada', 'united states']
-  };
+  // Continent/region match
+  if (regionPrefs.regions || regionPrefs.continents) {
+    const userRegions = [...(regionPrefs.regions || []), ...(regionPrefs.continents || [])]
+      .map(r => r.toLowerCase());
+    
+    const regionMappings = {
+      'mediterranean': ['spain', 'portugal', 'italy', 'greece', 'cyprus', 'malta'],
+      'north america': ['mexico', 'canada', 'united states'],
+      'central america': ['costa rica', 'panama', 'nicaragua', 'guatemala', 'belize'],
+      'south america': ['ecuador', 'colombia', 'peru', 'chile', 'argentina', 'uruguay'],
+      'southeast asia': ['thailand', 'malaysia', 'philippines', 'vietnam', 'cambodia'],
+      'europe': ['portugal', 'spain', 'italy', 'france', 'greece', 'cyprus'],
+      'caribbean': ['barbados', 'dominican republic', 'jamaica', 'bahamas'],
+      'island': ['malta', 'cyprus', 'barbados', 'jamaica', 'philippines']
+    };
 
-  for (const [region, countries] of Object.entries(regions)) {
-    if (userPrefsStr.includes(region) && countries.some(country => townCountry.includes(country))) {
-      return 85;
+    for (const [region, countries] of Object.entries(regionMappings)) {
+      if (userRegions.some(r => r.includes(region)) && 
+          countries.some(c => townCountry.includes(c))) {
+        return 85;
+      }
     }
   }
 
-  return 30; // Some compatibility for any international location
+  // Geographic features match
+  if (regionPrefs.geographic_features && town.geographic_features) {
+    const userFeatures = regionPrefs.geographic_features.join(' ').toLowerCase();
+    const townFeatures = town.geographic_features.toLowerCase();
+    
+    if (userFeatures.includes('coastal') && townFeatures.includes('coast')) return 80;
+    if (userFeatures.includes('mountains') && townFeatures.includes('mountain')) return 80;
+    if (userFeatures.includes('island') && townFeatures.includes('island')) return 80;
+  }
+
+  return 40;
 }
 
 /**
- * Calculate culture/lifestyle compatibility score (0-100)
+ * Enhanced Culture Score with lifestyle preferences
  */
-function calculateCultureScore(town, userCulturePrefs) {
-  if (!userCulturePrefs) return 50;
-
-  const userPrefsStr = Array.isArray(userCulturePrefs) 
-    ? userCulturePrefs.join(' ').toLowerCase()
-    : userCulturePrefs.toLowerCase();
+function calculateEnhancedCultureScore(town, culturePrefs) {
+  if (!culturePrefs) return 50;
 
   let score = 50;
-  
-  // Check town description for culture keywords
-  const townText = (town.description || '').toLowerCase();
+  const townDesc = (town.description || '').toLowerCase();
   const expatInfo = (town.expat_population || '').toLowerCase();
-  
-  const cultureKeywords = {
-    'expat community': ['expat', 'international', 'foreign', 'english', 'american'],
-    'local culture': ['traditional', 'authentic', 'local', 'cultural', 'heritage'],
-    'modern': ['modern', 'contemporary', 'developed', 'western'],
-    'relaxed': ['relaxed', 'laid back', 'peaceful', 'quiet', 'slow pace'],
-    'active': ['active', 'vibrant', 'lively', 'entertainment', 'nightlife']
-  };
 
-  Object.entries(cultureKeywords).forEach(([culturePref, keywords]) => {
-    const userWants = userPrefsStr.includes(culturePref.replace(' ', ''));
-    const townHas = keywords.some(keyword => townText.includes(keyword) || expatInfo.includes(keyword));
+  // Expat community preferences
+  if (culturePrefs.expat_community_preference) {
+    const expatPrefs = culturePrefs.expat_community_preference.join(' ').toLowerCase();
     
-    if (userWants && townHas) {
+    if (expatPrefs.includes('large') && 
+        (expatInfo.includes('large') || expatInfo.includes('thriving') || expatInfo.includes('significant'))) {
+      score += 25;
+    } else if (expatPrefs.includes('moderate') && 
+               (expatInfo.includes('moderate') || expatInfo.includes('growing'))) {
+      score += 20;
+    } else if (expatPrefs.includes('small') && 
+               (expatInfo.includes('small') || expatInfo.includes('emerging'))) {
+      score += 20;
+    }
+  }
+
+  // Lifestyle preferences (pace of life, urban/rural)
+  if (culturePrefs.lifestyle_preferences) {
+    const lifestyle = culturePrefs.lifestyle_preferences;
+    
+    // Pace of life
+    if (lifestyle.pace_of_life) {
+      const pacePrefs = lifestyle.pace_of_life.join(' ').toLowerCase();
+      if (pacePrefs.includes('slow') && townDesc.includes('relaxed')) score += 15;
+      if (pacePrefs.includes('moderate') && townDesc.includes('balanced')) score += 15;
+      if (pacePrefs.includes('fast') && townDesc.includes('vibrant')) score += 15;
+    }
+    
+    // Urban/rural
+    if (lifestyle.urban_rural) {
+      const urbanPrefs = lifestyle.urban_rural.join(' ').toLowerCase();
+      if (urbanPrefs.includes('urban') && townDesc.includes('city')) score += 10;
+      if (urbanPrefs.includes('suburban') && townDesc.includes('suburban')) score += 10;
+      if (urbanPrefs.includes('rural') && townDesc.includes('rural')) score += 10;
+    }
+  }
+
+  // Language comfort
+  if (culturePrefs.language_comfort && town.primary_language) {
+    const languages = culturePrefs.language_comfort.already_speak || [];
+    const townLang = town.primary_language.toLowerCase();
+    
+    if (languages.some(lang => townLang.includes(lang.toLowerCase()))) {
       score += 15;
     }
-  });
+  }
 
   return Math.min(score, 100);
 }
 
 /**
- * Calculate hobbies/activities compatibility score (0-100)
+ * Enhanced Hobbies Score with detailed activities
  */
-function calculateHobbiesScore(townDescription, userHobbies) {
-  if (!townDescription || !userHobbies) return 50;
+function calculateEnhancedHobbiesScore(town, hobbiesPrefs) {
+  if (!hobbiesPrefs || !town.description) return 50;
 
-  const townText = townDescription.toLowerCase();
-  const userHobbiesStr = Array.isArray(userHobbies) 
-    ? userHobbies.join(' ').toLowerCase()
-    : userHobbies.toLowerCase();
-
-  const hobbyKeywords = {
-    'outdoor': ['hiking', 'nature', 'beach', 'outdoor', 'fishing', 'golf', 'cycling'],
-    'cultural': ['museum', 'art', 'culture', 'history', 'theater', 'music'],
-    'social': ['community', 'social', 'expat', 'clubs', 'groups'],
-    'sports': ['golf', 'tennis', 'water sports', 'fishing', 'diving'],
-    'wellness': ['spa', 'wellness', 'yoga', 'health', 'medical']
-  };
-
+  const townText = town.description.toLowerCase();
   let score = 50;
-  let matches = 0;
+  let matchCount = 0;
 
-  Object.entries(hobbyKeywords).forEach(([hobby, keywords]) => {
-    const userInterested = userHobbiesStr.includes(hobby);
-    const townOffers = keywords.some(keyword => townText.includes(keyword));
+  // Activities matching
+  if (hobbiesPrefs.activities) {
+    const activities = hobbiesPrefs.activities;
     
-    if (userInterested && townOffers) {
-      score += 10;
-      matches++;
+    const activityKeywords = {
+      'water_sports': ['beach', 'diving', 'snorkeling', 'surfing', 'swimming', 'water sports'],
+      'golf': ['golf', 'golf course', 'golfing'],
+      'hiking': ['hiking', 'trails', 'mountains', 'trekking', 'nature walks'],
+      'cycling': ['cycling', 'biking', 'bicycle'],
+      'fishing': ['fishing', 'angling'],
+      'photography': ['scenic', 'beautiful', 'picturesque', 'photo'],
+      'gardening': ['garden', 'botanical', 'farming'],
+      'cooking': ['culinary', 'cuisine', 'food', 'restaurants']
+    };
+
+    activities.forEach(activity => {
+      const keywords = activityKeywords[activity];
+      if (keywords && keywords.some(keyword => townText.includes(keyword))) {
+        score += 10;
+        matchCount++;
+      }
+    });
+  }
+
+  // Interests matching
+  if (hobbiesPrefs.interests) {
+    const interests = hobbiesPrefs.interests;
+    
+    const interestKeywords = {
+      'history': ['historic', 'history', 'heritage', 'ancient', 'colonial'],
+      'nature': ['nature', 'natural', 'wildlife', 'parks', 'reserves'],
+      'arts': ['art', 'gallery', 'museum', 'cultural', 'artistic'],
+      'music': ['music', 'concerts', 'festivals', 'live music'],
+      'wellness': ['spa', 'wellness', 'yoga', 'meditation', 'health'],
+      'wine': ['wine', 'vineyard', 'winery'],
+      'volunteering': ['volunteer', 'community', 'charity', 'help']
+    };
+
+    interests.forEach(interest => {
+      const keywords = interestKeywords[interest];
+      if (keywords && keywords.some(keyword => townText.includes(keyword))) {
+        score += 8;
+        matchCount++;
+      }
+    });
+  }
+
+  // Social preferences
+  if (hobbiesPrefs.social_preference) {
+    const socialPref = hobbiesPrefs.social_preference;
+    if (socialPref === 'social' && (townText.includes('community') || townText.includes('social'))) {
+      score += 5;
     }
-  });
+  }
+
+  // Travel frequency consideration
+  if (hobbiesPrefs.travel_frequency && town.transport_links) {
+    const travelFreq = hobbiesPrefs.travel_frequency;
+    if (travelFreq === 'frequent' && town.transport_links.includes('airport')) {
+      score += 5;
+    }
+  }
 
   return Math.min(score, 100);
-}
-
-/**
- * Calculate quality scores (healthcare, safety) (0-100)
- */
-function calculateQualityScore(town) {
-  let totalScore = 0;
-  let count = 0;
-
-  if (town.healthcare_score) {
-    totalScore += (town.healthcare_score / 10) * 100;
-    count++;
-  }
-
-  if (town.safety_score) {
-    totalScore += (town.safety_score / 10) * 100;
-    count++;
-  }
-
-  return count > 0 ? Math.round(totalScore / count) : 70; // Default good score
-}
-
-/**
- * Get reasons why this town matches user preferences
- */
-function getMatchReasons(town, userPreferences) {
-  const reasons = [];
-
-  // Budget reasons
-  if (userPreferences.budget && town.cost_index) {
-    const budgetScore = calculateBudgetScore(town.cost_index, userPreferences.budget);
-    if (budgetScore > 80) {
-      reasons.push(`Fits your budget perfectly ($${town.cost_index}/month)`);
-    } else if (budgetScore > 60) {
-      reasons.push(`Within your budget range ($${town.cost_index}/month)`);
-    }
-  }
-
-  // Climate reasons
-  if (userPreferences.climate_preferences && town.climate) {
-    const climateScore = calculateClimateScore(town.climate, userPreferences.climate_preferences);
-    if (climateScore > 80) {
-      reasons.push(`Perfect climate match: ${town.climate}`);
-    } else if (climateScore > 60) {
-      reasons.push(`Good climate fit: ${town.climate}`);
-    }
-  }
-
-  // Quality reasons
-  if (town.healthcare_score && town.healthcare_score >= 8) {
-    reasons.push(`Excellent healthcare (${town.healthcare_score}/10)`);
-  }
-  if (town.safety_score && town.safety_score >= 8) {
-    reasons.push(`Very safe location (${town.safety_score}/10)`);
-  }
-
-  return reasons.slice(0, 3); // Return top 3 reasons
 }
 
 /**
