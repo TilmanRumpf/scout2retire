@@ -218,28 +218,80 @@ export default function OnboardingReview() {
       case 'administration':
         return (
           <div className="space-y-1 text-xs">
-            {data.health?.healthcare_access && data.health.healthcare_access.length > 0 && (
+            {data.healthcare_quality && data.healthcare_quality.length > 0 && (
               <p>
                 <span className="font-medium">Healthcare:</span>{' '}
-                {data.health.healthcare_access.join(', ')}
+                {data.healthcare_quality.join(', ')}
               </p>
             )}
-            {data.safety?.crime_tolerance && data.safety.crime_tolerance.length > 0 && (
+            {data.insurance_importance && data.insurance_importance.length > 0 && (
+              <p>
+                <span className="font-medium">Insurance:</span>{' '}
+                {data.insurance_importance.join(', ')}
+              </p>
+            )}
+            {data.safety_importance && data.safety_importance.length > 0 && (
               <p>
                 <span className="font-medium">Safety:</span>{' '}
-                {data.safety.crime_tolerance.join(', ')}
+                {data.safety_importance.join(', ')}
               </p>
             )}
-            {data.governance?.tax_complexity && data.governance.tax_complexity.length > 0 && (
+            {data.emergency_services && data.emergency_services.length > 0 && (
+              <p>
+                <span className="font-medium">Emergency Services:</span>{' '}
+                {data.emergency_services.join(', ')}
+              </p>
+            )}
+            {data.political_stability && data.political_stability.length > 0 && (
+              <p>
+                <span className="font-medium">Political Stability:</span>{' '}
+                {data.political_stability.join(', ')}
+              </p>
+            )}
+            {data.tax_preference && data.tax_preference.length > 0 && (
               <p>
                 <span className="font-medium">Tax System:</span>{' '}
-                {data.governance.tax_complexity.join(', ')}
+                {data.tax_preference.join(', ')}
               </p>
             )}
-            {data.immigration?.residency_goal && data.immigration.residency_goal.length > 0 && (
+            {data.government_efficiency && data.government_efficiency.length > 0 && (
               <p>
-                <span className="font-medium">Residency:</span>{' '}
-                {data.immigration.residency_goal.join(', ')}
+                <span className="font-medium">Government Efficiency:</span>{' '}
+                {data.government_efficiency.join(', ')}
+              </p>
+            )}
+            {data.visa_preference && data.visa_preference.length > 0 && (
+              <p>
+                <span className="font-medium">Visa Process:</span>{' '}
+                {data.visa_preference.join(', ')}
+              </p>
+            )}
+            {data.stay_duration && data.stay_duration.length > 0 && (
+              <p>
+                <span className="font-medium">Stay Duration:</span>{' '}
+                {data.stay_duration.map(d => {
+                  if (d === 'short') return '1-2 Years';
+                  if (d === 'medium') return '3-5 Years';
+                  if (d === 'long') return '5+ Years';
+                  return d;
+                }).join(', ')}
+              </p>
+            )}
+            {data.residency_path && data.residency_path.length > 0 && (
+              <p>
+                <span className="font-medium">Residency Goals:</span>{' '}
+                {data.residency_path.map(r => {
+                  if (r === 'seasonal') return 'Seasonal';
+                  if (r === 'residence') return 'Residence';
+                  if (r === 'citizenship') return 'Citizenship';
+                  return r;
+                }).join(', ')}
+              </p>
+            )}
+            {data.special_medical_needs && (
+              <p>
+                <span className="font-medium">Special Medical Needs:</span>{' '}
+                Yes
               </p>
             )}
           </div>

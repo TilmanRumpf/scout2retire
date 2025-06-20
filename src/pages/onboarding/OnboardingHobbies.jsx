@@ -33,7 +33,9 @@ export default function OnboardingHobbies() {
       outdoor_activities: 3,
       cultural_events: 3,
       shopping: 2,
-      wellness: 3
+      wellness: 3,
+      dining_out: 3,
+      nightlife: 2
     }
   });
   
@@ -92,12 +94,14 @@ export default function OnboardingHobbies() {
     { id: 'rare', label: 'Rare' }
   ];
 
-  // Lifestyle categories
+  // Updated lifestyle categories to match database
   const lifestyleCategories = [
     { id: 'outdoor_activities', label: 'Outdoor Activities', icon: Activity },
     { id: 'cultural_events', label: 'Cultural Events', icon: Heart },
     { id: 'shopping', label: 'Shopping', icon: Users },
-    { id: 'wellness', label: 'Wellness & Spas', icon: Heart }
+    { id: 'wellness', label: 'Wellness & Spas', icon: Heart },
+    { id: 'dining_out', label: 'Dining Out', icon: Heart },
+    { id: 'nightlife', label: 'Nightlife', icon: Heart }
   ];
 
   // Load existing data if available
@@ -121,7 +125,20 @@ export default function OnboardingHobbies() {
         
         // If hobbies data exists, load it
         if (data && data.hobbies) {
-          setFormData(data.hobbies);
+          setFormData(prev => ({
+            ...prev,
+            ...data.hobbies,
+            // Ensure all fields have default values if not present
+            lifestyle_importance: {
+              outdoor_activities: 3,
+              cultural_events: 3,
+              shopping: 2,
+              wellness: 3,
+              dining_out: 3,
+              nightlife: 2,
+              ...data.hobbies.lifestyle_importance
+            }
+          }));
         }
       } catch (err) {
         console.error("Unexpected error loading data:", err);
@@ -193,9 +210,19 @@ export default function OnboardingHobbies() {
         return;
       }
       
+      // Save only the fields that belong to the hobbies step
+      const dataToSave = {
+        activities: formData.activities,
+        interests: formData.interests,
+        social_preference: formData.social_preference,
+        health_considerations: formData.health_considerations,
+        travel_frequency: formData.travel_frequency,
+        lifestyle_importance: formData.lifestyle_importance
+      };
+      
       const { success, error } = await saveOnboardingStep(
         user.id,
-        formData,
+        dataToSave,
         'hobbies'
       );
       
