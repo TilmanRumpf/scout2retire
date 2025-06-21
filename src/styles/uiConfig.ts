@@ -278,8 +278,8 @@ export const components = {
   buttonVariants: {
     primary: 'py-3 px-4 rounded-lg border-2 border-transparent text-sm font-medium text-center transition-all duration-200 bg-scout-accent-300 text-white hover:bg-scout-accent-400 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2',
     secondary: 'py-3 px-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-sm font-medium text-center transition-all duration-200 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-scout-accent-300 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2',
-    selected: 'py-3 px-4 rounded-lg border-2 border-scout-accent-600 text-sm font-medium text-center transition-all duration-200 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300',
-    unselected: 'py-3 px-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 text-sm font-medium text-center transition-all duration-200 text-gray-700 dark:text-gray-300 hover:border-scout-accent-300 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2'
+    selected: 'py-3 px-4 rounded-lg border-2 border-scout-accent-300 text-sm font-medium text-center transition-all duration-200 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-200',
+    unselected: 'py-3 px-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-sm font-medium text-center transition-all duration-200 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2'
   },
   
   // File inputs
@@ -659,6 +659,36 @@ export const getCachedLocale = (): string => {
  */
 export const resetLocaleCache = (): void => {
   cachedLocale = null;
+};
+
+// Slider formatting utilities - Added 21JUN25
+export const sliderFormats = {
+  // Convert 1-5 scale to percentage (0-100%)
+  percentage: (value: number): string => {
+    return `${((value - 1) * 25)}%`;
+  },
+  
+  // Format as rating (e.g., "3/5")
+  rating: (value: number, max: number = 5): string => {
+    return `${value}/${max}`;
+  },
+  
+  // Format as currency amount
+  currency: (value: number, scale: number = 1000): string => {
+    const amount = value * scale;
+    return i18n.formatCurrency(amount);
+  },
+  
+  // Format as raw value
+  raw: (value: number): string => {
+    return value.toString();
+  },
+  
+  // Format with custom labels
+  labels: (value: number, labels: string[]): string => {
+    const index = Math.min(Math.floor(value) - 1, labels.length - 1);
+    return labels[index] || value.toString();
+  }
 };
 
 // Default export for easy importing

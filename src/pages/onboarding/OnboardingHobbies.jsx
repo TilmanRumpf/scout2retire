@@ -264,7 +264,7 @@ export default function OnboardingHobbies() {
             </span>
           </div>
           <span className="text-xs font-medium text-scout-accent-600 dark:text-scout-accent-400">
-            {value}/5
+            {((value - 1) * 25)}%
           </span>
         </div>
         <input
