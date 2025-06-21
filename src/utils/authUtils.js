@@ -52,7 +52,6 @@ export const signUp = async (email, password, fullName, nationality, retirementY
           console.error("Auto sign-in error:", signInError);
           // Don't show error toast here - just return success for the signup
         } else {
-          console.log("Auto sign-in successful:", signInData);
           return { 
             success: true, 
             user: signInData.user,

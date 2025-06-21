@@ -7,7 +7,6 @@ export const fetchTowns = async (filters = {}) => {
   try {
     // NEW: Check if personalization is requested
     if (filters.userId && filters.usePersonalization !== false) {
-      console.log('Attempting personalized recommendations for user:', filters.userId);
       
       try {
         const personalizedResult = await getPersonalizedTowns(filters.userId, {
@@ -16,7 +15,6 @@ export const fetchTowns = async (filters = {}) => {
         });
         
         if (personalizedResult.success) {
-          console.log('Personalized recommendations successful');
           return {
             success: true,
             towns: personalizedResult.towns,
@@ -24,7 +22,6 @@ export const fetchTowns = async (filters = {}) => {
             userPreferences: personalizedResult.userPreferences
           };
         } else {
-          console.log('Personalization failed, falling back to regular fetch');
           // Fall through to original logic
         }
       } catch (personalizationError) {
@@ -74,11 +71,7 @@ export const fetchTowns = async (filters = {}) => {
       return { success: false, error };
     }
 
-    // Debug the fetched data
-    console.log('Fetched towns:', data?.length || 0, 'towns');
-    if (data && data.length > 0) {
-      console.log('Sample town ID:', data[0].id, 'Type:', typeof data[0].id);
-    }
+    // Data fetched successfully
 
     return { 
       success: true, 
@@ -93,18 +86,9 @@ export const fetchTowns = async (filters = {}) => {
 
 export const toggleFavorite = async (userId, townId, townName = null, townCountry = null) => {
   try {
-    // Enhanced debugging
-    console.log('=== TOGGLE FAVORITE DEBUG ===');
-    console.log('User ID:', userId, 'Type:', typeof userId);
-    console.log('Town ID:', townId, 'Type:', typeof townId);
-    console.log('Town ID length:', townId ? townId.length : 'null');
-    console.log('Is valid UUID:', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(townId));
-    
     // Only normalize town ID, NOT user ID
     const normalizedTownId = String(townId).toLowerCase().trim();
     const userIdString = String(userId).trim(); // Keep original case for user ID
-    console.log('Normalized Town ID:', normalizedTownId);
-    console.log('User ID (original case):', userIdString);
     
     // Check if town is already favorited - use maybeSingle() instead of single()
     console.log("Checking if town is already favorited...");
@@ -165,7 +149,6 @@ export const toggleFavorite = async (userId, townId, townName = null, townCountr
     }
 
     // Otherwise, add as favorite
-    console.log('Adding favorite...');
     const { error: addError } = await supabase
       .from('favorites')
       .insert([{
@@ -179,12 +162,9 @@ export const toggleFavorite = async (userId, townId, townName = null, townCountr
       console.error("Insert error details:", addError.details, addError.hint);
       return { success: false, error: addError };
     }
-
-    console.log('Favorite added successfully');
     
     // Log the like activity to journal
     if (townName && townCountry) {
-      console.log('Logging like activity to journal...');
       await logTownActivity(userIdString, normalizedTownId, 'liked', townName, townCountry);
     }
     
@@ -197,12 +177,8 @@ export const toggleFavorite = async (userId, townId, townName = null, townCountr
 
 export const fetchFavorites = async (userId) => {
   try {
-    console.log('=== FETCH FAVORITES DEBUG ===');
-    console.log('Fetching favorites for user:', userId);
-    
     // DO NOT normalize user ID - keep it as is
     const userIdString = String(userId).trim();
-    console.log('User ID (original case):', userIdString);
     
     const { data, error } = await supabase
       .from('favorites')
@@ -218,11 +194,6 @@ export const fetchFavorites = async (userId) => {
       return { success: false, error };
     }
 
-    console.log('Fetched favorites:', data?.length || 0, 'favorites');
-    if (data && data.length > 0) {
-      console.log('Favorite town IDs:', data.map(f => f.town_id));
-      console.log('Sample favorite structure:', data[0]);
-    }
 
     return { success: true, favorites: data || [] };
   } catch (error) {
@@ -234,8 +205,6 @@ export const fetchFavorites = async (userId) => {
 // Get town of the day based on user preferences
 export const getTownOfTheDay = async (userId) => {
   try {
-    console.log('=== GET TOWN OF THE DAY DEBUG ===');
-    console.log("Getting town of the day for user:", userId);
     
     // DO NOT normalize user ID
     const userIdString = String(userId).trim();
@@ -252,7 +221,6 @@ export const getTownOfTheDay = async (userId) => {
       return { success: false, error: prefError };
     }
 
-    console.log('User preferences found:', !!preferences);
 
     // Get existing favorites to exclude them
     const { data: favorites, error: favError } = await supabase
@@ -267,7 +235,6 @@ export const getTownOfTheDay = async (userId) => {
 
     // Extract favorite town IDs
     const favoriteTownIds = favorites ? favorites.map(fav => fav.town_id) : [];
-    console.log("Excluding favorite town IDs:", favoriteTownIds);
 
     // Get a random town not in favorites
     let query = supabase
@@ -281,7 +248,6 @@ export const getTownOfTheDay = async (userId) => {
 
     // Apply basic filtering based on preferences if available
     if (preferences && preferences.budget && preferences.budget.monthly_budget) {
-      console.log('Applying budget filter:', preferences.budget.monthly_budget);
       query = query.lte('cost_index', preferences.budget.monthly_budget);
     }
 
@@ -294,20 +260,12 @@ export const getTownOfTheDay = async (userId) => {
     }
 
     if (!towns || towns.length === 0) {
-      console.log("No towns available for daily selection");
       return { success: false, error: { message: "No towns available" } };
     }
 
     // Randomly select one town
     const randomIndex = Math.floor(Math.random() * towns.length);
     const selectedTown = towns[randomIndex];
-
-    console.log("Town of the day selected:", {
-      id: selectedTown.id,
-      name: selectedTown.name,
-      country: selectedTown.country,
-      cost: selectedTown.cost_index
-    });
 
     return { success: true, town: selectedTown };
   } catch (error) {
@@ -322,7 +280,6 @@ export const logTownView = async (userId, townId, townName, townCountry) => {
     const userIdString = String(userId).trim();
     const normalizedTownId = String(townId).toLowerCase().trim();
     
-    console.log('Logging town view activity...');
     await logTownActivity(userIdString, normalizedTownId, 'viewed', townName, townCountry);
   } catch (error) {
     console.error("Error logging town view:", error);
