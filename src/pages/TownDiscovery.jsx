@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { fetchTowns, fetchFavorites } from '../utils/townUtils';
 import { getCurrentUser } from '../utils/authUtils';
 import LikeButton from '../components/LikeButton';
+import PageErrorBoundary from '../components/PageErrorBoundary';
 import QuickNav from '../components/QuickNav';
 import TownRadarChart from '../components/TownRadarChart';
 import toast from 'react-hot-toast';
@@ -183,8 +184,13 @@ export default function TownDiscovery() {
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <PageErrorBoundary
+        fallbackTitle="Discovery Error"
+        fallbackMessage="We're having trouble loading town recommendations. Please try refreshing the page."
+        onReset={() => window.location.reload()}
+      >
+        {/* Main content */}
+        <main className="max-w-7xl mx-auto px-4 py-6">
         {error && (
           <div className="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 p-4 rounded-lg mb-6">
             {error}
@@ -527,7 +533,8 @@ export default function TownDiscovery() {
             </div>
           ))}
         </div>
-      </main>
+        </main>
+      </PageErrorBoundary>
 
       {/* Bottom Navigation (Mobile) */}
       <QuickNav />
