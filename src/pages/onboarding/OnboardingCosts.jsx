@@ -5,20 +5,21 @@ import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
 import toast from 'react-hot-toast';
+import { uiConfig } from '../../styles/uiConfig';
 
 // Option Button Component
 const OptionButton = ({ label, description, isSelected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`p-3 rounded-md border-2 transition-all text-center ${
+    className={`p-3 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center ${
       isSelected
-        ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
-        : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
+        ? uiConfig.components.buttonVariants.selected
+        : uiConfig.components.buttonVariants.unselected
     }`}
   >
-    <div className={`text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
-    {description && <div className={`text-xs mt-1 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
+    <div className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${isSelected ? uiConfig.colors.accent : ''}`}>{label}</div>
+    {description && <div className={`${uiConfig.font.size.xs} mt-1 ${isSelected ? uiConfig.colors.accent : uiConfig.colors.hint}`}>{description}</div>}
   </button>
 );
 
@@ -136,8 +137,8 @@ export default function OnboardingCosts() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
-        <div className="animate-pulse text-scout-accent-600 font-semibold">Loading...</div>
+      <div className={`min-h-screen ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
+        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.success} ${uiConfig.font.weight.semibold}`}>Loading...</div>
       </div>
     );
   }
@@ -154,7 +155,7 @@ export default function OnboardingCosts() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+    <div className={`min-h-screen ${uiConfig.colors.page} p-4`}>
       <div className="max-w-md mx-auto">
         <OnboardingStepNavigation 
           currentStep="budget" 
@@ -162,31 +163,31 @@ export default function OnboardingCosts() {
           className="mb-4" 
         />
         
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4">
+        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-3 ${uiConfig.responsive.sm}p-4`}>
           {/* Header */}
           <div className="mb-4">
-            <h1 className="text-lg font-bold text-gray-800 dark:text-white">Budget & Costs</h1>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+            <h1 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Budget & Costs</h1>
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
               Set your budget limits for retirement locations
             </p>
           </div>
 
           {/* Total Monthly Budget Slider */}
           <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 flex items-center`}>
               <DollarSign size={18} className="mr-1.5" />
               Total Monthly Budget
             </label>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-3`}>
               Your total available monthly budget
             </p>
             <div className="mb-2">
               <div className="flex justify-between items-center mb-1">
-                <span className="text-xs text-gray-500 dark:text-gray-400">$1,500</span>
-                <span className="text-sm font-medium text-scout-accent-600 dark:text-scout-accent-400">
+                <span className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>$1,500</span>
+                <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.success}`}>
                   {formatCurrency(formData.total_monthly_budget)}{formData.total_monthly_budget >= 5000 && '+'}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">$5,000+</span>
+                <span className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>$5,000+</span>
               </div>
               <input
                 type="range"
@@ -195,7 +196,7 @@ export default function OnboardingCosts() {
                 step="100"
                 value={Math.min(formData.total_monthly_budget, 5000)}
                 onChange={(e) => handleSliderChange('total_monthly_budget', e.target.value)}
-                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
+                className={`w-full h-1.5 ${uiConfig.progress.track} ${uiConfig.layout.radius.lg} appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer`}
                 style={{
                   background: `linear-gradient(to right, #8fbc8f 0%, #8fbc8f ${((Math.min(formData.total_monthly_budget, 5000) - 1500) / 3500) * 100}%, #e5e7eb ${((Math.min(formData.total_monthly_budget, 5000) - 1500) / 3500) * 100}%, #e5e7eb 100%)`
                 }}
@@ -205,22 +206,22 @@ export default function OnboardingCosts() {
 
           {/* Housing Costs */}
           <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 flex items-center`}>
               <Home size={18} className="mr-1.5" />
               Housing Budget
             </label>
             
             {/* Maximum Monthly Rent Slider */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-2`}>
               Maximum monthly rent
             </p>
             <div className="mb-3">
               <div className="flex justify-between items-center mb-1">
-                <span className="text-xs text-gray-500 dark:text-gray-400">$500</span>
-                <span className="text-sm font-medium text-scout-accent-600 dark:text-scout-accent-400">
+                <span className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>$500</span>
+                <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.success}`}>
                   {formatCurrency(formData.max_monthly_rent)}{formData.max_monthly_rent >= 2000 && '+'}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">$2,000+</span>
+                <span className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>$2,000+</span>
               </div>
               <input
                 type="range"
@@ -229,7 +230,7 @@ export default function OnboardingCosts() {
                 step="50"
                 value={Math.min(formData.max_monthly_rent, 2000)}
                 onChange={(e) => handleSliderChange('max_monthly_rent', e.target.value)}
-                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
+                className={`w-full h-1.5 ${uiConfig.progress.track} ${uiConfig.layout.radius.lg} appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer`}
                 style={{
                   background: `linear-gradient(to right, #8fbc8f 0%, #8fbc8f ${((Math.min(formData.max_monthly_rent, 2000) - 500) / 1500) * 100}%, #e5e7eb ${((Math.min(formData.max_monthly_rent, 2000) - 500) / 1500) * 100}%, #e5e7eb 100%)`
                 }}
@@ -237,16 +238,16 @@ export default function OnboardingCosts() {
             </div>
 
             {/* Maximum Home Purchase Price Slider */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-2`}>
               Maximum home purchase price
             </p>
             <div>
               <div className="flex justify-between items-center mb-1">
-                <span className="text-xs text-gray-500 dark:text-gray-400">$100k</span>
-                <span className="text-sm font-medium text-scout-accent-600 dark:text-scout-accent-400">
+                <span className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>$100k</span>
+                <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.success}`}>
                   {formatHomePrice(formData.max_home_price)}{formData.max_home_price >= 500000 && '+'}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">$500k+</span>
+                <span className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>$500k+</span>
               </div>
               <input
                 type="range"
@@ -255,7 +256,7 @@ export default function OnboardingCosts() {
                 step="10000"
                 value={Math.min(formData.max_home_price, 500000)}
                 onChange={(e) => handleSliderChange('max_home_price', e.target.value)}
-                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
+                className={`w-full h-1.5 ${uiConfig.progress.track} ${uiConfig.layout.radius.lg} appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer`}
                 style={{
                   background: `linear-gradient(to right, #8fbc8f 0%, #8fbc8f ${((Math.min(formData.max_home_price, 500000) - 100000) / 400000) * 100}%, #e5e7eb ${((Math.min(formData.max_home_price, 500000) - 100000) / 400000) * 100}%, #e5e7eb 100%)`
                 }}
@@ -265,20 +266,20 @@ export default function OnboardingCosts() {
 
           {/* Healthcare Budget Slider */}
           <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 flex items-center`}>
               <Heart size={18} className="mr-1.5" />
               Healthcare Budget
             </label>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-3`}>
               Monthly healthcare budget including insurance
             </p>
             <div>
               <div className="flex justify-between items-center mb-1">
-                <span className="text-xs text-gray-500 dark:text-gray-400">$500</span>
-                <span className="text-sm font-medium text-scout-accent-600 dark:text-scout-accent-400">
+                <span className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>$500</span>
+                <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.success}`}>
                   {formatCurrency(formData.monthly_healthcare_budget)}{formData.monthly_healthcare_budget >= 1500 && '+'}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">$1,500+</span>
+                <span className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>$1,500+</span>
               </div>
               <input
                 type="range"
@@ -287,7 +288,7 @@ export default function OnboardingCosts() {
                 step="50"
                 value={Math.min(formData.monthly_healthcare_budget, 1500)}
                 onChange={(e) => handleSliderChange('monthly_healthcare_budget', e.target.value)}
-                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
+                className={`w-full h-1.5 ${uiConfig.progress.track} ${uiConfig.layout.radius.lg} appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer`}
                 style={{
                   background: `linear-gradient(to right, #8fbc8f 0%, #8fbc8f ${((Math.min(formData.monthly_healthcare_budget, 1500) - 500) / 1000) * 100}%, #e5e7eb ${((Math.min(formData.monthly_healthcare_budget, 1500) - 500) / 1000) * 100}%, #e5e7eb 100%)`
                 }}
@@ -297,11 +298,11 @@ export default function OnboardingCosts() {
 
           {/* Transportation */}
           <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 flex items-center`}>
               <Car size={18} className="mr-1.5" />
               Transportation Needs
             </label>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-3`}>
               Will you need a car?
             </p>
             <div className="grid grid-cols-3 gap-1.5">
@@ -319,10 +320,10 @@ export default function OnboardingCosts() {
 
           {/* Tax Sensitivity */}
           <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 block`}>
               Tax Considerations
             </label>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-3`}>
               Which taxes are important to minimize?
             </p>
             <div className="space-y-2">
@@ -350,7 +351,7 @@ export default function OnboardingCosts() {
                     transition: 'all 0.15s ease-in-out'
                   }}
                 />
-                <label htmlFor="property_tax_sensitive" className="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                <label htmlFor="property_tax_sensitive" className={`ml-2 ${uiConfig.font.size.xs} ${uiConfig.colors.body} cursor-pointer`}>
                   Property tax rates are important to me
                 </label>
               </div>
@@ -379,7 +380,7 @@ export default function OnboardingCosts() {
                     transition: 'all 0.15s ease-in-out'
                   }}
                 />
-                <label htmlFor="sales_tax_sensitive" className="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                <label htmlFor="sales_tax_sensitive" className={`ml-2 ${uiConfig.font.size.xs} ${uiConfig.colors.body} cursor-pointer`}>
                   Sales tax rates are important to me
                 </label>
               </div>
@@ -408,7 +409,7 @@ export default function OnboardingCosts() {
                     transition: 'all 0.15s ease-in-out'
                   }}
                 />
-                <label htmlFor="income_tax_sensitive" className="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                <label htmlFor="income_tax_sensitive" className={`ml-2 ${uiConfig.font.size.xs} ${uiConfig.colors.body} cursor-pointer`}>
                   State income tax rates are important to me
                 </label>
               </div>
@@ -416,10 +417,10 @@ export default function OnboardingCosts() {
           </div>
 
           {/* Summary Section */}
-          <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              <span className="font-medium">Budget Summary:</span>
-              <div className="mt-1 text-xs space-y-1">
+          <div className={`mb-4 p-3 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg}`}>
+            <div className={`${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
+              <span className={`${uiConfig.font.weight.medium}`}>Budget Summary:</span>
+              <div className={`mt-1 ${uiConfig.font.size.xs} space-y-1`}>
                 <div>• Total monthly: {formatCurrency(formData.total_monthly_budget)}{formData.total_monthly_budget >= 5000 && '+'}</div>
                 <div>• Max rent: {formatCurrency(formData.max_monthly_rent)}{formData.max_monthly_rent >= 2000 && '+'}</div>
                 <div>• Max home price: {formatHomePrice(formData.max_home_price)}{formData.max_home_price >= 500000 && '+'}</div>
@@ -439,34 +440,34 @@ export default function OnboardingCosts() {
           </div>
 
           {/* Pro Tip */}
-          <div className="mb-4 p-3 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
+          <div className={`mb-4 p-3 ${uiConfig.notifications.info} ${uiConfig.layout.radius.lg}`}>
             <div className="flex items-start">
               <div className="mr-2">
-                <svg className="h-5 w-5 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
+                <svg className={`${uiConfig.icons.size.lg} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
               </div>
               <div>
-                <p className="text-xs text-gray-700 dark:text-gray-300">
-                  <span className="font-medium">Pro Tip:</span> These budgets will be matched against actual costs in your home currency. Locations exceeding your budget will be filtered out.
+                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.body}`}>
+                  <span className={`${uiConfig.font.weight.medium}`}>Pro Tip:</span> These budgets will be matched against actual costs in your home currency. Locations exceeding your budget will be filtered out.
                 </p>
               </div>
             </div>
           </div>
 
           {/* Bottom Navigation */}
-          <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className={`flex justify-between items-center pt-4 mt-4 border-t ${uiConfig.colors.borderLight}`}>
             <button
               type="button"
               onClick={() => navigate('/onboarding/administration')}
-              className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+              className={`px-4 py-2 ${uiConfig.font.size.sm} ${uiConfig.colors.body} hover:${uiConfig.colors.heading}`}
             >
               Back
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
+              className={`px-6 py-2 ${uiConfig.font.size.sm} ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.lg} ${uiConfig.animation.transition} ${uiConfig.states.disabled}`}
             >
               {loading ? 'Saving...' : 'Continue'}
             </button>

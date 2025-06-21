@@ -5,6 +5,7 @@ import { getCurrentUser, signOut } from '../utils/authUtils';
 import QuickNav from '../components/QuickNav';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
+import { uiConfig } from '../styles/uiConfig';
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -111,14 +112,14 @@ export default function Profile() {
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Profile Information */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <div className={`${uiConfig.colors.card} rounded-lg shadow-md p-6`}>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+            <h2 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>
               Profile Information
             </h2>
             <Link
               to="/settings"
-              className="text-sm text-scout-accent-600 dark:text-scout-accent-400 hover:underline"
+              className={`text-sm ${uiConfig.colors.accent} hover:underline`}
             >
               Edit
             </Link>

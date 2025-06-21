@@ -17,6 +17,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+  
+  /* Scout2Retire brand colors */
+  --scout-accent-300: 143, 188, 143; /* #8fbc8f in RGB */
+  --gray-200: 229, 231, 235; /* #e5e7eb in RGB */
 }
 
 * {

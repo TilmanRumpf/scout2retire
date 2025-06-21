@@ -6,6 +6,7 @@ import TownRadarChart from '../components/TownRadarChart';
 import LikeButton from '../components/LikeButton';
 import QuickNav from '../components/QuickNav';
 import toast from 'react-hot-toast';
+import { uiConfig } from '../styles/uiConfig';
 
 export default function TownComparison() {
   const [towns, setTowns] = useState([]);
@@ -229,17 +230,17 @@ export default function TownComparison() {
             <p className="mb-2 min-h-[7.5rem] line-clamp-5">{town.description || 'No description available.'}</p>
             <div className="flex flex-wrap gap-2 mt-auto">
               {town.cost_index && (
-                <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-xs rounded-full">
+                <span className={`px-2 py-1 ${uiConfig.colors.statusSuccess} text-xs rounded-full`}>
                   ${town.cost_index}/mo
                 </span>
               )}
               {town.healthcare_score && (
-                <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+                <span className={`px-2 py-1 ${uiConfig.colors.statusInfo} text-xs rounded-full`}>
                   Healthcare: {town.healthcare_score}/10
                 </span>
               )}
               {town.safety_score && (
-                <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 text-xs rounded-full">
+                <span className="px-2 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-800 dark:text-violet-200 text-xs rounded-full">
                   Safety: {town.safety_score}/10
                 </span>
               )}
@@ -250,20 +251,20 @@ export default function TownComparison() {
       case 'climate':
         return (
           <div className="h-full flex flex-col">
-            <p className="mb-3 text-gray-700 dark:text-gray-300 min-h-[7.5rem] line-clamp-5">{town.climate_description || 'No climate information available.'}</p>
+            <p className={`mb-3 ${uiConfig.colors.body} min-h-[7.5rem] line-clamp-5`}>{town.climate_description || 'No climate information available.'}</p>
             <div className="space-y-3 flex-1">
               {/* Live Weather Section */}
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-3 h-[4rem] flex items-center justify-center">
+              <div className="bg-gradient-to-r from-sky-50 to-sky-100 dark:from-sky-900/20 dark:to-sky-800/20 rounded-lg p-3 h-[4rem] flex items-center justify-center">
                 <div className="flex items-center space-x-3">
                   {/* Animated weather icon */}
                   <div className="relative">
-                    <svg className="w-10 h-10 text-yellow-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className={`w-10 h-10 text-amber-500 ${uiConfig.animation.pulse}`} fill="currentColor" viewBox="0 0 20 20">
                       <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
                     </svg>
                   </div>
                   <div className="text-sm">
-                    <p className="font-medium text-gray-700 dark:text-gray-300">Live Weather</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Check current conditions</p>
+                    <p className={`font-medium ${uiConfig.colors.body}`}>Live Weather</p>
+                    <p className={`text-xs ${uiConfig.colors.hint}`}>Check current conditions</p>
                   </div>
                 </div>
               </div>
@@ -273,11 +274,11 @@ export default function TownComparison() {
                 <h4 className="font-medium text-sm mb-2">Temperature</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">Summer:</span>
+                    <span className={uiConfig.colors.hint}>Summer:</span>
                     <span className="ml-1 font-medium">{town.avg_temp_summer ? `${town.avg_temp_summer}°C` : 'N/A'}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">Winter:</span>
+                    <span className={uiConfig.colors.hint}>Winter:</span>
                     <span className="ml-1 font-medium">{town.avg_temp_winter ? `${town.avg_temp_winter}°C` : 'N/A'}</span>
                   </div>
                 </div>
@@ -288,15 +289,15 @@ export default function TownComparison() {
                 <h4 className="font-medium text-sm mb-2">Precipitation & Sunshine</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Annual Rainfall:</span>
+                    <span className={uiConfig.colors.hint}>Annual Rainfall:</span>
                     <span className="font-medium">{town.annual_rainfall ? `${town.annual_rainfall}mm` : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Daily Sunshine:</span>
+                    <span className={uiConfig.colors.hint}>Daily Sunshine:</span>
                     <span className="font-medium">{town.sunshine_hours ? `${town.sunshine_hours} hours` : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Humidity:</span>
+                    <span className={uiConfig.colors.hint}>Humidity:</span>
                     <span className="font-medium">{town.humidity_level || 'N/A'}</span>
                   </div>
                 </div>
@@ -308,22 +309,22 @@ export default function TownComparison() {
       case 'cost':
         return (
           <div className="h-full flex flex-col">
-            <p className="mb-3 text-gray-700 dark:text-gray-300 min-h-[7.5rem] line-clamp-5">{town.cost_description || 'No cost information available.'}</p>
+            <p className={`mb-3 ${uiConfig.colors.body} min-h-[7.5rem] line-clamp-5`}>{town.cost_description || 'No cost information available.'}</p>
             <div className="space-y-3 flex-1">
               {/* Housing Costs Section - Fixed Height */}
               <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[7.5rem]">
                 <h4 className="font-medium text-sm mb-2">Housing Costs</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">1-Bedroom Rent:</span>
+                    <span className={uiConfig.colors.hint}>1-Bedroom Rent:</span>
                     <span className="font-medium">{town.rent_1bed ? `$${town.rent_1bed}/mo` : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">2-Bedroom Rent:</span>
+                    <span className={uiConfig.colors.hint}>2-Bedroom Rent:</span>
                     <span className="font-medium">{town.rent_2bed ? `$${town.rent_2bed}/mo` : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Buy Price/m²:</span>
+                    <span className={uiConfig.colors.hint}>Buy Price/m²:</span>
                     <span className="font-medium">{town.property_buy_sqm ? `$${town.property_buy_sqm}` : 'N/A'}</span>
                   </div>
                 </div>
@@ -334,29 +335,29 @@ export default function TownComparison() {
                 <h4 className="font-medium text-sm mb-2">Daily Expenses</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Restaurant Meal:</span>
+                    <span className={uiConfig.colors.hint}>Restaurant Meal:</span>
                     <span className="font-medium">{town.meal_cost ? `$${town.meal_cost}` : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Weekly Groceries:</span>
+                    <span className={uiConfig.colors.hint}>Weekly Groceries:</span>
                     <span className="font-medium">{town.groceries_cost ? `$${town.groceries_cost}` : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Monthly Utilities:</span>
+                    <span className={uiConfig.colors.hint}>Monthly Utilities:</span>
                     <span className="font-medium">{town.utilities_cost ? `$${town.utilities_cost}` : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Public Transport:</span>
+                    <span className={uiConfig.colors.hint}>Public Transport:</span>
                     <span className="font-medium">{town.transport_cost ? `$${town.transport_cost}/mo` : 'N/A'}</span>
                   </div>
                 </div>
               </div>
               
               {/* Total Costs/Month Section */}
-              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 h-[4rem] flex items-center justify-center">
+              <div className={`bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg p-3 h-[4rem] flex items-center justify-center`}>
                 <div className="text-center">
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Total Costs/Month</p>
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  <p className={`text-xs ${uiConfig.colors.hint} mb-1`}>Total Costs/Month</p>
+                  <p className={`text-2xl font-bold ${uiConfig.colors.success}`}>
                     ${town.cost_index || 'N/A'}
                   </p>
                 </div>
@@ -368,22 +369,22 @@ export default function TownComparison() {
       case 'healthcare':
         return (
           <div className="h-full flex flex-col">
-            <p className="mb-3 text-gray-700 dark:text-gray-300 min-h-[7.5rem] line-clamp-5">{town.healthcare_description || 'No healthcare information available.'}</p>
+            <p className={`mb-3 ${uiConfig.colors.body} min-h-[7.5rem] line-clamp-5`}>{town.healthcare_description || 'No healthcare information available.'}</p>
             <div className="space-y-3 flex-1">
               {/* Medical Facilities Section - Fixed Height */}
               <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[7.5rem]">
                 <h4 className="font-medium text-sm mb-2">Medical Facilities</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Hospitals:</span>
+                    <span className={uiConfig.colors.hint}>Hospitals:</span>
                     <span className="font-medium">{town.hospital_count || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Clinics:</span>
+                    <span className={uiConfig.colors.hint}>Clinics:</span>
                     <span className="font-medium">{town.clinic_count || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Emergency Response:</span>
+                    <span className={uiConfig.colors.hint}>Emergency Response:</span>
                     <span className="font-medium">{town.emergency_response_time || 'N/A'}</span>
                   </div>
                 </div>
@@ -394,21 +395,21 @@ export default function TownComparison() {
                 <h4 className="font-medium text-sm mb-2">Healthcare Access</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">English Doctors:</span>
-                    <span className={`font-medium ${town.english_speaking_doctors === true ? 'text-green-600 dark:text-green-400' : town.english_speaking_doctors === false ? 'text-orange-600 dark:text-orange-400' : ''}`}>
+                    <span className={uiConfig.colors.hint}>English Doctors:</span>
+                    <span className={`font-medium ${town.english_speaking_doctors === true ? uiConfig.colors.success : town.english_speaking_doctors === false ? uiConfig.colors.statusWarning.replace('bg-yellow-100', 'text-orange-600').replace('text-yellow-800', '').replace('dark:bg-yellow-900', 'dark:text-orange-400').replace('dark:text-yellow-200', '') : ''}`}>
                       {town.english_speaking_doctors === true ? 'Available' : town.english_speaking_doctors === false ? 'Limited' : 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Insurance Cost:</span>
+                    <span className={uiConfig.colors.hint}>Insurance Cost:</span>
                     <span className="font-medium">{town.healthcare_cost ? `$${town.healthcare_cost}/mo` : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Specialists:</span>
+                    <span className={uiConfig.colors.hint}>Specialists:</span>
                     <span className="font-medium">{town.specialist_availability || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Dental Care:</span>
+                    <span className={uiConfig.colors.hint}>Dental Care:</span>
                     <span className="font-medium">{town.dental_care_quality ? `${town.dental_care_quality}/10` : 'N/A'}</span>
                   </div>
                 </div>
@@ -416,7 +417,7 @@ export default function TownComparison() {
               
               {/* Healthcare System Type - Fixed Height */}
               <div className="text-xs text-center p-2 bg-gray-100 dark:bg-gray-700 rounded h-[2rem] flex items-center justify-center">
-                <span className="text-gray-600 dark:text-gray-400">System: </span>
+                <span className={uiConfig.colors.hint}>System: </span>
                 <span className="font-medium ml-1">{town.healthcare_system_type || 'N/A'}</span>
               </div>
             </div>
@@ -426,22 +427,22 @@ export default function TownComparison() {
       case 'lifestyle':
         return (
           <div className="h-full flex flex-col">
-            <p className="mb-3 text-gray-700 dark:text-gray-300 min-h-[7.5rem] line-clamp-5">{town.lifestyle_description || 'No lifestyle information available.'}</p>
+            <p className={`mb-3 ${uiConfig.colors.body} min-h-[7.5rem] line-clamp-5`}>{town.lifestyle_description || 'No lifestyle information available.'}</p>
             <div className="space-y-3 flex-1">
               {/* Community & Culture Section - Fixed Height */}
               <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[7.5rem]">
                 <h4 className="font-medium text-sm mb-2">Community & Culture</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Expat Community:</span>
+                    <span className={uiConfig.colors.hint}>Expat Community:</span>
                     <span className="font-medium">{town.expat_population || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Cultural Scene:</span>
+                    <span className={uiConfig.colors.hint}>Cultural Scene:</span>
                     <span className="font-medium">{town.cultural_rating ? `${town.cultural_rating}/10` : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Nightlife:</span>
+                    <span className={uiConfig.colors.hint}>Nightlife:</span>
                     <span className="font-medium">{town.nightlife_rating ? `${town.nightlife_rating}/10` : 'N/A'}</span>
                   </div>
                 </div>
@@ -452,15 +453,15 @@ export default function TownComparison() {
                 <h4 className="font-medium text-sm mb-2">Activities & Amenities</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Dining Options:</span>
+                    <span className={uiConfig.colors.hint}>Dining Options:</span>
                     <span className="font-medium">{town.restaurants_rating ? `${town.restaurants_rating}/10` : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Outdoor Activities:</span>
+                    <span className={uiConfig.colors.hint}>Outdoor Activities:</span>
                     <span className="font-medium">{town.outdoor_rating ? `${town.outdoor_rating}/10` : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Quality of Life:</span>
+                    <span className={uiConfig.colors.hint}>Quality of Life:</span>
                     <span className="font-medium">{town.quality_of_life ? `${town.quality_of_life}/10` : 'N/A'}</span>
                   </div>
                 </div>
@@ -472,22 +473,22 @@ export default function TownComparison() {
       case 'safety':
         return (
           <div className="h-full flex flex-col">
-            <p className="mb-3 text-gray-700 dark:text-gray-300 min-h-[7.5rem] line-clamp-5">{town.safety_description || 'No safety information available.'}</p>
+            <p className={`mb-3 ${uiConfig.colors.body} min-h-[7.5rem] line-clamp-5`}>{town.safety_description || 'No safety information available.'}</p>
             <div className="space-y-3 flex-1">
               {/* Safety Metrics Section - Fixed Height */}
               <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[7.5rem]">
                 <h4 className="font-medium text-sm mb-2">Safety Metrics</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Crime Rate:</span>
+                    <span className={uiConfig.colors.hint}>Crime Rate:</span>
                     <span className="font-medium">{town.crime_rate || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Safety Ranking:</span>
+                    <span className={uiConfig.colors.hint}>Safety Ranking:</span>
                     <span className="font-medium">{town.safety_ranking || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Police Reliability:</span>
+                    <span className={uiConfig.colors.hint}>Police Reliability:</span>
                     <span className="font-medium">{town.police_reliability ? `${town.police_reliability}/10` : 'N/A'}</span>
                   </div>
                 </div>
@@ -498,11 +499,11 @@ export default function TownComparison() {
                 <h4 className="font-medium text-sm mb-2">Risk Factors</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Natural Disaster Risk:</span>
+                    <span className={uiConfig.colors.hint}>Natural Disaster Risk:</span>
                     <span className={`font-medium ${
-                      town.natural_disaster_risk <= 3 ? 'text-green-600 dark:text-green-400' : 
-                      town.natural_disaster_risk <= 6 ? 'text-yellow-600 dark:text-yellow-400' : 
-                      town.natural_disaster_risk > 6 ? 'text-red-600 dark:text-red-400' : ''
+                      town.natural_disaster_risk <= 3 ? uiConfig.colors.success : 
+                      town.natural_disaster_risk <= 6 ? 'text-amber-600 dark:text-amber-400' : 
+                      town.natural_disaster_risk > 6 ? uiConfig.colors.error : ''
                     }`}>
                       {town.natural_disaster_risk !== undefined ?
                         (town.natural_disaster_risk <= 3 ? 'Low' : 
@@ -510,7 +511,7 @@ export default function TownComparison() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Political Stability:</span>
+                    <span className={uiConfig.colors.hint}>Political Stability:</span>
                     <span className="font-medium">{town.political_stability ? `${town.political_stability}/10` : 'N/A'}</span>
                   </div>
                 </div>
@@ -522,26 +523,26 @@ export default function TownComparison() {
       case 'infrastructure':
         return (
           <div className="h-full flex flex-col">
-            <p className="mb-3 text-gray-700 dark:text-gray-300 min-h-[7.5rem] line-clamp-5">{town.infrastructure_description || 'No infrastructure information available.'}</p>
+            <p className={`mb-3 ${uiConfig.colors.body} min-h-[7.5rem] line-clamp-5`}>{town.infrastructure_description || 'No infrastructure information available.'}</p>
             <div className="space-y-3 flex-1">
               {/* Transportation Section - Fixed Height */}
               <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[9rem]">
                 <h4 className="font-medium text-sm mb-2">Transportation</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Public Transport:</span>
+                    <span className={uiConfig.colors.hint}>Public Transport:</span>
                     <span className="font-medium">{town.public_transport_quality ? `${town.public_transport_quality}/10` : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Walkability:</span>
+                    <span className={uiConfig.colors.hint}>Walkability:</span>
                     <span className="font-medium">{town.walkability ? `${town.walkability}/10` : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Nearest Airport:</span>
+                    <span className={uiConfig.colors.hint}>Nearest Airport:</span>
                     <span className="font-medium text-xs">{town.nearest_airport || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">City Center to Airport:</span>
+                    <span className={uiConfig.colors.hint}>City Center to Airport:</span>
                     <span className="font-medium">{town.airport_distance ? `${town.airport_distance} km` : 'N/A'}</span>
                   </div>
                 </div>
@@ -552,15 +553,15 @@ export default function TownComparison() {
                 <h4 className="font-medium text-sm mb-2">Connectivity & Services</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Internet Speed:</span>
+                    <span className={uiConfig.colors.hint}>Internet Speed:</span>
                     <span className="font-medium">{town.internet_speed ? `${town.internet_speed} Mbps` : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Mobile Coverage:</span>
+                    <span className={uiConfig.colors.hint}>Mobile Coverage:</span>
                     <span className="font-medium">{town.mobile_coverage || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Utilities Reliability:</span>
+                    <span className={uiConfig.colors.hint}>Utilities Reliability:</span>
                     <span className="font-medium">{town.utilities_reliability ? `${town.utilities_reliability}/10` : 'N/A'}</span>
                   </div>
                 </div>
@@ -577,19 +578,19 @@ export default function TownComparison() {
   // Render loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
-        <div className="animate-pulse text-green-600 font-semibold">Loading town comparison...</div>
+      <div className={`min-h-screen ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
+        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.accent} font-semibold`}>Loading town comparison...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-16 md:pb-4">
+    <div className={`min-h-screen ${uiConfig.colors.page} pb-16 md:pb-4`}>
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white dark:bg-gray-800 shadow-sm">
+      <header className={`sticky top-0 z-10 ${uiConfig.colors.card} shadow-sm`}>
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
-            <h1 className="text-xl font-bold text-gray-800 dark:text-white">Compare Towns</h1>
+            <h1 className={`text-xl font-bold ${uiConfig.colors.heading}`}>Compare Towns</h1>
             
             {/* Category tabs */}
             <div className="flex overflow-x-auto pb-2 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 space-x-2">
@@ -599,8 +600,8 @@ export default function TownComparison() {
                   onClick={() => setActiveCategory(category.id)}
                   className={`px-3 py-1 rounded-md text-sm whitespace-nowrap ${
                     activeCategory === category.id
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      ? uiConfig.colors.tabActive
+                      : `bg-gray-100 dark:bg-gray-700 ${uiConfig.colors.heading} hover:bg-gray-200 dark:hover:bg-gray-600`
                   }`}
                 >
                   {category.label}
@@ -614,12 +615,12 @@ export default function TownComparison() {
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Error message */}
         {error && (
-          <div className="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 p-4 rounded-lg mb-6">
+          <div className={`${uiConfig.colors.statusError} border ${uiConfig.colors.borderDanger.replace('border-', '')} p-4 rounded-lg mb-6`}>
             {error}
             {error.includes("No towns selected") && (
               <button
                 onClick={() => navigate('/favorites')}
-                className="mt-2 text-sm text-red-700 dark:text-red-300 underline"
+                className={`mt-2 text-sm ${uiConfig.colors.error} underline`}
               >
                 Go to Favorites
               </button>
@@ -631,7 +632,7 @@ export default function TownComparison() {
         {towns.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {towns.map((town) => (
-              <div key={town.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+              <div key={town.id} className={`${uiConfig.colors.card} rounded-lg shadow-md overflow-hidden`}>
                 {/* Town header with image */}
                 <div className="relative h-40">
                   {town.image_url_1 ? (
@@ -642,7 +643,7 @@ export default function TownComparison() {
                     />
                   ) : (
                     <div className="w-full h-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className={`h-12 w-12 ${uiConfig.colors.muted}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                       </svg>
                     </div>
@@ -661,17 +662,17 @@ export default function TownComparison() {
                 </div>
 
                 {/* Town name and country */}
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
                   <div className="flex justify-between items-start">
                     <div>
-                      <h2 className="text-lg font-semibold text-gray-800 dark:text-white">{town.name}</h2>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{town.country}</p>
+                      <h2 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>{town.name}</h2>
+                      <p className={`text-sm ${uiConfig.colors.hint}`}>{town.country}</p>
                     </div>
                     <a
                       href={town.google_maps_link || `https://www.google.com/maps/search/${encodeURIComponent(town.name + ', ' + town.country)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-green-600 dark:text-green-400 text-sm hover:underline"
+                      className={`${uiConfig.colors.success} text-sm hover:underline`}
                     >
                       View on Map
                     </a>
@@ -680,12 +681,12 @@ export default function TownComparison() {
 
                 {/* Category rating - show on all tabs except overview */}
                 {activeCategory !== 'overview' && (
-                  <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                  <div className={`px-4 py-3 border-b ${uiConfig.colors.borderLight}`}>
                     <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold text-gray-700 dark:text-gray-300">
+                      <span className={`text-lg font-bold ${uiConfig.colors.body}`}>
                         {categories.find(cat => cat.id === activeCategory)?.label}
                       </span>
-                      <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                      <span className={`text-lg font-bold ${uiConfig.colors.accent} dark:text-sky-400`}>
                         {activeCategory === 'climate' && getCategoryRating(town, activeCategory) === null && town.climate_summary
                           ? town.climate_summary
                           : getCategoryRating(town, activeCategory) !== null
@@ -700,8 +701,8 @@ export default function TownComparison() {
 
                 {/* Radar chart for quick comparison - only show on overview tab */}
                 {activeCategory === 'overview' && (
-                  <div className="p-4 border-b border-gray-200 dark:border-gray-700 h-[14rem]">
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Town Profile</h3>
+                  <div className={`p-4 border-b ${uiConfig.colors.borderLight} h-[14rem]`}>
+                    <h3 className={`text-sm font-medium ${uiConfig.colors.body} mb-2`}>Town Profile</h3>
                     <div className="h-[11rem]">
                       <TownRadarChart townData={town} />
                     </div>
@@ -710,10 +711,10 @@ export default function TownComparison() {
 
                 {/* Category content */}
                 <div className="p-4 min-h-[30rem]">
-                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <h3 className={`text-sm font-medium ${uiConfig.colors.body} mb-2`}>
                     {activeCategory === 'overview' ? 'Overview' : 'Summary'}
                   </h3>
-                  <div className="text-sm text-gray-600 dark:text-gray-300 h-full">
+                  <div className={`text-sm ${uiConfig.colors.body} h-full`}>
                     {getCategoryValue(town, activeCategory)}
                   </div>
                 </div>
@@ -722,7 +723,7 @@ export default function TownComparison() {
                 <div className="p-4 pt-0">
                   <button
                     onClick={() => navigate(`/discover?town=${town.id}`)}
-                    className="w-full py-2 px-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md transition-colors text-sm"
+                    className={`w-full py-2 px-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 ${uiConfig.colors.heading} rounded-md transition-colors text-sm`}
                   >
                     View Full Details
                   </button>
@@ -732,16 +733,16 @@ export default function TownComparison() {
 
             {/* Add town card if less than 3 towns */}
             {towns.length < 3 && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 h-96">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className={`${uiConfig.colors.card} rounded-lg shadow-md p-6 flex flex-col items-center justify-center border-2 border-dashed ${uiConfig.colors.border} h-96`}>
+                <svg xmlns="http://www.w3.org/2000/svg" className={`h-12 w-12 ${uiConfig.colors.muted} mb-4`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                <p className="text-gray-600 dark:text-gray-400 text-center mb-4">
+                <p className={`${uiConfig.colors.hint} text-center mb-4`}>
                   Add another town to compare
                 </p>
                 <button
                   onClick={() => navigate('/favorites')}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
+                  className={`px-4 py-2 ${uiConfig.colors.btnPrimary} rounded-md`}
                 >
                   Select from Favorites
                 </button>
@@ -750,12 +751,12 @@ export default function TownComparison() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+            <p className={`${uiConfig.colors.hint} mb-4`}>
               No towns to compare. Please select towns from your favorites.
             </p>
             <button
               onClick={() => navigate('/favorites')}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
+              className={`px-4 py-2 ${uiConfig.colors.btnPrimary} rounded-md`}
             >
               Go to Favorites
             </button>

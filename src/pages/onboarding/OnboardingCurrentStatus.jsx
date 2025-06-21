@@ -5,20 +5,21 @@ import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
 import toast from 'react-hot-toast';
+import { uiConfig } from '../../styles/uiConfig';
 
 // Option Button Component - Optimized for mobile
 const OptionButton = ({ label, description, isSelected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`p-2 sm:p-2.5 rounded-md border-2 transition-all text-center min-h-[44px] ${
+    className={`p-2 sm:p-2.5 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center min-h-[44px] ${
       isSelected
-        ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
-        : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
+        ? uiConfig.components.buttonVariants.selected
+        : uiConfig.components.buttonVariants.unselected
     }`}
   >
-    <div className={`text-xs sm:text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
-    {description && <div className={`text-[10px] sm:text-xs mt-0.5 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
+    <div className={`${uiConfig.font.size.xs} ${uiConfig.responsive.sm}${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${isSelected ? uiConfig.colors.accent : ''}`}>{label}</div>
+    {description && <div className={`text-[10px] ${uiConfig.responsive.sm}${uiConfig.font.size.xs} mt-0.5 ${isSelected ? uiConfig.colors.accent : uiConfig.colors.hint}`}>{description}</div>}
   </button>
 );
 
@@ -254,8 +255,8 @@ export default function OnboardingCurrentStatus() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-[100svh] bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
-        <div className="animate-pulse text-scout-accent-600 font-semibold">Loading...</div>
+      <div className={`min-h-[100svh] ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
+        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.success} ${uiConfig.font.weight.semibold}`}>Loading...</div>
       </div>
     );
   }
@@ -268,7 +269,7 @@ export default function OnboardingCurrentStatus() {
   const isCouple = formData.family_situation === 'couple';
 
   return (
-    <div className="min-h-[100svh] bg-gray-50 dark:bg-gray-900 pb-20 sm:pb-4">
+    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 ${uiConfig.responsive.sm}pb-4`}>
       <div className="max-w-md mx-auto p-4 sm:p-4">
         <OnboardingStepNavigation 
           currentStep="current_status" 
@@ -276,22 +277,22 @@ export default function OnboardingCurrentStatus() {
           className="mb-3" 
         />
         
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5">
+        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 ${uiConfig.responsive.sm}p-5`}>
           {/* Header */}
           <div className="mb-3">
-            <h1 className="text-lg font-bold text-gray-800 dark:text-white">Current Status</h1>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+            <h1 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Current Status</h1>
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-0.5`}>
               Tell us about your retirement timeline and family situation
             </p>
           </div>
 
           {/* Retirement Status */}
           <div className="mb-3">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
               <Calendar size={16} className="mr-1.5" />
               Retirement Timeline
             </label>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-2`}>
               Where are you in your retirement journey? *
             </p>
             <div className="grid grid-cols-3 gap-1.5">
@@ -319,14 +320,14 @@ export default function OnboardingCurrentStatus() {
           {/* Target Year */}
           {formData.retirement_timeline.status !== 'already_retired' && (
             <div className="mb-3">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 block`}>
                 Target Retirement Year
               </label>
               <select
                 name="retirement_timeline.target_year"
                 value={formData.retirement_timeline.target_year}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white h-[44px]"
+                className={`${uiConfig.components.select} h-[44px]`}
               >
                 {retirementYearOptions.map(year => (
                   <option key={year} value={year}>{year}</option>
@@ -337,11 +338,11 @@ export default function OnboardingCurrentStatus() {
 
           {/* Family Situation */}
           <div className="mb-3">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
               <Users size={16} className="mr-1.5" />
               Family Situation
             </label>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-2`}>
               Who's joining you on this adventure? *
             </p>
             <div className="grid grid-cols-3 gap-1.5">
@@ -368,7 +369,7 @@ export default function OnboardingCurrentStatus() {
 
           {/* Citizenship */}
           <div className="mb-3">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
               <Globe size={16} className="mr-1.5" />
               Citizenship
             </label>
@@ -377,14 +378,14 @@ export default function OnboardingCurrentStatus() {
               <>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">
+                    <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>
                       Your citizenship *
                     </p>
                     <select
                       name="citizenship.primary_citizenship"
                       value={formData.citizenship.primary_citizenship}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white h-[44px]"
+                      className={`${uiConfig.components.select} ${uiConfig.font.size.xs} h-[44px]`}
                     >
                       {countries.map(country => (
                         <option key={country.id} value={country.id}>
@@ -417,7 +418,7 @@ export default function OnboardingCurrentStatus() {
                           transition: 'all 0.15s ease-in-out'
                         }}
                       />
-                      <label htmlFor="dual_citizenship" className="ml-1.5 text-[11px] text-gray-700 dark:text-gray-300 cursor-pointer">
+                      <label htmlFor="dual_citizenship" className={`ml-1.5 text-[11px] ${uiConfig.colors.body} cursor-pointer`}>
                         Dual citizenship
                       </label>
                     </div>
@@ -431,7 +432,7 @@ export default function OnboardingCurrentStatus() {
                             handleInputChange(e);
                           }
                         }}
-                        className="w-full mt-1.5 px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white h-[44px]"
+                        className={`${uiConfig.components.select} mt-1.5 ${uiConfig.font.size.xs} h-[44px]`}
                       >
                         <option value="">Select secondary</option>
                         {countries
@@ -447,14 +448,14 @@ export default function OnboardingCurrentStatus() {
                   </div>
                   
                   <div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">
+                    <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>
                       Partner's citizenship *
                     </p>
                     <select
                       name="partner_citizenship.primary_citizenship"
                       value={formData.partner_citizenship.primary_citizenship}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white h-[44px]"
+                      className={`${uiConfig.components.select} ${uiConfig.font.size.xs} h-[44px]`}
                     >
                       {countries.map(country => (
                         <option key={`partner-${country.id}`} value={country.id}>
@@ -487,7 +488,7 @@ export default function OnboardingCurrentStatus() {
                           transition: 'all 0.15s ease-in-out'
                         }}
                       />
-                      <label htmlFor="partner_dual_citizenship" className="ml-1.5 text-[11px] text-gray-700 dark:text-gray-300 cursor-pointer">
+                      <label htmlFor="partner_dual_citizenship" className={`ml-1.5 text-[11px] ${uiConfig.colors.body} cursor-pointer`}>
                         Dual citizenship
                       </label>
                     </div>
@@ -501,7 +502,7 @@ export default function OnboardingCurrentStatus() {
                             handleInputChange(e);
                           }
                         }}
-                        className="w-full mt-1.5 px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white h-[44px]"
+                        className={`${uiConfig.components.select} mt-1.5 ${uiConfig.font.size.xs} h-[44px]`}
                       >
                         <option value="">Select secondary</option>
                         {countries
@@ -519,14 +520,14 @@ export default function OnboardingCurrentStatus() {
               </>
             ) : (
               <>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-2`}>
                   Primary citizenship *
                 </p>
                 <select
                   name="citizenship.primary_citizenship"
                   value={formData.citizenship.primary_citizenship}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white h-[44px]"
+                  className={`${uiConfig.components.select} h-[44px]`}
                 >
                   {countries.map(country => (
                     <option key={country.id} value={country.id}>
@@ -559,19 +560,19 @@ export default function OnboardingCurrentStatus() {
                       transition: 'all 0.15s ease-in-out'
                     }}
                   />
-                  <label htmlFor="dual_citizenship" className="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                  <label htmlFor="dual_citizenship" className={`ml-2 ${uiConfig.font.size.sm} ${uiConfig.colors.body} cursor-pointer`}>
                     I have dual/multiple citizenship
                   </label>
                 </div>
                 
                 {formData.citizenship.dual_citizenship && (
                   <div className="mt-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+                    <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
                       <Globe size={16} className="mr-1.5" />
                       Secondary Citizenship
                     </label>
                     {formData.citizenship.secondary_citizenship === formData.citizenship.primary_citizenship && (
-                      <p className="text-xs text-red-600 dark:text-red-400 mb-1.5">
+                      <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.error} mb-1.5`}>
                         Secondary citizenship cannot be the same as primary. Please select a different country.
                       </p>
                     )}
@@ -587,7 +588,7 @@ export default function OnboardingCurrentStatus() {
                           handleInputChange(e);
                         }
                       }}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white h-[44px]"
+                      className={`${uiConfig.components.select} h-[44px]`}
                     >
                       <option value="">Select secondary citizenship</option>
                       {countries
@@ -607,7 +608,7 @@ export default function OnboardingCurrentStatus() {
 
           {/* Pet Owner */}
           <div className="mb-3">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
               <PawPrint size={16} className="mr-1.5" />
               Pet Owner
             </label>
@@ -632,10 +633,10 @@ export default function OnboardingCurrentStatus() {
 
           {/* Summary Section */}
           {(formData.retirement_timeline.status || formData.family_situation) && (
-            <div className="mb-3 p-2.5 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-              <div className="text-sm text-gray-600 dark:text-gray-300">
-                <span className="font-medium">Summary:</span>
-                <div className="mt-0.5 text-xs">
+            <div className={`mb-3 p-2.5 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg}`}>
+              <div className={`${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
+                <span className={`${uiConfig.font.weight.medium}`}>Summary:</span>
+                <div className={`mt-0.5 ${uiConfig.font.size.xs}`}>
                   {formData.retirement_timeline.status === 'planning' && 'Planning for retirement (5+ years)'}
                   {formData.retirement_timeline.status === 'retiring_soon' && 'Retiring within 5 years'}
                   {formData.retirement_timeline.status === 'already_retired' && 'Already retired'}
@@ -662,16 +663,16 @@ export default function OnboardingCurrentStatus() {
           )}
 
           {/* Pro Tip */}
-          <div className="mb-3 p-2.5 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
+          <div className={`mb-3 p-2.5 ${uiConfig.notifications.info} ${uiConfig.layout.radius.lg}`}>
             <div className="flex items-start">
               <div className="mr-2">
-                <svg className="h-4 w-4 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
+                <svg className={`${uiConfig.icons.size.sm} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
               </div>
               <div>
-                <p className="text-xs text-gray-700 dark:text-gray-300">
-                  <span className="font-medium">Pro Tip:</span> Your citizenship affects visa requirements, tax implications, and healthcare access in different countries.
+                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.body}`}>
+                  <span className={`${uiConfig.font.weight.medium}`}>Pro Tip:</span> Your citizenship affects visa requirements, tax implications, and healthcare access in different countries.
                 </p>
               </div>
             </div>
@@ -679,21 +680,21 @@ export default function OnboardingCurrentStatus() {
         </form>
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
-        <div className="fixed sm:sticky bottom-0 left-0 right-0 sm:relative bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-4">
+        <div className={`fixed ${uiConfig.responsive.sm}sticky bottom-0 left-0 right-0 ${uiConfig.responsive.sm}relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 ${uiConfig.responsive.sm}p-0 ${uiConfig.responsive.sm}border-0 ${uiConfig.responsive.sm}bg-transparent ${uiConfig.responsive.sm}mt-4`}>
           <div className="max-w-md mx-auto">
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3 shadow-lg sm:shadow-none">
+            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.border} p-3 ${uiConfig.layout.shadow.lg} ${uiConfig.responsive.sm}shadow-none`}>
               <div className="flex justify-between items-center gap-2">
                 <button
                   type="button"
                   onClick={() => navigate('/welcome')}
-                  className="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white font-medium transition-colors min-h-[44px]"
+                  className={`px-4 py-2.5 ${uiConfig.font.size.sm} ${uiConfig.colors.body} hover:${uiConfig.colors.heading} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[44px]`}
                 >
                   ← Back
                 </button>
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className="px-4 py-2.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-colors min-h-[44px]"
+                  className={`px-4 py-2.5 ${uiConfig.font.size.sm} ${uiConfig.colors.hint} hover:${uiConfig.colors.body} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[44px]`}
                 >
                   Skip
                 </button>
@@ -701,7 +702,7 @@ export default function OnboardingCurrentStatus() {
                   type="submit"
                   disabled={loading}
                   onClick={handleSubmit}
-                  className="px-6 py-2.5 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50 min-h-[44px]"
+                  className={`px-6 py-2.5 ${uiConfig.font.size.sm} ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.lg} ${uiConfig.states.disabled} min-h-[44px]`}
                 >
                   {loading ? 'Saving...' : 'Next →'}
                 </button>

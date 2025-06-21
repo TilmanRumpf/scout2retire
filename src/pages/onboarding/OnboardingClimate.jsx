@@ -5,20 +5,21 @@ import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
 import toast from 'react-hot-toast';
+import { uiConfig } from '../../styles/uiConfig';
 
 // Option Button Component
 const OptionButton = ({ label, description, isSelected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`p-2 sm:p-2.5 rounded-md border-2 transition-all text-center min-h-[44px] ${
+    className={`p-2 sm:p-2.5 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center min-h-[44px] ${
       isSelected
-        ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
-        : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
+        ? uiConfig.components.buttonVariants.selected
+        : uiConfig.components.buttonVariants.unselected
     }`}
   >
-    <div className={`text-xs sm:text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
-    {description && <div className={`text-[10px] sm:text-xs mt-0.5 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
+    <div className={`${uiConfig.font.size.xs} ${uiConfig.responsive.sm}${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${isSelected ? uiConfig.colors.accent : ''}`}>{label}</div>
+    {description && <div className={`text-[10px] ${uiConfig.responsive.sm}${uiConfig.font.size.xs} mt-0.5 ${isSelected ? uiConfig.colors.accent : uiConfig.colors.hint}`}>{description}</div>}
   </button>
 );
 
@@ -166,8 +167,8 @@ export default function OnboardingClimate() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-[100svh] bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
-        <div className="animate-pulse text-scout-accent-600 font-semibold">Loading...</div>
+      <div className={`min-h-[100svh] ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
+        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.success} ${uiConfig.font.weight.semibold}`}>Loading...</div>
       </div>
     );
   }
@@ -203,7 +204,7 @@ export default function OnboardingClimate() {
   ];
 
   return (
-    <div className="min-h-[100svh] bg-gray-50 dark:bg-gray-900 pb-20 sm:pb-4">
+    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 ${uiConfig.responsive.sm}pb-4`}>
       <div className="max-w-md mx-auto p-4 sm:p-4">
         <OnboardingStepNavigation 
           currentStep="climate_preferences" 
@@ -211,18 +212,18 @@ export default function OnboardingClimate() {
           className="mb-3" 
         />
         
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5">
+        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 ${uiConfig.responsive.sm}p-5`}>
           {/* Header */}
           <div className="mb-3">
-            <h1 className="text-lg font-bold text-gray-800 dark:text-white">Climate Preferences</h1>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+            <h1 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Climate Preferences</h1>
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-0.5`}>
               Select your ideal climate conditions - choose multiple options
             </p>
           </div>
 
           {/* Summer Climate */}
           <div className="mb-3">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
               <Sun size={16} className="mr-1.5" />
               Summer Climate
             </label>
@@ -241,7 +242,7 @@ export default function OnboardingClimate() {
 
           {/* Winter Climate */}
           <div className="mb-3">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
               <Snowflake size={16} className="mr-1.5" />
               Winter Climate
             </label>
@@ -260,7 +261,7 @@ export default function OnboardingClimate() {
 
           {/* Humidity */}
           <div className="mb-3">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
               <Droplets size={16} className="mr-1.5" />
               Humidity
             </label>
@@ -279,7 +280,7 @@ export default function OnboardingClimate() {
 
           {/* Sunshine */}
           <div className="mb-3">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
               <Sun size={16} className="mr-1.5" />
               Sunshine
             </label>
@@ -298,7 +299,7 @@ export default function OnboardingClimate() {
 
           {/* Precipitation */}
           <div className="mb-3">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
               <CloudRain size={16} className="mr-1.5" />
               Precipitation
             </label>
@@ -317,14 +318,14 @@ export default function OnboardingClimate() {
 
           {/* Seasonal Preference */}
           <div className="mb-3">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 block`}>
               Seasonal Preference
             </label>
             <select
               name="seasonal_preference"
               value={formData.seasonal_preference}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white appearance-none cursor-pointer focus:ring-0 focus:border-scout-accent-300 transition-colors h-[44px]"
+              className={`${uiConfig.components.select} appearance-none cursor-pointer focus:ring-0 focus:${uiConfig.colors.borderActive} ${uiConfig.animation.transition} h-[44px]`}
             >
               <option value="Optional">No specific preference</option>
               <option value="all_seasons">I enjoy all seasons equally</option>
@@ -339,44 +340,44 @@ export default function OnboardingClimate() {
             formData.humidity_level.length > 0 ||
             formData.sunshine.length > 0 ||
             formData.precipitation.length > 0) && (
-            <div className="mb-3 p-2.5 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-              <h3 className="font-medium text-gray-800 dark:text-white mb-1.5 text-sm">
+            <div className={`mb-3 p-2.5 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg}`}>
+              <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} mb-1.5 ${uiConfig.font.size.sm}`}>
                 Your Climate Preferences:
               </h3>
-              <div className="space-y-0.5 text-xs text-gray-600 dark:text-gray-300">
+              <div className={`space-y-0.5 ${uiConfig.font.size.xs} ${uiConfig.colors.body}`}>
                 {formData.summer_climate_preference.length > 0 && (
-                  <div><span className="font-medium">Summer:</span> {formData.summer_climate_preference.join(', ')}</div>
+                  <div><span className={`${uiConfig.font.weight.medium}`}>Summer:</span> {formData.summer_climate_preference.join(', ')}</div>
                 )}
                 {formData.winter_climate_preference.length > 0 && (
-                  <div><span className="font-medium">Winter:</span> {formData.winter_climate_preference.join(', ')}</div>
+                  <div><span className={`${uiConfig.font.weight.medium}`}>Winter:</span> {formData.winter_climate_preference.join(', ')}</div>
                 )}
                 {formData.humidity_level.length > 0 && (
-                  <div><span className="font-medium">Humidity:</span> {formData.humidity_level.join(', ')}</div>
+                  <div><span className={`${uiConfig.font.weight.medium}`}>Humidity:</span> {formData.humidity_level.join(', ')}</div>
                 )}
                 {formData.sunshine.length > 0 && (
-                  <div><span className="font-medium">Sunshine:</span> {formData.sunshine.join(', ')}</div>
+                  <div><span className={`${uiConfig.font.weight.medium}`}>Sunshine:</span> {formData.sunshine.join(', ')}</div>
                 )}
                 {formData.precipitation.length > 0 && (
-                  <div><span className="font-medium">Precipitation:</span> {formData.precipitation.join(', ')}</div>
+                  <div><span className={`${uiConfig.font.weight.medium}`}>Precipitation:</span> {formData.precipitation.join(', ')}</div>
                 )}
                 {formData.seasonal_preference !== 'Optional' && (
-                  <div><span className="font-medium">Seasonal:</span> {formData.seasonal_preference.replace(/_/g, ' ')}</div>
+                  <div><span className={`${uiConfig.font.weight.medium}`}>Seasonal:</span> {formData.seasonal_preference.replace(/_/g, ' ')}</div>
                 )}
               </div>
             </div>
           )}
 
           {/* Pro Tip */}
-          <div className="mb-3 p-2.5 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
+          <div className={`mb-3 p-2.5 ${uiConfig.notifications.info} ${uiConfig.layout.radius.lg}`}>
             <div className="flex items-start">
               <div className="mr-2">
-                <svg className="h-4 w-4 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
+                <svg className={`${uiConfig.icons.size.sm} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
               </div>
               <div>
-                <p className="text-xs text-gray-700 dark:text-gray-300">
-                  <span className="font-medium">Pro Tip:</span> Select multiple options to keep your choices flexible. We'll find locations that match your preferred climate conditions throughout the year.
+                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.body}`}>
+                  <span className={`${uiConfig.font.weight.medium}`}>Pro Tip:</span> Select multiple options to keep your choices flexible. We'll find locations that match your preferred climate conditions throughout the year.
                 </p>
               </div>
             </div>
@@ -384,21 +385,21 @@ export default function OnboardingClimate() {
         </form>
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
-        <div className="fixed sm:sticky bottom-0 left-0 right-0 sm:relative bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-4">
+        <div className={`fixed ${uiConfig.responsive.sm}sticky bottom-0 left-0 right-0 ${uiConfig.responsive.sm}relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 ${uiConfig.responsive.sm}p-0 ${uiConfig.responsive.sm}border-0 ${uiConfig.responsive.sm}bg-transparent ${uiConfig.responsive.sm}mt-4`}>
           <div className="max-w-md mx-auto">
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3 shadow-lg sm:shadow-none">
+            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.border} p-3 ${uiConfig.layout.shadow.lg} ${uiConfig.responsive.sm}shadow-none`}>
               <div className="flex justify-between items-center gap-2">
                 <button
                   type="button"
                   onClick={() => navigate('/onboarding/region')}
-                  className="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white font-medium transition-colors min-h-[44px]"
+                  className={`px-4 py-2.5 ${uiConfig.font.size.sm} ${uiConfig.colors.body} hover:${uiConfig.colors.heading} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[44px]`}
                 >
                   ← Back
                 </button>
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className="px-4 py-2.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-colors min-h-[44px]"
+                  className={`px-4 py-2.5 ${uiConfig.font.size.sm} ${uiConfig.colors.hint} hover:${uiConfig.colors.body} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[44px]`}
                 >
                   Skip
                 </button>
@@ -406,7 +407,7 @@ export default function OnboardingClimate() {
                   type="submit"
                   disabled={loading}
                   onClick={handleSubmit}
-                  className="px-6 py-2.5 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50 min-h-[44px]"
+                  className={`px-6 py-2.5 ${uiConfig.font.size.sm} ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.lg} ${uiConfig.states.disabled} min-h-[44px]`}
                 >
                   {loading ? 'Saving...' : 'Next →'}
                 </button>
