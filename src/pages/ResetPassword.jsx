@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import supabase from '../utils/supabaseClient';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Mail, Lock } from 'lucide-react';
+import { uiConfig } from '../styles/uiConfig';
 
 export default function ResetPassword() {
   const [email, setEmail] = useState('');
@@ -84,7 +85,7 @@ export default function ResetPassword() {
       { label: 'Weak', color: 'bg-orange-500' },
       { label: 'Fair', color: 'bg-yellow-500' },
       { label: 'Good', color: 'bg-blue-500' },
-      { label: 'Strong', color: 'bg-green-500' }
+      { label: 'Strong', color: uiConfig.progress.high }
     ];
     return strengthLevels[strength] || strengthLevels[0];
   };
@@ -217,26 +218,26 @@ export default function ResetPassword() {
   // Render recovery mode (Step 2 - new password form)
   if (isRecoveryMode) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className={`min-h-screen ${uiConfig.colors.page} flex flex-col justify-center py-12 sm:px-6 lg:px-8`}>
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-              <Lock className="w-8 h-8 text-green-600 dark:text-green-400" />
+            <div className={`w-16 h-16 ${uiConfig.colors.statusSuccess} rounded-full flex items-center justify-center`}>
+              <Lock className={`w-8 h-8 ${uiConfig.colors.accent}`} />
             </div>
           </div>
-          <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white">
+          <h2 className={`text-center text-3xl font-bold ${uiConfig.colors.heading}`}>
             Set new password
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+          <p className={`mt-2 text-center text-sm ${uiConfig.colors.hint}`}>
             Please enter your new password below
           </p>
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className={`${uiConfig.colors.card} py-8 px-4 shadow sm:rounded-lg sm:px-10`}>
             <form className="space-y-6" onSubmit={handleUpdatePassword}>
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="password" className={`${uiConfig.components.label}`}>
                   New Password
                 </label>
                 <div className="mt-1">
@@ -249,32 +250,32 @@ export default function ResetPassword() {
                     value={password}
                     onChange={handlePasswordChange}
                     className={`appearance-none block w-full px-3 py-2 border ${
-                      passwordError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm dark:bg-gray-700 dark:text-white`}
+                      passwordError ? uiConfig.colors.borderDanger : uiConfig.colors.border
+                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none ${uiConfig.colors.focusRing} ${uiConfig.colors.input} ${uiConfig.colors.body} sm:text-sm`}
                   />
                   {passwordError && (
-                    <p className="mt-2 text-sm text-red-600 dark:text-red-400">{passwordError}</p>
+                    <p className={`mt-2 text-sm ${uiConfig.colors.error}`}>{passwordError}</p>
                   )}
                   {password && !passwordError && (
-                    <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+                    <div className={`mt-2 p-3 ${uiConfig.colors.page.replace('min-h-screen ', '')} rounded-md`}>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">Password strength:</span>
+                        <span className={uiConfig.colors.hint}>Password strength:</span>
                         <span className={`font-medium ${
-                          passwordStrength <= 2 ? 'text-red-600 dark:text-red-400' :
+                          passwordStrength <= 2 ? uiConfig.colors.error :
                           passwordStrength === 3 ? 'text-yellow-600 dark:text-yellow-400' :
                           passwordStrength === 4 ? 'text-blue-600 dark:text-blue-400' :
-                          'text-green-600 dark:text-green-400'
+                          uiConfig.colors.success
                         }`}>
                           {strengthInfo.label}
                         </span>
                       </div>
-                      <div className="mt-2 h-3 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                      <div className={`mt-2 h-3 ${uiConfig.progress.track} rounded-full overflow-hidden`}>
                         <div
                           className={`h-full transition-all duration-300 ${strengthInfo.color}`}
                           style={{ width: `${(passwordStrength / 5) * 100}%` }}
                         />
                       </div>
-                      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      <p className={`mt-2 text-xs ${uiConfig.colors.hint}`}>
                         Tip: Use uppercase, numbers, and special characters for a stronger password
                       </p>
                     </div>
@@ -283,7 +284,7 @@ export default function ResetPassword() {
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="confirmPassword" className={`${uiConfig.components.label}`}>
                   Confirm New Password
                 </label>
                 <div className="mt-1">
@@ -296,11 +297,11 @@ export default function ResetPassword() {
                     value={confirmPassword}
                     onChange={handleConfirmPasswordChange}
                     className={`appearance-none block w-full px-3 py-2 border ${
-                      confirmPasswordError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm dark:bg-gray-700 dark:text-white`}
+                      confirmPasswordError ? uiConfig.colors.borderDanger : uiConfig.colors.border
+                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none ${uiConfig.colors.focusRing} ${uiConfig.colors.input} ${uiConfig.colors.body} sm:text-sm`}
                   />
                   {confirmPasswordError && (
-                    <p className="mt-2 text-sm text-red-600 dark:text-red-400">{confirmPasswordError}</p>
+                    <p className={`mt-2 text-sm ${uiConfig.colors.error}`}>{confirmPasswordError}</p>
                   )}
                 </div>
               </div>
@@ -309,7 +310,7 @@ export default function ResetPassword() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium ${uiConfig.components.buttonPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {loading ? 'Updating password...' : 'Update password'}
                 </button>
@@ -324,30 +325,30 @@ export default function ResetPassword() {
   // Render email sent success state
   if (emailSent) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className={`min-h-screen ${uiConfig.colors.page} flex flex-col justify-center py-12 sm:px-6 lg:px-8`}>
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className={`${uiConfig.colors.card} py-8 px-4 shadow sm:rounded-lg sm:px-10`}>
             <div className="text-center">
               <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-                  <Mail className="w-8 h-8 text-green-600 dark:text-green-400" />
+                <div className={`w-16 h-16 ${uiConfig.colors.statusSuccess} rounded-full flex items-center justify-center`}>
+                  <Mail className={`w-8 h-8 ${uiConfig.colors.accent}`} />
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className={`text-2xl font-bold ${uiConfig.colors.heading} mb-4`}>
                 Check your email
               </h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
+              <p className={`${uiConfig.colors.body} mb-6`}>
                 We've sent password reset instructions to:
                 <br />
-                <span className="font-medium text-gray-900 dark:text-white">{email}</span>
+                <span className={`font-medium ${uiConfig.colors.heading}`}>{email}</span>
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
+              <p className={`text-sm ${uiConfig.colors.hint} mb-8`}>
                 Please check your inbox and follow the link to reset your password. 
                 The link will expire in 1 hour.
               </p>
               <Link
                 to="/login"
-                className="inline-flex items-center gap-2 text-green-600 hover:text-green-500 font-medium"
+                className={`inline-flex items-center gap-2 ${uiConfig.colors.accent} hover:opacity-80 font-medium`}
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to login
@@ -361,21 +362,21 @@ export default function ResetPassword() {
 
   // Render initial email input form (Step 1)
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className={`min-h-screen ${uiConfig.colors.page} flex flex-col justify-center py-12 sm:px-6 lg:px-8`}>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white">
+        <h2 className={`text-center text-3xl font-bold ${uiConfig.colors.heading}`}>
           Reset your password
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+        <p className={`mt-2 text-center text-sm ${uiConfig.colors.hint}`}>
           Enter your email address and we'll send you a link to reset your password.
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className={`${uiConfig.colors.card} py-8 px-4 shadow sm:rounded-lg sm:px-10`}>
           <form className="space-y-6" onSubmit={handleSendResetEmail}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="email" className={`${uiConfig.components.label}`}>
                 Email address
               </label>
               <div className="mt-1">
@@ -389,12 +390,12 @@ export default function ResetPassword() {
                   onChange={handleEmailChange}
                   onBlur={handleEmailBlur}
                   className={`appearance-none block w-full px-3 py-2 border ${
-                    emailError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm dark:bg-gray-700 dark:text-white`}
+                    emailError ? uiConfig.colors.borderDanger : uiConfig.colors.border
+                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none ${uiConfig.colors.focusRing} ${uiConfig.colors.input} ${uiConfig.colors.body} sm:text-sm`}
                   placeholder="Enter your email"
                 />
                 {emailError && (
-                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">{emailError}</p>
+                  <p className={`mt-2 text-sm ${uiConfig.colors.error}`}>{emailError}</p>
                 )}
               </div>
             </div>
@@ -403,7 +404,7 @@ export default function ResetPassword() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium ${uiConfig.components.buttonPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {loading ? 'Sending...' : 'Send reset instructions'}
               </button>
@@ -412,7 +413,7 @@ export default function ResetPassword() {
             <div className="text-center">
               <Link
                 to="/login"
-                className="inline-flex items-center gap-2 text-sm text-green-600 hover:text-green-500 font-medium"
+                className={`inline-flex items-center gap-2 text-sm ${uiConfig.colors.accent} hover:opacity-80 font-medium`}
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to login

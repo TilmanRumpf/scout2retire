@@ -7,6 +7,7 @@ import PageErrorBoundary from '../components/PageErrorBoundary';
 import QuickNav from '../components/QuickNav';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
+import { uiConfig } from '../styles/uiConfig';
 
 export default function Chat() {
   const [loading, setLoading] = useState(true);
@@ -692,19 +693,19 @@ export default function Chat() {
   // Render loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
-        <div className="animate-pulse text-green-600 font-semibold">Loading chat...</div>
+      <div className={`min-h-screen ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
+        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.accent} ${uiConfig.font.weight.semibold}`}>Loading chat...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 md:pb-4">
+    <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-4">
+      <header className={`${uiConfig.colors.card} ${uiConfig.layout.shadow.sm} sticky top-0 z-10`}>
+        <div className={`${uiConfig.layout.width.containerWide} px-4 py-4`}>
           <div className="flex justify-between items-center">
-            <h1 className="text-xl font-bold text-gray-800 dark:text-white">
+            <h1 className={`${uiConfig.font.size.xl} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>
               {chatType === 'town' && activeTown ? (
                 <span className="flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -735,7 +736,7 @@ export default function Chat() {
                 </span>
               )}
             </h1>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint}`}>
               {messages.length} messages
             </div>
           </div>
@@ -747,23 +748,23 @@ export default function Chat() {
         fallbackMessage="We're having trouble loading the chat. Please try refreshing the page."
         onReset={() => window.location.reload()}
       >
-        <main className="max-w-6xl mx-auto px-4 py-6">
+        <main className={`${uiConfig.layout.width.containerWide} px-4 py-6`}>
           <div className="flex flex-col md:flex-row gap-6">
           {/* Sidebar */}
           <div className="w-full md:w-64 space-y-4">
             {/* Chat navigation */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="font-semibold text-gray-800 dark:text-white">Chat Options</h2>
+            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
+              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
+                <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Chat Options</h2>
               </div>
               
               <div className="p-2 space-y-1">
                 <button
                   onClick={switchToLoungeChat}
-                  className={`w-full text-left px-4 py-3 rounded-md transition-colors ${
+                  className={`w-full text-left px-4 py-3 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
                     chatType === 'lounge' 
-                      ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200' 
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200'
+                      ? uiConfig.colors.badge
+                      : `${uiConfig.states.hover} ${uiConfig.colors.body}`
                   }`}
                 >
                   <div className="flex items-center">
@@ -771,18 +772,18 @@ export default function Chat() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
                     </svg>
                     <div>
-                      <div className="font-medium">Retirement Lounge</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">General discussion</div>
+                      <div className={`${uiConfig.font.weight.medium}`}>Retirement Lounge</div>
+                      <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>General discussion</div>
                     </div>
                   </div>
                 </button>
                 
                 <button
                   onClick={switchToScoutChat}
-                  className={`w-full text-left px-4 py-3 rounded-md transition-colors ${
+                  className={`w-full text-left px-4 py-3 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
                     chatType === 'scout' 
-                      ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200' 
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200'
+                      ? uiConfig.colors.badge
+                      : `${uiConfig.states.hover} ${uiConfig.colors.body}`
                   }`}
                 >
                   <div className="flex items-center">
@@ -790,8 +791,8 @@ export default function Chat() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
                     <div>
-                      <div className="font-medium">Chat with Scotti</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">AI retirement advisor</div>
+                      <div className={`${uiConfig.font.weight.medium}`}>Chat with Scotti</div>
+                      <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>AI retirement advisor</div>
                     </div>
                   </div>
                 </button>
@@ -799,20 +800,20 @@ export default function Chat() {
             </div>
             
             {/* Companions */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
+              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
                 <div className="flex justify-between items-center">
-                  <h2 className="font-semibold text-gray-800 dark:text-white">Companions & Friends</h2>
+                  <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Companions & Friends</h2>
                   
                 </div>
               </div>
               
               {friends.length === 0 ? (
-                <div className="p-4 text-center text-gray-600 dark:text-gray-400 text-sm">
+                <div className={`p-4 text-center ${uiConfig.colors.hint} ${uiConfig.font.size.sm}`}>
                   <p>No friends yet.</p>
                   <button 
                     onClick={() => setShowCompanionsModal(true)}
-                    className="text-green-600 dark:text-green-400 hover:underline mt-2 inline-block"
+                    className={`${uiConfig.colors.accent} hover:underline mt-2 inline-block`}
                   >
                     Find companions
                   </button>
@@ -823,23 +824,23 @@ export default function Chat() {
                     <button
                       key={friend.friend_id}
                       onClick={() => switchToFriendChat(friend)}
-                      className={`w-full text-left p-3 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                      className={`w-full text-left p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${
                         chatType === 'friends' && activeFriend?.friend_id === friend.friend_id
-                          ? 'bg-green-50 dark:bg-green-900/10'
+                          ? uiConfig.colors.badge
                           : ''
                       }`}
                     >
                       <div className="flex items-center">
-                        <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center text-purple-600 dark:text-purple-400 mr-3">
-                          <span className="text-sm font-medium">
+                        <div className={`w-10 h-10 bg-purple-100 dark:bg-purple-900 ${uiConfig.layout.radius.full} flex items-center justify-center text-purple-600 dark:text-purple-400 mr-3`}>
+                          <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium}`}>
                             {friend.friend.full_name?.charAt(0) || friend.friend.email.charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div className="flex-1">
-                          <div className="font-medium text-gray-800 dark:text-white">
+                          <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
                             {friend.friend.full_name || friend.friend.email.split('@')[0]}
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                          <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
                             Connected
                           </div>
                         </div>
@@ -851,15 +852,15 @@ export default function Chat() {
             </div>
             
             {/* Favorite towns */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="font-semibold text-gray-800 dark:text-white">Town Chats</h2>
+            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
+              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
+                <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Town Chats</h2>
               </div>
               
               {favorites.length === 0 ? (
-                <div className="p-4 text-center text-gray-600 dark:text-gray-400 text-sm">
+                <div className={`p-4 text-center ${uiConfig.colors.hint} ${uiConfig.font.size.sm}`}>
                   <p>No favorite towns yet.</p>
-                  <a href="/discover" className="text-green-600 dark:text-green-400 hover:underline mt-2 inline-block">
+                  <a href="/discover" className={`${uiConfig.colors.accent} hover:underline mt-2 inline-block`}>
                     Discover towns
                   </a>
                 </div>
@@ -869,28 +870,28 @@ export default function Chat() {
                     <button
                       key={favorite.town_id}
                       onClick={() => switchToTownChat(favorite.towns)}
-                      className={`w-full text-left p-3 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                      className={`w-full text-left p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${
                         chatType === 'town' && activeTown?.id === favorite.town_id
-                          ? 'bg-green-50 dark:bg-green-900/10'
+                          ? uiConfig.colors.badge
                           : ''
                       }`}
                     >
                       <div className="flex items-center">
-                        <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center text-green-600 dark:text-green-400 mr-3">
+                        <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.lg} flex items-center justify-center ${uiConfig.colors.accent} mr-3`}>
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                           </svg>
                         </div>
                         <div className="flex-1">
-                          <div className="font-medium text-gray-800 dark:text-white">
+                          <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
                             {favorite.towns.name}
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                          <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
                             {favorite.towns.country}
                           </div>
                         </div>
                         {favorite.towns.cost_index && (
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                          <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
                             ${favorite.towns.cost_index}/mo
                           </div>
                         )}
@@ -903,12 +904,12 @@ export default function Chat() {
           </div>
           
           {/* Chat area */}
-          <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden flex flex-col h-[600px]">
+          <div className={`flex-1 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden flex flex-col h-[600px]`}>
             {/* Chat messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.length === 0 ? (
                 <div className="h-full flex items-center justify-center">
-                  <div className="text-center text-gray-500 dark:text-gray-400">
+                  <div className={`text-center ${uiConfig.colors.hint}`}>
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
@@ -925,31 +926,31 @@ export default function Chat() {
                       }`}
                     >
                       <div 
-                        className={`max-w-[75%] rounded-lg px-4 py-2 ${
+                        className={`max-w-[75%] ${uiConfig.layout.radius.lg} px-4 py-2 ${
                           message.user_id === user?.id
-                            ? 'bg-green-600 text-white'
+                            ? 'bg-scout-accent-600 text-white'
                             : message.user_id === 'scout'
                             ? 'bg-blue-600 text-white'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white'
+                            : `${uiConfig.colors.input} ${uiConfig.colors.body}`
                         }`}
                       >
                         {(index === 0 || messages[index - 1].user_id !== message.user_id) && (
                           <div className="flex items-center text-xs mb-1">
-                            <span className={`font-medium ${
+                            <span className={`${uiConfig.font.weight.medium} ${
                               message.user_id === user?.id
-                                ? 'text-green-100'
+                                ? 'text-scout-accent-100'
                                 : message.user_id === 'scout'
                                 ? 'text-blue-100'
-                                : 'text-gray-600 dark:text-gray-300'
+                                : uiConfig.colors.hint
                             }`}>
                               {message.user_id === user?.id ? 'You' : message.user_name}
                             </span>
                             <span className={`ml-2 ${
                               message.user_id === user?.id
-                                ? 'text-green-200'
+                                ? 'text-scout-accent-200'
                                 : message.user_id === 'scout'
                                 ? 'text-blue-200'
-                                : 'text-gray-500 dark:text-gray-400'
+                                : uiConfig.colors.muted
                             }`}>
                               {formatMessageDate(message.created_at)}
                             </span>
@@ -961,12 +962,12 @@ export default function Chat() {
                   ))}
                   {isTyping && chatType === 'scout' && (
                     <div className="flex justify-start">
-                      <div className="bg-blue-600 text-white rounded-lg px-4 py-2">
+                      <div className={`bg-blue-600 text-white ${uiConfig.layout.radius.lg} px-4 py-2`}>
                         <div className="flex items-center space-x-2">
                           <div className="flex space-x-1">
-                            <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                            <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                            <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                            <div className={`w-2 h-2 bg-white ${uiConfig.layout.radius.full} animate-bounce`} style={{ animationDelay: '0ms' }}></div>
+                            <div className={`w-2 h-2 bg-white ${uiConfig.layout.radius.full} animate-bounce`} style={{ animationDelay: '150ms' }}></div>
+                            <div className={`w-2 h-2 bg-white ${uiConfig.layout.radius.full} animate-bounce`} style={{ animationDelay: '300ms' }}></div>
                           </div>
                         </div>
                       </div>
@@ -978,7 +979,7 @@ export default function Chat() {
             </div>
             
             {/* Message input */}
-            <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+            <div className={`border-t ${uiConfig.colors.borderLight} p-4`}>
               <form onSubmit={handleSendMessage} className="space-y-2">
                 <div className="flex space-x-2">
                   <input
@@ -995,12 +996,12 @@ export default function Chat() {
                         ? activeFriend.friend.full_name || activeFriend.friend.email.split('@')[0]
                         : 'Scotti'
                     }...`}
-                    className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className={`flex-1 ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} py-2 px-4 ${uiConfig.colors.input} ${uiConfig.colors.body} ${uiConfig.colors.focusRing} focus:border-transparent`}
                   />
                 <button
                   type="submit"
                   disabled={!messageInput.trim()}
-                  className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className={`bg-scout-accent-600 hover:bg-scout-accent-700 text-white p-2 ${uiConfig.layout.radius.lg} ${uiConfig.states.disabled} ${uiConfig.animation.transition}`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -1008,7 +1009,7 @@ export default function Chat() {
                 </button>
                 </div>
                 {messageInput.length > 0 && (
-                  <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
+                  <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} text-right`}>
                     {messageInput.length} / {MAX_LENGTHS.CHAT_MESSAGE}
                   </div>
                 )}
@@ -1025,15 +1026,15 @@ export default function Chat() {
       {/* Companions Modal */}
       {showCompanionsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className={`${uiConfig.colors.modal} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.xl} max-w-md w-full max-h-[80vh] overflow-hidden`}>
+            <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
               <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                <h2 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
                   People Like You
                 </h2>
                 <button
                   onClick={() => setShowCompanionsModal(false)}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  className={`${uiConfig.colors.hint} hover:${uiConfig.colors.body}`}
                 >
                   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1044,54 +1045,54 @@ export default function Chat() {
             
             <div className="p-4 overflow-y-auto max-h-[60vh]">
               {companions.length === 0 ? (
-                <p className="text-center text-gray-600 dark:text-gray-400">
+                <p className={`text-center ${uiConfig.colors.hint}`}>
                   No companions found yet. We're looking for people with similar retirement preferences.
                 </p>
               ) : (
                 <div className="space-y-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint} mb-4`}>
                     Based on your preferences, here are people planning similar retirements:
                   </p>
                   {companions.map(companion => (
                     <div 
                       key={companion.id} 
-                      className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4"
+                      className={`${uiConfig.colors.input} ${uiConfig.layout.radius.lg} p-4`}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-center">
-                          <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center text-green-600 dark:text-green-400 mr-3">
-                            <span className="text-lg font-medium">
+                          <div className={`w-12 h-12 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center ${uiConfig.colors.accent} mr-3`}>
+                            <span className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.medium}`}>
                               {companion.full_name?.charAt(0) || companion.email.charAt(0).toUpperCase()}
                             </span>
                           </div>
                           <div>
-                            <h3 className="font-medium text-gray-800 dark:text-white">
+                            <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
                               {companion.full_name || companion.email.split('@')[0]}
                             </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                            <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint}`}>
                               {companion.similarity_score}% match
                             </p>
                           </div>
                         </div>
                         <button
                           onClick={() => sendFriendRequest(companion.id)}
-                          className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md transition-colors"
+                          className={`px-3 py-1 bg-scout-accent-600 hover:bg-scout-accent-700 text-white ${uiConfig.font.size.sm} ${uiConfig.layout.radius.md} ${uiConfig.animation.transition}`}
                         >
                           Connect
                         </button>
                       </div>
                       
                       {/* Show what they have in common */}
-                      <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
-                        <p className="font-medium mb-1">Common interests:</p>
+                      <div className={`mt-3 ${uiConfig.font.size.sm} ${uiConfig.colors.hint}`}>
+                        <p className={`${uiConfig.font.weight.medium} mb-1`}>Common interests:</p>
                         <div className="flex flex-wrap gap-2">
                           {companion.onboarding_responses?.[0]?.region_preferences?.continents?.slice(0, 2).map(continent => (
-                            <span key={continent} className="px-2 py-1 bg-gray-200 dark:bg-gray-600 rounded-full text-xs">
+                            <span key={continent} className={`px-2 py-1 ${uiConfig.colors.input} ${uiConfig.layout.radius.full} ${uiConfig.font.size.xs}`}>
                               {continent.charAt(0).toUpperCase() + continent.slice(1).replace('_', ' ')}
                             </span>
                           ))}
                           {companion.onboarding_responses?.[0]?.budget?.monthly_budget && (
-                            <span className="px-2 py-1 bg-gray-200 dark:bg-gray-600 rounded-full text-xs">
+                            <span className={`px-2 py-1 ${uiConfig.colors.input} ${uiConfig.layout.radius.full} ${uiConfig.font.size.xs}`}>
                               ${companion.onboarding_responses[0].budget.monthly_budget}/mo budget
                             </span>
                           )}

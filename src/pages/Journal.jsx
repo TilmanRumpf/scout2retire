@@ -6,6 +6,7 @@ import { fetchJournalEntries, deleteJournalEntry, saveJournalEntry } from '../ut
 import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
 import QuickNav from '../components/QuickNav';
 import toast from 'react-hot-toast';
+import { uiConfig } from '../styles/uiConfig';
 
 export default function Journal() {
   const [entries, setEntries] = useState([]);
@@ -129,10 +130,10 @@ export default function Journal() {
     if (entry.entry_type === 'journal') {
       return (
         <div className="flex justify-end space-x-2">
-          <button className="text-blue-600 hover:text-blue-700 text-sm">View</button>
+          <button className={`${uiConfig.colors.accent} hover:opacity-80 text-sm transition-opacity`}>View</button>
           <button 
             onClick={() => handleDelete(entry.id)}
-            className="text-red-600 hover:text-red-700 text-sm"
+            className={`${uiConfig.colors.error} hover:opacity-80 text-sm transition-opacity`}
           >
             Delete
           </button>
@@ -145,13 +146,13 @@ export default function Journal() {
         <div className="flex justify-end space-x-2">
           <button 
             onClick={() => navigate(`/discover?town=${entry.towns.id}`)}
-            className="text-blue-600 hover:text-blue-700 text-sm"
+            className={`${uiConfig.colors.accent} hover:opacity-80 text-sm transition-opacity`}
           >
             View
           </button>
           <button 
             onClick={() => handleDelete(entry.id)}
-            className="text-red-600 hover:text-red-700 text-sm"
+            className={`${uiConfig.colors.error} hover:opacity-80 text-sm transition-opacity`}
           >
             Delete
           </button>
@@ -162,7 +163,7 @@ export default function Journal() {
     if (entry.related_user) {
       return (
         <div className="flex justify-end">
-          <button className="text-blue-600 hover:text-blue-700 text-sm">
+          <button className={`${uiConfig.colors.accent} hover:opacity-80 text-sm transition-opacity`}>
             Profile
           </button>
         </div>
@@ -174,72 +175,72 @@ export default function Journal() {
 
   if (loading && entries.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
-        <div className="animate-pulse text-green-600 font-semibold">Loading entries...</div>
+      <div className={`min-h-screen ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
+        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.accent} font-semibold`}>Loading entries...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 md:pb-4">
-      <header className="bg-white dark:bg-gray-800 shadow-sm mb-6">
+    <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
+      <header className={`${uiConfig.colors.card} ${uiConfig.layout.shadow.sm} mb-6`}>
         <div className="max-w-5xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Your Retirement Journey</h1>
+          <h1 className={`text-2xl font-bold ${uiConfig.colors.heading}`}>Your Retirement Journey</h1>
         </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4">
         {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
+        <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 mb-6`}>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
             {/* Type filters */}
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setFilterType('all')}
-                className={`px-4 py-2 rounded-md transition-colors ${
+                className={`px-4 py-2 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
                   filterType === 'all'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    ? uiConfig.colors.tabActive
+                    : uiConfig.colors.tabInactive
                 }`}
               >
                 All
               </button>
               <button
                 onClick={() => setFilterType('journal')}
-                className={`px-4 py-2 rounded-md transition-colors ${
+                className={`px-4 py-2 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
                   filterType === 'journal'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    ? uiConfig.colors.tabActive
+                    : uiConfig.colors.tabInactive
                 }`}
               >
                 📝 Journal
               </button>
               <button
                 onClick={() => setFilterType('town')}
-                className={`px-4 py-2 rounded-md transition-colors ${
+                className={`px-4 py-2 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
                   filterType === 'town'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    ? uiConfig.colors.tabActive
+                    : uiConfig.colors.tabInactive
                 }`}
               >
                 📍 Town
               </button>
               <button
                 onClick={() => setFilterType('social')}
-                className={`px-4 py-2 rounded-md transition-colors ${
+                className={`px-4 py-2 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
                   filterType === 'social'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    ? uiConfig.colors.tabActive
+                    : uiConfig.colors.tabInactive
                 }`}
               >
                 👥 Social
               </button>
               <button
                 onClick={() => setFilterType('tasks')}
-                className={`px-4 py-2 rounded-md transition-colors ${
+                className={`px-4 py-2 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
                   filterType === 'tasks'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    ? uiConfig.colors.tabActive
+                    : uiConfig.colors.tabInactive
                 }`}
               >
                 ✅ Tasks
@@ -250,7 +251,7 @@ export default function Journal() {
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
-              className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+              className={`px-4 py-2 ${uiConfig.layout.radius.md} border ${uiConfig.colors.border} ${uiConfig.colors.input} ${uiConfig.colors.heading}`}
             >
               <option value="7">Last 7 days</option>
               <option value="30">Last 30 days</option>
@@ -261,11 +262,11 @@ export default function Journal() {
         </div>
 
         {/* New Note Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
+        <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 mb-6`}>
           {!showNewNote ? (
             <button
               onClick={() => setShowNewNote(true)}
-              className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors flex items-center justify-center space-x-2"
+              className={`w-full px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md} flex items-center justify-center space-x-2`}
             >
               <span>📝</span>
               <span>Add New Note</span>
@@ -278,10 +279,10 @@ export default function Journal() {
                   onChange={(e) => setNewNoteContent(e.target.value)}
                   maxLength={MAX_LENGTHS.JOURNAL_ENTRY}
                   placeholder="Write your thoughts about your retirement journey..."
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:border-green-500 focus:ring-1 focus:ring-green-500 min-h-[120px]"
+                  className={`${uiConfig.components.textarea} min-h-[120px]`}
                 />
                 {newNoteContent.length > 0 && (
-                  <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-right">
+                  <div className={`mt-1 text-xs ${uiConfig.colors.hint} text-right`}>
                     {newNoteContent.length} / {MAX_LENGTHS.JOURNAL_ENTRY}
                   </div>
                 )}
@@ -292,14 +293,14 @@ export default function Journal() {
                     setShowNewNote(false);
                     setNewNoteContent('');
                   }}
-                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors"
+                  className={`px-4 py-2 ${uiConfig.components.buttonSecondary}`}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveNote}
                   disabled={savingNote || !newNoteContent.trim()}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md} ${uiConfig.states.disabled}`}
                 >
                   {savingNote ? 'Saving...' : 'Save Note'}
                 </button>
@@ -309,15 +310,15 @@ export default function Journal() {
         </div>
 
         {/* Table */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+        <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
           {entries.length === 0 ? (
             <div className="p-8 text-center">
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <p className={`${uiConfig.colors.body} mb-4`}>
                 No entries found for the selected filters.
               </p>
               <button
                 onClick={() => navigate('/daily')}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
+                className={`px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md}`}
               >
                 Go to Dashboard
               </button>
@@ -325,36 +326,36 @@ export default function Journal() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                <thead className={`${uiConfig.components.tableHeader} border-b ${uiConfig.colors.borderLight}`}>
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className={`px-4 py-3 text-left ${uiConfig.components.tableHeaderCell}`}>
                       Date
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className={`px-4 py-3 text-left ${uiConfig.components.tableHeaderCell}`}>
                       Type
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className={`px-4 py-3 text-left ${uiConfig.components.tableHeaderCell}`}>
                       Activity
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className={`px-4 py-3 text-right ${uiConfig.components.tableHeaderCell}`}>
                       Action
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className={`divide-y ${uiConfig.colors.borderLight}`}>
                   {entries.map((entry) => (
-                    <tr key={entry.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <td className="px-4 py-4 whitespace-pre-line text-sm text-gray-900 dark:text-gray-300">
+                    <tr key={entry.id} className={`${uiConfig.components.tableRow}`}>
+                      <td className={`px-4 py-4 whitespace-pre-line text-sm ${uiConfig.colors.body}`}>
                         {formatDate(entry.created_at)}
                       </td>
                       <td className="px-4 py-4 text-2xl">
                         {getEntryIcon(entry.entry_type)}
                       </td>
-                      <td className="px-4 py-4 text-sm text-gray-900 dark:text-gray-300">
+                      <td className={`px-4 py-4 text-sm ${uiConfig.colors.body}`}>
                         <div>
                           <p className="font-medium line-clamp-2">{entry.content}</p>
                           {entry.towns && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <p className={`text-xs ${uiConfig.colors.hint} mt-1`}>
                               {entry.towns.name}, {entry.towns.country}
                             </p>
                           )}
@@ -371,8 +372,8 @@ export default function Journal() {
           )}
           
           {entries.length > 0 && (
-            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
-              <p className="text-sm text-gray-700 dark:text-gray-300">
+            <div className={`px-4 py-3 ${uiConfig.components.tableHeader} border-t ${uiConfig.colors.borderLight}`}>
+              <p className={`text-sm ${uiConfig.colors.body}`}>
                 Showing {entries.length} entries
               </p>
             </div>

@@ -165,7 +165,7 @@ export default function OnboardingProgress() {
         status: 'pending',
         icon: Clock,
         text: 'Not Started',
-        classes: `${uiConfig.colors.muted} bg-gray-100 dark:bg-gray-800`,
+        classes: `${uiConfig.colors.muted} ${uiConfig.colors.input}`,
         clickable: false
       };
     }
@@ -174,7 +174,7 @@ export default function OnboardingProgress() {
   if (loading) {
     return (
       <div className={`min-h-screen ${uiConfig.colors.page} ${uiConfig.layout.spacing.section} flex items-center justify-center`}>
-        <div className={`${uiConfig.animation.pulse} text-scout-accent-600 dark:text-scout-accent-400 ${uiConfig.font.weight.semibold}`}>
+        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.success} ${uiConfig.font.weight.semibold}`}>
           Loading your progress...
         </div>
       </div>
@@ -185,7 +185,7 @@ export default function OnboardingProgress() {
     return (
       <div className={`min-h-screen ${uiConfig.colors.page} ${uiConfig.layout.spacing.section} flex items-center justify-center`}>
         <div className="text-center">
-          <div className={`${uiConfig.colors.error} ${uiConfig.font.weight.semibold} mb-2`}>Error</div>
+          <div className={`${uiConfig.colors.error} ${uiConfig.font.weight.semibold} ${uiConfig.layout.spacing.fieldCompact}`}>Error</div>
           <div className={uiConfig.colors.hint}>{error}</div>
         </div>
       </div>
@@ -193,12 +193,12 @@ export default function OnboardingProgress() {
   }
 
   return (
-    <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
+    <div className={`min-h-screen ${uiConfig.colors.page} pb-20 ${uiConfig.responsive.md}pb-4`}>
       {/* Header with progress overview using uiConfig styles */}
       <header className={`${uiConfig.colors.card} ${uiConfig.layout.shadow.sm}`}>
         <div className={`${uiConfig.layout.width.container} ${uiConfig.layout.spacing.card}`}>
-          <div className="text-center mb-6">
-            <h1 className={`${uiConfig.font.size['2xl']} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading} mb-2`}>
+          <div className={`text-center ${uiConfig.layout.spacing.field}`}>
+            <h1 className={`${uiConfig.font.size['2xl']} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading} ${uiConfig.layout.spacing.fieldCompact}`}>
               Your Retirement Profile Setup
             </h1>
             <p className={`${uiConfig.colors.body}`}>
@@ -207,12 +207,12 @@ export default function OnboardingProgress() {
           </div>
           
           {/* Overall completion percentage using uiConfig progress styles */}
-          <div className={`bg-gray-100 dark:bg-gray-700 ${uiConfig.layout.radius.lg} ${uiConfig.layout.spacing.cardCompact}`}>
-            <div className="flex justify-between items-center mb-2">
+          <div className={`${uiConfig.colors.input} ${uiConfig.layout.radius.lg} ${uiConfig.layout.spacing.cardCompact}`}>
+            <div className={`flex justify-between items-center ${uiConfig.layout.spacing.fieldCompact}`}>
               <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body}`}>
                 Overall Progress
               </span>
-              <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.semibold} text-scout-accent-600 dark:text-scout-accent-400`}>
+              <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.semibold} ${uiConfig.colors.success}`}>
                 {progress.percentage}% Complete
               </span>
             </div>
@@ -222,7 +222,7 @@ export default function OnboardingProgress() {
                 style={{ width: `${progress.percentage}%` }}
               ></div>
             </div>
-            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
+            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`} style={{ marginTop: '0.25rem' }}>
               {progress.completedCount} of {progress.totalSteps} steps completed
             </div>
           </div>
@@ -251,19 +251,19 @@ export default function OnboardingProgress() {
                   className={`grid grid-cols-1 md:grid-cols-12 gap-4 ${uiConfig.layout.spacing.cardCompact} ${uiConfig.animation.transition} ${
                     statusInfo.clickable 
                       ? `${uiConfig.states.hover} cursor-pointer` 
-                      : 'cursor-not-allowed opacity-75'
+                      : uiConfig.states.disabled
                   }`}
                 >
                   {/* Column 1: Step Icon - Proper circle styling with white icons */}
                   <div className="flex items-center justify-center md:col-span-2 order-1">
                     <div className={`w-12 h-12 ${uiConfig.layout.radius.full} flex items-center justify-center ${
                       statusInfo.status === 'completed' 
-                        ? 'bg-scout-accent-200 dark:bg-scout-accent-300' 
+                        ? uiConfig.colors.badge 
                         : statusInfo.status === 'current'
-                        ? 'bg-scout-accent-600 dark:bg-scout-accent-500'
-                        : 'bg-gray-200 dark:bg-gray-700'
+                        ? uiConfig.colors.tabActive
+                        : uiConfig.colors.input
                     }`}>
-                      <StepIcon className={`${uiConfig.icons.size.lg} text-white`} />
+                      <StepIcon className={`${uiConfig.icons.size.lg} ${statusInfo.status === 'completed' || statusInfo.status === 'current' ? '' : uiConfig.colors.muted}`} />
                     </div>
                   </div>
                   
@@ -272,15 +272,15 @@ export default function OnboardingProgress() {
                     <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
                       {index + 1}. {step.label}
                     </h3>
-                    <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint} mt-1`}>
+                    <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint}`} style={{ marginTop: '0.25rem' }}>
                       {step.description}
                     </p>
                   </div>
                   
                   {/* Column 3: Status - Mobile first */}
                   <div className="flex items-center justify-center md:justify-end md:col-span-3 order-3">
-                    <div className={`inline-flex items-center px-3 py-1 ${uiConfig.layout.radius.lg} ${uiConfig.font.size.xs} ${uiConfig.font.weight.medium} ${statusInfo.classes}`}>
-                      <StatusIcon className={`${uiConfig.icons.size.sm} mr-1`} />
+                    <div className={`inline-flex items-center ${uiConfig.components.navItem} ${statusInfo.classes}`}>
+                      <StatusIcon className={`${uiConfig.icons.size.sm}`} style={{ marginRight: '0.25rem' }} />
                       {statusInfo.text}
                     </div>
                   </div>
@@ -291,17 +291,17 @@ export default function OnboardingProgress() {
         </div>
         
         {/* Continue button using uiConfig button styles */}
-        <div className="mt-6 flex justify-center">
+        <div className={`${uiConfig.layout.spacing.field} flex justify-center`}>
           <button
             onClick={handleContinue}
-            className={`${uiConfig.components.buttonPrimary} px-6`}
+            className={`${uiConfig.components.buttonPrimary} ${uiConfig.bottomNavigation.styles.nextButton}`}
           >
             {progress.percentage === 100 ? 'Review Profile' : `Continue: ${getNextStep().label}`}
           </button>
         </div>
         
         {/* Help text using uiConfig typography */}
-        <div className="mt-4 text-center">
+        <div className={`${uiConfig.layout.spacing.cardCompact} text-center`}>
           <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint}`}>
             💡 Click on completed steps to edit them. Complete all steps for the best recommendations.
           </p>

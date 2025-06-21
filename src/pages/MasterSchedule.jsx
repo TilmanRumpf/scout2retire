@@ -4,6 +4,7 @@ import { getCurrentUser } from '../utils/authUtils';
 import QuickNav from '../components/QuickNav';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
+import { uiConfig } from '../styles/uiConfig';
 
 export default function MasterSchedule() {
   const [loading, setLoading] = useState(true);
@@ -312,19 +313,19 @@ export default function MasterSchedule() {
     switch (status) {
       case 'not_started':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${uiConfig.colors.statusInfo}`}>
             Not Started
           </span>
         );
       case 'in_progress':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200">
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${uiConfig.colors.statusInfo}`}>
             In Progress
           </span>
         );
       case 'completed':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200">
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${uiConfig.colors.statusSuccess}`}>
             Completed
           </span>
         );
@@ -343,18 +344,18 @@ export default function MasterSchedule() {
   // Render loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
-        <div className="animate-pulse text-green-600 font-semibold">Loading your retirement schedule...</div>
+      <div className={`min-h-screen ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
+        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.accent} font-semibold`}>Loading your retirement schedule...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 md:pb-4">
+    <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm">
+      <header className={`${uiConfig.colors.card} ${uiConfig.layout.shadow.sm}`}>
         <div className="max-w-5xl mx-auto px-4 py-4">
-          <h1 className="text-xl font-bold text-gray-800 dark:text-white">
+          <h1 className={`text-xl font-bold ${uiConfig.colors.heading}`}>
             Retirement Master Schedule
           </h1>
         </div>
@@ -363,7 +364,7 @@ export default function MasterSchedule() {
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         {/* Action buttons */}
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+          <h2 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>
             Your Milestones
           </h2>
           <button
@@ -377,7 +378,7 @@ export default function MasterSchedule() {
                 notes: ''
               });
             }}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
+            className={`px-4 py-2 ${uiConfig.colors.btnPrimary} rounded-md text-sm`}
           >
             {showAddForm ? 'Cancel' : 'Add Milestone'}
           </button>
@@ -385,14 +386,14 @@ export default function MasterSchedule() {
         
         {/* Add milestone form */}
         {showAddForm && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+          <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} ${uiConfig.layout.spacing.card}`}>
+            <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-4`}>
               Add New Milestone
             </h3>
             
             <form onSubmit={handleAddMilestone} className="space-y-4">
               <div>
-                <label htmlFor="milestone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="milestone" className={uiConfig.components.label}>
                   Milestone Name
                 </label>
                 <input
@@ -401,13 +402,13 @@ export default function MasterSchedule() {
                   type="text"
                   value={formData.milestone}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                  className={uiConfig.components.input}
                   required
                 />
               </div>
               
               <div>
-                <label htmlFor="target_date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="target_date" className={uiConfig.components.label}>
                   Target Date
                 </label>
                 <input
@@ -416,13 +417,13 @@ export default function MasterSchedule() {
                   type="date"
                   value={formData.target_date}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                  className={uiConfig.components.input}
                   required
                 />
               </div>
               
               <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="status" className={uiConfig.components.label}>
                   Status
                 </label>
                 <select
@@ -430,7 +431,7 @@ export default function MasterSchedule() {
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                  className={uiConfig.components.select}
                 >
                   <option value="not_started">Not Started</option>
                   <option value="in_progress">In Progress</option>
@@ -439,7 +440,7 @@ export default function MasterSchedule() {
               </div>
               
               <div>
-                <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="notes" className={uiConfig.components.label}>
                   Notes (Optional)
                 </label>
                 <textarea
@@ -448,13 +449,13 @@ export default function MasterSchedule() {
                   rows="3"
                   value={formData.notes}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                  className={uiConfig.components.textarea}
                 ></textarea>
               </div>
               
               <button
                 type="submit"
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                className={`w-full ${uiConfig.colors.btnPrimary} font-medium py-2 px-4 rounded-md`}
               >
                 Add Milestone
               </button>
@@ -464,14 +465,14 @@ export default function MasterSchedule() {
         
         {/* Edit milestone form */}
         {showEditForm && editingMilestone && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+          <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} ${uiConfig.layout.spacing.card}`}>
+            <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-4`}>
               Edit Milestone
             </h3>
             
             <form onSubmit={handleUpdateMilestone} className="space-y-4">
               <div>
-                <label htmlFor="edit_milestone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="edit_milestone" className={uiConfig.components.label}>
                   Milestone Name
                 </label>
                 <input
@@ -480,13 +481,13 @@ export default function MasterSchedule() {
                   type="text"
                   value={formData.milestone}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                  className={uiConfig.components.input}
                   required
                 />
               </div>
               
               <div>
-                <label htmlFor="edit_target_date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="edit_target_date" className={uiConfig.components.label}>
                   Target Date
                 </label>
                 <input
@@ -495,13 +496,13 @@ export default function MasterSchedule() {
                   type="date"
                   value={formData.target_date}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                  className={uiConfig.components.input}
                   required
                 />
               </div>
               
               <div>
-                <label htmlFor="edit_status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="edit_status" className={uiConfig.components.label}>
                   Status
                 </label>
                 <select
@@ -509,7 +510,7 @@ export default function MasterSchedule() {
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                  className={uiConfig.components.select}
                 >
                   <option value="not_started">Not Started</option>
                   <option value="in_progress">In Progress</option>
@@ -518,7 +519,7 @@ export default function MasterSchedule() {
               </div>
               
               <div>
-                <label htmlFor="edit_notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="edit_notes" className={uiConfig.components.label}>
                   Notes (Optional)
                 </label>
                 <textarea
@@ -527,14 +528,14 @@ export default function MasterSchedule() {
                   rows="3"
                   value={formData.notes}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                  className={uiConfig.components.textarea}
                 ></textarea>
               </div>
               
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                  className={`flex-1 ${uiConfig.colors.btnPrimary} font-medium py-2 px-4 rounded-md`}
                 >
                   Update Milestone
                 </button>
@@ -542,7 +543,7 @@ export default function MasterSchedule() {
                 <button
                   type="button"
                   onClick={() => setShowEditForm(false)}
-                  className="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium py-2 px-4 rounded-md transition-colors"
+                  className={`flex-1 ${uiConfig.colors.btnSecondary} font-medium py-2 px-4 rounded-md`}
                 >
                   Cancel
                 </button>
@@ -554,8 +555,8 @@ export default function MasterSchedule() {
         {/* Milestones list */}
         <div className="space-y-4">
           {milestones.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 text-center">
-              <p className="text-gray-600 dark:text-gray-400">
+            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} ${uiConfig.layout.spacing.card} text-center`}>
+              <p className={uiConfig.colors.body}>
                 No milestones found. Add some to start planning your retirement journey!
               </p>
             </div>
@@ -563,29 +564,29 @@ export default function MasterSchedule() {
             milestones.map((milestone) => (
               <div 
                 key={milestone.id} 
-                className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-l-4 ${
+                className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden border-l-4 ${
                   milestone.status === 'completed' 
-                    ? 'border-green-600 dark:border-green-500' 
+                    ? uiConfig.colors.borderSuccess
                     : milestone.status === 'in_progress'
-                    ? 'border-blue-600 dark:border-blue-500'
-                    : 'border-gray-300 dark:border-gray-600'
+                    ? uiConfig.colors.borderActive
+                    : uiConfig.colors.border
                 }`}
               >
                 <div className="p-5">
                   <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1 md:mb-0">
+                    <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-1 md:mb-0`}>
                       {milestone.milestone}
                     </h3>
                     <div className="flex items-center space-x-2">
                       {getStatusBadge(milestone.status)}
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                      <span className={`text-sm ${uiConfig.colors.hint}`}>
                         {formatDate(milestone.target_date)}
                       </span>
                     </div>
                   </div>
                   
                   {milestone.notes && (
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                    <p className={`${uiConfig.colors.body} text-sm mb-4`}>
                       {milestone.notes}
                     </p>
                   )}
@@ -597,7 +598,7 @@ export default function MasterSchedule() {
                         {milestone.status !== 'not_started' && (
                           <button
                             onClick={() => handleStatusChange(milestone.id, 'not_started')}
-                            className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                            className={`text-xs px-2 py-1 ${uiConfig.colors.btnSecondary} rounded`}
                           >
                             Mark Not Started
                           </button>
@@ -606,7 +607,7 @@ export default function MasterSchedule() {
                         {milestone.status !== 'in_progress' && (
                           <button
                             onClick={() => handleStatusChange(milestone.id, 'in_progress')}
-                            className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                            className={`text-xs px-2 py-1 ${uiConfig.colors.statusInfo} rounded ${uiConfig.animation.transition}`}
                           >
                             Mark In Progress
                           </button>
@@ -615,7 +616,7 @@ export default function MasterSchedule() {
                         {milestone.status !== 'completed' && (
                           <button
                             onClick={() => handleStatusChange(milestone.id, 'completed')}
-                            className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
+                            className={`text-xs px-2 py-1 ${uiConfig.colors.statusSuccess} rounded ${uiConfig.animation.transition}`}
                           >
                             Mark Completed
                           </button>
@@ -627,14 +628,14 @@ export default function MasterSchedule() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEditStart(milestone)}
-                        className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                        className={`text-xs px-2 py-1 ${uiConfig.colors.btnSecondary} rounded`}
                       >
                         Edit
                       </button>
                       
                       <button
                         onClick={() => handleDeleteMilestone(milestone.id)}
-                        className="text-xs px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 rounded hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                        className={`text-xs px-2 py-1 ${uiConfig.colors.statusError} rounded ${uiConfig.animation.transition}`}
                       >
                         Delete
                       </button>
@@ -647,12 +648,12 @@ export default function MasterSchedule() {
         </div>
         
         {/* Tips section */}
-        <div className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-900/50 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-green-800 dark:text-green-400 mb-2">
+        <div className={`${uiConfig.notifications.success} border ${uiConfig.layout.radius.lg} p-4`}>
+          <h3 className={`text-lg font-semibold ${uiConfig.colors.success} mb-2`}>
             Tips for Planning Your Retirement Timeline
           </h3>
           
-          <ul className="space-y-2 text-green-700 dark:text-green-300 text-sm">
+          <ul className={`space-y-2 ${uiConfig.colors.success} text-sm`}>
             <li>• Start researching potential locations at least 5 years before your planned retirement date.</li>
             <li>• Visit your top choices during different seasons to experience the full climate cycle.</li>
             <li>• Begin visa and immigration paperwork at least 12-18 months before your planned move.</li>

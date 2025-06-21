@@ -5,20 +5,21 @@ import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
 import toast from 'react-hot-toast';
+import { uiConfig } from '../../styles/uiConfig';
 
 // Option Button Component
 const OptionButton = ({ label, description, isSelected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`p-2 sm:p-2.5 rounded-md border-2 transition-all text-center min-h-[44px] ${
+    className={`p-2 sm:p-2.5 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center min-h-[44px] ${
       isSelected
-        ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
-        : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
+        ? uiConfig.components.buttonVariants.selected
+        : uiConfig.components.buttonVariants.unselected
     }`}
   >
-    <div className={`text-xs sm:text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
-    {description && <div className={`text-[10px] sm:text-xs mt-0.5 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
+    <div className={`${uiConfig.font.size.xs} ${uiConfig.responsive.sm}${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${isSelected ? uiConfig.colors.accent : ''}`}>{label}</div>
+    {description && <div className={`text-[10px] ${uiConfig.responsive.sm}${uiConfig.font.size.xs} mt-0.5 ${isSelected ? uiConfig.colors.accent : uiConfig.colors.hint}`}>{description}</div>}
   </button>
 );
 
@@ -181,8 +182,8 @@ export default function OnboardingAdministration() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-[100svh] bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center">
-        <div className="animate-pulse text-scout-accent-600 font-semibold">Loading...</div>
+      <div className={`min-h-[100svh] ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
+        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.success} ${uiConfig.font.weight.semibold}`}>Loading...</div>
       </div>
     );
   }
@@ -207,7 +208,7 @@ export default function OnboardingAdministration() {
   ];
 
   return (
-    <div className="min-h-[100svh] bg-gray-50 dark:bg-gray-900 pb-20 sm:pb-4">
+    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 ${uiConfig.responsive.sm}pb-4`}>
       <div className="max-w-md mx-auto p-4 sm:p-4">
         <OnboardingStepNavigation 
           currentStep="administration" 
@@ -215,24 +216,24 @@ export default function OnboardingAdministration() {
           className="mb-3" 
         />
         
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5">
+        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 ${uiConfig.responsive.sm}p-5`}>
           {/* Header */}
           <div className="mb-3">
-            <h1 className="text-lg font-bold text-gray-800 dark:text-white">Healthcare & Administration</h1>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+            <h1 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Healthcare & Administration</h1>
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-0.5`}>
               Tell us about your healthcare and administrative preferences
             </p>
           </div>
 
           {/* Health & Medical */}
           <div className="mb-3">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
               <Heart size={16} className="mr-1.5" />
               Healthcare Preferences
             </label>
             
             {/* Healthcare Quality */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Healthcare Quality</p>
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Healthcare Quality</p>
             <div className="grid grid-cols-3 gap-1.5 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
@@ -245,7 +246,7 @@ export default function OnboardingAdministration() {
             </div>
 
             {/* Health Insurance */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Health Insurance</p>
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Health Insurance</p>
             <div className="grid grid-cols-3 gap-1.5 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
@@ -281,7 +282,7 @@ export default function OnboardingAdministration() {
                   transition: 'all 0.15s ease-in-out'
                 }}
               />
-              <label htmlFor="special_medical_needs" className="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+              <label htmlFor="special_medical_needs" className={`ml-2 ${uiConfig.font.size.xs} ${uiConfig.colors.body} cursor-pointer`}>
                 I have special medical needs or require regular prescriptions
               </label>
             </div>
@@ -289,13 +290,13 @@ export default function OnboardingAdministration() {
 
           {/* Safety & Security */}
           <div className="mb-3">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
               <Shield size={16} className="mr-1.5" />
               Safety & Security
             </label>
             
             {/* Quality of Safety */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Quality of Safety</p>
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Quality of Safety</p>
             <div className="grid grid-cols-3 gap-1.5 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
@@ -308,7 +309,7 @@ export default function OnboardingAdministration() {
             </div>
 
             {/* Emergency Services */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Emergency Services</p>
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Emergency Services</p>
             <div className="grid grid-cols-3 gap-1.5 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
@@ -321,7 +322,7 @@ export default function OnboardingAdministration() {
             </div>
 
             {/* Political Stability Rating */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Political Stability Rating</p>
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Political Stability Rating</p>
             <div className="grid grid-cols-3 gap-1.5">
               {qualityOptions.map((option) => (
                 <OptionButton
@@ -336,13 +337,13 @@ export default function OnboardingAdministration() {
 
           {/* Governance & Legal */}
           <div className="mb-3">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
               <Building size={16} className="mr-1.5" />
               Government & Taxes
             </label>
             
             {/* Tax System Quality */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Tax System Quality</p>
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Tax System Quality</p>
             <div className="grid grid-cols-3 gap-1.5 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
@@ -355,7 +356,7 @@ export default function OnboardingAdministration() {
             </div>
 
             {/* Government Efficiency */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Government Efficiency</p>
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Government Efficiency</p>
             <div className="grid grid-cols-3 gap-1.5">
               {qualityOptions.map((option) => (
                 <OptionButton
@@ -370,13 +371,13 @@ export default function OnboardingAdministration() {
 
           {/* Immigration & Residency */}
           <div className="mb-3">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
               <FileText size={16} className="mr-1.5" />
               Visa & Residency
             </label>
             
             {/* Visa Process */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Visa Process</p>
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Visa Process</p>
             <div className="grid grid-cols-3 gap-1.5 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
@@ -389,7 +390,7 @@ export default function OnboardingAdministration() {
             </div>
 
             {/* Stay Duration */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">How long do you plan to stay?</p>
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>How long do you plan to stay?</p>
             <div className="grid grid-cols-3 gap-1.5 mb-2.5">
               {stayDurationOptions.map((option) => (
                 <OptionButton
@@ -402,7 +403,7 @@ export default function OnboardingAdministration() {
             </div>
 
             {/* Residency Path */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">Residency goals</p>
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Residency goals</p>
             <div className="grid grid-cols-3 gap-1.5">
               {residencyPathOptions.map((option) => (
                 <OptionButton
@@ -416,46 +417,46 @@ export default function OnboardingAdministration() {
           </div>
 
           {/* Summary Section */}
-          <div className="mb-3 p-2.5 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-            <h3 className="font-medium text-gray-800 dark:text-white mb-1.5 text-sm">
+          <div className={`mb-3 p-2.5 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg}`}>
+            <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} mb-1.5 ${uiConfig.font.size.sm}`}>
               Your Administrative Preferences:
             </h3>
-            <div className="space-y-0.5 text-xs text-gray-600 dark:text-gray-300">
+            <div className={`space-y-0.5 ${uiConfig.font.size.xs} ${uiConfig.colors.body}`}>
               {formData.healthcare_quality.length > 0 && (
-                <div><span className="font-medium">Healthcare:</span> {formData.healthcare_quality.join(', ')}</div>
+                <div><span className={`${uiConfig.font.weight.medium}`}>Healthcare:</span> {formData.healthcare_quality.join(', ')}</div>
               )}
               {formData.insurance_importance.length > 0 && (
-                <div><span className="font-medium">Insurance:</span> {formData.insurance_importance.join(', ')}</div>
+                <div><span className={`${uiConfig.font.weight.medium}`}>Insurance:</span> {formData.insurance_importance.join(', ')}</div>
               )}
               {formData.safety_importance.length > 0 && (
-                <div><span className="font-medium">Safety:</span> {formData.safety_importance.join(', ')}</div>
+                <div><span className={`${uiConfig.font.weight.medium}`}>Safety:</span> {formData.safety_importance.join(', ')}</div>
               )}
               {formData.tax_preference.length > 0 && (
-                <div><span className="font-medium">Tax system:</span> {formData.tax_preference.join(', ')}</div>
+                <div><span className={`${uiConfig.font.weight.medium}`}>Tax system:</span> {formData.tax_preference.join(', ')}</div>
               )}
               {formData.stay_duration.length > 0 && (
-                <div><span className="font-medium">Stay duration:</span> {formData.stay_duration.join(', ')}</div>
+                <div><span className={`${uiConfig.font.weight.medium}`}>Stay duration:</span> {formData.stay_duration.join(', ')}</div>
               )}
               {formData.residency_path.length > 0 && (
-                <div><span className="font-medium">Goals:</span> {formData.residency_path.join(', ')}</div>
+                <div><span className={`${uiConfig.font.weight.medium}`}>Goals:</span> {formData.residency_path.join(', ')}</div>
               )}
               {formData.special_medical_needs && (
-                <div><span className="font-medium">Special needs:</span> Medical care required</div>
+                <div><span className={`${uiConfig.font.weight.medium}`}>Special needs:</span> Medical care required</div>
               )}
             </div>
           </div>
 
           {/* Pro Tip */}
-          <div className="mb-3 p-2.5 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg">
+          <div className={`mb-3 p-2.5 ${uiConfig.notifications.info} ${uiConfig.layout.radius.lg}`}>
             <div className="flex items-start">
               <div className="mr-2">
-                <svg className="h-4 w-4 text-scout-accent-600 dark:text-scout-accent-400" fill="currentColor" viewBox="0 0 20 20">
+                <svg className={`${uiConfig.icons.size.sm} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
               </div>
               <div>
-                <p className="text-xs text-gray-700 dark:text-gray-300">
-                  <span className="font-medium">Pro Tip:</span> These preferences help us identify locations with the right infrastructure and policies for your needs.
+                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.body}`}>
+                  <span className={`${uiConfig.font.weight.medium}`}>Pro Tip:</span> These preferences help us identify locations with the right infrastructure and policies for your needs.
                 </p>
               </div>
             </div>
@@ -463,21 +464,21 @@ export default function OnboardingAdministration() {
         </form>
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
-        <div className="fixed sm:sticky bottom-0 left-0 right-0 sm:relative bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-4">
+        <div className={`fixed ${uiConfig.responsive.sm}sticky bottom-0 left-0 right-0 ${uiConfig.responsive.sm}relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 ${uiConfig.responsive.sm}p-0 ${uiConfig.responsive.sm}border-0 ${uiConfig.responsive.sm}bg-transparent ${uiConfig.responsive.sm}mt-4`}>
           <div className="max-w-md mx-auto">
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3 shadow-lg sm:shadow-none">
+            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.border} p-3 ${uiConfig.layout.shadow.lg} ${uiConfig.responsive.sm}shadow-none`}>
               <div className="flex justify-between items-center gap-2">
                 <button
                   type="button"
                   onClick={() => navigate('/onboarding/hobbies')}
-                  className="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white font-medium transition-colors min-h-[44px]"
+                  className={`px-4 py-2.5 ${uiConfig.font.size.sm} ${uiConfig.colors.body} hover:${uiConfig.colors.heading} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[44px]`}
                 >
                   ← Back
                 </button>
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className="px-4 py-2.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-colors min-h-[44px]"
+                  className={`px-4 py-2.5 ${uiConfig.font.size.sm} ${uiConfig.colors.hint} hover:${uiConfig.colors.body} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[44px]`}
                 >
                   Skip
                 </button>
@@ -485,7 +486,7 @@ export default function OnboardingAdministration() {
                   type="submit"
                   disabled={loading}
                   onClick={handleSubmit}
-                  className="px-6 py-2.5 text-sm bg-scout-accent-300 hover:bg-scout-accent-400 text-white font-medium rounded-lg transition-colors disabled:opacity-50 min-h-[44px]"
+                  className={`px-6 py-2.5 ${uiConfig.font.size.sm} ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.lg} ${uiConfig.states.disabled} min-h-[44px]`}
                 >
                   {loading ? 'Saving...' : 'Next →'}
                 </button>

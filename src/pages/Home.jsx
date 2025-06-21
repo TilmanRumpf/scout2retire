@@ -11,6 +11,7 @@ import { fetchFavorites } from '../utils/townUtils';
 import { saveJournalEntry } from '../utils/journalUtils';
 import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
 import toast from 'react-hot-toast';
+import { uiConfig } from '../styles/uiConfig';
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -156,12 +157,12 @@ export default function Home() {
         {/* Your Favorites */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-3">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+            <h3 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>
               Your Favorites
             </h3>
             <Link
               to="/favorites"
-              className="text-sm text-green-600 dark:text-green-400 hover:underline"
+              className={`text-sm ${uiConfig.colors.accent} hover:underline`}
             >
               View All
             </Link>
