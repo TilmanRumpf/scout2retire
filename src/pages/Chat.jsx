@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchTowns, fetchFavorites } from '../utils/townUtils';
+import { sanitizeChatMessage, MAX_LENGTHS } from '../utils/sanitizeUtils';
+import PageErrorBoundary from '../components/PageErrorBoundary';
 import QuickNav from '../components/QuickNav';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
@@ -578,7 +580,15 @@ export default function Chat() {
     
     if (!messageInput.trim()) return;
     
-    const messageText = messageInput.trim();
+    // Sanitize and validate the message
+    const validation = sanitizeChatMessage(messageInput);
+    
+    if (!validation.valid) {
+      toast.error(validation.error);
+      return;
+    }
+    
+    const messageText = validation.sanitized;
     setMessageInput('');
     
     if (chatType === 'scout') {
@@ -732,8 +742,13 @@ export default function Chat() {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        <div className="flex flex-col md:flex-row gap-6">
+      <PageErrorBoundary 
+        fallbackTitle="Chat Error"
+        fallbackMessage="We're having trouble loading the chat. Please try refreshing the page."
+        onReset={() => window.location.reload()}
+      >
+        <main className="max-w-6xl mx-auto px-4 py-6">
+          <div className="flex flex-col md:flex-row gap-6">
           {/* Sidebar */}
           <div className="w-full md:w-64 space-y-4">
             {/* Chat navigation */}
@@ -964,22 +979,24 @@ export default function Chat() {
             
             {/* Message input */}
             <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-              <form onSubmit={handleSendMessage} className="flex space-x-2">
-                <input
-                  type="text"
-                  value={messageInput}
-                  onChange={(e) => setMessageInput(e.target.value)}
-                  placeholder={`Message ${
-                    chatType === 'town' && activeTown 
-                      ? activeTown.name + ' chat' 
-                      : chatType === 'lounge' 
-                      ? 'the retirement lounge' 
-                      : chatType === 'friends' && activeFriend
-                      ? activeFriend.friend.full_name || activeFriend.friend.email.split('@')[0]
-                      : 'Scotti'
-                  }...`}
-                  className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
+              <form onSubmit={handleSendMessage} className="space-y-2">
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={messageInput}
+                    onChange={(e) => setMessageInput(e.target.value)}
+                    maxLength={MAX_LENGTHS.CHAT_MESSAGE}
+                    placeholder={`Message ${
+                      chatType === 'town' && activeTown 
+                        ? activeTown.name + ' chat' 
+                        : chatType === 'lounge' 
+                        ? 'the retirement lounge' 
+                        : chatType === 'friends' && activeFriend
+                        ? activeFriend.friend.full_name || activeFriend.friend.email.split('@')[0]
+                        : 'Scotti'
+                    }...`}
+                    className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
                 <button
                   type="submit"
                   disabled={!messageInput.trim()}
@@ -989,11 +1006,18 @@ export default function Chat() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                   </svg>
                 </button>
+                </div>
+                {messageInput.length > 0 && (
+                  <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
+                    {messageInput.length} / {MAX_LENGTHS.CHAT_MESSAGE}
+                  </div>
+                )}
               </form>
             </div>
           </div>
         </div>
-      </main>
+        </main>
+      </PageErrorBoundary>
       
       {/* Bottom navigation for mobile */}
       <QuickNav />

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchJournalEntries, deleteJournalEntry, saveJournalEntry } from '../utils/journalUtils';
+import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
 import QuickNav from '../components/QuickNav';
 import toast from 'react-hot-toast';
 
@@ -73,9 +74,17 @@ export default function Journal() {
       return;
     }
 
+    // Sanitize and validate the journal entry
+    const validation = sanitizeJournalEntry(newNoteContent);
+    
+    if (!validation.valid) {
+      toast.error(validation.error);
+      return;
+    }
+
     setSavingNote(true);
     try {
-      const { success } = await saveJournalEntry(userId, newNoteContent);
+      const { success } = await saveJournalEntry(userId, validation.sanitized);
       if (success) {
         toast.success('Note saved successfully');
         setNewNoteContent('');
@@ -263,12 +272,20 @@ export default function Journal() {
             </button>
           ) : (
             <div className="space-y-4">
-              <textarea
-                value={newNoteContent}
-                onChange={(e) => setNewNoteContent(e.target.value)}
-                placeholder="Write your thoughts about your retirement journey..."
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:border-green-500 focus:ring-1 focus:ring-green-500 min-h-[120px]"
-              />
+              <div>
+                <textarea
+                  value={newNoteContent}
+                  onChange={(e) => setNewNoteContent(e.target.value)}
+                  maxLength={MAX_LENGTHS.JOURNAL_ENTRY}
+                  placeholder="Write your thoughts about your retirement journey..."
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:border-green-500 focus:ring-1 focus:ring-green-500 min-h-[120px]"
+                />
+                {newNoteContent.length > 0 && (
+                  <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-right">
+                    {newNoteContent.length} / {MAX_LENGTHS.JOURNAL_ENTRY}
+                  </div>
+                )}
+              </div>
               <div className="flex justify-end space-x-2">
                 <button
                   onClick={() => {

@@ -5,9 +5,11 @@ import { getCurrentUser } from '../utils/authUtils';
 import CountdownWidget from '../components/CountdownWidget';
 import DailyTownCard from '../components/DailyTownCard';
 import TownCard from '../components/TownCard';
+import PageErrorBoundary from '../components/PageErrorBoundary';
 import QuickNav from '../components/QuickNav';
 import { fetchFavorites } from '../utils/townUtils';
 import { saveJournalEntry } from '../utils/journalUtils';
+import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
 import toast from 'react-hot-toast';
 
 export default function Home() {
@@ -72,11 +74,19 @@ export default function Home() {
       return;
     }
 
+    // Sanitize and validate the journal entry
+    const validation = sanitizeJournalEntry(journalEntry);
+    
+    if (!validation.valid) {
+      toast.error(validation.error);
+      return;
+    }
+
     setSavingJournal(true);
     try {
       const { success, error } = await saveJournalEntry(
         userId,
-        journalEntry,
+        validation.sanitized,
         null // Could link to today's recommended town if needed
       );
 
@@ -120,8 +130,13 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+      <PageErrorBoundary
+        fallbackTitle="Dashboard Error"
+        fallbackMessage="We're having trouble loading your dashboard. Please try refreshing the page."
+        onReset={() => window.location.reload()}
+      >
+        {/* Main content */}
+        <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         {/* Welcome message */}
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
           Welcome{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''}!
@@ -239,9 +254,15 @@ export default function Home() {
             <textarea
               value={journalEntry}
               onChange={(e) => setJournalEntry(e.target.value)}
+              maxLength={MAX_LENGTHS.JOURNAL_ENTRY}
               placeholder="What appeals to you about today's recommended town? How do you envision your life there?"
               className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white h-24 resize-none"
             />
+            {journalEntry.length > 0 && (
+              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-right">
+                {journalEntry.length} / {MAX_LENGTHS.JOURNAL_ENTRY}
+              </div>
+            )}
           </div>
           <button
             onClick={handleJournalSave}
@@ -251,7 +272,8 @@ export default function Home() {
             {savingJournal ? 'Saving...' : 'Save Journal Entry'}
           </button>
         </div>
-      </main>
+        </main>
+      </PageErrorBoundary>
 
       {/* Bottom Navigation (Mobile) */}
       <QuickNav />
