@@ -10,25 +10,95 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const navigate = useNavigate();
 
-  // Removed the auto-redirect useEffect that was causing the issue
+  // Basic email format validation
+  const validateEmail = (email) => {
+    const trimmedEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (!trimmedEmail) {
+      return { valid: false, error: 'Email is required' };
+    }
+    
+    if (!emailRegex.test(trimmedEmail)) {
+      return { valid: false, error: 'Please enter a valid email format' };
+    }
+    
+    return { valid: true, sanitized: trimmedEmail };
+  };
+
+  // Basic password validation
+  const validatePassword = (password) => {
+    // Remove any whitespace
+    const cleanPassword = password.trim();
+    
+    if (!cleanPassword) {
+      return { valid: false, error: 'Password is required' };
+    }
+    
+    if (cleanPassword.length < 8) {
+      return { valid: false, error: 'Password must be at least 8 characters' };
+    }
+    
+    return { valid: true, sanitized: cleanPassword };
+  };
+
+  // Basic input sanitization to prevent XSS
+  const sanitizeInput = (input) => {
+    return input
+      .replace(/[<>]/g, '') // Remove < and > to prevent script tags
+      .replace(/javascript:/gi, '') // Remove javascript: protocol
+      .replace(/on\w+\s*=/gi, ''); // Remove event handlers
+  };
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    
+    // Clear error when user starts typing
+    if (emailError) {
+      setEmailError('');
+    }
+  };
+
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    setPassword(value);
+    
+    // Clear error when user starts typing
+    if (passwordError) {
+      setPasswordError('');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      toast.error('Please enter both email and password');
+    // Validate email
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+      setEmailError(emailValidation.error);
       return;
     }
     
+    // Validate password
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      setPasswordError(passwordValidation.error);
+      return;
+    }
+    
+    // Sanitize inputs
+    const sanitizedEmail = sanitizeInput(emailValidation.sanitized);
+    const sanitizedPassword = sanitizeInput(passwordValidation.sanitized);
+    
     setLoading(true);
-    console.log("Attempting login with:", email);
     
     try {
-      const { success, user, session, error } = await signIn(email, password);
-      
-      console.log("Login response:", { success, user, session, error });
+      const { success, user, session, error } = await signIn(sanitizedEmail, sanitizedPassword);
       
       if (success && user) {
         toast.success('Logged in successfully!');
@@ -94,9 +164,14 @@ export default function Login() {
                   autoComplete="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm dark:bg-gray-700 dark:text-white"
+                  onChange={handleEmailChange}
+                  className={`appearance-none block w-full px-3 py-2 border ${
+                    emailError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm dark:bg-gray-700 dark:text-white`}
                 />
+                {emailError && (
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">{emailError}</p>
+                )}
               </div>
             </div>
 
@@ -112,9 +187,14 @@ export default function Login() {
                   autoComplete="current-password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm dark:bg-gray-700 dark:text-white"
+                  onChange={handlePasswordChange}
+                  className={`appearance-none block w-full px-3 py-2 border ${
+                    passwordError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm dark:bg-gray-700 dark:text-white`}
                 />
+                {passwordError && (
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">{passwordError}</p>
+                )}
               </div>
             </div>
 
