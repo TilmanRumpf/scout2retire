@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from './contexts/ThemeContext';
 import supabase from './utils/supabaseClient';
 import AuthenticatedLayout from './components/AuthenticatedLayout';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Core Pages
 import Home from "./pages/Home";
@@ -124,10 +125,11 @@ const ProtectedRoute = ({ children, onboardingRequired = false }) => {
 
 function App() {
   return (
-    <ThemeProvider>
-      <Router>
-        <Toaster position="top-center" />
-        <Routes>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <Router>
+          <Toaster position="top-center" />
+          <Routes>
           {/* Public routes */}
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/login" element={<Login />} />
@@ -285,6 +287,7 @@ function App() {
         </Routes>
       </Router>
     </ThemeProvider>
+  </ErrorBoundary>
   );
 }
 
