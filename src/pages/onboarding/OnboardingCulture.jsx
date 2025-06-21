@@ -14,10 +14,10 @@ const OptionButton = ({ label, description, isSelected, onClick }) => (
     className={`p-2 sm:p-2.5 rounded-md border-2 transition-all text-center min-h-[44px] ${
       isSelected
         ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20'
-        : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
+        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
     }`}
   >
-    <div className={`text-xs sm:text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : ''}`}>{label}</div>
+    <div className={`text-xs sm:text-sm font-medium ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-200' : 'text-gray-700 dark:text-gray-200'}`}>{label}</div>
     {description && <div className={`text-[10px] sm:text-xs mt-0.5 ${isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'}`}>{description}</div>}
   </button>
 );
@@ -287,7 +287,7 @@ export default function OnboardingCulture() {
             </span>
           </div>
           <span className="text-xs font-medium text-scout-accent-600 dark:text-scout-accent-400">
-            {value}/5
+            {((value - 1) * 25)}%
           </span>
         </div>
         <input

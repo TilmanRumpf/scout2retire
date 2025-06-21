@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signUp } from '../utils/authUtils';
 import toast from 'react-hot-toast';
+import { uiConfig } from '../styles/uiConfig';
 
 export default function Signup() {
   const [fullName, setFullName] = useState('');
@@ -97,11 +98,11 @@ export default function Signup() {
   const getPasswordStrength = (strength) => {
     const strengthLevels = [
       { label: '', color: '' },
-      { label: 'Very Weak', color: 'bg-red-500' },
+      { label: 'Very Weak', color: uiConfig.progress.low },
       { label: 'Weak', color: 'bg-orange-500' },
-      { label: 'Fair', color: 'bg-yellow-500' },
+      { label: 'Fair', color: uiConfig.progress.medium },
       { label: 'Good', color: 'bg-blue-500' },
-      { label: 'Strong', color: 'bg-green-500' }
+      { label: 'Strong', color: uiConfig.progress.high }
     ];
     return strengthLevels[strength] || strengthLevels[0];
   };
@@ -241,24 +242,24 @@ export default function Signup() {
   const strengthInfo = getPasswordStrength(passwordStrength);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className={`min-h-screen ${uiConfig.colors.page} flex flex-col justify-center py-12 sm:px-6 lg:px-8`}>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="text-center text-3xl font-bold text-gray-800 dark:text-white">
+        <h2 className={`text-center text-3xl font-bold ${uiConfig.colors.heading}`}>
           Create your account
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+        <p className={`mt-2 text-center text-sm ${uiConfig.colors.hint}`}>
           Already have an account?{' '}
-          <Link to="/login" className="text-green-600 hover:text-green-500">
+          <Link to="/login" className={`${uiConfig.colors.accent} hover:opacity-80`}>
             Sign in
           </Link>
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className={`${uiConfig.colors.card} py-8 px-4 shadow sm:rounded-lg sm:px-10`}>
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="fullName" className={uiConfig.components.label}>
                 Full Name
               </label>
               <div className="mt-1">
@@ -270,18 +271,18 @@ export default function Signup() {
                   value={fullName}
                   onChange={handleFullNameChange}
                   onBlur={handleFullNameBlur}
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    fullNameError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm dark:bg-gray-700 dark:text-white`}
+                  className={`${uiConfig.components.input} ${
+                    fullNameError ? uiConfig.colors.borderDanger : ''
+                  }`}
                 />
                 {fullNameError && (
-                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">{fullNameError}</p>
+                  <p className={`mt-2 text-sm ${uiConfig.colors.error}`}>{fullNameError}</p>
                 )}
               </div>
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="email" className={uiConfig.components.label}>
                 Email address
               </label>
               <div className="mt-1">
@@ -294,18 +295,18 @@ export default function Signup() {
                   value={email}
                   onChange={handleEmailChange}
                   onBlur={handleEmailBlur}
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    emailError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm dark:bg-gray-700 dark:text-white`}
+                  className={`${uiConfig.components.input} ${
+                    emailError ? uiConfig.colors.borderDanger : ''
+                  }`}
                 />
                 {emailError && (
-                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">{emailError}</p>
+                  <p className={`mt-2 text-sm ${uiConfig.colors.error}`}>{emailError}</p>
                 )}
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="password" className={uiConfig.components.label}>
                 Password
               </label>
               <div className="mt-1">
@@ -317,33 +318,33 @@ export default function Signup() {
                   required
                   value={password}
                   onChange={handlePasswordChange}
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    passwordError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm dark:bg-gray-700 dark:text-white`}
+                  className={`${uiConfig.components.input} ${
+                    passwordError ? uiConfig.colors.borderDanger : ''
+                  }`}
                 />
                 {passwordError && (
-                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">{passwordError}</p>
+                  <p className={`mt-2 text-sm ${uiConfig.colors.error}`}>{passwordError}</p>
                 )}
                 {password && !passwordError && (
-                  <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+                  <div className={`mt-2 p-3 ${uiConfig.colors.input} rounded-md`}>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Password strength:</span>
+                      <span className={uiConfig.colors.hint}>Password strength:</span>
                       <span className={`font-medium ${
-                        passwordStrength <= 2 ? 'text-red-600 dark:text-red-400' :
-                        passwordStrength === 3 ? 'text-yellow-600 dark:text-yellow-400' :
-                        passwordStrength === 4 ? 'text-blue-600 dark:text-blue-400' :
-                        'text-green-600 dark:text-green-400'
+                        passwordStrength <= 2 ? uiConfig.colors.error :
+                        passwordStrength === 3 ? uiConfig.financial.highlight :
+                        passwordStrength === 4 ? uiConfig.notifications.info :
+                        uiConfig.colors.success
                       }`}>
                         {strengthInfo.label}
                       </span>
                     </div>
-                    <div className="mt-2 h-3 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                    <div className={`mt-2 h-3 ${uiConfig.progress.track} rounded-full overflow-hidden`}>
                       <div
                         className={`h-full transition-all duration-300 ${strengthInfo.color}`}
                         style={{ width: `${(passwordStrength / 5) * 100}%` }}
                       />
                     </div>
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    <p className={`mt-2 text-xs ${uiConfig.colors.muted}`}>
                       Tip: Use uppercase, numbers, and special characters for a stronger password
                     </p>
                   </div>
@@ -352,7 +353,7 @@ export default function Signup() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="confirmPassword" className={uiConfig.components.label}>
                 Confirm Password
               </label>
               <div className="mt-1">
@@ -364,12 +365,12 @@ export default function Signup() {
                   required
                   value={confirmPassword}
                   onChange={handleConfirmPasswordChange}
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    confirmPasswordError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm dark:bg-gray-700 dark:text-white`}
+                  className={`${uiConfig.components.input} ${
+                    confirmPasswordError ? uiConfig.colors.borderDanger : ''
+                  }`}
                 />
                 {confirmPasswordError && (
-                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">{confirmPasswordError}</p>
+                  <p className={`mt-2 text-sm ${uiConfig.colors.error}`}>{confirmPasswordError}</p>
                 )}
               </div>
             </div>
@@ -378,7 +379,7 @@ export default function Signup() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`w-full ${uiConfig.components.buttonPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {loading ? 'Creating account...' : 'Create account'}
               </button>

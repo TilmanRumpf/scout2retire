@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { signIn } from '../utils/authUtils';
 import supabase from '../utils/supabaseClient';
 import toast from 'react-hot-toast';
+import { uiConfig } from '../styles/uiConfig';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -136,24 +137,24 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className={`min-h-screen ${uiConfig.colors.page} flex flex-col justify-center py-12 sm:px-6 lg:px-8`}>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+        <h2 className={`mt-6 text-center text-3xl font-extrabold ${uiConfig.colors.heading}`}>
           Sign in to your account
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+        <p className={`mt-2 text-center text-sm ${uiConfig.colors.hint}`}>
           Don't have an account?{' '}
-          <Link to="/signup" className="font-medium text-green-600 hover:text-green-500">
+          <Link to="/signup" className={`font-medium ${uiConfig.colors.accent} hover:opacity-80`}>
             Create one
           </Link>
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className={`${uiConfig.colors.card} py-8 px-4 shadow sm:rounded-lg sm:px-10`}>
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="email" className={uiConfig.components.label}>
                 Email address
               </label>
               <div className="mt-1">
@@ -165,18 +166,18 @@ export default function Login() {
                   required
                   value={email}
                   onChange={handleEmailChange}
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    emailError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm dark:bg-gray-700 dark:text-white`}
+                  className={`${uiConfig.components.input} ${
+                    emailError ? uiConfig.colors.borderDanger : ''
+                  }`}
                 />
                 {emailError && (
-                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">{emailError}</p>
+                  <p className={`mt-2 text-sm ${uiConfig.colors.error}`}>{emailError}</p>
                 )}
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="password" className={uiConfig.components.label}>
                 Password
               </label>
               <div className="mt-1">
@@ -188,19 +189,19 @@ export default function Login() {
                   required
                   value={password}
                   onChange={handlePasswordChange}
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    passwordError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm dark:bg-gray-700 dark:text-white`}
+                  className={`${uiConfig.components.input} ${
+                    passwordError ? uiConfig.colors.borderDanger : ''
+                  }`}
                 />
                 {passwordError && (
-                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">{passwordError}</p>
+                  <p className={`mt-2 text-sm ${uiConfig.colors.error}`}>{passwordError}</p>
                 )}
               </div>
             </div>
 
             <div className="flex items-center justify-between">
               <div className="text-sm">
-                <Link to="/reset-password" className="font-medium text-green-600 hover:text-green-500">
+                <Link to="/reset-password" className={`font-medium ${uiConfig.colors.accent} hover:opacity-80`}>
                   Forgot your password?
                 </Link>
               </div>
@@ -210,7 +211,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                className={`w-full ${uiConfig.components.buttonPrimary} disabled:opacity-50`}
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
