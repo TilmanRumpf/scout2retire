@@ -524,56 +524,31 @@ export default function TownDiscovery() {
                 
                 {/* Category Scores Grid - All 6 Onboarding Categories */}
                 {town.categoryScores && (
-                  <div className="mb-3 grid grid-cols-3 gap-x-3 gap-y-1.5 text-xs">
-                    {/* Row 1 */}
-                    <div className="flex justify-between items-center">
+                  <div className="mb-3 grid grid-rows-2 grid-flow-col gap-x-4 gap-y-1.5 text-xs">
+                    {/* These will flow top-to-bottom (2 rows), then right (3 columns) */}
+                    <div className="flex items-center gap-1">
                       <span className={`${uiConfig.colors.hint} capitalize`}>Region</span>
-                      <span className={`font-medium ${
-                        town.categoryScores.region >= 80 ? uiConfig.colors.accent :
-                        town.categoryScores.region >= 60 ? uiConfig.colors.body :
-                        uiConfig.colors.muted
-                      }`}>{town.categoryScores.region || 0}%</span>
+                      <span className={`font-medium ${uiConfig.colors.hint}`}>{town.categoryScores.region || 0}%</span>
                     </div>
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-1">
                       <span className={`${uiConfig.colors.hint} capitalize`}>Climate</span>
-                      <span className={`font-medium ${
-                        town.categoryScores.climate >= 80 ? uiConfig.colors.accent :
-                        town.categoryScores.climate >= 60 ? uiConfig.colors.body :
-                        uiConfig.colors.muted
-                      }`}>{town.categoryScores.climate || 0}%</span>
+                      <span className={`font-medium ${uiConfig.colors.hint}`}>{town.categoryScores.climate || 0}%</span>
                     </div>
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-1">
                       <span className={`${uiConfig.colors.hint} capitalize`}>Culture</span>
-                      <span className={`font-medium ${
-                        town.categoryScores.culture >= 80 ? uiConfig.colors.accent :
-                        town.categoryScores.culture >= 60 ? uiConfig.colors.body :
-                        uiConfig.colors.muted
-                      }`}>{town.categoryScores.culture || 0}%</span>
+                      <span className={`font-medium ${uiConfig.colors.hint}`}>{town.categoryScores.culture || 0}%</span>
                     </div>
-                    {/* Row 2 */}
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-1">
                       <span className={`${uiConfig.colors.hint} capitalize`}>Hobbies</span>
-                      <span className={`font-medium ${
-                        town.categoryScores.hobbies >= 80 ? uiConfig.colors.accent :
-                        town.categoryScores.hobbies >= 60 ? uiConfig.colors.body :
-                        uiConfig.colors.muted
-                      }`}>{town.categoryScores.hobbies || 0}%</span>
+                      <span className={`font-medium ${uiConfig.colors.hint}`}>{town.categoryScores.hobbies || 0}%</span>
                     </div>
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-1">
                       <span className={`${uiConfig.colors.hint} capitalize`}>Admin</span>
-                      <span className={`font-medium ${
-                        town.categoryScores.administration >= 80 ? uiConfig.colors.accent :
-                        town.categoryScores.administration >= 60 ? uiConfig.colors.body :
-                        uiConfig.colors.muted
-                      }`}>{town.categoryScores.administration || 0}%</span>
+                      <span className={`font-medium ${uiConfig.colors.hint}`}>{town.categoryScores.administration || 0}%</span>
                     </div>
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-1">
                       <span className={`${uiConfig.colors.hint} capitalize`}>Budget</span>
-                      <span className={`font-medium ${
-                        town.categoryScores.budget >= 80 ? uiConfig.colors.accent :
-                        town.categoryScores.budget >= 60 ? uiConfig.colors.body :
-                        uiConfig.colors.muted
-                      }`}>{town.categoryScores.budget || 0}%</span>
+                      <span className={`font-medium ${uiConfig.colors.hint}`}>{town.categoryScores.budget || 0}%</span>
                     </div>
                   </div>
                 )}

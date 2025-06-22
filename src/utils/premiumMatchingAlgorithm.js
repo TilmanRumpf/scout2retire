@@ -549,30 +549,110 @@ const calculateSafetyScore = (town, preferences) => {
 const calculateRegionScore = (town, preferences) => {
   if (!preferences.region_preferences) return 70;
   
-  let score = 50;
+  let score = 0;
+  let factors = 0;
   
-  // Country match
-  if (preferences.region_preferences.countries?.includes(town.country)) {
-    score = 100;
-  }
-  // Region match
-  else if (preferences.region_preferences.regions?.some(region => 
-    town.country.toLowerCase().includes(region.toLowerCase()))) {
-    score = 80;
-  }
-  
-  // Geographic features
-  if (preferences.region_preferences.geographic_features?.length > 0) {
-    const townFeatures = (town.geographic_features || '').toLowerCase();
-    const matches = preferences.region_preferences.geographic_features.filter(feature =>
-      townFeatures.includes(feature.toLowerCase())
-    );
-    if (matches.length > 0) {
-      score += 10 * matches.length;
+  // 1. Direct country match (highest priority)
+  if (preferences.region_preferences.countries?.length > 0) {
+    const userCountries = preferences.region_preferences.countries.map(c => c.toLowerCase());
+    const townCountry = town.country.toLowerCase();
+    
+    if (userCountries.includes(townCountry)) {
+      score += 100;
+      factors++;
+    } else {
+      // Check if neighboring country
+      const neighbors = {
+        'portugal': ['spain'],
+        'spain': ['portugal', 'france'],
+        'france': ['spain', 'italy', 'belgium', 'germany', 'switzerland'],
+        'italy': ['france', 'switzerland', 'austria', 'slovenia'],
+        'germany': ['france', 'netherlands', 'belgium', 'switzerland', 'austria', 'czech republic', 'poland'],
+        'mexico': ['guatemala', 'belize'],
+        'costa rica': ['panama', 'nicaragua'],
+        'panama': ['costa rica', 'colombia'],
+        'thailand': ['malaysia', 'cambodia', 'laos', 'myanmar'],
+        'malaysia': ['thailand', 'singapore', 'indonesia']
+      };
+      
+      // Check if town is in a neighboring country
+      let isNeighbor = false;
+      userCountries.forEach(userCountry => {
+        if (neighbors[userCountry]?.includes(townCountry)) {
+          isNeighbor = true;
+        }
+      });
+      
+      if (isNeighbor) {
+        score += 85; // High score for neighbors
+        factors++;
+      } else {
+        score += 40; // Base score for non-selected countries
+        factors++;
+      }
     }
   }
   
-  return Math.min(100, score);
+  // 2. Region/continent match
+  if (preferences.region_preferences.regions?.length > 0) {
+    const userRegions = preferences.region_preferences.regions.map(r => r.toLowerCase());
+    const townCountry = town.country.toLowerCase();
+    
+    const regionMappings = {
+      'europe': ['portugal', 'spain', 'france', 'italy', 'greece', 'germany', 'netherlands', 'belgium', 'austria', 'switzerland', 'czech republic', 'poland', 'croatia', 'malta', 'cyprus'],
+      'mediterranean': ['spain', 'france', 'italy', 'greece', 'croatia', 'malta', 'cyprus', 'turkey', 'morocco', 'tunisia'],
+      'iberian': ['portugal', 'spain'],
+      'north america': ['mexico', 'united states', 'canada'],
+      'central america': ['costa rica', 'panama', 'nicaragua', 'guatemala', 'belize', 'honduras', 'el salvador'],
+      'south america': ['ecuador', 'colombia', 'peru', 'chile', 'argentina', 'uruguay', 'brazil'],
+      'southeast asia': ['thailand', 'malaysia', 'philippines', 'vietnam', 'cambodia', 'indonesia', 'singapore'],
+      'caribbean': ['barbados', 'dominican republic', 'jamaica', 'bahamas', 'trinidad and tobago']
+    };
+    
+    let regionMatch = false;
+    userRegions.forEach(userRegion => {
+      Object.entries(regionMappings).forEach(([region, countries]) => {
+        if (userRegion.includes(region) && countries.includes(townCountry)) {
+          regionMatch = true;
+        }
+      });
+    });
+    
+    if (regionMatch) {
+      score += 90;
+      factors++;
+    }
+  }
+  
+  // 3. Geographic features match
+  if (preferences.region_preferences.geographic_features?.length > 0) {
+    const townFeatures = (town.geographic_features || '').toLowerCase();
+    const userFeatures = preferences.region_preferences.geographic_features;
+    
+    let featureScore = 0;
+    let featureCount = 0;
+    
+    userFeatures.forEach(feature => {
+      const featureLower = feature.toLowerCase();
+      if (townFeatures.includes(featureLower) || 
+          (featureLower === 'coastal' && townFeatures.includes('coast')) ||
+          (featureLower === 'mountains' && townFeatures.includes('mountain')) ||
+          (featureLower === 'islands' && townFeatures.includes('island'))) {
+        featureScore += 95;
+        featureCount++;
+      }
+    });
+    
+    if (featureCount > 0) {
+      score += featureScore / featureCount;
+      factors++;
+    }
+  }
+  
+  // Calculate weighted average
+  if (factors === 0) return 70; // Default if no preferences
+  
+  return Math.round(score / factors);
 };
 
 const calculateAdministrationScore = (town, preferences) => {
