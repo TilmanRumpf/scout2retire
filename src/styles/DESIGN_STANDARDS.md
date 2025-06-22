@@ -39,39 +39,149 @@ import { uiConfig } from '../styles/uiConfig';
 - Shadow: `uiConfig.layout.shadow.md` (hover: `shadow.lg`)
 - Overflow: hidden for image containment
 
-### Option Buttons
-- Selected state: 
-  ```
-  border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20
-  ```
-- Unselected state:
-  ```
-  border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30
-  ```
-- Minimum height: 44px (accessibility)
+### Option Buttons & Dropdowns
 
-### Sliders
-- Display format: Percentage (0-100%)
-- Formula: `((value - 1) * 25)%` for 1-5 scale
-- Visual feedback with gradient fill
-- Scout accent colors for active state
+#### Visual Consistency Requirements
+- **Border Width**: Always use `border-2` for ALL interactive elements (buttons, dropdowns, selects)
+- **Minimum Height**: 44px (accessibility requirement)
+- **Text Alignment**: Center-aligned for both buttons and dropdowns
+- **Font Weight**: Medium (`font-medium`) for selected state
+- **Font Size**: Responsive sizing `text-xs sm:text-sm` (12px mobile, 14px desktop)
+- **Padding**: Responsive padding `p-2.5 sm:p-3` for space efficiency
+
+#### Color States
+**Selected State (Light Mode)**:
+```
+border-2 border-scout-accent-300
+bg-scout-accent-50
+text-scout-accent-300
+font-medium
+```
+
+**Selected State (Dark Mode)**:
+```
+border-2 border-scout-accent-300
+bg-scout-accent-900/20
+text-scout-accent-300
+font-medium
+```
+
+**Unselected State (Light Mode)**:
+```
+border-2 border-gray-300
+bg-white
+text-gray-700
+```
+
+**Unselected State (Dark Mode)**:
+```
+border-2 border-gray-600
+bg-gray-700/30
+text-gray-200
+```
+
+**Hover State (Unselected)**:
+```
+hover:border-scout-accent-200 dark:hover:border-scout-accent-400
+```
+
+#### Implementation Notes
+- Text color in selected state MUST be light green (`text-scout-accent-300`) in both light and dark modes
+- Ensure vertical text alignment using `lineHeight` style for dropdowns
+- All interactive elements must have consistent border thickness for visual harmony
+- Button labels use responsive font sizing to prevent text overflow on mobile
+- Description text (if present) uses `text-[10px] sm:text-xs` for secondary information
+
+### Sliders (ImportanceSlider Component)
+
+#### Mandatory Layout Structure
+```javascript
+<div className="mb-2">
+  <div className="flex items-center justify-between mb-1">
+    <div className="flex items-center">
+      <Icon size={16} className="mr-1.5 {text-color}" />
+      <span className="text-xs sm:text-sm {text-color}">{label}</span>
+    </div>
+    <span className="text-xs sm:text-sm font-medium text-scout-accent-300 dark:text-scout-accent-300">
+      {percentage}%
+    </span>
+  </div>
+  <input type="range" ... />
+</div>
+```
+
+#### Color Specifications
+
+**Light Mode**:
+- Label text: `text-gray-700`
+- Icon color: Inherits from label text (`text-gray-700`)
+- Percentage value: `text-scout-accent-300` (light green)
+- Track background: `bg-gray-200`
+- Active track: `bg-scout-accent-300`
+- Thumb: `bg-scout-accent-300`
+
+**Dark Mode**:
+- Label text: `text-gray-300`
+- Icon color: Inherits from label text (`text-gray-300`)
+- Percentage value: `text-scout-accent-300` (light green)
+- Track background: `bg-gray-700`
+- Active track: `bg-scout-accent-300`
+- Thumb: `bg-scout-accent-300`
+
+#### Implementation Requirements
+- **Font Size Consistency**: Both label and percentage MUST use `text-xs sm:text-sm`
+- **Icon Behavior**: Icons MUST inherit parent text color (no forced accent)
+- **Percentage Format**: Display as `{value}%` where value = `((sliderValue - 1) * 25)`
+- **Visual Feedback**: Gradient fill showing progress
+- **Spacing**: Container `mb-2`, header row `mb-1`
+- **Accessibility**: Minimum touch target 44px for thumb
 
 ## Color Palette Usage
 
-### Primary Brand Color
-- Scout Accent (sage green): Used for primary actions, selections, and brand identity
-- Available shades: 50-900
+### Primary Brand Color - Scout Accent (Sage Green)
+- **Hex Value**: #8fbc8f
+- **Usage**: Primary actions, selections, active states, and brand identity
+- **Available Shades**: 50-900
+- **Key Shade**: scout-accent-300 (primary interactive color)
+
+### Light Green Text Color
+**Critical Rule**: The light green color (`text-scout-accent-300`) is used consistently across both light and dark modes for:
+- Selected button/dropdown text
+- Slider percentage values
+- Active/selected state indicators
+- Form field focus states
+
+### Component-Specific Color Guidelines
+
+#### Buttons & Dropdowns
+| State | Light Mode | Dark Mode |
+|-------|------------|------------|
+| Selected Text | `text-scout-accent-300` | `text-scout-accent-300` |
+| Selected Background | `bg-scout-accent-50` | `bg-scout-accent-900/20` |
+| Selected Border | `border-scout-accent-300` | `border-scout-accent-300` |
+| Unselected Text | `text-gray-700` | `text-gray-200` |
+| Unselected Background | `bg-white` | `bg-gray-700/30` |
+| Unselected Border | `border-gray-300` | `border-gray-600` |
+
+#### Text & Icons
+| Element | Light Mode | Dark Mode |
+|---------|------------|------------|
+| Headings | `text-gray-800` | `text-white` |
+| Body Text | `text-gray-700` | `text-gray-300` |
+| Hint Text | `text-gray-500` | `text-gray-400` |
+| Icons (inherit) | Parent text color | Parent text color |
 
 ### Semantic Colors
-- Success: Green indicators for positive feedback
-- Warning: Yellow/amber for cautions
-- Error/Danger: Red for errors and destructive actions
-- Info: Blue for informational content
+- **Success**: Scout accent shades for positive feedback
+- **Warning**: Yellow/amber (`yellow-500`) for cautions
+- **Error**: Red (`red-600`) for errors and destructive actions
+- **Info**: Blue (`blue-600`) for informational content
 
-### Dark Mode
-- All components must support dark mode
-- Use appropriate color variants from uiConfig
-- Ensure sufficient contrast ratios
+### Dark Mode Requirements
+- All components MUST support dark mode
+- Maintain WCAG AA contrast ratios (4.5:1 for normal text, 3:1 for large text)
+- Test all color combinations in both modes
+- Special attention to `text-scout-accent-300` which remains the same in both modes
 
 ## Typography
 
@@ -105,17 +215,36 @@ import { uiConfig } from '../styles/uiConfig';
 
 ## Form Elements
 
-### Input Fields
-- Border: `border-gray-300 dark:border-gray-600`
-- Focus: `focus:border-scout-accent-300`
-- Background: `bg-white dark:bg-gray-700`
-- Min height: 44px for touch targets
+### Input Fields & Selects
+- **Border**: `border-2 border-gray-300 dark:border-gray-600`
+- **Focus**: `focus:border-scout-accent-300`
+- **Background**: `bg-white dark:bg-gray-700`
+- **Text**: `text-gray-800 dark:text-white`
+- **Min height**: 44px (accessibility requirement)
+- **Padding**: `px-3` for horizontal padding
+
+### Dropdowns (Select Elements)
+**Special Requirements**:
+- Must match button styling when selected
+- Text must be vertically centered using `lineHeight` style
+- Center-aligned text to match buttons
+- Selected state uses same colors as buttons:
+  - Border: `border-2 border-scout-accent-300`
+  - Background: `bg-scout-accent-50 dark:bg-scout-accent-900/20`
+  - Text: `text-scout-accent-300 dark:text-scout-accent-300`
+  - Font weight: `font-medium`
 
 ### Buttons
-- Primary: `uiConfig.colors.btnPrimary`
-- Secondary: `uiConfig.colors.btnSecondary`
-- Consistent padding: `px-4 py-2` or `px-6 py-2.5`
-- Border radius: `uiConfig.layout.radius.md`
+- **Primary**: Scout accent 300 background with white text
+  - Light: `bg-scout-accent-300 text-white hover:bg-scout-accent-400`
+  - Dark: Same as light mode
+- **Secondary**: Gray borders with theme-aware text
+  - Light: `border-gray-300 text-gray-700 bg-white`
+  - Dark: `border-gray-600 text-gray-300 bg-gray-800`
+- **Padding**: `px-3 py-2.5` (updated for space efficiency)
+- **Font Size**: `text-xs sm:text-sm` (12px mobile, 14px desktop)
+- **Border**: Always `border-2` for consistency
+- **Border radius**: `rounded-lg`
 
 ## Animation Standards
 
@@ -205,7 +334,40 @@ className="bg-white rounded-lg"
 - Document any exceptions with justification
 - Keep examples current
 
+## Implementation Checklist
+
+When implementing UI components, verify:
+
+### Color Consistency
+- [ ] Selected elements use `text-scout-accent-300` in BOTH light and dark modes
+- [ ] Icons inherit parent text color (no forced accent colors)
+- [ ] Borders maintain consistent `border-2` width
+- [ ] Hover states are implemented for interactive elements
+
+### Typography
+- [ ] Slider labels and values use matching font sizes
+- [ ] Selected state text uses `font-medium` weight
+- [ ] Responsive font sizing is consistent (`text-xs sm:text-sm`)
+
+### Accessibility
+- [ ] All interactive elements have 44px minimum height
+- [ ] Color contrast meets WCAG AA standards
+- [ ] Focus states are clearly visible
+- [ ] Text remains legible in both color modes
+
+### Testing
+- [ ] Component appearance in light mode
+- [ ] Component appearance in dark mode
+- [ ] Hover and focus states
+- [ ] Mobile responsiveness
+- [ ] Border consistency across states
+
 ---
 
-Last Updated: 2025-06-21
-Version: 1.0.0
+Last Updated: 2025-06-22
+Version: 2.1.0
+
+Changelog:
+- v2.1.0 (2025-06-22): Updated button sizing for better space efficiency (reduced font size and padding)
+- v2.0.0 (2025-06-22): Major update with comprehensive color specifications for light/dark modes
+- v1.0.0 (2025-06-21): Initial version

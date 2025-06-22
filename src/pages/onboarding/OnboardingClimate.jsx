@@ -8,18 +8,17 @@ import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
 // Option Button Component
-const OptionButton = ({ label, description, isSelected, onClick }) => (
+const OptionButton = ({ label, isSelected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`p-2 sm:p-2.5 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center min-h-[44px] ${
+    className={`p-2.5 sm:p-3 lg:p-4 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] ${
       isSelected
         ? uiConfig.components.buttonVariants.selected
         : uiConfig.components.buttonVariants.unselected
     }`}
   >
-    <div className={`${uiConfig.font.size.xs} ${uiConfig.responsive.sm}${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${isSelected ? uiConfig.colors.accent : ''}`}>{label}</div>
-    {description && <div className={`text-[10px] ${uiConfig.responsive.sm}${uiConfig.font.size.xs} mt-0.5 ${isSelected ? uiConfig.colors.accent : uiConfig.colors.hint}`}>{description}</div>}
+    <div className={`text-xs sm:text-sm lg:text-base ${uiConfig.font.weight.medium} ${isSelected ? 'text-scout-accent-300 dark:text-scout-accent-300' : ''}`}>{label}</div>
   </button>
 );
 
@@ -30,7 +29,7 @@ export default function OnboardingClimate() {
     humidity_level: [],
     sunshine: [],
     precipitation: [],
-    seasonal_preference: 'Optional'
+    seasonal_preference: ''
   });
   
   const [loading, setLoading] = useState(false);
@@ -67,7 +66,7 @@ export default function OnboardingClimate() {
             humidity_level: data.climate_preferences.humidity_level || [],
             sunshine: data.climate_preferences.sunshine || [],
             precipitation: data.climate_preferences.precipitation || [],
-            seasonal_preference: data.climate_preferences.seasonal_preference || 'Optional'
+            seasonal_preference: data.climate_preferences.seasonal_preference || ''
           }));
         }
       } catch (err) {
@@ -174,49 +173,49 @@ export default function OnboardingClimate() {
   }
 
   const summerOptions = [
-    { value: 'mild', label: 'Mild', description: '18-24°C' },
-    { value: 'warm', label: 'Warm', description: '24-30°C' },
-    { value: 'hot', label: 'Hot', description: '30°C+' }
+    { value: 'mild', label: 'Mild' },
+    { value: 'warm', label: 'Warm' },
+    { value: 'hot', label: 'Hot' }
   ];
 
   const winterOptions = [
-    { value: 'cold', label: 'Cold', description: 'Below 0°C' },
-    { value: 'cool', label: 'Cool', description: '0-10°C' },
-    { value: 'mild', label: 'Mild', description: '10°C+' }
+    { value: 'cold', label: 'Cold' },
+    { value: 'cool', label: 'Cool' },
+    { value: 'mild', label: 'Mild' }
   ];
 
   const humidityOptions = [
-    { value: 'dry', label: 'Dry', description: '<40%' },
-    { value: 'balanced', label: 'Balanced', description: '40-60%' },
-    { value: 'humid', label: 'Humid', description: '>60%' }
+    { value: 'dry', label: 'Dry' },
+    { value: 'balanced', label: 'Balanced' },
+    { value: 'humid', label: 'Humid' }
   ];
 
   const sunshineOptions = [
-    { value: 'mostly_sunny', label: 'Often Sunny', description: '250+ days' },
-    { value: 'balanced', label: 'Balanced', description: '150-250 days' },
-    { value: 'often_cloudy', label: 'Less Sunny', description: '<150 days' }
+    { value: 'mostly_sunny', label: 'Often Sunny' },
+    { value: 'balanced', label: 'Balanced' },
+    { value: 'often_cloudy', label: 'Less Sunny' }
   ];
 
   const precipitationOptions = [
-    { value: 'mostly_dry', label: 'Mostly Dry', description: '<500mm/yr' },
-    { value: 'balanced', label: 'Balanced', description: '500-1000mm' },
-    { value: 'often_rainy', label: 'Often Rainy', description: '>1000mm/yr' }
+    { value: 'mostly_dry', label: 'Mostly Dry' },
+    { value: 'balanced', label: 'Balanced' },
+    { value: 'often_rainy', label: 'Often Rainy' }
   ];
 
   return (
     <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 ${uiConfig.responsive.sm}pb-4`}>
-      <div className="max-w-md mx-auto p-4 sm:p-4">
+      <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
         <OnboardingStepNavigation 
           currentStep="climate_preferences" 
           completedSteps={progress.completedSteps} 
           className="mb-3" 
         />
         
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 ${uiConfig.responsive.sm}p-5`}>
+        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 sm:p-6 lg:p-8`}>
           {/* Header */}
           <div className="mb-3">
-            <h1 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Climate Preferences</h1>
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-0.5`}>
+            <h1 className={`text-lg sm:text-xl lg:text-2xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Climate Preferences</h1>
+            <p className={`text-xs sm:text-sm lg:text-base ${uiConfig.colors.hint} mt-0.5 sm:mt-1`}>
               Select your ideal climate conditions - choose multiple options
             </p>
           </div>
@@ -227,12 +226,11 @@ export default function OnboardingClimate() {
               <Sun size={16} className="mr-1.5" />
               Summer Climate
             </label>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
               {summerOptions.map((option) => (
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  description={option.description}
                   isSelected={formData.summer_climate_preference?.includes(option.value)}
                   onClick={() => handleClimateToggle('summer', option.value)}
                 />
@@ -246,12 +244,11 @@ export default function OnboardingClimate() {
               <Snowflake size={16} className="mr-1.5" />
               Winter Climate
             </label>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
               {winterOptions.map((option) => (
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  description={option.description}
                   isSelected={formData.winter_climate_preference?.includes(option.value)}
                   onClick={() => handleClimateToggle('winter', option.value)}
                 />
@@ -265,12 +262,11 @@ export default function OnboardingClimate() {
               <Droplets size={16} className="mr-1.5" />
               Humidity
             </label>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
               {humidityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  description={option.description}
                   isSelected={formData.humidity_level?.includes(option.value)}
                   onClick={() => handleMultiChoiceToggle('humidity_level', option.value)}
                 />
@@ -284,12 +280,11 @@ export default function OnboardingClimate() {
               <Sun size={16} className="mr-1.5" />
               Sunshine
             </label>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
               {sunshineOptions.map((option) => (
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  description={option.description}
                   isSelected={formData.sunshine?.includes(option.value)}
                   onClick={() => handleMultiChoiceToggle('sunshine', option.value)}
                 />
@@ -303,12 +298,11 @@ export default function OnboardingClimate() {
               <CloudRain size={16} className="mr-1.5" />
               Precipitation
             </label>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
               {precipitationOptions.map((option) => (
                 <OptionButton
                   key={option.value}
                   label={option.label}
-                  description={option.description}
                   isSelected={formData.precipitation?.includes(option.value)}
                   onClick={() => handleMultiChoiceToggle('precipitation', option.value)}
                 />
@@ -327,6 +321,7 @@ export default function OnboardingClimate() {
               onChange={handleInputChange}
               className={`${uiConfig.components.select} appearance-none cursor-pointer focus:ring-0 focus:${uiConfig.colors.borderActive} ${uiConfig.animation.transition} h-[44px]`}
             >
+              <option value="">Select preference</option>
               <option value="Optional">No specific preference</option>
               <option value="all_seasons">I enjoy all seasons equally</option>
               <option value="summer_focused">I prefer warm seasons</option>
@@ -360,7 +355,7 @@ export default function OnboardingClimate() {
                 {formData.precipitation.length > 0 && (
                   <div><span className={`${uiConfig.font.weight.medium}`}>Precipitation:</span> {formData.precipitation.join(', ')}</div>
                 )}
-                {formData.seasonal_preference !== 'Optional' && (
+                {formData.seasonal_preference && formData.seasonal_preference !== 'Optional' && (
                   <div><span className={`${uiConfig.font.weight.medium}`}>Seasonal:</span> {formData.seasonal_preference.replace(/_/g, ' ')}</div>
                 )}
               </div>
