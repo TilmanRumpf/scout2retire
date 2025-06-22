@@ -700,7 +700,7 @@ const generatePremiumInsights = (town, preferences, scores) => {
   if (scores.budget >= 90 && scores.healthcare >= 80) {
     insights.push({
       type: 'value',
-      text: 'Exceptional value: Premium healthcare at an affordable cost',
+      text: 'Premium healthcare at an affordable cost',
       priority: 1
     });
   }
@@ -710,7 +710,7 @@ const generatePremiumInsights = (town, preferences, scores) => {
   if (highScores >= 5) {
     insights.push({
       type: 'match',
-      text: 'Near-perfect match across multiple categories',
+      text: 'Strong match across multiple categories',
       priority: 1
     });
   }
@@ -719,7 +719,7 @@ const generatePremiumInsights = (town, preferences, scores) => {
   if (scores.culture >= 85 && scores.lifestyle >= 80) {
     insights.push({
       type: 'lifestyle',
-      text: 'Excellent cultural fit with vibrant expat community',
+      text: 'Strong cultural fit with vibrant expat community',
       priority: 2
     });
   }
@@ -728,16 +728,16 @@ const generatePremiumInsights = (town, preferences, scores) => {
   if (scores.climate >= 90) {
     insights.push({
       type: 'climate',
-      text: 'Ideal climate matches your year-round preferences',
+      text: 'Climate matches your year-round preferences',
       priority: 3
     });
   }
   
-  // Hidden gem
+  // Small town
   if (scores.budget >= 85 && town.population < 100000) {
     insights.push({
       type: 'discovery',
-      text: 'Hidden gem: Affordable small town with great amenities',
+      text: 'Affordable small town with amenities',
       priority: 2
     });
   }
@@ -806,7 +806,7 @@ const identifyHighlights = (town, scores) => {
   }
   
   if (scores.safety >= 95) {
-    highlights.push('Exceptionally safe');
+    highlights.push('Very safe');
   }
   
   if (scores.infrastructure >= 90) {
@@ -839,7 +839,7 @@ const generateMatchReasons = (scores, preferences, town) => {
   });
   
   if (reasons.length === 0) {
-    reasons.push('Well-balanced destination across all categories');
+    reasons.push('Balanced across all categories');
   }
   
   return reasons;
@@ -855,13 +855,13 @@ const getCategoryReason = (category, score, preferences, town) => {
         const savings = preferences.costs.total_monthly_budget - town.cost_index;
         return `Budget-friendly: Save $${Math.round(savings)}/month`;
       }
-      return 'Excellent value for money';
+      return 'Good value for money';
       
     case 'healthcare':
-      return `Healthcare excellence (Score: ${town.healthcare_score}/10)`;
+      return 'Quality healthcare facilities';
       
     case 'climate':
-      return 'Perfect climate match for your preferences';
+      return 'Climate matches your preferences';
       
     case 'culture':
       if (town.expat_population?.includes('Large')) {
@@ -870,13 +870,13 @@ const getCategoryReason = (category, score, preferences, town) => {
       return 'Strong cultural compatibility';
       
     case 'lifestyle':
-      return 'Excellent match for your activities and interests';
+      return 'Matches your activities and interests';
       
     case 'infrastructure':
       return 'Modern infrastructure and connectivity';
       
     case 'safety':
-      return `Very safe location (Score: ${town.safety_score}/10)`;
+      return 'Very safe location';
       
     default:
       return `Strong ${category} compatibility`;

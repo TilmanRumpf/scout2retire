@@ -3,12 +3,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { fetchTowns, fetchFavorites } from '../utils/townUtils';
 import { getCurrentUser } from '../utils/authUtils';
 import LikeButton from '../components/LikeButton';
+import LazyImage from '../components/LazyImage';
 import PageErrorBoundary from '../components/PageErrorBoundary';
 import QuickNav from '../components/QuickNav';
 import TownRadarChart from '../components/TownRadarChart';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, MapPin } from 'lucide-react';
 
 export default function TownDiscovery() {
   const [towns, setTowns] = useState([]);
@@ -225,19 +226,13 @@ export default function TownDiscovery() {
           <div className="mb-8">
             <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
               <div className="relative h-64 md:h-80">
-                {selectedTownData.image_url_1 ? (
-                  <img
-                    src={selectedTownData.image_url_1}
-                    alt={selectedTownData.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className={`w-full h-full ${uiConfig.colors.input} flex items-center justify-center`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-16 w-16 ${uiConfig.colors.muted}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                  </div>
-                )}
+                <LazyImage
+                  src={selectedTownData.image_url_1}
+                  alt={selectedTownData.name}
+                  className="w-full h-full object-cover"
+                  fallbackIcon={MapPin}
+                  fallbackIconSize={64}
+                />
                 <div className="absolute top-4 right-4">
                   {userId && (
                     <LikeButton
@@ -449,19 +444,13 @@ export default function TownDiscovery() {
               }`}
             >
               <div className="relative h-40">
-                {town.image_url_1 ? (
-                  <img
-                    src={town.image_url_1}
-                    alt={town.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className={`w-full h-full ${uiConfig.colors.input} flex items-center justify-center`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-12 w-12 ${uiConfig.colors.muted}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                  </div>
-                )}
+                <LazyImage
+                  src={town.image_url_1}
+                  alt={town.name}
+                  className="w-full h-full object-cover"
+                  fallbackIcon={MapPin}
+                  fallbackIconSize={48}
+                />
                 
                 {/* Match Score with Value Rating */}
                 {town.matchScore && (
@@ -489,47 +478,46 @@ export default function TownDiscovery() {
               </div>
               
               <div className="p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>{town.name}</h3>
-                  <span className={`text-sm ${uiConfig.colors.hint}`}>{town.country}</span>
+                {/* Header: Town Name, Country (left) and Price (right) */}
+                <div className="flex justify-between items-baseline mb-3">
+                  <div className={`text-sm ${uiConfig.colors.heading}`}>
+                    {town.name}, {town.country}
+                  </div>
+                  {town.cost_index && (
+                    <span className={`text-sm ${uiConfig.colors.body}`}>
+                      ${town.cost_index}/mo
+                    </span>
+                  )}
                 </div>
                 
-                {/* Premium Insights or Match Reasons */}
-                {town.insights && town.insights.length > 0 ? (
-                  <div className="mb-3">
-                    <div className={`text-xs ${uiConfig.colors.accent} font-medium line-clamp-2`}>
+                {/* Highlights - Always 2 lines */}
+                <div className={`mb-3 h-8 ${uiConfig.colors.body} text-xs leading-4`}>
+                  {town.insights && town.insights.length > 0 ? (
+                    <div className="line-clamp-2">
                       {town.insights[0]}
                     </div>
-                  </div>
-                ) : town.matchReasons && town.matchReasons.length > 0 ? (
-                  <div className="mb-3 space-y-1">
-                    {town.matchReasons.slice(0, 2).map((reason, index) => (
-                      <div key={index} className={`text-xs ${uiConfig.colors.success} line-clamp-1`}>
-                        {reason}
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-                
-                {/* Highlights */}
-                {town.highlights && town.highlights.length > 0 && (
-                  <div className="mb-2 flex flex-wrap gap-1">
-                    {town.highlights.slice(0, 2).map((highlight, index) => (
-                      <span key={index} className={`px-2 py-0.5 ${uiConfig.colors.badge} text-[10px] ${uiConfig.layout.radius.full}`}>
-                        {highlight}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                  ) : town.matchReasons && town.matchReasons.length > 0 ? (
+                    <div className="line-clamp-2">
+                      {town.matchReasons.slice(0, 2).join('. ')}
+                    </div>
+                  ) : (
+                    <div className="line-clamp-2">
+                      {town.highlights ? town.highlights.slice(0, 2).join('. ') : 'Discover this beautiful retirement destination'}
+                    </div>
+                  )}
+                </div>
                 
                 {/* Category Scores Grid - All 6 Onboarding Categories */}
                 {town.categoryScores && (
-                  <div className="mb-3 grid grid-rows-2 grid-flow-col gap-x-4 gap-y-1.5 text-xs">
-                    {/* These will flow top-to-bottom (2 rows), then right (3 columns) */}
-                    <div className="flex items-center gap-1">
-                      <span className={`${uiConfig.colors.hint} capitalize`}>Region</span>
-                      <span className={`font-medium ${uiConfig.colors.hint}`}>{town.categoryScores.region || 0}%</span>
+                  <>
+                    <div className={`text-xs ${uiConfig.colors.body} mb-1.5`}>
+                      Matching your preferences:
                     </div>
+                    <div className="mb-3 grid grid-rows-2 grid-flow-col gap-x-4 gap-y-1.5 text-xs">
+                      <div className="flex items-center gap-1">
+                        <span className={`${uiConfig.colors.hint} capitalize`}>Region</span>
+                        <span className={`font-medium ${uiConfig.colors.hint}`}>{town.categoryScores.region || 0}%</span>
+                      </div>
                     <div className="flex items-center gap-1">
                       <span className={`${uiConfig.colors.hint} capitalize`}>Climate</span>
                       <span className={`font-medium ${uiConfig.colors.hint}`}>{town.categoryScores.climate || 0}%</span>
@@ -550,30 +538,19 @@ export default function TownDiscovery() {
                       <span className={`${uiConfig.colors.hint} capitalize`}>Budget</span>
                       <span className={`font-medium ${uiConfig.colors.hint}`}>{town.categoryScores.budget || 0}%</span>
                     </div>
-                  </div>
+                    </div>
+                  </>
                 )}
                 
-                <div className="flex space-x-2 mb-3">
-                  {town.cost_index && (
-                    <span className={`px-2 py-1 ${uiConfig.colors.statusSuccess} text-xs ${uiConfig.layout.radius.full}`}>
-                      ${town.cost_index}/mo
-                    </span>
-                  )}
-                  {town.healthcare_score && (
-                    <span className={`px-2 py-1 ${uiConfig.colors.statusInfo} text-xs ${uiConfig.layout.radius.full}`}>
-                      Healthcare: {town.healthcare_score}/10
-                    </span>
-                  )}
-                </div>
-                
-                <p className={`${uiConfig.colors.body} text-sm mb-4 line-clamp-2`}>
+                {/* Synopsis - Always 3 lines */}
+                <p className={`${uiConfig.colors.body} text-xs mb-4 line-clamp-3 h-12 leading-4`}>
                   {town.description || "Discover this beautiful town for your retirement."}
                 </p>
                 
                 <div className="flex justify-between items-center">
                   <button
                     onClick={() => navigate(`/discover?town=${town.id}`)}
-                    className={`px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md}`}
+                    className={`px-3 py-1.5 text-xs ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md}`}
                   >
                     Explore
                   </button>
@@ -583,7 +560,7 @@ export default function TownDiscovery() {
                                            .map(f => f.town_id);
                       navigate(`/compare?towns=${[...others, town.id].slice(0, 3).join(',')}`);
                     }}
-                    className={`px-3 py-1 text-sm ${uiConfig.colors.success} hover:underline`}
+                    className={`px-3 py-1.5 text-xs ${uiConfig.colors.success} hover:underline`}
                   >
                     Compare
                   </button>
