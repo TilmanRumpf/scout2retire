@@ -249,26 +249,21 @@ export default function TownDiscovery() {
                   )}
                 </div>
                 
-                {/* Match Score Badge with Value Rating */}
+                {/* Match Score Badge with Confidence */}
                 {selectedTownData.matchScore && (
                   <div className="absolute top-4 left-4 space-y-2">
-                    <div className={`px-3 py-1 ${uiConfig.layout.radius.full} text-sm font-medium ${
-                      selectedTownData.matchScore >= 80 ? uiConfig.colors.matchStrong :
-                      selectedTownData.matchScore >= 60 ? uiConfig.colors.matchMedium :
-                      uiConfig.colors.matchLow
+                    <div className={`px-3 py-1.5 ${uiConfig.layout.radius.full} bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm text-sm font-medium ${
+                      selectedTownData.matchScore >= 80 ? 'text-scout-accent-700 dark:text-scout-accent-400' :
+                      selectedTownData.matchScore >= 60 ? 'text-gray-700 dark:text-gray-300' :
+                      'text-gray-600 dark:text-gray-400'
                     }`}>
                       {selectedTownData.matchScore}% Match
                     </div>
-                    {selectedTownData.valueRating && (
-                      <div className={`px-3 py-1 ${uiConfig.layout.radius.full} text-xs font-medium ${uiConfig.colors.card} shadow-sm`}>
-                        Value: {selectedTownData.valueRating}
-                      </div>
-                    )}
                     {selectedTownData.confidence && (
-                      <div className={`px-3 py-1 ${uiConfig.layout.radius.full} text-xs ${
-                        selectedTownData.confidence === 'High' ? uiConfig.colors.statusSuccess :
-                        selectedTownData.confidence === 'Medium' ? uiConfig.colors.statusWarning :
-                        uiConfig.colors.statusError
+                      <div className={`px-3 py-1 ${uiConfig.layout.radius.full} bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm text-xs ${
+                        selectedTownData.confidence === 'High' ? 'text-scout-accent-700 dark:text-scout-accent-400' :
+                        selectedTownData.confidence === 'Medium' ? 'text-gray-600 dark:text-gray-400' :
+                        'text-gray-500 dark:text-gray-500'
                       }`}>
                         {selectedTownData.confidence} Confidence
                       </div>
@@ -470,19 +465,14 @@ export default function TownDiscovery() {
                 
                 {/* Match Score with Value Rating */}
                 {town.matchScore && (
-                  <div className="absolute top-2 left-2 flex items-center gap-1">
-                    <div className={`px-2 py-1 ${uiConfig.layout.radius.sm} text-xs font-medium ${
-                      town.matchScore >= 80 ? uiConfig.colors.matchStrong :
-                      town.matchScore >= 60 ? uiConfig.colors.matchMedium :
-                      uiConfig.colors.matchLow
+                  <div className="absolute top-2 left-2">
+                    <div className={`px-2 py-1 ${uiConfig.layout.radius.full} bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm text-xs font-medium ${
+                      town.matchScore >= 80 ? 'text-scout-accent-700 dark:text-scout-accent-400' :
+                      town.matchScore >= 60 ? 'text-gray-700 dark:text-gray-300' :
+                      'text-gray-600 dark:text-gray-400'
                     }`}>
                       {town.matchScore}%
                     </div>
-                    {town.valueRating && (
-                      <div className={`px-2 py-1 ${uiConfig.layout.radius.sm} text-xs font-medium ${uiConfig.colors.card} shadow-sm`}>
-                        {town.valueRating}
-                      </div>
-                    )}
                   </div>
                 )}
                 
@@ -532,24 +522,59 @@ export default function TownDiscovery() {
                   </div>
                 )}
                 
-                {/* Category Scores Mini-Visualization */}
+                {/* Category Scores Grid - All 6 Onboarding Categories */}
                 {town.categoryScores && (
-                  <div className="mb-3 flex gap-1 flex-wrap">
-                    {Object.entries(town.categoryScores).slice(0, 4).map(([category, score]) => (
-                      <div key={category} className="flex items-center gap-1">
-                        <span className={`text-[10px] ${uiConfig.colors.hint} capitalize`}>{category}:</span>
-                        <div className={`w-8 h-1.5 ${uiConfig.progress.track} ${uiConfig.layout.radius.full} overflow-hidden`}>
-                          <div 
-                            className={`h-full ${uiConfig.animation.transition} ${
-                              score >= 80 ? uiConfig.progress.high :
-                              score >= 60 ? uiConfig.progress.medium :
-                              uiConfig.progress.low
-                            }`}
-                            style={{ width: `${score}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
+                  <div className="mb-3 grid grid-cols-3 gap-x-3 gap-y-1.5 text-xs">
+                    {/* Row 1 */}
+                    <div className="flex justify-between items-center">
+                      <span className={`${uiConfig.colors.hint} capitalize`}>Region</span>
+                      <span className={`font-medium ${
+                        town.categoryScores.region >= 80 ? uiConfig.colors.accent :
+                        town.categoryScores.region >= 60 ? uiConfig.colors.body :
+                        uiConfig.colors.muted
+                      }`}>{town.categoryScores.region || 0}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className={`${uiConfig.colors.hint} capitalize`}>Climate</span>
+                      <span className={`font-medium ${
+                        town.categoryScores.climate >= 80 ? uiConfig.colors.accent :
+                        town.categoryScores.climate >= 60 ? uiConfig.colors.body :
+                        uiConfig.colors.muted
+                      }`}>{town.categoryScores.climate || 0}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className={`${uiConfig.colors.hint} capitalize`}>Culture</span>
+                      <span className={`font-medium ${
+                        town.categoryScores.culture >= 80 ? uiConfig.colors.accent :
+                        town.categoryScores.culture >= 60 ? uiConfig.colors.body :
+                        uiConfig.colors.muted
+                      }`}>{town.categoryScores.culture || 0}%</span>
+                    </div>
+                    {/* Row 2 */}
+                    <div className="flex justify-between items-center">
+                      <span className={`${uiConfig.colors.hint} capitalize`}>Hobbies</span>
+                      <span className={`font-medium ${
+                        town.categoryScores.hobbies >= 80 ? uiConfig.colors.accent :
+                        town.categoryScores.hobbies >= 60 ? uiConfig.colors.body :
+                        uiConfig.colors.muted
+                      }`}>{town.categoryScores.hobbies || 0}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className={`${uiConfig.colors.hint} capitalize`}>Admin</span>
+                      <span className={`font-medium ${
+                        town.categoryScores.administration >= 80 ? uiConfig.colors.accent :
+                        town.categoryScores.administration >= 60 ? uiConfig.colors.body :
+                        uiConfig.colors.muted
+                      }`}>{town.categoryScores.administration || 0}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className={`${uiConfig.colors.hint} capitalize`}>Budget</span>
+                      <span className={`font-medium ${
+                        town.categoryScores.budget >= 80 ? uiConfig.colors.accent :
+                        town.categoryScores.budget >= 60 ? uiConfig.colors.body :
+                        uiConfig.colors.muted
+                      }`}>{town.categoryScores.budget || 0}%</span>
+                    </div>
                   </div>
                 )}
                 

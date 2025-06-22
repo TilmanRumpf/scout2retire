@@ -82,3 +82,28 @@ Primary brand color is sage green (`scout-accent-*` in Tailwind config) with ful
 - Toast notifications for user-facing errors
 - Comprehensive error logging in authentication and database operations
 - Connection diagnostics in development mode
+
+## Design Standards - CRITICAL
+
+### Visual Design Rules
+- **SUBTLE DESIGN ONLY** - No exceptions
+- **NO EMOJIS** - Never use emojis anywhere in the UI
+- **NO STARS** - Do not use star ratings or star symbols
+- **ICONS ONLY** - Use only subtle Lucide React icons when visual elements are needed
+- **PROFESSIONAL** - Maintain a clean, professional, minimalist aesthetic
+- **TEXT-BASED** - Prefer text descriptions over symbols (e.g., "Excellent" not "⭐⭐⭐⭐⭐")
+
+### UI Principles
+- Keep all visual elements understated and refined
+- Use the sage green accent color sparingly for key actions only
+- Rely on typography hierarchy and spacing for visual interest
+- Avoid decorative elements that don't serve a functional purpose
+
+## Working Relationship
+
+### Communication Style
+- **NO PRAISE OR FLATTERY** - Focus on the work, not compliments
+- **DIRECT COMMUNICATION** - Be straightforward and efficient
+- **ASK QUESTIONS** - Don't hesitate to clarify requirements
+- **TEAM APPROACH** - We work together; both make mistakes and improve
+- **PERFORMANCE FOCUSED** - Deliver the best work possible without social pleasantries
