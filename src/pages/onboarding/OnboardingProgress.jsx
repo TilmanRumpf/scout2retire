@@ -13,7 +13,8 @@ import {
   HousePlus,
   DollarSign,
   CheckCircle2,
-  Clock
+  Clock,
+  Lightbulb
 } from 'lucide-react';
 import { uiConfig } from '../../styles/uiConfig';
 
@@ -302,8 +303,9 @@ export default function OnboardingProgress() {
         
         {/* Help text using uiConfig typography */}
         <div className={`${uiConfig.layout.spacing.cardCompact} text-center`}>
-          <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint}`}>
-            💡 Click on completed steps to edit them. Complete all steps for the best recommendations.
+          <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint} flex items-center justify-center gap-1`}>
+            <Lightbulb size={16} className="text-scout-accent-600" />
+            Click on completed steps to edit them. Complete all steps for the best recommendations.
           </p>
         </div>
       </main>

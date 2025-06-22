@@ -7,6 +7,7 @@ import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
 import QuickNav from '../components/QuickNav';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
+import { FileText, MapPin, Users, CheckCircle, File } from 'lucide-react';
 
 export default function Journal() {
   const [entries, setEntries] = useState([]);
@@ -104,11 +105,13 @@ export default function Journal() {
   };
 
   const getEntryIcon = (entryType) => {
-    if (entryType === 'journal') return '📝';
-    if (entryType.startsWith('town_')) return '📍';
-    if (entryType === 'connection_made') return '👥';
-    if (entryType.startsWith('task_')) return '✅';
-    return '📄';
+    const iconProps = { size: 16, className: "text-scout-accent-600" };
+    
+    if (entryType === 'journal') return <FileText {...iconProps} />;
+    if (entryType.startsWith('town_')) return <MapPin {...iconProps} />;
+    if (entryType === 'connection_made') return <Users {...iconProps} />;
+    if (entryType.startsWith('task_')) return <CheckCircle {...iconProps} />;
+    return <File {...iconProps} />;
   };
 
   const formatDate = (dateString) => {
@@ -213,7 +216,8 @@ export default function Journal() {
                     : uiConfig.colors.tabInactive
                 }`}
               >
-                📝 Journal
+                <FileText size={16} className="inline mr-1" />
+                Journal
               </button>
               <button
                 onClick={() => setFilterType('town')}
@@ -223,7 +227,8 @@ export default function Journal() {
                     : uiConfig.colors.tabInactive
                 }`}
               >
-                📍 Town
+                <MapPin size={16} className="inline mr-1" />
+                Town
               </button>
               <button
                 onClick={() => setFilterType('social')}
@@ -233,7 +238,8 @@ export default function Journal() {
                     : uiConfig.colors.tabInactive
                 }`}
               >
-                👥 Social
+                <Users size={16} className="inline mr-1" />
+                Social
               </button>
               <button
                 onClick={() => setFilterType('tasks')}
@@ -243,7 +249,8 @@ export default function Journal() {
                     : uiConfig.colors.tabInactive
                 }`}
               >
-                ✅ Tasks
+                <CheckCircle size={16} className="inline mr-1" />
+                Tasks
               </button>
             </div>
 
@@ -268,7 +275,7 @@ export default function Journal() {
               onClick={() => setShowNewNote(true)}
               className={`w-full px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md} flex items-center justify-center space-x-2`}
             >
-              <span>📝</span>
+              <FileText size={16} />
               <span>Add New Note</span>
             </button>
           ) : (
@@ -348,8 +355,10 @@ export default function Journal() {
                       <td className={`px-4 py-4 whitespace-pre-line text-sm ${uiConfig.colors.body}`}>
                         {formatDate(entry.created_at)}
                       </td>
-                      <td className="px-4 py-4 text-2xl">
-                        {getEntryIcon(entry.entry_type)}
+                      <td className="px-4 py-4">
+                        <div className="flex items-center justify-center">
+                          {getEntryIcon(entry.entry_type)}
+                        </div>
                       </td>
                       <td className={`px-4 py-4 text-sm ${uiConfig.colors.body}`}>
                         <div>
