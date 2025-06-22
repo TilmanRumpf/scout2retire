@@ -168,14 +168,7 @@ export default function Chat() {
     try {
       const { data, error } = await supabase
         .from('user_connections')
-        .select(`
-          *,
-          friend:friend_id (
-            id,
-            email,
-            full_name
-          )
-        `)
+        .select('*')
         .eq('user_id', userId)
         .eq('status', 'accepted');
         
@@ -184,7 +177,18 @@ export default function Chat() {
         return;
       }
       
-      setFriends(data || []);
+      // Fetch user details for friends
+      const friendsWithDetails = await Promise.all(
+        (data || []).map(async (connection) => {
+          const { data: friendData } = await supabase.rpc('get_user_by_id', { user_id: connection.friend_id });
+          return {
+            ...connection,
+            friend: friendData?.[0] || null
+          };
+        })
+      );
+      
+      setFriends(friendsWithDetails);
     } catch (err) {
       console.error("Error loading friends:", err);
     }
@@ -196,28 +200,14 @@ export default function Chat() {
       // Load invitations sent by the user
       const { data: sentInvites, error: sentError } = await supabase
         .from('user_connections')
-        .select(`
-          *,
-          friend:friend_id (
-            id,
-            email,
-            full_name
-          )
-        `)
+        .select('*')
         .eq('user_id', userId)
         .eq('status', 'pending');
         
       // Load invitations received by the user
       const { data: receivedInvites, error: receivedError } = await supabase
         .from('user_connections')
-        .select(`
-          *,
-          user:user_id (
-            id,
-            email,
-            full_name
-          )
-        `)
+        .select('*')
         .eq('friend_id', userId)
         .eq('status', 'pending');
         
@@ -226,9 +216,31 @@ export default function Chat() {
         return;
       }
       
+      // Fetch user details for sent invitations
+      const sentWithDetails = await Promise.all(
+        (sentInvites || []).map(async (invite) => {
+          const { data: friendData } = await supabase.rpc('get_user_by_id', { user_id: invite.friend_id });
+          return {
+            ...invite,
+            friend: friendData?.[0] || null
+          };
+        })
+      );
+      
+      // Fetch user details for received invitations
+      const receivedWithDetails = await Promise.all(
+        (receivedInvites || []).map(async (invite) => {
+          const { data: userData } = await supabase.rpc('get_user_by_id', { user_id: invite.user_id });
+          return {
+            ...invite,
+            user: userData?.[0] || null
+          };
+        })
+      );
+      
       setPendingInvitations({
-        sent: sentInvites || [],
-        received: receivedInvites || []
+        sent: sentWithDetails,
+        received: receivedWithDetails
       });
     } catch (err) {
       console.error("Error loading pending invitations:", err);
@@ -765,6 +777,30 @@ export default function Chat() {
     } catch (err) {
       console.error("Error declining invitation:", err);
       toast.error("Failed to decline invitation");
+    }
+  };
+  
+  // Cancel sent invitation
+  const cancelSentInvitation = async (connectionId) => {
+    try {
+      const { error } = await supabase
+        .from('user_connections')
+        .delete()
+        .eq('id', connectionId);
+        
+      if (error) {
+        console.error("Error canceling invitation:", error);
+        toast.error("Failed to cancel invitation");
+        return;
+      }
+      
+      toast.success("Invitation canceled");
+      
+      // Reload invitations
+      await loadPendingInvitations(user.id);
+    } catch (err) {
+      console.error("Error canceling invitation:", err);
+      toast.error("Failed to cancel invitation");
     }
   };
   
@@ -1363,9 +1399,20 @@ export default function Chat() {
                         <span className={`${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
                           {invite.friend?.full_name || invite.friend?.email || 'Unknown'}
                         </span>
-                        <span className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
-                          Pending
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+                            Pending
+                          </span>
+                          <button
+                            onClick={() => cancelSentInvitation(invite.id)}
+                            className="text-red-500 hover:text-red-700 transition-colors"
+                            title="Cancel invitation"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
