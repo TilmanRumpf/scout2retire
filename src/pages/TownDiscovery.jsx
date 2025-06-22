@@ -8,6 +8,7 @@ import QuickNav from '../components/QuickNav';
 import TownRadarChart from '../components/TownRadarChart';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
+import { Sparkles } from 'lucide-react';
 
 export default function TownDiscovery() {
   const [towns, setTowns] = useState([]);
@@ -73,7 +74,7 @@ export default function TownDiscovery() {
           
           // Log personalization status
           if (isPersonalizedResult) {
-            console.log("✅ Personalized recommendations loaded!");
+            console.log("Personalized recommendations loaded!");
             console.log("User preferences:", userPrefs);
             console.log("Top 3 towns with scores:", allTowns.slice(0, 3).map(t => ({
               name: t.name,
@@ -82,7 +83,7 @@ export default function TownDiscovery() {
               categoryScores: t.categoryScores
             })));
           } else {
-            console.log("ℹ️ Using general recommendations");
+            console.log("Using general recommendations");
           }
           
           // If a town is selected in URL, make sure it's in our data
@@ -169,8 +170,9 @@ export default function TownDiscovery() {
             <div>
               <h1 className={`text-xl font-bold ${uiConfig.colors.heading}`}>Discover Towns</h1>
               {isPersonalized && onboardingCompleted && (
-                <p className={`text-sm ${uiConfig.colors.success} mt-1`}>
-                  ✨ Personalized recommendations based on your preferences
+                <p className={`text-sm ${uiConfig.colors.success} mt-1 flex items-center gap-1`}>
+                  <Sparkles size={16} className="text-scout-accent-600" />
+                  Personalized recommendations based on your preferences
                 </p>
               )}
               {onboardingCompleted && userPreferences && (
@@ -255,7 +257,7 @@ export default function TownDiscovery() {
                       selectedTownData.matchScore >= 60 ? uiConfig.colors.matchMedium :
                       uiConfig.colors.matchLow
                     }`}>
-                      {selectedTownData.matchScore}% match
+                      {selectedTownData.matchScore}%
                     </div>
                   </div>
                 )}
@@ -435,7 +437,7 @@ export default function TownDiscovery() {
                       town.matchScore >= 60 ? uiConfig.colors.matchMedium :
                       uiConfig.colors.matchLow
                     }`}>
-                      {town.matchScore}% match
+                      {town.matchScore}%
                     </div>
                   </div>
                 )}

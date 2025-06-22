@@ -100,11 +100,11 @@ function calculateDetailedMatchScore(town, userPrefs) {
     scoreBreakdown.totalScore += (budgetScore * weights.budget) / 100;
     
     if (budgetScore >= 80) {
-      scoreBreakdown.reasons.push(`💰 Perfect budget match: $${town.cost_index}/mo`);
+      scoreBreakdown.reasons.push(`Perfect budget match: $${town.cost_index}/mo`);
     } else if (budgetScore >= 60) {
-      scoreBreakdown.reasons.push(`💰 Within budget: $${town.cost_index}/mo`);
+      scoreBreakdown.reasons.push(`Within budget: $${town.cost_index}/mo`);
     } else if (budgetScore < 40) {
-      scoreBreakdown.warnings.push(`⚠️ Outside budget range: $${town.cost_index}/mo`);
+      scoreBreakdown.warnings.push(`Outside budget range: $${town.cost_index}/mo`);
     }
   }
 
@@ -115,9 +115,9 @@ function calculateDetailedMatchScore(town, userPrefs) {
     scoreBreakdown.totalScore += (healthScore * weights.healthcare) / 100;
     
     if (healthScore >= 80) {
-      scoreBreakdown.reasons.push(`🏥 Healthcare matches your "${userPrefs.administration.healthcare_quality?.join(', ')}" preference`);
+      scoreBreakdown.reasons.push(`Healthcare matches your "${userPrefs.administration.healthcare_quality?.join(', ')}" preference`);
     } else if (healthScore < 50 && userPrefs.administration.special_medical_needs) {
-      scoreBreakdown.warnings.push(`⚠️ Healthcare may not meet your special medical needs`);
+      scoreBreakdown.warnings.push(`Healthcare may not meet your special medical needs`);
     }
   }
 
@@ -128,9 +128,9 @@ function calculateDetailedMatchScore(town, userPrefs) {
     scoreBreakdown.totalScore += (safetyScore * weights.safety) / 100;
     
     if (safetyScore >= 80) {
-      scoreBreakdown.reasons.push(`🛡️ Safety level matches your preferences`);
+      scoreBreakdown.reasons.push(`Safety level matches your preferences`);
     } else if (safetyScore < 50) {
-      scoreBreakdown.warnings.push(`⚠️ Safety level below your preferences`);
+      scoreBreakdown.warnings.push(`Safety level below your preferences`);
     }
   }
 
@@ -141,12 +141,12 @@ function calculateDetailedMatchScore(town, userPrefs) {
     scoreBreakdown.totalScore += (adminScore * weights.administration) / 100;
     
     if (adminScore >= 80) {
-      scoreBreakdown.reasons.push(`📋 Excellent visa & administrative match`);
+      scoreBreakdown.reasons.push(`Excellent visa & administrative match`);
     }
     
     // Special handling for stay duration
     if (userPrefs.administration.stay_duration?.includes('long') && town.residency_info) {
-      scoreBreakdown.reasons.push(`🏛️ Good for long-term residence`);
+      scoreBreakdown.reasons.push(`Good for long-term residence`);
     }
   }
 
@@ -157,7 +157,7 @@ function calculateDetailedMatchScore(town, userPrefs) {
     scoreBreakdown.totalScore += (climateScore * weights.climate) / 100;
     
     if (climateScore >= 80) {
-      scoreBreakdown.reasons.push(`🌡️ Perfect climate match`);
+      scoreBreakdown.reasons.push(`Perfect climate match`);
     }
   }
 
@@ -168,7 +168,7 @@ function calculateDetailedMatchScore(town, userPrefs) {
     scoreBreakdown.totalScore += (regionScore * weights.region) / 100;
     
     if (regionScore === 100) {
-      scoreBreakdown.reasons.push(`🌍 In your preferred region`);
+      scoreBreakdown.reasons.push(`In your preferred region`);
     }
   }
 
@@ -179,7 +179,7 @@ function calculateDetailedMatchScore(town, userPrefs) {
     scoreBreakdown.totalScore += (cultureScore * weights.culture) / 100;
     
     if (cultureScore >= 80) {
-      scoreBreakdown.reasons.push(`👥 Culture & lifestyle match`);
+      scoreBreakdown.reasons.push(`Culture & lifestyle match`);
     }
   }
 
@@ -190,7 +190,7 @@ function calculateDetailedMatchScore(town, userPrefs) {
     scoreBreakdown.totalScore += (hobbiesScore * weights.hobbies) / 100;
     
     if (hobbiesScore >= 80) {
-      scoreBreakdown.reasons.push(`🎯 Great for your hobbies & interests`);
+      scoreBreakdown.reasons.push(`Great for your hobbies & interests`);
     }
   }
 
