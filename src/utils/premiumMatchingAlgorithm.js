@@ -1,8 +1,6 @@
 // Premium Matching Algorithm for Scout2Retire
 // Enhanced algorithm with adaptive weights, fuzzy matching, and deeper insights
 
-import { calculateDetailedMatchScore as calculateBasicMatch } from './matchingAlgorithm';
-
 /**
  * Enhanced matching algorithm with premium features
  */
@@ -622,7 +620,7 @@ const generatePremiumInsights = (town, preferences, scores) => {
   if (scores.budget >= 90 && scores.healthcare >= 80) {
     insights.push({
       type: 'value',
-      text: '💎 Exceptional value: Premium healthcare at an affordable cost',
+      text: 'Exceptional value: Premium healthcare at an affordable cost',
       priority: 1
     });
   }
@@ -632,7 +630,7 @@ const generatePremiumInsights = (town, preferences, scores) => {
   if (highScores >= 5) {
     insights.push({
       type: 'match',
-      text: '🎯 Near-perfect match across multiple categories',
+      text: 'Near-perfect match across multiple categories',
       priority: 1
     });
   }
@@ -641,7 +639,7 @@ const generatePremiumInsights = (town, preferences, scores) => {
   if (scores.culture >= 85 && scores.lifestyle >= 80) {
     insights.push({
       type: 'lifestyle',
-      text: '🌟 Excellent cultural fit with vibrant expat community',
+      text: 'Excellent cultural fit with vibrant expat community',
       priority: 2
     });
   }
@@ -650,7 +648,7 @@ const generatePremiumInsights = (town, preferences, scores) => {
   if (scores.climate >= 90) {
     insights.push({
       type: 'climate',
-      text: '☀️ Ideal climate matches your year-round preferences',
+      text: 'Ideal climate matches your year-round preferences',
       priority: 3
     });
   }
@@ -659,7 +657,7 @@ const generatePremiumInsights = (town, preferences, scores) => {
   if (scores.budget >= 85 && town.population < 100000) {
     insights.push({
       type: 'discovery',
-      text: '💡 Hidden gem: Affordable small town with great amenities',
+      text: 'Hidden gem: Affordable small town with great amenities',
       priority: 2
     });
   }
@@ -681,9 +679,9 @@ const identifyDetailedWarnings = (town, preferences) => {
     const overBudget = ((town.cost_index - preferences.costs.total_monthly_budget) / 
                        preferences.costs.total_monthly_budget) * 100;
     if (overBudget > 30) {
-      warnings.push(`💰 ${Math.round(overBudget)}% over budget - significant financial stretch`);
+      warnings.push(`${Math.round(overBudget)}% over budget - significant financial stretch`);
     } else if (overBudget > 15) {
-      warnings.push(`💰 ${Math.round(overBudget)}% over budget - manageable with planning`);
+      warnings.push(`${Math.round(overBudget)}% over budget - manageable with planning`);
     }
   }
   
@@ -691,7 +689,7 @@ const identifyDetailedWarnings = (town, preferences) => {
   if (preferences.culture_preferences?.language_comfort?.preferences?.includes('english_only')) {
     if (!town.primary_language?.toLowerCase().includes('english')) {
       if (!town.english_proficiency_score || town.english_proficiency_score < 60) {
-        warnings.push('🗣️ Language barrier - limited English proficiency');
+        warnings.push('Language barrier - limited English proficiency');
       }
     }
   }
@@ -699,14 +697,14 @@ const identifyDetailedWarnings = (town, preferences) => {
   // Healthcare limitations
   if (preferences.administration?.health_considerations?.healthcare_access === 'full_access') {
     if (town.healthcare_score < 7) {
-      warnings.push('🏥 Healthcare may not meet specialized needs');
+      warnings.push('Healthcare may not meet specialized needs');
     }
   }
   
   // Climate sensitivities
   if (preferences.administration?.health_considerations?.environmental_health === 'very_sensitive') {
     if (town.climate?.toLowerCase().includes('humid')) {
-      warnings.push('💨 High humidity may affect sensitive individuals');
+      warnings.push('High humidity may affect sensitive individuals');
     }
   }
   
@@ -720,23 +718,23 @@ const identifyHighlights = (town, scores) => {
   const highlights = [];
   
   if (town.unesco_heritage_sites > 0) {
-    highlights.push('🏛️ UNESCO World Heritage Site');
+    highlights.push('UNESCO World Heritage Site');
   }
   
   if (scores.healthcare >= 95) {
-    highlights.push('🏥 World-class healthcare');
+    highlights.push('World-class healthcare');
   }
   
   if (scores.safety >= 95) {
-    highlights.push('🛡️ Exceptionally safe');
+    highlights.push('Exceptionally safe');
   }
   
   if (scores.infrastructure >= 90) {
-    highlights.push('🏗️ Modern infrastructure');
+    highlights.push('Modern infrastructure');
   }
   
   if (town.expat_population?.toLowerCase().includes('large')) {
-    highlights.push('👥 Thriving expat community');
+    highlights.push('Thriving expat community');
   }
   
   return highlights;
@@ -840,11 +838,8 @@ const calculateValueRating = (town, scores) => {
                      (scores.infrastructure * 0.2) + 
                      (scores.safety * 0.1);
   
-  if (valueScore >= 90) return '⭐⭐⭐⭐⭐';
-  if (valueScore >= 80) return '⭐⭐⭐⭐';
-  if (valueScore >= 70) return '⭐⭐⭐';
-  if (valueScore >= 60) return '⭐⭐';
-  return '⭐';
+  // Return null to disable value rating display
+  return null;
 };
 
 // Quality bonus calculation

@@ -60,8 +60,8 @@ export default function OnboardingReview() {
         return;
       }
       
-      toast.success('Onboarding completed! Welcome to Scout2Retire.');
-      navigate('/daily');
+      toast.success('Onboarding completed! Let\'s find your perfect matches...');
+      navigate('/onboarding/complete');
     } catch (err) {
       toast.error('An unexpected error occurred');
       console.error(err);

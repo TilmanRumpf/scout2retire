@@ -110,8 +110,9 @@ export default function LikeButton({
     <button
       onClick={handleToggle}
       disabled={isLoading}
-      className={`p-2 rounded-full ${isLiked ? 'text-red-500' : 'text-gray-400'} 
-        transition-colors ${isLoading ? 'opacity-50' : 'hover:text-red-500'}`}
+      className={`p-2 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm
+        ${isLiked ? 'text-red-500' : 'text-gray-600 dark:text-gray-400'} 
+        transition-all ${isLoading ? 'opacity-50' : 'hover:text-red-500 hover:shadow-md'}`}
       aria-label={isLiked ? "Remove from favorites" : "Add to favorites"}
       title={error ? `Error: ${error}` : (isLiked ? "Remove from favorites" : "Add to favorites")}
     >

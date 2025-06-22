@@ -33,6 +33,7 @@ import OnboardingHobbies from "./pages/onboarding/OnboardingHobbies";
 import OnboardingRegion from "./pages/onboarding/OnboardingRegion";
 import OnboardingReview from "./pages/onboarding/OnboardingReview";
 import OnboardingAdministration from "./pages/onboarding/OnboardingAdministration";
+import OnboardingComplete from "./pages/onboarding/OnboardingComplete";
 
 // Onboarding wrapper components with navigation
 const OnboardingWrapper = ({ children, nextPath, prevPath }) => {
@@ -195,9 +196,14 @@ function App() {
           } />
           <Route path="/onboarding/review" element={
             <ProtectedRoute>
-              <OnboardingWrapper nextPath="/daily" prevPath="/onboarding/costs">
+              <OnboardingWrapper nextPath="/onboarding/complete" prevPath="/onboarding/costs">
                 <OnboardingReview />
               </OnboardingWrapper>
+            </ProtectedRoute>
+          } />
+          <Route path="/onboarding/complete" element={
+            <ProtectedRoute>
+              <OnboardingComplete />
             </ProtectedRoute>
           } />
 

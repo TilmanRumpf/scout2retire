@@ -20,6 +20,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [journalEntry, setJournalEntry] = useState('');
   const [savingJournal, setSavingJournal] = useState(false);
+  const [isFirstVisit, setIsFirstVisit] = useState(false);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -33,6 +34,13 @@ export default function Home() {
           const { success, favorites: userFavorites } = await fetchFavorites(currentUser.id);
           if (success) {
             setFavorites(userFavorites);
+          }
+          
+          // Check if this is their first visit after onboarding
+          const hasSeenDaily = localStorage.getItem(`scout2retire_seen_daily_${currentUser.id}`);
+          if (!hasSeenDaily) {
+            setIsFirstVisit(true);
+            localStorage.setItem(`scout2retire_seen_daily_${currentUser.id}`, 'true');
           }
         }
       } catch (err) {
@@ -139,9 +147,40 @@ export default function Home() {
         {/* Main content */}
         <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         {/* Welcome message */}
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Welcome{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''}!
-        </h2>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
+            {isFirstVisit 
+              ? `Congratulations on completing your journey, ${user?.full_name?.split(' ')[0] || 'Explorer'}!`
+              : `Welcome back, ${user?.full_name?.split(' ')[0] || 'Explorer'}!`
+            }
+          </h2>
+          {isFirstVisit ? (
+            <div className={`p-4 ${uiConfig.colors.statusSuccess} ${uiConfig.layout.radius.lg} mb-4`}>
+              <p className={`${uiConfig.colors.body} mb-3`}>
+                You've successfully completed your retirement preferences. We've analyzed thousands of destinations 
+                to find your perfect matches. This daily page will help you discover something new each day.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  to="/discover"
+                  className={`px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md} text-sm font-medium`}
+                >
+                  View All Your Matches
+                </Link>
+                <Link
+                  to="/onboarding/complete"
+                  className={`px-4 py-2 ${uiConfig.colors.btnSecondary} ${uiConfig.layout.radius.md} text-sm font-medium`}
+                >
+                  See Your Top Matches Again
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <p className={`${uiConfig.colors.body}`}>
+              Discover your daily retirement destination recommendation
+            </p>
+          )}
+        </div>
 
         {/* Retirement Countdown */}
         <CountdownWidget targetDate={getRetirementDate()} />
