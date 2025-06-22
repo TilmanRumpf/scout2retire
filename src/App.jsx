@@ -1,4 +1,4 @@
-// App.jsx - Complete Fixed File - Updated 10JUN25
+// App.jsx - Performance optimized
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
@@ -22,7 +22,7 @@ import TownDiscovery from "./pages/TownDiscovery";
 import Chat from "./pages/Chat";
 import Journal from "./pages/Journal";
 
-// Onboarding Flow - FIXED: Changed OnboardingStatus to OnboardingProgress
+// Onboarding Flow
 import OnboardingProgress from "./pages/onboarding/OnboardingProgress";
 import OnboardingClimate from "./pages/onboarding/OnboardingClimate";
 import OnboardingCosts from "./pages/onboarding/OnboardingCosts";
@@ -31,7 +31,7 @@ import OnboardingCurrentStatus from "./pages/onboarding/OnboardingCurrentStatus"
 import OnboardingHobbies from "./pages/onboarding/OnboardingHobbies";
 import OnboardingRegion from "./pages/onboarding/OnboardingRegion";
 import OnboardingReview from "./pages/onboarding/OnboardingReview";
-import OnboardingAdministration from "./pages/onboarding/OnboardingAdministration"; // Added 09JUN25: New Administration step
+import OnboardingAdministration from "./pages/onboarding/OnboardingAdministration";
 
 // Onboarding wrapper components with navigation
 const OnboardingWrapper = ({ children, nextPath, prevPath }) => {
@@ -110,7 +110,6 @@ const ProtectedRoute = ({ children, onboardingRequired = false }) => {
   }
 
   // Redirect to onboarding if it's not completed and the route requires it
-  // FIXED 10JUN25: Changed to /onboarding/progress
   if (onboardingRequired && onboardingCompleted === false) {
     return <Navigate to="/onboarding/progress" replace />;
   }
@@ -136,7 +135,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Onboarding flow with navigation - Updated 10JUN25: Changed /onboarding/status to /onboarding/progress */}
+          {/* Onboarding flow with navigation */}
           <Route path="/onboarding/progress" element={
             <ProtectedRoute>
               <OnboardingWrapper nextPath="/onboarding/current-status" prevPath="/welcome">
@@ -179,7 +178,6 @@ function App() {
               </OnboardingWrapper>
             </ProtectedRoute>
           } />
-          {/* NEW: Administration route - Added 09JUN25 */}
           <Route path="/onboarding/administration" element={
             <ProtectedRoute>
               <OnboardingWrapper nextPath="/onboarding/costs" prevPath="/onboarding/hobbies">

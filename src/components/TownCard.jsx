@@ -5,6 +5,7 @@ import { toggleFavorite } from '../utils/townUtils';
 import toast from 'react-hot-toast';
 import { Heart, MapPin, DollarSign, Activity, Shield } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
+import LazyImage from './LazyImage';
 
 export default function TownCard({ 
   town, 
@@ -71,17 +72,12 @@ export default function TownCard({
       <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden flex ${className}`}>
         <Link to={`/discover?town=${town.id}`} className="flex flex-1">
           <div className="w-24 h-24">
-            {town.image_url_1 ? (
-              <img
-                src={town.image_url_1}
-                alt={town.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className={`w-full h-full ${uiConfig.colors.input} flex items-center justify-center`}>
-                <MapPin size={16} className={uiConfig.colors.muted} />
-              </div>
-            )}
+            <LazyImage
+              src={town.image_url_1}
+              alt={town.name}
+              className="w-full h-full object-cover"
+              fallbackIconSize={16}
+            />
           </div>
           <div className="p-3 flex-1">
             <h4 className={`font-medium ${uiConfig.colors.heading}`}>{town.name}</h4>
@@ -107,17 +103,12 @@ export default function TownCard({
   return (
     <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden ${className}`}>
       <div className="relative h-48">
-        {town.image_url_1 ? (
-          <img
-            src={town.image_url_1}
-            alt={town.name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className={`w-full h-full ${uiConfig.colors.input} flex items-center justify-center`}>
-            <MapPin size={24} className={uiConfig.colors.muted} />
-          </div>
-        )}
+        <LazyImage
+          src={town.image_url_1}
+          alt={town.name}
+          className="w-full h-full object-cover"
+          fallbackIconSize={24}
+        />
         {showActions && userId && (
           <div className="absolute top-2 right-2">
             <LikeButtonSimple />
