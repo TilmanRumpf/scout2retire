@@ -229,7 +229,7 @@ export const components = {
   // Form inputs - Updated with scout-accent theme
   input: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent-600 transition-all duration-200',
   textarea: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent-600 resize-vertical transition-all duration-200',
-  select: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent-600 transition-all duration-200',
+  select: 'w-full px-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent-600 transition-all duration-200',
   
   // Checkboxes and radios - Updated 10JUN25: Scout-accent with proper styling
   checkbox: 'h-4 w-4 text-scout-accent-600 focus:ring-scout-accent-500 focus:ring-offset-0 border-2 border-gray-300 dark:border-gray-600 rounded transition-all duration-200',
@@ -274,12 +274,12 @@ export const components = {
   toggleOn: 'bg-scout-accent-600',
   toggleOff: 'bg-gray-300 dark:bg-gray-600',
   
-  // Button variants - Updated 10JUN25: Scout-accent theme with 300 as primary
+  // Button variants - Updated 22JUN25: Reduced padding and font size for space efficiency
   buttonVariants: {
-    primary: 'py-3 px-4 rounded-lg border-2 border-transparent text-sm font-medium text-center transition-all duration-200 bg-scout-accent-300 text-white hover:bg-scout-accent-400 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2',
-    secondary: 'py-3 px-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-sm font-medium text-center transition-all duration-200 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-scout-accent-300 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2',
-    selected: 'py-3 px-4 rounded-lg border-2 border-scout-accent-300 text-sm font-medium text-center transition-all duration-200 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-200',
-    unselected: 'py-3 px-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-sm font-medium text-center transition-all duration-200 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2'
+    primary: 'py-2.5 px-3 rounded-lg border-2 border-transparent text-xs sm:text-sm font-medium text-center transition-all duration-200 bg-scout-accent-300 text-white hover:bg-scout-accent-400 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2',
+    secondary: 'py-2.5 px-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-xs sm:text-sm font-medium text-center transition-all duration-200 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-scout-accent-300 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2',
+    selected: 'py-2.5 px-3 rounded-lg border-2 border-scout-accent-300 text-xs sm:text-sm font-medium text-center transition-all duration-200 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-300 dark:text-scout-accent-300',
+    unselected: 'py-2.5 px-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-xs sm:text-sm font-medium text-center transition-all duration-200 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2'
   },
   
   // File inputs

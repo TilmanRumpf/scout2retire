@@ -12,33 +12,33 @@ const OptionButton = ({ label, description, isSelected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`p-2 sm:p-2.5 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center min-h-[44px] ${
+    className={`p-2.5 sm:p-3 lg:p-4 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] ${
       isSelected
         ? uiConfig.components.buttonVariants.selected
         : uiConfig.components.buttonVariants.unselected
     }`}
   >
-    <div className={`${uiConfig.font.size.xs} ${uiConfig.responsive.sm}${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${isSelected ? uiConfig.colors.accent : ''}`}>{label}</div>
-    {description && <div className={`text-[10px] ${uiConfig.responsive.sm}${uiConfig.font.size.xs} mt-0.5 ${isSelected ? uiConfig.colors.accent : uiConfig.colors.hint}`}>{description}</div>}
+    <div className={`text-xs sm:text-sm lg:text-base ${uiConfig.font.weight.medium} ${isSelected ? 'text-scout-accent-300 dark:text-scout-accent-300' : ''}`}>{label}</div>
+    {description && <div className={`text-[10px] sm:text-xs mt-0.5 ${isSelected ? 'text-scout-accent-300 dark:text-scout-accent-300' : uiConfig.colors.hint}`}>{description}</div>}
   </button>
 );
 
 export default function OnboardingCurrentStatus() {
   const [formData, setFormData] = useState({
     retirement_timeline: {
-      status: 'planning',
+      status: '',
       target_year: new Date().getFullYear() + 5,
-      flexibility: 'somewhat_flexible'
+      flexibility: ''
     },
-    family_situation: 'solo',
+    family_situation: '',
     pet_owner: [],
     citizenship: {
-      primary_citizenship: 'us',
+      primary_citizenship: '',
       dual_citizenship: false,
       secondary_citizenship: ''
     },
     partner_citizenship: {
-      primary_citizenship: 'us',
+      primary_citizenship: '',
       dual_citizenship: false,
       secondary_citizenship: ''
     }
@@ -157,7 +157,7 @@ export default function OnboardingCurrentStatus() {
       ...prev,
       family_situation: status,
       partner_citizenship: status === 'couple' ? prev.partner_citizenship : {
-        primary_citizenship: 'us',
+        primary_citizenship: '',
         dual_citizenship: false,
         secondary_citizenship: ''
       }
@@ -270,14 +270,14 @@ export default function OnboardingCurrentStatus() {
 
   return (
     <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 ${uiConfig.responsive.sm}pb-4`}>
-      <div className="max-w-md mx-auto p-4 sm:p-4">
+      <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
         <OnboardingStepNavigation 
           currentStep="current_status" 
           completedSteps={progress.completedSteps} 
           className="mb-3" 
         />
         
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 ${uiConfig.responsive.sm}p-5`}>
+        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 sm:p-6 lg:p-8`}>
           {/* Header */}
           <div className="mb-3">
             <h1 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Current Status</h1>
@@ -295,7 +295,7 @@ export default function OnboardingCurrentStatus() {
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-2`}>
               Where are you in your retirement journey? *
             </p>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
               <OptionButton
                 label="Planning"
                 description="5+ years away"
@@ -345,7 +345,7 @@ export default function OnboardingCurrentStatus() {
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-2`}>
               Who's joining you on this adventure? *
             </p>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
               <OptionButton
                 label="Solo"
                 description="Just me"
@@ -387,6 +387,7 @@ export default function OnboardingCurrentStatus() {
                       onChange={handleInputChange}
                       className={`${uiConfig.components.select} ${uiConfig.font.size.xs} h-[44px]`}
                     >
+                      <option value="">Select citizenship</option>
                       {countries.map(country => (
                         <option key={country.id} value={country.id}>
                           {country.label}
@@ -434,7 +435,7 @@ export default function OnboardingCurrentStatus() {
                         }}
                         className={`${uiConfig.components.select} mt-1.5 ${uiConfig.font.size.xs} h-[44px]`}
                       >
-                        <option value="">Select secondary</option>
+                        <option value="">Select citizenship</option>
                         {countries
                           .filter(country => country.id !== formData.citizenship.primary_citizenship)
                           .map(country => (
@@ -457,6 +458,7 @@ export default function OnboardingCurrentStatus() {
                       onChange={handleInputChange}
                       className={`${uiConfig.components.select} ${uiConfig.font.size.xs} h-[44px]`}
                     >
+                      <option value="">Select citizenship</option>
                       {countries.map(country => (
                         <option key={`partner-${country.id}`} value={country.id}>
                           {country.label}
@@ -504,7 +506,7 @@ export default function OnboardingCurrentStatus() {
                         }}
                         className={`${uiConfig.components.select} mt-1.5 ${uiConfig.font.size.xs} h-[44px]`}
                       >
-                        <option value="">Select secondary</option>
+                        <option value="">Select citizenship</option>
                         {countries
                           .filter(country => country.id !== formData.partner_citizenship.primary_citizenship)
                           .map(country => (
@@ -529,6 +531,7 @@ export default function OnboardingCurrentStatus() {
                   onChange={handleInputChange}
                   className={`${uiConfig.components.select} h-[44px]`}
                 >
+                  <option value="">Select citizenship</option>
                   {countries.map(country => (
                     <option key={country.id} value={country.id}>
                       {country.label}
@@ -590,7 +593,7 @@ export default function OnboardingCurrentStatus() {
                       }}
                       className={`${uiConfig.components.select} h-[44px]`}
                     >
-                      <option value="">Select secondary citizenship</option>
+                      <option value="">Select citizenship</option>
                       {countries
                         .filter(country => country.id !== formData.citizenship.primary_citizenship)
                         .map(country => (
@@ -612,7 +615,7 @@ export default function OnboardingCurrentStatus() {
               <PawPrint size={16} className="mr-1.5" />
               Pet Owner
             </label>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
               <OptionButton
                 label="Cat"
                 isSelected={formData.pet_owner?.includes('cat') || false}

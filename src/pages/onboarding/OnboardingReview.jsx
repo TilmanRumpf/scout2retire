@@ -359,14 +359,14 @@ export default function OnboardingReview() {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page} p-4`}>
-      <div className="max-w-md mx-auto">
+      <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto">
         <OnboardingStepNavigation 
           currentStep="review" 
           completedSteps={progress.completedSteps} 
           className="mb-4" 
         />
 
-        <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-3 ${uiConfig.responsive.sm}p-4`}>
+        <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 sm:p-6 lg:p-8`}>
           {/* Header */}
           <div className="mb-4">
             <h1 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Review Your Preferences</h1>

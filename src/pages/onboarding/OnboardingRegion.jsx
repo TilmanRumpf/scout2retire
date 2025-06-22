@@ -30,9 +30,9 @@ const OnboardingRegion = () => {
   const [progress, setProgress] = useState({ completedSteps: {} });
   
   // Updated state arrays to only have 2 elements instead of 3
-  const [selectedRegions, setSelectedRegions] = useState(['Recommended', 'Recommended']);
-  const [selectedCountries, setSelectedCountries] = useState(['Any', 'Any']);
-  const [selectedProvinces, setSelectedProvinces] = useState(['Any', 'Any']);
+  const [selectedRegions, setSelectedRegions] = useState(['', '']);
+  const [selectedCountries, setSelectedCountries] = useState(['', '']);
+  const [selectedProvinces, setSelectedProvinces] = useState(['', '']);
   const [selectedFeatures, setSelectedFeatures] = useState([]);
   const [selectedVegetation, setSelectedVegetation] = useState([]);
   
@@ -210,9 +210,13 @@ const OnboardingRegion = () => {
   const getFilteredCountries = (regionIndex) => {
     const selectedRegion = selectedRegions[regionIndex];
     
+    if (!selectedRegion || selectedRegion === '') {
+      return [];
+    }
+    
     if (selectedRegion === 'Recommended') {
       const allCountries = Object.values(regionCountries).flat();
-      return ['Any', ...new Set(allCountries)].sort();
+      return ['', ...new Set(allCountries)].sort();
     }
 
     let primaryCountries = [];
@@ -231,17 +235,17 @@ const OnboardingRegion = () => {
       .filter(country => !primaryCountries.includes(country))
       .sort();
 
-    return ['Any', ...primaryCountries, ...nearbyCountriesList];
+    return ['', ...primaryCountries, ...nearbyCountriesList];
   };
 
   const getFilteredProvinces = (countryIndex) => {
     const selectedCountry = selectedCountries[countryIndex];
     
-    if (selectedCountry === 'Any' || !countryProvinces[selectedCountry]) {
-      return ['Any'];
+    if (!selectedCountry || selectedCountry === '' || !countryProvinces[selectedCountry]) {
+      return [];
     }
 
-    return ['Any', ...countryProvinces[selectedCountry]];
+    return ['', ...countryProvinces[selectedCountry]];
   };
 
   // Updated event handlers to always reset dependent selections
@@ -252,19 +256,19 @@ const OnboardingRegion = () => {
     
     // Control visibility of dependent dropdowns
     const newShowDependentDropdowns = [...showDependentDropdowns];
-    newShowDependentDropdowns[index] = value !== 'Recommended';
+    newShowDependentDropdowns[index] = value && value !== '' && value !== 'Recommended';
     setShowDependentDropdowns(newShowDependentDropdowns);
     
     // Show country dropdown when region is selected
     const newShowCountryDropdowns = [...showCountryDropdowns];
-    newShowCountryDropdowns[index] = value !== 'Recommended';
+    newShowCountryDropdowns[index] = value && value !== '' && value !== 'Recommended';
     setShowCountryDropdowns(newShowCountryDropdowns);
     
     // ALWAYS reset country and province when region changes (even if same region)
     const newCountries = [...selectedCountries];
     const newProvinces = [...selectedProvinces];
-    newCountries[index] = 'Any';
-    newProvinces[index] = 'Any';
+    newCountries[index] = '';
+    newProvinces[index] = '';
     setSelectedCountries(newCountries);
     setSelectedProvinces(newProvinces);
   };
@@ -276,13 +280,13 @@ const OnboardingRegion = () => {
     
     // Reset province when country changes
     const newProvinces = [...selectedProvinces];
-    newProvinces[index] = 'Any';
+    newProvinces[index] = '';
     setSelectedProvinces(newProvinces);
   };
 
   const handleCountryBlur = (index) => {
-    // Hide country dropdown if it's still "Any"
-    if (selectedCountries[index] === 'Any') {
+    // Hide country dropdown if it's still empty
+    if (selectedCountries[index] === '') {
       const newShowCountryDropdowns = [...showCountryDropdowns];
       newShowCountryDropdowns[index] = false;
       setShowCountryDropdowns(newShowCountryDropdowns);
@@ -324,11 +328,11 @@ const OnboardingRegion = () => {
 
   // Function to get the hierarchical display value
   const getDisplayValue = (index) => {
-    if (selectedProvinces[index] !== 'Any') {
+    if (selectedProvinces[index] && selectedProvinces[index] !== '') {
       // Show "Country, Province"
       return `${selectedCountries[index]}, ${selectedProvinces[index]}`;
     }
-    if (selectedCountries[index] !== 'Any') {
+    if (selectedCountries[index] && selectedCountries[index] !== '') {
       // Show "Region, Country"
       return `${selectedRegions[index]}, ${selectedCountries[index]}`;
     }
@@ -350,7 +354,7 @@ const OnboardingRegion = () => {
   // Check if provinces are available for the current country
   const hasProvinces = (index) => {
     const selectedCountry = selectedCountries[index];
-    return selectedCountry !== 'Any' && countryProvinces[selectedCountry];
+    return selectedCountry && selectedCountry !== '' && countryProvinces[selectedCountry];
   };
 
   const handleSubmit = async (e) => {
@@ -367,9 +371,9 @@ const OnboardingRegion = () => {
       
       // Prepare form data for saving
       const formData = {
-        regions: selectedRegions.filter(region => region !== 'Recommended'),
-        countries: selectedCountries.filter(country => country !== 'Any'),
-        provinces: selectedProvinces.filter(province => province !== 'Any'),
+        regions: selectedRegions.filter(region => region && region !== ''),
+        countries: selectedCountries.filter(country => country && country !== ''),
+        provinces: selectedProvinces.filter(province => province && province !== ''),
         geographic_features: selectedFeatures,
         vegetation_types: selectedVegetation
       };
@@ -406,14 +410,14 @@ const OnboardingRegion = () => {
 
   return (
     <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 ${uiConfig.responsive.sm}pb-4`}>
-      <div className="max-w-md mx-auto p-4 sm:p-4">
+      <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
         <OnboardingStepNavigation 
           currentStep="region_preferences" 
           completedSteps={progress.completedSteps} 
           className="mb-3" 
         />
         
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 ${uiConfig.responsive.sm}p-5`}>
+        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 sm:p-6 lg:p-8`}>
           {/* Header */}
           <div className="mb-3">
             <h1 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Regional Preferences</h1>
@@ -443,17 +447,18 @@ const OnboardingRegion = () => {
                         onChange={(e) => handleRegionChange(index, e.target.value)}
                         onFocus={() => {
                           // When user clicks dropdown, if they have made selections, reset them to allow re-selection
-                          if (selectedCountries[index] !== 'Any' || selectedProvinces[index] !== 'Any') {
+                          if (selectedCountries[index] !== '' || selectedProvinces[index] !== '') {
                             const newCountries = [...selectedCountries];
                             const newProvinces = [...selectedProvinces];
-                            newCountries[index] = 'Any';
-                            newProvinces[index] = 'Any';
+                            newCountries[index] = '';
+                            newProvinces[index] = '';
                             setSelectedCountries(newCountries);
                             setSelectedProvinces(newProvinces);
                           }
                         }}
                         className={`${uiConfig.components.select} appearance-none cursor-pointer focus:ring-0 focus:${uiConfig.colors.borderActive} ${uiConfig.animation.transition} h-[44px]`}
                       >
+                        <option value="">Select region</option>
                         {getAvailableRegions(index).map(region => (
                           <option key={region} value={region}>
                             {region}
@@ -461,7 +466,7 @@ const OnboardingRegion = () => {
                         ))}
                       </select>
                       {/* Show hierarchical selection as overlay text when selections are made */}
-                      {(selectedCountries[index] !== 'Any' || selectedProvinces[index] !== 'Any') && (
+                      {(selectedCountries[index] !== '' || selectedProvinces[index] !== '') && (
                         <div className={`absolute inset-0 px-3 py-2 ${uiConfig.font.size.sm} ${uiConfig.colors.heading} ${uiConfig.colors.badge} border ${uiConfig.colors.borderActive} ${uiConfig.layout.radius.lg} pointer-events-none flex items-center`}>
                           {getDisplayValue(index)}
                         </div>
@@ -476,7 +481,7 @@ const OnboardingRegion = () => {
                   {/* Country/State dropdown - only show when country dropdown should be visible */}
                   <div 
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      showCountryDropdowns[index] && selectedCountries[index] === 'Any' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                      showCountryDropdowns[index] && selectedCountries[index] === '' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     }`}
                   >
                     <div>
@@ -490,7 +495,8 @@ const OnboardingRegion = () => {
                           onBlur={() => handleCountryBlur(index)}
                           className={`${uiConfig.components.select} appearance-none cursor-pointer focus:ring-0 focus:${uiConfig.colors.borderActive} ${uiConfig.animation.transition} h-[44px]`}
                         >
-                          {getFilteredCountries(index).map(country => (
+                          <option value="">Select country</option>
+                          {getFilteredCountries(index).filter(c => c !== '').map(country => (
                             <option key={country} value={country}>
                               {country}
                             </option>
@@ -507,7 +513,7 @@ const OnboardingRegion = () => {
                   {/* Province dropdown - only show if provinces are available for the selected country AND country dropdown is still visible */}
                   <div 
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      showCountryDropdowns[index] && selectedCountries[index] !== 'Any' && hasProvinces(index) && selectedProvinces[index] === 'Any' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                      showCountryDropdowns[index] && selectedCountries[index] !== '' && hasProvinces(index) && selectedProvinces[index] === '' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     }`}
                   >
                     <div>
@@ -521,7 +527,8 @@ const OnboardingRegion = () => {
                           onBlur={() => handleProvinceBlur(index)}
                           className={`${uiConfig.components.select} appearance-none cursor-pointer focus:ring-0 focus:${uiConfig.colors.borderActive} ${uiConfig.animation.transition} h-[44px]`}
                         >
-                          {getFilteredProvinces(index).map(province => (
+                          <option value="">Select province</option>
+                          {getFilteredProvinces(index).filter(p => p !== '').map(province => (
                             <option key={province} value={province}>
                               {province}
                             </option>

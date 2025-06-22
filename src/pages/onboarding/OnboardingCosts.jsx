@@ -12,15 +12,39 @@ const OptionButton = ({ label, description, isSelected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`p-3 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center ${
+    className={`p-2.5 sm:p-3 lg:p-4 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] ${
       isSelected
         ? uiConfig.components.buttonVariants.selected
         : uiConfig.components.buttonVariants.unselected
     }`}
   >
-    <div className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${isSelected ? uiConfig.colors.accent : ''}`}>{label}</div>
-    {description && <div className={`${uiConfig.font.size.xs} mt-1 ${isSelected ? uiConfig.colors.accent : uiConfig.colors.hint}`}>{description}</div>}
+    <div className={`text-xs sm:text-sm lg:text-base ${uiConfig.font.weight.medium} ${isSelected ? 'text-scout-accent-300 dark:text-scout-accent-300' : ''}`}>{label}</div>
+    {description && <div className={`text-[10px] sm:text-xs mt-0.5 ${isSelected ? 'text-scout-accent-300 dark:text-scout-accent-300' : uiConfig.colors.hint}`}>{description}</div>}
   </button>
+);
+
+// Mobility Select Component - styled like dropdowns in other pages
+const MobilitySelect = ({ value, onChange, label, options }) => (
+  <div>
+    <label className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} block mb-0.5`}>{label}</label>
+    <select
+      value={value}
+      onChange={onChange}
+      className={`w-full px-3 text-xs sm:text-sm lg:text-base ${uiConfig.layout.radius.md} appearance-none cursor-pointer focus:ring-0 ${uiConfig.animation.transition} h-[44px] sm:h-[48px] lg:h-[52px] border-2 flex items-center text-center ${
+        value 
+          ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-300 dark:text-scout-accent-300 font-medium'
+          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
+      }`}
+      style={{ lineHeight: '44px', paddingTop: '0', paddingBottom: '0' }}
+    >
+      <option value="">None</option>
+      {options.map(opt => (
+        <option key={opt.id} value={opt.id}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  </div>
 );
 
 export default function OnboardingCosts() {
@@ -30,21 +54,42 @@ export default function OnboardingCosts() {
   const [progress, setProgress] = useState({ completedSteps: {} });
   
   const [formData, setFormData] = useState({
-    total_monthly_budget: 3000,
-    max_monthly_rent: 1000,
-    max_home_price: 300000,
-    monthly_healthcare_budget: 800,
-    need_car: [],
+    total_monthly_budget: 1500,
+    max_monthly_rent: 500,
+    max_home_price: 100000,
+    monthly_healthcare_budget: 500,
+    mobility: {
+      local: '',
+      regional: '',
+      international: ''
+    },
     property_tax_sensitive: false,
     sales_tax_sensitive: false,
     income_tax_sensitive: false
   });
 
-  // Car need options
-  const carOptions = [
-    { value: 'yes', label: 'Yes', description: 'Need a car' },
-    { value: 'no', label: 'No', description: 'No car needed' },
-    { value: 'maybe', label: 'Maybe', description: 'Depends on location' }
+  // Local Mobility options
+  const localMobilityOptions = [
+    { id: 'walk_bike', label: 'Walk/bike' },
+    { id: 'public_transit', label: 'Public transit' },
+    { id: 'need_car', label: 'Need car' },
+    { id: 'taxi_rideshare', label: 'Taxi/rideshare' }
+  ];
+
+  // Regional Mobility options
+  const regionalMobilityOptions = [
+    { id: 'train_access', label: 'Train access' },
+    { id: 'bus_network', label: 'Bus network' },
+    { id: 'need_car', label: 'Need car' },
+    { id: 'not_important', label: 'Not important' }
+  ];
+
+  // International Mobility options
+  const intlMobilityOptions = [
+    { id: 'major_airport', label: 'Major airport' },
+    { id: 'regional_airport', label: 'Regional airport' },
+    { id: 'train_connections', label: 'Train connections' },
+    { id: 'not_important', label: 'Not important' }
   ];
 
   useEffect(() => {
@@ -65,7 +110,13 @@ export default function OnboardingCosts() {
             setFormData(prev => ({ 
               ...prev, 
               ...budgetData,
-              need_car: budgetData.need_car || []
+              mobility: budgetData.mobility || {
+                local: '',
+                regional: '',
+                international: ''
+              },
+              // Handle legacy need_car data
+              need_car: undefined
             }));
           }
         }
@@ -104,6 +155,16 @@ export default function OnboardingCosts() {
           : [...current, value]
       };
     });
+  };
+
+  const handleMobilityChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      mobility: {
+        ...prev.mobility,
+        [field]: value
+      }
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -156,14 +217,14 @@ export default function OnboardingCosts() {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page} p-4`}>
-      <div className="max-w-md mx-auto">
+      <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto">
         <OnboardingStepNavigation 
-          currentStep="budget" 
+          currentStep="costs" 
           completedSteps={progress.completedSteps} 
           className="mb-4" 
         />
         
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-3 ${uiConfig.responsive.sm}p-4`}>
+        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 sm:p-6 lg:p-8`}>
           {/* Header */}
           <div className="mb-4">
             <h1 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Budget & Costs</h1>
@@ -296,25 +357,36 @@ export default function OnboardingCosts() {
             </div>
           </div>
 
-          {/* Transportation */}
+          {/* Mobility Preferences */}
           <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 flex items-center`}>
+            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
               <Car size={18} className="mr-1.5" />
-              Transportation Needs
+              Mobility Preferences
             </label>
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-3`}>
-              Will you need a car?
-            </p>
-            <div className="grid grid-cols-3 gap-1.5">
-              {carOptions.map((option) => (
-                <OptionButton
-                  key={option.value}
-                  label={option.label}
-                  description={option.description}
-                  isSelected={formData.need_car.includes(option.value)}
-                  onClick={() => handleMultiSelect('need_car', option.value)}
-                />
-              ))}
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
+              {/* Local Mobility */}
+              <MobilitySelect
+                value={formData.mobility.local || ''}
+                onChange={(e) => handleMobilityChange('local', e.target.value)}
+                label="Local Mobility"
+                options={localMobilityOptions}
+              />
+              
+              {/* Regional Mobility */}
+              <MobilitySelect
+                value={formData.mobility.regional || ''}
+                onChange={(e) => handleMobilityChange('regional', e.target.value)}
+                label="Regional Mobility"
+                options={regionalMobilityOptions}
+              />
+              
+              {/* International Mobility */}
+              <MobilitySelect
+                value={formData.mobility.international || ''}
+                onChange={(e) => handleMobilityChange('international', e.target.value)}
+                label="Int'l Mobility"
+                options={intlMobilityOptions}
+              />
             </div>
           </div>
 
@@ -425,8 +497,12 @@ export default function OnboardingCosts() {
                 <div>• Max rent: {formatCurrency(formData.max_monthly_rent)}{formData.max_monthly_rent >= 2000 && '+'}</div>
                 <div>• Max home price: {formatHomePrice(formData.max_home_price)}{formData.max_home_price >= 500000 && '+'}</div>
                 <div>• Healthcare: {formatCurrency(formData.monthly_healthcare_budget)}{formData.monthly_healthcare_budget >= 1500 && '+'}/month</div>
-                {formData.need_car.length > 0 && (
-                  <div>• Transportation: {formData.need_car.join(', ')}</div>
+                {(formData.mobility.local || formData.mobility.regional || formData.mobility.international) && (
+                  <div>• Mobility: {[
+                    formData.mobility.local && localMobilityOptions.find(o => o.id === formData.mobility.local)?.label,
+                    formData.mobility.regional && regionalMobilityOptions.find(o => o.id === formData.mobility.regional)?.label,
+                    formData.mobility.international && intlMobilityOptions.find(o => o.id === formData.mobility.international)?.label
+                  ].filter(Boolean).join(', ')}</div>
                 )}
                 {(formData.property_tax_sensitive || formData.sales_tax_sensitive || formData.income_tax_sensitive) && (
                   <div>• Tax concerns: {[

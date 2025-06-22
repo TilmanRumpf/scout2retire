@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Heart, Building, FileText } from 'lucide-react';
+import { Shield, Heart, Building, FileText, Stethoscope } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
@@ -12,22 +12,50 @@ const OptionButton = ({ label, description, isSelected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`p-2 sm:p-2.5 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center min-h-[44px] ${
+    className={`p-2.5 sm:p-3 lg:p-4 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] ${
       isSelected
         ? uiConfig.components.buttonVariants.selected
         : uiConfig.components.buttonVariants.unselected
     }`}
   >
-    <div className={`${uiConfig.font.size.xs} ${uiConfig.responsive.sm}${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${isSelected ? uiConfig.colors.accent : ''}`}>{label}</div>
-    {description && <div className={`text-[10px] ${uiConfig.responsive.sm}${uiConfig.font.size.xs} mt-0.5 ${isSelected ? uiConfig.colors.accent : uiConfig.colors.hint}`}>{description}</div>}
+    <div className={`text-xs sm:text-sm lg:text-base ${uiConfig.font.weight.medium} ${isSelected ? 'text-scout-accent-300 dark:text-scout-accent-300' : ''}`}>{label}</div>
+    {description && <div className={`text-[10px] sm:text-xs mt-0.5 ${isSelected ? 'text-scout-accent-300 dark:text-scout-accent-300' : uiConfig.colors.hint}`}>{description}</div>}
   </button>
+);
+
+// Health Select Component - styled like Language Select
+const HealthSelect = ({ value, onChange, label, options }) => (
+  <div>
+    <label className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} block mb-0.5`}>{label}</label>
+    <select
+      value={value}
+      onChange={onChange}
+      className={`w-full px-3 text-xs sm:text-sm lg:text-base ${uiConfig.layout.radius.md} appearance-none cursor-pointer focus:ring-0 ${uiConfig.animation.transition} h-[44px] sm:h-[48px] lg:h-[52px] border-2 flex items-center text-center ${
+        value 
+          ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-300 dark:text-scout-accent-300 font-medium'
+          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
+      }`}
+      style={{ lineHeight: '44px', paddingTop: '0', paddingBottom: '0' }}
+    >
+      <option value="">None</option>
+      {options.map(opt => (
+        <option key={opt.id} value={opt.id}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  </div>
 );
 
 export default function OnboardingAdministration() {
   const [formData, setFormData] = useState({
     healthcare_quality: [],
+    health_considerations: {
+      healthcare_access: '',
+      ongoing_treatment: '',
+      environmental_health: ''
+    },
     insurance_importance: [],
-    special_medical_needs: false,
     safety_importance: [],
     emergency_services: [],
     political_stability: [],
@@ -84,6 +112,11 @@ export default function OnboardingAdministration() {
             ...adminData,
             // Ensure arrays are arrays
             healthcare_quality: Array.isArray(adminData.healthcare_quality) ? adminData.healthcare_quality : [],
+            health_considerations: adminData.health_considerations || {
+              healthcare_access: '',
+              ongoing_treatment: '',
+              environmental_health: ''
+            },
             insurance_importance: Array.isArray(adminData.insurance_importance) ? adminData.insurance_importance : [],
             safety_importance: Array.isArray(adminData.safety_importance) ? adminData.safety_importance : [],
             emergency_services: Array.isArray(adminData.emergency_services) ? adminData.emergency_services : [],
@@ -119,12 +152,16 @@ export default function OnboardingAdministration() {
     });
   };
 
-  const handleCheckboxChange = (field, value) => {
+  const handleHealthChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      health_considerations: {
+        ...prev.health_considerations,
+        [field]: value
+      }
     }));
   };
+
 
   const handleSkip = () => {
     navigate('/onboarding/costs');
@@ -147,8 +184,12 @@ export default function OnboardingAdministration() {
       // Create a clean data object
       const dataToSave = {
         healthcare_quality: formData.healthcare_quality || [],
+        health_considerations: formData.health_considerations || {
+          healthcare_access: '',
+          ongoing_treatment: '',
+          environmental_health: ''
+        },
         insurance_importance: formData.insurance_importance || [],
-        special_medical_needs: formData.special_medical_needs || false,
         safety_importance: formData.safety_importance || [],
         emergency_services: formData.emergency_services || [],
         political_stability: formData.political_stability || [],
@@ -207,16 +248,44 @@ export default function OnboardingAdministration() {
     { value: 'citizenship', label: 'Citizenship' }
   ];
 
+  // Healthcare Access options
+  const healthcareAccessOptions = [
+    { id: 'full_access', label: 'Full access' },
+    { id: 'hospital_specialists', label: 'Hospital & Specialists' },
+    { id: 'hospital_general', label: 'Hospital & General medicine' },
+    { id: 'general_practitioner', label: 'General practitioner' },
+    { id: 'pharmacy_only', label: 'Basic pharmacy only' }
+  ];
+
+  // Ongoing Treatment options
+  const ongoingTreatmentOptions = [
+    { id: 'none', label: 'None' },
+    { id: 'dialysis', label: 'Dialysis' },
+    { id: 'cancer', label: 'Cancer care' },
+    { id: 'cardiac', label: 'Cardiac care' },
+    { id: 'diabetes', label: 'Diabetes care' }
+  ];
+
+  // Environmental Health options
+  const environmentalHealthOptions = [
+    { id: 'no_restrictions', label: 'No restrictions' },
+    { id: 'air_quality', label: 'Air quality critical' },
+    { id: 'low_humidity', label: 'Low humidity (<50%)' },
+    { id: 'high_humidity_ok', label: 'High humidity OK (>60%)' },
+    { id: 'pollen_sensitive', label: 'Pollen sensitive' },
+    { id: 'very_sensitive', label: 'Very sensitive' }
+  ];
+
   return (
     <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 ${uiConfig.responsive.sm}pb-4`}>
-      <div className="max-w-md mx-auto p-4 sm:p-4">
+      <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
         <OnboardingStepNavigation 
           currentStep="administration" 
           completedSteps={progress.completedSteps} 
           className="mb-3" 
         />
         
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 ${uiConfig.responsive.sm}p-5`}>
+        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 sm:p-6 lg:p-8`}>
           {/* Header */}
           <div className="mb-3">
             <h1 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Healthcare & Administration</h1>
@@ -232,9 +301,9 @@ export default function OnboardingAdministration() {
               Healthcare Preferences
             </label>
             
-            {/* Healthcare Quality */}
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Healthcare Quality</p>
-            <div className="grid grid-cols-3 gap-1.5 mb-2.5">
+            {/* Healthcare */}
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Healthcare</p>
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -245,9 +314,37 @@ export default function OnboardingAdministration() {
               ))}
             </div>
 
+            {/* Health Considerations - using dropdowns */}
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Health Considerations</p>
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 mb-2.5">
+              {/* Healthcare Access */}
+              <HealthSelect
+                value={formData.health_considerations.healthcare_access || ''}
+                onChange={(e) => handleHealthChange('healthcare_access', e.target.value)}
+                label="Healthcare Access"
+                options={healthcareAccessOptions}
+              />
+              
+              {/* Ongoing Treatment */}
+              <HealthSelect
+                value={formData.health_considerations.ongoing_treatment || ''}
+                onChange={(e) => handleHealthChange('ongoing_treatment', e.target.value)}
+                label="Ongoing Treatment"
+                options={ongoingTreatmentOptions}
+              />
+              
+              {/* Environmental Health */}
+              <HealthSelect
+                value={formData.health_considerations.environmental_health || ''}
+                onChange={(e) => handleHealthChange('environmental_health', e.target.value)}
+                label="Environmental Health"
+                options={environmentalHealthOptions}
+              />
+            </div>
+
             {/* Health Insurance */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Health Insurance</p>
-            <div className="grid grid-cols-3 gap-1.5 mb-2.5">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -256,35 +353,6 @@ export default function OnboardingAdministration() {
                   onClick={() => handleToggle('insurance_importance', option.value)}
                 />
               ))}
-            </div>
-
-            {/* Special Medical Needs */}
-            <div className="flex items-center">
-              <input
-                id="special_medical_needs"
-                type="checkbox"
-                checked={formData.special_medical_needs}
-                onChange={(e) => handleCheckboxChange('special_medical_needs', e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
-                style={{ 
-                  accentColor: '#8fbc8f',
-                  WebkitAppearance: 'none',
-                  appearance: 'none',
-                  backgroundColor: formData.special_medical_needs ? '#8fbc8f' : 'transparent',
-                  border: formData.special_medical_needs ? '1px solid #8fbc8f' : '1px solid #d1d5db',
-                  borderRadius: '0.25rem',
-                  backgroundImage: formData.special_medical_needs 
-                    ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
-                    : 'none',
-                  backgroundSize: '100% 100%',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat',
-                  transition: 'all 0.15s ease-in-out'
-                }}
-              />
-              <label htmlFor="special_medical_needs" className={`ml-2 ${uiConfig.font.size.xs} ${uiConfig.colors.body} cursor-pointer`}>
-                I have special medical needs or require regular prescriptions
-              </label>
             </div>
           </div>
 
@@ -295,9 +363,9 @@ export default function OnboardingAdministration() {
               Safety & Security
             </label>
             
-            {/* Quality of Safety */}
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Quality of Safety</p>
-            <div className="grid grid-cols-3 gap-1.5 mb-2.5">
+            {/* Safety */}
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Safety</p>
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -310,7 +378,7 @@ export default function OnboardingAdministration() {
 
             {/* Emergency Services */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Emergency Services</p>
-            <div className="grid grid-cols-3 gap-1.5 mb-2.5">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -321,9 +389,9 @@ export default function OnboardingAdministration() {
               ))}
             </div>
 
-            {/* Political Stability Rating */}
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Political Stability Rating</p>
-            <div className="grid grid-cols-3 gap-1.5">
+            {/* Political Stability */}
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Political Stability</p>
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
               {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -342,9 +410,9 @@ export default function OnboardingAdministration() {
               Government & Taxes
             </label>
             
-            {/* Tax System Quality */}
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Tax System Quality</p>
-            <div className="grid grid-cols-3 gap-1.5 mb-2.5">
+            {/* Tax System */}
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Tax System</p>
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -357,7 +425,7 @@ export default function OnboardingAdministration() {
 
             {/* Government Efficiency */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Government Efficiency</p>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
               {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -378,7 +446,7 @@ export default function OnboardingAdministration() {
             
             {/* Visa Process */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Visa Process</p>
-            <div className="grid grid-cols-3 gap-1.5 mb-2.5">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -391,7 +459,7 @@ export default function OnboardingAdministration() {
 
             {/* Stay Duration */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>How long do you plan to stay?</p>
-            <div className="grid grid-cols-3 gap-1.5 mb-2.5">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 mb-2.5">
               {stayDurationOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -404,7 +472,7 @@ export default function OnboardingAdministration() {
 
             {/* Residency Path */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Residency goals</p>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
               {residencyPathOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -425,6 +493,22 @@ export default function OnboardingAdministration() {
               {formData.healthcare_quality.length > 0 && (
                 <div><span className={`${uiConfig.font.weight.medium}`}>Healthcare:</span> {formData.healthcare_quality.join(', ')}</div>
               )}
+              {(formData.health_considerations.healthcare_access || 
+                formData.health_considerations.ongoing_treatment || 
+                formData.health_considerations.environmental_health) && (
+                <div>
+                  <span className={`${uiConfig.font.weight.medium}`}>Health needs:</span> {
+                    [
+                      formData.health_considerations.healthcare_access && 
+                        healthcareAccessOptions.find(o => o.id === formData.health_considerations.healthcare_access)?.label,
+                      formData.health_considerations.ongoing_treatment && 
+                        ongoingTreatmentOptions.find(o => o.id === formData.health_considerations.ongoing_treatment)?.label,
+                      formData.health_considerations.environmental_health && 
+                        environmentalHealthOptions.find(o => o.id === formData.health_considerations.environmental_health)?.label
+                    ].filter(Boolean).join(', ')
+                  }
+                </div>
+              )}
               {formData.insurance_importance.length > 0 && (
                 <div><span className={`${uiConfig.font.weight.medium}`}>Insurance:</span> {formData.insurance_importance.join(', ')}</div>
               )}
@@ -439,9 +523,6 @@ export default function OnboardingAdministration() {
               )}
               {formData.residency_path.length > 0 && (
                 <div><span className={`${uiConfig.font.weight.medium}`}>Goals:</span> {formData.residency_path.join(', ')}</div>
-              )}
-              {formData.special_medical_needs && (
-                <div><span className={`${uiConfig.font.weight.medium}`}>Special needs:</span> Medical care required</div>
               )}
             </div>
           </div>
