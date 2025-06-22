@@ -1,6 +1,7 @@
 // src/utils/matchingAlgorithm.js
 import supabase from './supabaseClient';
 import { getOnboardingProgress } from './onboardingUtils';
+import { calculatePremiumMatch } from './premiumMatchingAlgorithm';
 
 /**
  * Get personalized town recommendations based on user's onboarding preferences
@@ -30,15 +31,19 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       return { success: false, error: townsError };
     }
 
-    // 3. Score each town based on user preferences
+    // 3. Score each town based on user preferences using premium algorithm
     const scoredTowns = allTowns.map(town => {
-      const scoreDetails = calculateDetailedMatchScore(town, userPreferences);
+      const premiumResult = calculatePremiumMatch(town, userPreferences);
       return {
         ...town,
-        matchScore: scoreDetails.totalScore,
-        matchReasons: scoreDetails.reasons,
-        categoryScores: scoreDetails.categoryScores,
-        warnings: scoreDetails.warnings
+        matchScore: premiumResult.score,
+        matchReasons: premiumResult.matchReasons,
+        categoryScores: premiumResult.breakdown,
+        warnings: premiumResult.warnings,
+        insights: premiumResult.insights,
+        highlights: premiumResult.highlights,
+        confidence: premiumResult.confidence,
+        valueRating: premiumResult.value_rating
       };
     });
 
