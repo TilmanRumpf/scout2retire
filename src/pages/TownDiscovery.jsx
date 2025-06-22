@@ -249,16 +249,30 @@ export default function TownDiscovery() {
                   )}
                 </div>
                 
-                {/* Match Score Badge with Details */}
+                {/* Match Score Badge with Value Rating */}
                 {selectedTownData.matchScore && (
-                  <div className="absolute top-4 left-4">
+                  <div className="absolute top-4 left-4 space-y-2">
                     <div className={`px-3 py-1 ${uiConfig.layout.radius.full} text-sm font-medium ${
                       selectedTownData.matchScore >= 80 ? uiConfig.colors.matchStrong :
                       selectedTownData.matchScore >= 60 ? uiConfig.colors.matchMedium :
                       uiConfig.colors.matchLow
                     }`}>
-                      {selectedTownData.matchScore}%
+                      {selectedTownData.matchScore}% Match
                     </div>
+                    {selectedTownData.valueRating && (
+                      <div className={`px-3 py-1 ${uiConfig.layout.radius.full} text-xs font-medium ${uiConfig.colors.card} shadow-sm`}>
+                        Value: {selectedTownData.valueRating}
+                      </div>
+                    )}
+                    {selectedTownData.confidence && (
+                      <div className={`px-3 py-1 ${uiConfig.layout.radius.full} text-xs ${
+                        selectedTownData.confidence === 'High' ? uiConfig.colors.statusSuccess :
+                        selectedTownData.confidence === 'Medium' ? uiConfig.colors.statusWarning :
+                        uiConfig.colors.statusError
+                      }`}>
+                        {selectedTownData.confidence} Confidence
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -279,6 +293,31 @@ export default function TownDiscovery() {
                   </a>
                 </div>
 
+                {/* Premium Insights */}
+                {selectedTownData.insights && selectedTownData.insights.length > 0 && (
+                  <div className={`mb-4 p-3 ${uiConfig.colors.statusSuccess} ${uiConfig.layout.radius.lg}`}>
+                    <h4 className={`text-sm font-medium ${uiConfig.colors.heading} mb-2`}>Key Insights</h4>
+                    <div className="space-y-1">
+                      {selectedTownData.insights.map((insight, index) => (
+                        <div key={index} className={`text-sm ${uiConfig.colors.body}`}>
+                          {insight}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Highlights */}
+                {selectedTownData.highlights && selectedTownData.highlights.length > 0 && (
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    {selectedTownData.highlights.map((highlight, index) => (
+                      <span key={index} className={`px-3 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.full} font-medium`}>
+                        {highlight}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
                 {/* Match Reasons */}
                 {selectedTownData.matchReasons && selectedTownData.matchReasons.length > 0 && (
                   <div className="mb-4">
@@ -294,15 +333,15 @@ export default function TownDiscovery() {
                       ))}
                     </div>
                     {selectedTownData.warnings && selectedTownData.warnings.length > 0 && (
-                      <div className="mt-2 space-y-1">
-                        {selectedTownData.warnings.map((warning, index) => (
-                          <div key={index} className={`flex items-center text-sm ${uiConfig.colors.statusWarning.split(' ')[1]}`}>
-                            <svg className={`${uiConfig.icons.size.sm} mr-2 flex-shrink-0`} fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                            </svg>
-                            {warning}
-                          </div>
-                        ))}
+                      <div className="mt-3 p-3 ${uiConfig.colors.statusWarning} ${uiConfig.layout.radius.md}">
+                        <h5 className={`text-xs font-medium ${uiConfig.colors.heading} mb-1`}>Considerations:</h5>
+                        <div className="space-y-1">
+                          {selectedTownData.warnings.map((warning, index) => (
+                            <div key={index} className={`text-sm ${uiConfig.colors.body}`}>
+                              {warning}
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -429,9 +468,9 @@ export default function TownDiscovery() {
                   </div>
                 )}
                 
-                {/* Match Score with Category Breakdown */}
+                {/* Match Score with Value Rating */}
                 {town.matchScore && (
-                  <div className="absolute top-2 left-2">
+                  <div className="absolute top-2 left-2 flex items-center gap-1">
                     <div className={`px-2 py-1 ${uiConfig.layout.radius.sm} text-xs font-medium ${
                       town.matchScore >= 80 ? uiConfig.colors.matchStrong :
                       town.matchScore >= 60 ? uiConfig.colors.matchMedium :
@@ -439,6 +478,11 @@ export default function TownDiscovery() {
                     }`}>
                       {town.matchScore}%
                     </div>
+                    {town.valueRating && (
+                      <div className={`px-2 py-1 ${uiConfig.layout.radius.sm} text-xs font-medium ${uiConfig.colors.card} shadow-sm`}>
+                        {town.valueRating}
+                      </div>
+                    )}
                   </div>
                 )}
                 
@@ -460,19 +504,31 @@ export default function TownDiscovery() {
                   <span className={`text-sm ${uiConfig.colors.hint}`}>{town.country}</span>
                 </div>
                 
-                {/* Match Reasons & Warnings */}
-                {town.matchReasons && town.matchReasons.length > 0 && (
+                {/* Premium Insights or Match Reasons */}
+                {town.insights && town.insights.length > 0 ? (
+                  <div className="mb-3">
+                    <div className={`text-xs ${uiConfig.colors.accent} font-medium line-clamp-2`}>
+                      {town.insights[0]}
+                    </div>
+                  </div>
+                ) : town.matchReasons && town.matchReasons.length > 0 ? (
                   <div className="mb-3 space-y-1">
                     {town.matchReasons.slice(0, 2).map((reason, index) => (
                       <div key={index} className={`text-xs ${uiConfig.colors.success} line-clamp-1`}>
                         {reason}
                       </div>
                     ))}
-                    {town.warnings && town.warnings.length > 0 && (
-                      <div className={`text-xs ${uiConfig.colors.statusWarning.split(' ')[1]} line-clamp-1`}>
-                        {town.warnings[0]}
-                      </div>
-                    )}
+                  </div>
+                ) : null}
+                
+                {/* Highlights */}
+                {town.highlights && town.highlights.length > 0 && (
+                  <div className="mb-2 flex flex-wrap gap-1">
+                    {town.highlights.slice(0, 2).map((highlight, index) => (
+                      <span key={index} className={`px-2 py-0.5 ${uiConfig.colors.badge} text-[10px] ${uiConfig.layout.radius.full}`}>
+                        {highlight}
+                      </span>
+                    ))}
                   </div>
                 )}
                 

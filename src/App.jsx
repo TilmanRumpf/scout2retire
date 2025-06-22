@@ -21,6 +21,7 @@ import TownComparison from "./pages/TownComparison";
 import TownDiscovery from "./pages/TownDiscovery";
 import Chat from "./pages/Chat";
 import Journal from "./pages/Journal";
+import DataImport from "./pages/admin/DataImport";
 
 // Onboarding Flow
 import OnboardingProgress from "./pages/onboarding/OnboardingProgress";
@@ -275,6 +276,15 @@ function App() {
             <ProtectedRoute>
               <AuthenticatedLayout>
                 <Settings />
+              </AuthenticatedLayout>
+            </ProtectedRoute>
+          } />
+
+          {/* Admin routes */}
+          <Route path="/admin/data-import" element={
+            <ProtectedRoute>
+              <AuthenticatedLayout>
+                <DataImport />
               </AuthenticatedLayout>
             </ProtectedRoute>
           } />

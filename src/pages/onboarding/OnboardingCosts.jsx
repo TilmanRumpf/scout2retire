@@ -167,6 +167,10 @@ export default function OnboardingCosts() {
     }));
   };
 
+  const handleSkip = () => {
+    navigate('/onboarding/review');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -216,8 +220,8 @@ export default function OnboardingCosts() {
   };
 
   return (
-    <div className={`min-h-screen ${uiConfig.colors.page} p-4`}>
-      <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto">
+    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 ${uiConfig.responsive.sm}pb-4`}>
+      <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
         <OnboardingStepNavigation 
           currentStep="costs" 
           completedSteps={progress.completedSteps} 
@@ -531,24 +535,40 @@ export default function OnboardingCosts() {
             </div>
           </div>
 
-          {/* Bottom Navigation */}
-          <div className={`flex justify-between items-center pt-4 mt-4 border-t ${uiConfig.colors.borderLight}`}>
-            <button
-              type="button"
-              onClick={() => navigate('/onboarding/administration')}
-              className={`px-4 py-2 ${uiConfig.font.size.sm} ${uiConfig.colors.body} hover:${uiConfig.colors.heading}`}
-            >
-              Back
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className={`px-6 py-2 ${uiConfig.font.size.sm} ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.lg} ${uiConfig.animation.transition} ${uiConfig.states.disabled}`}
-            >
-              {loading ? 'Saving...' : 'Continue'}
-            </button>
-          </div>
+          {/* Remove inline navigation - will be replaced outside form */}
         </form>
+
+        {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
+        <div className={`fixed ${uiConfig.responsive.sm}sticky bottom-0 left-0 right-0 ${uiConfig.responsive.sm}relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 ${uiConfig.responsive.sm}p-0 ${uiConfig.responsive.sm}border-0 ${uiConfig.responsive.sm}bg-transparent ${uiConfig.responsive.sm}mt-4`}>
+          <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto">
+            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.border} p-3 ${uiConfig.layout.shadow.lg} ${uiConfig.responsive.sm}shadow-none`}>
+              <div className="flex justify-between items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/onboarding/administration')}
+                  className={`px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 text-sm sm:text-base ${uiConfig.colors.body} hover:${uiConfig.colors.heading} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[44px] sm:min-h-[48px] lg:min-h-[52px]`}
+                >
+                  ← Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSkip}
+                  className={`px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 text-sm sm:text-base ${uiConfig.colors.hint} hover:${uiConfig.colors.body} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[44px] sm:min-h-[48px] lg:min-h-[52px]`}
+                >
+                  Skip
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  onClick={handleSubmit}
+                  className={`px-6 py-2.5 sm:px-8 sm:py-3 lg:px-10 lg:py-3.5 text-sm sm:text-base ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.lg} ${uiConfig.states.disabled} min-h-[44px] sm:min-h-[48px] lg:min-h-[52px]`}
+                >
+                  {loading ? 'Saving...' : 'Next →'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
