@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchTowns, fetchFavorites } from '../utils/townUtils';
 import { sanitizeChatMessage, MAX_LENGTHS } from '../utils/sanitizeUtils';
+import { findUserByEmail } from '../utils/userSearchUtils';
 import PageErrorBoundary from '../components/PageErrorBoundary';
 import QuickNav from '../components/QuickNav';
 import toast from 'react-hot-toast';
@@ -24,6 +25,13 @@ export default function Chat() {
   const [companions, setCompanions] = useState([]);
   const [friends, setFriends] = useState([]);
   const [activeFriend, setActiveFriend] = useState(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteMessage, setInviteMessage] = useState('');
+  const [inviteLoading, setInviteLoading] = useState(false);
+  
+  const defaultInviteMessage = "Hi! I'm using Scout2Retire to plan my retirement. I've been exploring different retirement destinations and would love to connect with you to share ideas and experiences. Maybe we can help each other find the perfect place to enjoy our next chapter!\n\nLooking forward to chatting with you about our retirement plans.";
+  const [pendingInvitations, setPendingInvitations] = useState({ sent: [], received: [] });
   
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
@@ -51,8 +59,9 @@ export default function Chat() {
           setFavorites(userFavorites);
         }
         
-        // Fetch user's friends
+        // Fetch user's friends and pending invitations
         await loadFriends(currentUser.id);
+        await loadPendingInvitations(currentUser.id);
         
         // Load suggested companions
         await loadSuggestedCompanions(currentUser.id);
@@ -178,6 +187,51 @@ export default function Chat() {
       setFriends(data || []);
     } catch (err) {
       console.error("Error loading friends:", err);
+    }
+  };
+  
+  // Load pending invitations
+  const loadPendingInvitations = async (userId) => {
+    try {
+      // Load invitations sent by the user
+      const { data: sentInvites, error: sentError } = await supabase
+        .from('user_connections')
+        .select(`
+          *,
+          friend:friend_id (
+            id,
+            email,
+            full_name
+          )
+        `)
+        .eq('user_id', userId)
+        .eq('status', 'pending');
+        
+      // Load invitations received by the user
+      const { data: receivedInvites, error: receivedError } = await supabase
+        .from('user_connections')
+        .select(`
+          *,
+          user:user_id (
+            id,
+            email,
+            full_name
+          )
+        `)
+        .eq('friend_id', userId)
+        .eq('status', 'pending');
+        
+      if (sentError || receivedError) {
+        console.error("Error loading invitations:", sentError || receivedError);
+        return;
+      }
+      
+      setPendingInvitations({
+        sent: sentInvites || [],
+        received: receivedInvites || []
+      });
+    } catch (err) {
+      console.error("Error loading pending invitations:", err);
     }
   };
   
@@ -492,7 +546,6 @@ export default function Chat() {
     
     // General recommendations
     if (message.includes('recommend') || message.includes('suggest') || message.includes('best') || message.includes('where should')) {
-      const prefs = user?.onboarding_responses || {};
       return `Based on what you've told me, I'd love to help you find the perfect retirement spot!\n\nTo give you the best recommendations, could you tell me more about:\n• Your monthly budget range?\n• Preferred climate (tropical, temperate, four seasons)?\n• Important factors (healthcare, expat community, culture)?\n• Any countries you're already considering?\n\nIn the meantime, here are some popular choices by budget:\n\n**Budget-Friendly:** Portugal, Mexico, Malaysia\n**Mid-Range:** Spain, Greece, Costa Rica\n**Premium:** France, Australia, Switzerland\n\nWhat matters most to you in your retirement destination?`;
     }
     
@@ -572,6 +625,146 @@ export default function Chat() {
     } catch (err) {
       console.error("Error sending friend request:", err);
       toast.error("Failed to send friend request");
+    }
+  };
+  
+  // Send invitation by email
+  const sendInviteByEmail = async (email) => {
+    if (!email || !email.includes('@')) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    
+    console.log("Searching for user with email:", email);
+    setInviteLoading(true);
+    
+    try {
+      // Use RPC function to search for user by email
+      const { data: searchResult, error: searchError } = await supabase
+        .rpc('search_user_by_email', { 
+          search_email: email.trim().toLowerCase() 
+        });
+      
+      console.log("RPC search result:", { searchResult, searchError });
+      
+      if (searchError) {
+        console.error("Search error:", searchError);
+        
+        // If the function doesn't exist yet, provide instructions
+        if (searchError.code === '42883') {
+          toast.error("Search function not set up yet. Please run the migration SQL in Supabase.");
+        } else {
+          toast.error("Error searching for user. Please try again.");
+        }
+        setInviteLoading(false);
+        return;
+      }
+      
+      if (!searchResult || searchResult.length === 0) {
+        toast.error("No user found with this email address. Please check the email and ensure they've signed up.");
+        setInviteLoading(false);
+        return;
+      }
+      
+      const existingUser = searchResult[0];
+      console.log("Found user:", existingUser);
+      
+      // Check if already connected
+      const { data: existingConnection } = await supabase
+        .from('user_connections')
+        .select('*')
+        .or(`and(user_id.eq.${user.id},friend_id.eq.${existingUser.id}),and(user_id.eq.${existingUser.id},friend_id.eq.${user.id})`);
+        
+      if (existingConnection && existingConnection.length > 0) {
+        const connection = existingConnection[0];
+        if (connection.status === 'accepted') {
+          toast.error("You're already connected with this user!");
+        } else if (connection.status === 'pending') {
+          toast.error("There's already a pending invitation with this user!");
+        }
+        setInviteLoading(false);
+        return;
+      }
+      
+      // Send the invitation with message
+      const { error: inviteError } = await supabase
+        .from('user_connections')
+        .insert([{
+          user_id: user.id,
+          friend_id: existingUser.id,
+          status: 'pending',
+          message: inviteMessage.trim() || null
+        }]);
+        
+      if (inviteError) {
+        console.error("Error sending invitation:", inviteError);
+        toast.error("Failed to send invitation");
+        setInviteLoading(false);
+        return;
+      }
+      
+      toast.success(`Invitation sent to ${existingUser.full_name || email}!`);
+      setShowInviteModal(false);
+      setInviteEmail('');
+      setInviteMessage('');
+      
+      // Reload invitations
+      await loadPendingInvitations(user.id);
+      
+    } catch (err) {
+      console.error("Error sending invitation by email:", err);
+      toast.error("An error occurred while sending the invitation");
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+  
+  // Accept invitation
+  const acceptInvitation = async (connectionId) => {
+    try {
+      const { error } = await supabase
+        .from('user_connections')
+        .update({ status: 'accepted' })
+        .eq('id', connectionId);
+        
+      if (error) {
+        console.error("Error accepting invitation:", error);
+        toast.error("Failed to accept invitation");
+        return;
+      }
+      
+      toast.success("Invitation accepted!");
+      
+      // Reload friends and invitations
+      await loadFriends(user.id);
+      await loadPendingInvitations(user.id);
+    } catch (err) {
+      console.error("Error accepting invitation:", err);
+      toast.error("Failed to accept invitation");
+    }
+  };
+  
+  // Decline invitation
+  const declineInvitation = async (connectionId) => {
+    try {
+      const { error } = await supabase
+        .from('user_connections')
+        .delete()
+        .eq('id', connectionId);
+        
+      if (error) {
+        console.error("Error declining invitation:", error);
+        toast.error("Failed to decline invitation");
+        return;
+      }
+      
+      toast.success("Invitation declined");
+      
+      // Reload invitations
+      await loadPendingInvitations(user.id);
+    } catch (err) {
+      console.error("Error declining invitation:", err);
+      toast.error("Failed to decline invitation");
     }
   };
   
@@ -804,11 +997,54 @@ export default function Chat() {
               <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
                 <div className="flex justify-between items-center">
                   <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Companions & Friends</h2>
-                  
+                  <button
+                    onClick={() => {
+                      setShowInviteModal(true);
+                      setInviteMessage(defaultInviteMessage);
+                    }}
+                    className={`text-sm ${uiConfig.colors.btnPrimary} px-3 py-1 ${uiConfig.layout.radius.md}`}
+                  >
+                    Invite
+                  </button>
                 </div>
               </div>
               
-              {friends.length === 0 ? (
+              {/* Pending Invitations */}
+              {pendingInvitations?.received && pendingInvitations.received.length > 0 && (
+                <div className={`p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.colors.statusInfo}`}>
+                  <p className={`text-sm font-medium mb-3`}>Pending Invitations:</p>
+                  {pendingInvitations.received.map(invite => (
+                    <div key={invite.id} className="mb-3 pb-3 border-b border-scout-accent-200 last:border-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium">
+                          {invite.user?.full_name || invite.user?.email?.split('@')[0] || 'Unknown user'}
+                        </span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => acceptInvitation(invite.id)}
+                            className="text-xs px-2 py-1 bg-scout-accent-600 text-white rounded hover:bg-scout-accent-700"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => declineInvitation(invite.id)}
+                            className="text-xs px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      </div>
+                      {invite.message && (
+                        <p className="text-xs text-gray-600 dark:text-gray-400 italic mt-1">
+                          "{invite.message}"
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {friends.length === 0 && (!pendingInvitations?.sent || pendingInvitations.sent.length === 0) ? (
                 <div className={`p-4 text-center ${uiConfig.colors.hint} ${uiConfig.font.size.sm}`}>
                   <p>No friends yet.</p>
                   <button 
@@ -1022,6 +1258,123 @@ export default function Chat() {
       
       {/* Bottom navigation for mobile */}
       <QuickNav />
+      
+      {/* Invite Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`${uiConfig.colors.modal} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.xl} max-w-md w-full`}>
+            <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
+              <div className="flex justify-between items-center">
+                <h2 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
+                  Invite a Friend
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowInviteModal(false);
+                    setInviteEmail('');
+                    // Keep the message for next time
+                  }}
+                  className={`${uiConfig.colors.hint} hover:${uiConfig.colors.body}`}
+                >
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <p className={`${uiConfig.colors.body} mb-4`}>
+                Connect with someone who shares your retirement dreams:
+              </p>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                sendInviteByEmail(inviteEmail);
+              }}>
+                <div className="space-y-4">
+                  <div>
+                    <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+                      Friend's Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      placeholder="friend@example.com"
+                      className={`w-full px-4 py-2 border ${uiConfig.colors.border} ${uiConfig.layout.radius.md} ${uiConfig.colors.input} ${uiConfig.colors.body} ${uiConfig.colors.focusRing} focus:border-transparent`}
+                      required
+                      disabled={inviteLoading}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
+                      Personal Message (Optional)
+                    </label>
+                    <textarea
+                      value={inviteMessage}
+                      onChange={(e) => {
+                        setInviteMessage(e.target.value);
+                      }}
+                      placeholder="Add your personal message here..."
+                      rows={4}
+                      maxLength={500}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:border-transparent resize-none"
+                      disabled={inviteLoading}
+                    />
+                    <div className={`mt-1 text-xs ${uiConfig.colors.hint} text-right`}>
+                      {inviteMessage.length}/500
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end gap-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowInviteModal(false);
+                      setInviteEmail('');
+                      // Keep the message for next time
+                    }}
+                    className={`px-4 py-2 ${uiConfig.colors.btnNeutral} ${uiConfig.layout.radius.md}`}
+                    disabled={inviteLoading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className={`px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md} ${inviteLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={inviteLoading || !inviteEmail}
+                  >
+                    {inviteLoading ? 'Sending...' : 'Send Invitation'}
+                  </button>
+                </div>
+              </form>
+              
+              {pendingInvitations?.sent && pendingInvitations.sent.length > 0 && (
+                <div className={`mt-6 pt-6 border-t ${uiConfig.colors.borderLight}`}>
+                  <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint} mb-3`}>
+                    Pending invitations you've sent:
+                  </p>
+                  <div className="space-y-2">
+                    {pendingInvitations.sent.map(invite => (
+                      <div key={invite.id} className={`flex items-center justify-between ${uiConfig.colors.input} p-2 ${uiConfig.layout.radius.md}`}>
+                        <span className={`${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
+                          {invite.friend?.full_name || invite.friend?.email || 'Unknown'}
+                        </span>
+                        <span className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+                          Pending
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Companions Modal */}
       {showCompanionsModal && (
