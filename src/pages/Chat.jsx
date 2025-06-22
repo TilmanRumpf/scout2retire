@@ -180,11 +180,20 @@ export default function Chat() {
       // Fetch user details for friends
       const friendsWithDetails = await Promise.all(
         (data || []).map(async (connection) => {
-          const { data: friendData } = await supabase.rpc('get_user_by_id', { user_id: connection.friend_id });
-          return {
-            ...connection,
-            friend: friendData?.[0] || null
-          };
+          try {
+            const { data: friendData, error } = await supabase.rpc('get_user_by_id', { user_id: connection.friend_id });
+            if (error) {
+              console.log("RPC function not available, friend will show without name");
+              return connection;
+            }
+            return {
+              ...connection,
+              friend: friendData?.[0] || null
+            };
+          } catch (err) {
+            console.log("Error fetching friend details:", err);
+            return connection;
+          }
         })
       );
       
@@ -219,22 +228,40 @@ export default function Chat() {
       // Fetch user details for sent invitations
       const sentWithDetails = await Promise.all(
         (sentInvites || []).map(async (invite) => {
-          const { data: friendData } = await supabase.rpc('get_user_by_id', { user_id: invite.friend_id });
-          return {
-            ...invite,
-            friend: friendData?.[0] || null
-          };
+          try {
+            const { data: friendData, error } = await supabase.rpc('get_user_by_id', { user_id: invite.friend_id });
+            if (error) {
+              console.log("RPC function not available, invitation will show without name");
+              return invite;
+            }
+            return {
+              ...invite,
+              friend: friendData?.[0] || null
+            };
+          } catch (err) {
+            console.log("Error fetching friend details:", err);
+            return invite;
+          }
         })
       );
       
       // Fetch user details for received invitations
       const receivedWithDetails = await Promise.all(
         (receivedInvites || []).map(async (invite) => {
-          const { data: userData } = await supabase.rpc('get_user_by_id', { user_id: invite.user_id });
-          return {
-            ...invite,
-            user: userData?.[0] || null
-          };
+          try {
+            const { data: userData, error } = await supabase.rpc('get_user_by_id', { user_id: invite.user_id });
+            if (error) {
+              console.log("RPC function not available, invitation will show without name");
+              return invite;
+            }
+            return {
+              ...invite,
+              user: userData?.[0] || null
+            };
+          } catch (err) {
+            console.log("Error fetching user details:", err);
+            return invite;
+          }
         })
       );
       
@@ -1053,7 +1080,7 @@ export default function Chat() {
                     <div key={invite.id} className="mb-3 pb-3 border-b border-scout-accent-200 last:border-0">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm font-medium">
-                          {invite.user?.full_name || invite.user?.email?.split('@')[0] || 'Unknown user'}
+                          {invite.user?.full_name || invite.user?.email?.split('@')[0] || `User ${invite.user_id?.slice(0, 8)}...`}
                         </span>
                         <div className="flex gap-2">
                           <button
@@ -1397,7 +1424,7 @@ export default function Chat() {
                     {pendingInvitations.sent.map(invite => (
                       <div key={invite.id} className={`flex items-center justify-between ${uiConfig.colors.input} p-2 ${uiConfig.layout.radius.md}`}>
                         <span className={`${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
-                          {invite.friend?.full_name || invite.friend?.email || 'Unknown'}
+                          {invite.friend?.full_name || invite.friend?.email || `User ${invite.friend_id?.slice(0, 8)}...`}
                         </span>
                         <div className="flex items-center gap-2">
                           <span className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
