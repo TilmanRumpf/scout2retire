@@ -9,6 +9,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 // Core Pages
 import Home from "./pages/Home";
+import DailyRedesignV2 from "./pages/DailyRedesignV2";
 import Welcome from "./pages/Welcome";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -211,7 +212,7 @@ function App() {
           <Route path="/daily" element={
             <ProtectedRoute onboardingRequired={true}>
               <AuthenticatedLayout>
-                <Home />
+                <DailyRedesignV2 />
               </AuthenticatedLayout>
             </ProtectedRoute>
           } />

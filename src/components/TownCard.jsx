@@ -5,7 +5,7 @@ import { toggleFavorite } from '../utils/townUtils';
 import toast from 'react-hot-toast';
 import { Heart, MapPin, DollarSign, Activity, Shield } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
-import LazyImage from './LazyImage';
+import SimpleImage from './SimpleImage';
 
 export default function TownCard({ 
   town, 
@@ -103,7 +103,7 @@ export default function TownCard({
   return (
     <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden ${className}`}>
       <div className="relative h-48">
-        <LazyImage
+        <SimpleImage
           src={town.image_url_1}
           alt={town.name}
           className="w-full h-full object-cover"

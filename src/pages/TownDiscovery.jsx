@@ -3,13 +3,41 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { fetchTowns, fetchFavorites } from '../utils/townUtils';
 import { getCurrentUser } from '../utils/authUtils';
 import LikeButton from '../components/LikeButton';
-import LazyImage from '../components/LazyImage';
+import SimpleImage from '../components/SimpleImage';
 import PageErrorBoundary from '../components/PageErrorBoundary';
 import QuickNav from '../components/QuickNav';
 import TownRadarChart from '../components/TownRadarChart';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 import { Sparkles, MapPin } from 'lucide-react';
+import FilterBarV3 from '../components/FilterBarV3';
+
+// Predefined regions and their countries from onboarding
+const REGIONS = [
+  'North America',
+  'Central America',
+  'Caribbean',
+  'South America',
+  'Europe',
+  'Mediterranean',
+  'Asia',
+  'Africa',
+  'Australia & New Zealand',
+  'Oceania'
+];
+
+const REGION_COUNTRIES = {
+  'North America': ['Mexico', 'United States', 'Canada'],
+  'Central America': ['Belize', 'Costa Rica', 'El Salvador', 'Guatemala', 'Honduras', 'Nicaragua', 'Panama'],
+  'Caribbean': ['Antigua and Barbuda', 'Bahamas', 'Barbados', 'Cuba', 'Dominica', 'Dominican Republic', 'Grenada', 'Haiti', 'Jamaica', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Trinidad and Tobago'],
+  'South America': ['Argentina', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Ecuador', 'French Guiana', 'Guyana', 'Paraguay', 'Peru', 'Suriname', 'Uruguay', 'Venezuela'],
+  'Europe': ['Albania', 'Andorra', 'Austria', 'Belarus', 'Belgium', 'Bosnia and Herzegovina', 'Bulgaria', 'Croatia', 'Cyprus', 'Czech Republic', 'Denmark', 'Estonia', 'Finland', 'France', 'Germany', 'Greece', 'Hungary', 'Iceland', 'Ireland', 'Italy', 'Latvia', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Malta', 'Moldova', 'Monaco', 'Montenegro', 'Netherlands', 'North Macedonia', 'Norway', 'Poland', 'Portugal', 'Romania', 'Russia', 'San Marino', 'Serbia', 'Slovakia', 'Slovenia', 'Spain', 'Sweden', 'Switzerland', 'Turkey', 'Ukraine', 'United Kingdom', 'Vatican City'],
+  'Mediterranean': ['Spain', 'France', 'Monaco', 'Italy', 'Slovenia', 'Croatia', 'Bosnia and Herzegovina', 'Montenegro', 'Albania', 'Greece', 'Turkey', 'Cyprus', 'Syria', 'Lebanon', 'Israel', 'Egypt', 'Libya', 'Tunisia', 'Algeria', 'Morocco', 'Malta'],
+  'Asia': ['Afghanistan', 'Armenia', 'Azerbaijan', 'Bahrain', 'Bangladesh', 'Bhutan', 'Brunei', 'Cambodia', 'China', 'Cyprus', 'East Timor', 'Georgia', 'India', 'Indonesia', 'Iran', 'Iraq', 'Israel', 'Japan', 'Jordan', 'Kazakhstan', 'Kuwait', 'Kyrgyzstan', 'Laos', 'Lebanon', 'Malaysia', 'Maldives', 'Mongolia', 'Myanmar', 'Nepal', 'North Korea', 'Oman', 'Pakistan', 'Palestine', 'Philippines', 'Qatar', 'Russia', 'Saudi Arabia', 'Singapore', 'South Korea', 'Sri Lanka', 'Syria', 'Taiwan', 'Tajikistan', 'Thailand', 'Turkey', 'Turkmenistan', 'United Arab Emirates', 'Uzbekistan', 'Vietnam', 'Yemen'],
+  'Africa': ['Algeria', 'Angola', 'Benin', 'Botswana', 'Burkina Faso', 'Burundi', 'Cameroon', 'Cape Verde', 'Central African Republic', 'Chad', 'Comoros', 'Democratic Republic of the Congo', 'Republic of the Congo', 'Djibouti', 'Egypt', 'Equatorial Guinea', 'Eritrea', 'Eswatini', 'Ethiopia', 'Gabon', 'Gambia', 'Ghana', 'Guinea', 'Guinea-Bissau', 'Ivory Coast', 'Kenya', 'Lesotho', 'Liberia', 'Libya', 'Madagascar', 'Malawi', 'Mali', 'Mauritania', 'Mauritius', 'Morocco', 'Mozambique', 'Namibia', 'Niger', 'Nigeria', 'Rwanda', 'São Tomé and Príncipe', 'Senegal', 'Seychelles', 'Sierra Leone', 'Somalia', 'South Africa', 'South Sudan', 'Sudan', 'Tanzania', 'Togo', 'Tunisia', 'Uganda', 'Zambia', 'Zimbabwe'],
+  'Australia & New Zealand': ['Australia', 'New Zealand'],
+  'Oceania': ['Fiji', 'Kiribati', 'Marshall Islands', 'Micronesia', 'Nauru', 'Palau', 'Papua New Guinea', 'Samoa', 'Solomon Islands', 'Tonga', 'Tuvalu', 'Vanuatu']
+};
 
 export default function TownDiscovery() {
   const [towns, setTowns] = useState([]);
@@ -21,6 +49,14 @@ export default function TownDiscovery() {
   const [isPersonalized, setIsPersonalized] = useState(false);
   const [userPreferences, setUserPreferences] = useState(null);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
+  
+  // Filter and sort states
+  const [sortBy, setSortBy] = useState('match');
+  const [filterCountry, setFilterCountry] = useState('all');
+  const [filterRegion, setFilterRegion] = useState('all');
+  const [filterCostRange, setFilterCostRange] = useState('all');
+  const [filterMatchRange, setFilterMatchRange] = useState('all');
+  
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -118,6 +154,133 @@ export default function TownDiscovery() {
     return favorites.some(fav => String(fav.town_id) === String(townId));
   };
 
+  // Get unique countries from towns, filtered by region if selected
+  const getUniqueCountries = () => {
+    const allCountries = [...new Set(towns.map(town => town.country).filter(Boolean))];
+    
+    // If a region is selected, filter countries to only show those in that region
+    if (filterRegion !== 'all' && REGION_COUNTRIES[filterRegion]) {
+      return allCountries.filter(country => 
+        REGION_COUNTRIES[filterRegion].includes(country)
+      ).sort();
+    }
+    
+    return allCountries.sort();
+  };
+
+  // When region changes, reset country filter if the selected country is not in the new region
+  useEffect(() => {
+    if (filterRegion !== 'all' && filterCountry !== 'all') {
+      const availableCountries = getUniqueCountries();
+      if (!availableCountries.includes(filterCountry)) {
+        setFilterCountry('all');
+      }
+    }
+  }, [filterRegion, towns]);
+
+  // Cost range helper
+  const getCostRange = (cost) => {
+    if (!cost) return 'unknown';
+    if (cost < 2000) return 'under2000';
+    if (cost < 3000) return '2000-3000';
+    if (cost < 4000) return '3000-4000';
+    return 'over4000';
+  };
+
+  // Match score range helper
+  const getMatchRange = (score) => {
+    if (!score) return 'unknown';
+    if (score >= 80) return 'excellent';
+    if (score >= 60) return 'good';
+    if (score >= 40) return 'fair';
+    return 'low';
+  };
+
+  // Count active filters
+  const activeFilterCount = () => {
+    let count = 0;
+    if (filterCountry !== 'all') count++;
+    if (filterRegion !== 'all') count++;
+    if (filterCostRange !== 'all') count++;
+    if (filterMatchRange !== 'all') count++;
+    return count;
+  };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setFilterCountry('all');
+    setFilterRegion('all');
+    setFilterCostRange('all');
+    setFilterMatchRange('all');
+  };
+
+  // Sort and filter towns
+  const getSortedAndFilteredTowns = () => {
+    let filtered = [...towns];
+    
+    // Apply region filter - filter by countries in the selected region
+    if (filterRegion !== 'all' && REGION_COUNTRIES[filterRegion]) {
+      filtered = filtered.filter(town => 
+        REGION_COUNTRIES[filterRegion].includes(town.country)
+      );
+    }
+    
+    // Apply country filter
+    if (filterCountry !== 'all') {
+      filtered = filtered.filter(town => town.country === filterCountry);
+    }
+    
+    // Apply cost range filter
+    if (filterCostRange !== 'all') {
+      filtered = filtered.filter(town => getCostRange(town.cost_index) === filterCostRange);
+    }
+    
+    // Apply match score filter
+    if (filterMatchRange !== 'all') {
+      filtered = filtered.filter(town => getMatchRange(town.matchScore) === filterMatchRange);
+    }
+    
+    // Apply sorting
+    switch (sortBy) {
+      case 'match':
+        filtered.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+        break;
+      case 'name':
+        filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        break;
+      case 'cost-low':
+        filtered.sort((a, b) => (a.cost_index || 0) - (b.cost_index || 0));
+        break;
+      case 'cost-high':
+        filtered.sort((a, b) => (b.cost_index || 0) - (a.cost_index || 0));
+        break;
+      case 'region':
+        filtered.sort((a, b) => ((b.categoryScores?.region || 0) - (a.categoryScores?.region || 0)));
+        break;
+      case 'climate':
+        filtered.sort((a, b) => ((b.categoryScores?.climate || 0) - (a.categoryScores?.climate || 0)));
+        break;
+      case 'culture':
+        filtered.sort((a, b) => ((b.categoryScores?.culture || 0) - (a.categoryScores?.culture || 0)));
+        break;
+      case 'hobbies':
+        filtered.sort((a, b) => ((b.categoryScores?.hobbies || 0) - (a.categoryScores?.hobbies || 0)));
+        break;
+      case 'administration':
+        filtered.sort((a, b) => ((b.categoryScores?.administration || 0) - (a.categoryScores?.administration || 0)));
+        break;
+      case 'budget':
+        filtered.sort((a, b) => ((b.categoryScores?.budget || 0) - (a.categoryScores?.budget || 0)));
+        break;
+      case 'date':
+      default:
+        // Keep original order (personalized recommendation order)
+        break;
+    }
+    
+    return filtered;
+  };
+
   // IMPORTANT: Remove toast calls from here since they're handled in the LikeButton component
   const handleLikeToggle = (isLiked, action, townId) => {
     console.log(`Town ${townId} ${action}`);
@@ -161,6 +324,9 @@ export default function TownDiscovery() {
   };
 
   const selectedTownData = getSelectedTownData();
+  const sortedAndFilteredTowns = getSortedAndFilteredTowns();
+  const countries = getUniqueCountries();
+  const filterCount = activeFilterCount();
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page} pb-16 md:pb-4`}>
@@ -226,7 +392,7 @@ export default function TownDiscovery() {
           <div className="mb-8">
             <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
               <div className="relative h-64 md:h-80">
-                <LazyImage
+                <SimpleImage
                   src={selectedTownData.image_url_1}
                   alt={selectedTownData.name}
                   className="w-full h-full object-cover"
@@ -342,30 +508,33 @@ export default function TownDiscovery() {
                   <div className={`mb-4 p-3 ${uiConfig.colors.page} ${uiConfig.layout.radius.lg}`}>
                     <h4 className={`text-sm font-medium ${uiConfig.colors.body} mb-3`}>Match Breakdown</h4>
                     <div className="space-y-2">
-                      {Object.entries(selectedTownData.categoryScores).map(([category, score]) => (
-                        <div key={category} className="flex items-center justify-between">
-                          <span className={`text-xs ${uiConfig.colors.hint} capitalize`}>{category}</span>
-                          <div className="flex items-center gap-2">
-                            <div className={`w-24 h-2 ${uiConfig.progress.track} ${uiConfig.layout.radius.full} overflow-hidden`}>
-                              <div 
-                                className={`h-full ${uiConfig.animation.transition} ${
-                                  score >= 80 ? uiConfig.progress.high :
-                                  score >= 60 ? uiConfig.progress.medium :
-                                  uiConfig.progress.low
-                                }`}
-                                style={{ width: `${score}%` }}
-                              />
+                      {Object.entries(selectedTownData.categoryScores).map(([category, score]) => {
+                        const roundedScore = Math.round(score);
+                        return (
+                          <div key={category} className="flex items-center justify-between">
+                            <span className={`text-xs ${uiConfig.colors.hint} capitalize`}>{category}</span>
+                            <div className="flex items-center gap-2">
+                              <div className={`w-24 h-2 ${uiConfig.progress.track} ${uiConfig.layout.radius.full} overflow-hidden`}>
+                                <div 
+                                  className={`h-full ${uiConfig.animation.transition} ${
+                                    roundedScore >= 80 ? uiConfig.progress.high :
+                                    roundedScore >= 60 ? uiConfig.progress.medium :
+                                    uiConfig.progress.low
+                                  }`}
+                                  style={{ width: `${roundedScore}%` }}
+                                />
+                              </div>
+                              <span className={`text-xs font-medium ${
+                                roundedScore >= 80 ? uiConfig.colors.success :
+                                roundedScore >= 60 ? uiConfig.colors.statusWarning.split(' ')[1] :
+                                uiConfig.colors.statusWarning.split(' ')[1]
+                              }`}>
+                                {roundedScore}%
+                              </span>
                             </div>
-                            <span className={`text-xs font-medium ${
-                              score >= 80 ? uiConfig.colors.success :
-                              score >= 60 ? uiConfig.colors.statusWarning.split(' ')[1] :
-                              uiConfig.colors.statusWarning.split(' ')[1]
-                            }`}>
-                              {score}%
-                            </span>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -434,9 +603,43 @@ export default function TownDiscovery() {
           </div>
         )}
 
+        {/* Filter Bar */}
+        <div className="mb-6">
+          <FilterBarV3
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            filterRegion={filterRegion}
+            setFilterRegion={setFilterRegion}
+            filterCountry={filterCountry}
+            setFilterCountry={setFilterCountry}
+            filterCostRange={filterCostRange}
+            setFilterCostRange={setFilterCostRange}
+            filterMatchRange={filterMatchRange}
+            setFilterMatchRange={setFilterMatchRange}
+            regions={REGIONS}
+            countries={countries}
+            filterCount={filterCount}
+            clearFilters={clearFilters}
+            resultsCount={sortedAndFilteredTowns.length}
+          />
+        </div>
+
         {/* Town grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {towns.map((town) => (
+        {sortedAndFilteredTowns.length === 0 ? (
+          <div className={`text-center py-12 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg}`}>
+            <p className={`${uiConfig.colors.body} mb-4`}>
+              No towns match your current filters.
+            </p>
+            <button
+              onClick={clearFilters}
+              className={`text-sm ${uiConfig.colors.accent} hover:opacity-80`}
+            >
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sortedAndFilteredTowns.map((town) => (
             <div
               key={town.id}
               className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden ${uiConfig.animation.transition} hover:${uiConfig.layout.shadow.lg} ${
@@ -444,7 +647,7 @@ export default function TownDiscovery() {
               }`}
             >
               <div className="relative h-40">
-                <LazyImage
+                <SimpleImage
                   src={town.image_url_1}
                   alt={town.name}
                   className="w-full h-full object-cover"
@@ -516,27 +719,27 @@ export default function TownDiscovery() {
                     <div className="mb-3 grid grid-rows-2 grid-flow-col gap-x-4 gap-y-1.5 text-xs">
                       <div className="flex items-center gap-1">
                         <span className={`${uiConfig.colors.hint} capitalize`}>Region</span>
-                        <span className={`font-medium ${uiConfig.colors.hint}`}>{town.categoryScores.region || 0}%</span>
+                        <span className={`font-medium ${uiConfig.colors.hint}`}>{Math.round(town.categoryScores.region || 0)}%</span>
                       </div>
                     <div className="flex items-center gap-1">
                       <span className={`${uiConfig.colors.hint} capitalize`}>Climate</span>
-                      <span className={`font-medium ${uiConfig.colors.hint}`}>{town.categoryScores.climate || 0}%</span>
+                      <span className={`font-medium ${uiConfig.colors.hint}`}>{Math.round(town.categoryScores.climate || 0)}%</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <span className={`${uiConfig.colors.hint} capitalize`}>Culture</span>
-                      <span className={`font-medium ${uiConfig.colors.hint}`}>{town.categoryScores.culture || 0}%</span>
+                      <span className={`font-medium ${uiConfig.colors.hint}`}>{Math.round(town.categoryScores.culture || 0)}%</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <span className={`${uiConfig.colors.hint} capitalize`}>Hobbies</span>
-                      <span className={`font-medium ${uiConfig.colors.hint}`}>{town.categoryScores.hobbies || 0}%</span>
+                      <span className={`font-medium ${uiConfig.colors.hint}`}>{Math.round(town.categoryScores.hobbies || 0)}%</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <span className={`${uiConfig.colors.hint} capitalize`}>Admin</span>
-                      <span className={`font-medium ${uiConfig.colors.hint}`}>{town.categoryScores.administration || 0}%</span>
+                      <span className={`font-medium ${uiConfig.colors.hint}`}>{Math.round(town.categoryScores.administration || 0)}%</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <span className={`${uiConfig.colors.hint} capitalize`}>Budget</span>
-                      <span className={`font-medium ${uiConfig.colors.hint}`}>{town.categoryScores.budget || 0}%</span>
+                      <span className={`font-medium ${uiConfig.colors.hint}`}>{Math.round(town.categoryScores.budget || 0)}%</span>
                     </div>
                     </div>
                   </>
@@ -568,7 +771,8 @@ export default function TownDiscovery() {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
         </main>
       </PageErrorBoundary>
 

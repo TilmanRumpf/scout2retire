@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
-import CountdownWidget from '../components/CountdownWidget';
+import CompactCountdown from '../components/CompactCountdown';
 import DailyTownCard from '../components/DailyTownCard';
 import TownCard from '../components/TownCard';
 import PageErrorBoundary from '../components/PageErrorBoundary';
@@ -53,12 +53,20 @@ export default function Home() {
     loadUserData();
   }, []);
 
-  // Calculate retirement date
+  // Calculate retirement date - default to January 1st of retirement year
   const getRetirementDate = () => {
-    if (!user || !user.retirement_year_estimate) return new Date();
-    const date = new Date();
-    date.setFullYear(user.retirement_year_estimate);
-    return date;
+    if (!user || !user.retirement_year_estimate) {
+      // Default to 5 years from now if no estimate
+      const date = new Date();
+      date.setFullYear(date.getFullYear() + 5);
+      date.setMonth(0); // January
+      date.setDate(1);
+      return date;
+    }
+    
+    // Set to January 1st of the retirement year
+    const retirementDate = new Date(user.retirement_year_estimate, 0, 1);
+    return retirementDate;
   };
 
   // Handle favorite changes from TownCard
@@ -182,15 +190,20 @@ export default function Home() {
           )}
         </div>
 
-        {/* Retirement Countdown */}
-        <CountdownWidget targetDate={getRetirementDate()} />
+        {/* Countdown and Daily Recommendation Section */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Retirement Countdown - Takes 1/3 width on desktop */}
+          <div className="md:col-span-1">
+            <CompactCountdown targetDate={getRetirementDate()} />
+          </div>
 
-        {/* Daily Town Card */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">
-            Today's Recommendation
-          </h3>
-          <DailyTownCard />
+          {/* Daily Town Card - Takes 2/3 width on desktop */}
+          <div className="md:col-span-2">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">
+              Today's Recommendation
+            </h3>
+            <DailyTownCard />
+          </div>
         </div>
 
         {/* Your Favorites */}

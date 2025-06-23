@@ -4,8 +4,11 @@ import { getCurrentUser } from '../utils/authUtils';
 import { fetchTowns, fetchFavorites } from '../utils/townUtils';
 import { sanitizeChatMessage, MAX_LENGTHS } from '../utils/sanitizeUtils';
 import { findUserByEmail } from '../utils/userSearchUtils';
+import { cancelInvitation } from '../utils/companionUtils';
+import { sendInvitationEmailViaAuth } from '../utils/emailUtils';
 import PageErrorBoundary from '../components/PageErrorBoundary';
 import QuickNav from '../components/QuickNav';
+import FriendsSection from '../components/FriendsSection';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
@@ -25,6 +28,7 @@ export default function Chat() {
   const [companions, setCompanions] = useState([]);
   const [friends, setFriends] = useState([]);
   const [activeFriend, setActiveFriend] = useState(null);
+  const [friendsTabActive, setFriendsTabActive] = useState('friends'); // 'friends' or 'requests'
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteMessage, setInviteMessage] = useState('');
@@ -37,7 +41,16 @@ export default function Chat() {
   const navigate = useNavigate();
   const { townId } = useParams();
   const [searchParams] = useSearchParams();
+  const invitationId = searchParams.get('invitation');
   
+  // Load companions when modal opens
+  useEffect(() => {
+    if (showCompanionsModal && user) {
+      console.log("Companions modal opened, loading companions...");
+      loadSuggestedCompanions(user.id);
+    }
+  }, [showCompanionsModal, user]);
+
   // Load initial data
   useEffect(() => {
     const loadData = async () => {
@@ -65,6 +78,24 @@ export default function Chat() {
         
         // Load suggested companions
         await loadSuggestedCompanions(currentUser.id);
+        
+        // If accessed via notification, scroll to the invitation
+        if (invitationId && pendingInvitations.received) {
+          const invitation = pendingInvitations.received.find(inv => inv.id === invitationId);
+          if (invitation) {
+            // Highlight the invitation
+            setTimeout(() => {
+              const element = document.getElementById(`invitation-${invitationId}`);
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.classList.add('ring-2', 'ring-scout-accent-500', 'ring-opacity-75');
+                setTimeout(() => {
+                  element.classList.remove('ring-2', 'ring-scout-accent-500', 'ring-opacity-75');
+                }, 3000);
+              }
+            }, 500);
+          }
+        }
         
         // Fetch chat threads
         const { data: threadData, error: threadError } = await supabase
@@ -274,82 +305,75 @@ export default function Chat() {
     }
   };
   
-  // Load suggested companions based on similarity
+  // Load suggested companions (showing all users for now)
   const loadSuggestedCompanions = async (userId) => {
     try {
-      // Get user's onboarding data for similarity matching
-      const { data: userPrefs, error: prefError } = await supabase
-        .from('onboarding_responses')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-        
-      if (prefError || !userPrefs) {
-        console.error("Error loading user preferences:", prefError);
-        return;
-      }
+      console.log("=== loadSuggestedCompanions called ===");
+      console.log("Loading companions for user:", userId);
       
-      // Get other users with similar preferences (simplified similarity algorithm)
-      const { data: similarUsers, error } = await supabase
+      // Get all other users (removing similarity filtering until we have more users)
+      console.log("About to query users table...");
+      const { data: allUsers, error } = await supabase
         .from('users')
-        .select(`
-          *,
-          onboarding_responses (*)
-        `)
+        .select('id, email, full_name, created_at')
         .neq('id', userId)
-        .limit(10);
+        .limit(20); // Show up to 20 users
+        
+      console.log("Query completed. Error:", error, "Data:", allUsers);
         
       if (error) {
-        console.error("Error loading similar users:", error);
+        console.error("Error loading users:", error);
+        console.error("Error details:", error.message, error.code, error.details);
+        toast.error(`Failed to load users: ${error.message}`);
         return;
       }
       
-      // Calculate similarity scores (simplified - in production, this would be more sophisticated)
-      const scoredUsers = similarUsers
-        .filter(u => u.onboarding_responses && u.onboarding_responses.length > 0)
-        .map(u => {
-          const theirPrefs = u.onboarding_responses[0];
-          let score = 0;
-          
-          // Compare regions
-          if (userPrefs.region_preferences?.continents && theirPrefs.region_preferences?.continents) {
-            const commonContinents = userPrefs.region_preferences.continents.filter(c => 
-              theirPrefs.region_preferences.continents.includes(c)
-            );
-            score += commonContinents.length * 10;
+      console.log("All users found:", allUsers?.length || 0, allUsers);
+      
+      // Get existing connections to filter them out
+      const { data: connections, error: connError } = await supabase
+        .from('user_connections')
+        .select('friend_id, user_id, status')
+        .or(`user_id.eq.${userId},friend_id.eq.${userId}`);
+      
+      if (connError) {
+        console.error("Error loading connections:", connError);
+      }
+      
+      console.log("Existing connections:", connections);
+      
+      // Create a set of connected user IDs (only for pending and accepted)
+      const connectedUserIds = new Set();
+      connections?.forEach(conn => {
+        if (conn.status === 'pending' || conn.status === 'accepted') {
+          if (conn.user_id === userId) {
+            connectedUserIds.add(conn.friend_id);
+          } else if (conn.friend_id === userId) {
+            connectedUserIds.add(conn.user_id);
           }
-          
-          // Compare budget (within 20%)
-          if (userPrefs.budget?.monthly_budget && theirPrefs.budget?.monthly_budget) {
-            const budgetDiff = Math.abs(userPrefs.budget.monthly_budget - theirPrefs.budget.monthly_budget);
-            const avgBudget = (userPrefs.budget.monthly_budget + theirPrefs.budget.monthly_budget) / 2;
-            if (budgetDiff / avgBudget < 0.2) {
-              score += 15;
-            }
-          }
-          
-          // Compare climate preferences
-          if (userPrefs.climate_preferences?.temperature_preference === theirPrefs.climate_preferences?.temperature_preference) {
-            score += 10;
-          }
-          
-          // Compare lifestyle
-          if (userPrefs.culture_preferences?.pace_of_life === theirPrefs.culture_preferences?.pace_of_life) {
-            score += 8;
-          }
-          
-          return {
-            ...u,
-            similarity_score: score
-          };
-        })
-        .filter(u => u.similarity_score > 20) // Only show users with meaningful similarity
-        .sort((a, b) => b.similarity_score - a.similarity_score)
-        .slice(0, 5); // Top 5 matches
-        
-      setCompanions(scoredUsers);
+        }
+      });
+      
+      console.log("Connected user IDs:", Array.from(connectedUserIds));
+      
+      // Filter out already connected users
+      const availableUsers = allUsers?.filter(user => !connectedUserIds.has(user.id)) || [];
+      
+      console.log("Available users after filtering:", availableUsers.length, availableUsers);
+      
+      // For now, just show all available users without similarity filtering
+      const companions = availableUsers.map(user => ({
+        ...user,
+        similarity_score: Math.floor(Math.random() * 30) + 70 // Random score 70-100 for display
+      }));
+      
+      console.log("Setting companions state with:", companions.length, "users");
+      console.log("Companions data:", companions);
+      setCompanions(companions);
+      console.log("=== loadSuggestedCompanions completed ===");
     } catch (err) {
       console.error("Error loading companions:", err);
+      console.error("Stack trace:", err.stack);
     }
   };
   
@@ -708,14 +732,30 @@ export default function Chat() {
       const existingUser = searchResult[0];
       console.log("Found user:", existingUser);
       
-      // Check if already connected
-      const { data: existingConnection } = await supabase
+      // Check if already connected - check both directions separately for clarity
+      const { data: sentConnections } = await supabase
         .from('user_connections')
         .select('*')
-        .or(`and(user_id.eq.${user.id},friend_id.eq.${existingUser.id}),and(user_id.eq.${existingUser.id},friend_id.eq.${user.id})`);
+        .eq('user_id', user.id)
+        .eq('friend_id', existingUser.id)
+        .neq('status', 'cancelled'); // Exclude cancelled connections
+        
+      const { data: receivedConnections } = await supabase
+        .from('user_connections')
+        .select('*')
+        .eq('user_id', existingUser.id)
+        .eq('friend_id', user.id)
+        .neq('status', 'cancelled'); // Exclude cancelled connections
+        
+      // Filter to only active connections (pending or accepted)
+      const existingConnection = [...(sentConnections || []), ...(receivedConnections || [])]
+        .filter(conn => conn.status === 'pending' || conn.status === 'accepted');
+        
+      console.log("Existing connections found:", { sentConnections, receivedConnections, existingConnection });
         
       if (existingConnection && existingConnection.length > 0) {
         const connection = existingConnection[0];
+        console.log("Found existing connection:", connection);
         if (connection.status === 'accepted') {
           toast.error("You're already connected with this user!");
         } else if (connection.status === 'pending') {
@@ -742,7 +782,65 @@ export default function Chat() {
         return;
       }
       
-      toast.success(`Invitation sent to ${existingUser.full_name || email}!`);
+      // Send email notification
+      const emailResult = await sendInvitationEmailViaAuth(
+        email,
+        user,
+        inviteMessage.trim()
+      );
+      
+      if (!emailResult.success) {
+        console.error("Email error:", emailResult.error);
+      }
+      
+      // Create mailto link as fallback
+      const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(
+        `${user.full_name || user.email} invited you to Scout2Retire`
+      )}&body=${encodeURIComponent(
+        `Hi!\n\n${user.full_name || user.email} has invited you to join Scout2Retire, a personalized retirement planning platform.\n\n` +
+        (inviteMessage ? `Personal message from ${user.full_name || user.email}:\n"${inviteMessage}"\n\n` : '') +
+        `Click here to accept the invitation and create your account:\n${window.location.origin}/signup?invite_from=${user.id}\n\n` +
+        `With Scout2Retire, you can:\n` +
+        `- Discover retirement destinations that match your lifestyle\n` +
+        `- Connect with like-minded people planning their retirement\n` +
+        `- Compare locations based on cost, climate, culture, and more\n` +
+        `- Plan visits and make informed decisions\n\n` +
+        `Looking forward to connecting with you!\n\n` +
+        `Best regards,\n${user.full_name || user.email}`
+      )}`;
+      
+      // Show success with mailto option
+      toast.custom((t) => (
+        <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}>
+          <div className="flex-1 w-0 p-4">
+            <div className="flex items-start">
+              <div className="ml-3 flex-1">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  Invitation saved!
+                </p>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  The invitation to {existingUser.full_name || email} has been recorded.
+                </p>
+                <div className="mt-3 flex space-x-2">
+                  <a
+                    href={mailtoLink}
+                    className="text-sm font-medium text-scout-accent-600 hover:text-scout-accent-500"
+                  >
+                    Send email manually
+                  </a>
+                  <button
+                    onClick={() => toast.dismiss(t.id)}
+                    className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-500"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ), { duration: 8000 });
+      
       setShowInviteModal(false);
       setInviteEmail('');
       setInviteMessage('');
@@ -809,25 +907,32 @@ export default function Chat() {
   
   // Cancel sent invitation
   const cancelSentInvitation = async (connectionId) => {
-    try {
-      const { error } = await supabase
-        .from('user_connections')
-        .delete()
-        .eq('id', connectionId);
-        
-      if (error) {
-        console.error("Error canceling invitation:", error);
-        toast.error("Failed to cancel invitation");
-        return;
-      }
+    // Store the invitation to cancel for potential restoration
+    const invitationToCancel = pendingInvitations.sent.find(inv => inv.id === connectionId);
+    if (!invitationToCancel) return;
+    
+    // Optimistically update UI
+    setPendingInvitations(prev => ({
+      ...prev,
+      sent: prev.sent.filter(invite => invite.id !== connectionId)
+    }));
+    
+    // Call the utility function
+    const { success, error } = await cancelInvitation(connectionId, user.id);
+    
+    if (!success) {
+      // Restore the invitation if cancellation failed
+      setPendingInvitations(prev => ({
+        ...prev,
+        sent: [...prev.sent, invitationToCancel].sort((a, b) => 
+          new Date(b.created_at) - new Date(a.created_at)
+        )
+      }));
       
-      toast.success("Invitation canceled");
-      
-      // Reload invitations
-      await loadPendingInvitations(user.id);
-    } catch (err) {
-      console.error("Error canceling invitation:", err);
       toast.error("Failed to cancel invitation");
+      console.error("Cancel invitation error:", error);
+    } else {
+      toast.success("Invitation canceled");
     }
   };
   
@@ -1055,100 +1160,22 @@ export default function Chat() {
               </div>
             </div>
             
-            {/* Companions */}
-            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
-              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-                <div className="flex justify-between items-center">
-                  <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Companions & Friends</h2>
-                  <button
-                    onClick={() => {
-                      setShowInviteModal(true);
-                      setInviteMessage(defaultInviteMessage);
-                    }}
-                    className={`text-sm ${uiConfig.colors.btnPrimary} px-3 py-1 ${uiConfig.layout.radius.md}`}
-                  >
-                    Invite
-                  </button>
-                </div>
-              </div>
-              
-              {/* Pending Invitations */}
-              {pendingInvitations?.received && pendingInvitations.received.length > 0 && (
-                <div className={`p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.colors.statusInfo}`}>
-                  <p className={`text-sm font-medium mb-3`}>Pending Invitations:</p>
-                  {pendingInvitations.received.map(invite => (
-                    <div key={invite.id} className="mb-3 pb-3 border-b border-scout-accent-200 last:border-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium">
-                          {invite.user?.full_name || invite.user?.email?.split('@')[0] || `User ${invite.user_id?.slice(0, 8)}...`}
-                        </span>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => acceptInvitation(invite.id)}
-                            className="text-xs px-2 py-1 bg-scout-accent-600 text-white rounded hover:bg-scout-accent-700"
-                          >
-                            Accept
-                          </button>
-                          <button
-                            onClick={() => declineInvitation(invite.id)}
-                            className="text-xs px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
-                          >
-                            Decline
-                          </button>
-                        </div>
-                      </div>
-                      {invite.message && (
-                        <p className="text-xs text-gray-600 dark:text-gray-400 italic mt-1">
-                          "{invite.message}"
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              {friends.length === 0 && (!pendingInvitations?.sent || pendingInvitations.sent.length === 0) ? (
-                <div className={`p-4 text-center ${uiConfig.colors.hint} ${uiConfig.font.size.sm}`}>
-                  <p>No friends yet.</p>
-                  <button 
-                    onClick={() => setShowCompanionsModal(true)}
-                    className={`${uiConfig.colors.accent} hover:underline mt-2 inline-block`}
-                  >
-                    Find companions
-                  </button>
-                </div>
-              ) : (
-                <div className="max-h-64 overflow-y-auto">
-                  {friends.map(friend => (
-                    <button
-                      key={friend.friend_id}
-                      onClick={() => switchToFriendChat(friend)}
-                      className={`w-full text-left p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${
-                        chatType === 'friends' && activeFriend?.friend_id === friend.friend_id
-                          ? uiConfig.colors.badge
-                          : ''
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <div className={`w-10 h-10 bg-purple-100 dark:bg-purple-900 ${uiConfig.layout.radius.full} flex items-center justify-center text-purple-600 dark:text-purple-400 mr-3`}>
-                          <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium}`}>
-                            {friend.friend.full_name?.charAt(0) || friend.friend.email.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="flex-1">
-                          <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
-                            {friend.friend.full_name || friend.friend.email.split('@')[0]}
-                          </div>
-                          <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
-                            Connected
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Friends & Connections */}
+            <FriendsSection
+              friendsTabActive={friendsTabActive}
+              setFriendsTabActive={setFriendsTabActive}
+              friends={friends}
+              pendingInvitations={pendingInvitations}
+              acceptInvitation={acceptInvitation}
+              declineInvitation={declineInvitation}
+              switchToFriendChat={switchToFriendChat}
+              chatType={chatType}
+              activeFriend={activeFriend}
+              setShowInviteModal={setShowInviteModal}
+              setInviteMessage={setInviteMessage}
+              defaultInviteMessage={defaultInviteMessage}
+              setShowCompanionsModal={setShowCompanionsModal}
+            />
             
             {/* Favorite towns */}
             <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
@@ -1457,7 +1484,7 @@ export default function Chat() {
             <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
               <div className="flex justify-between items-center">
                 <h2 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
-                  People Like You
+                  Find Companions
                 </h2>
                 <button
                   onClick={() => setShowCompanionsModal(false)}
@@ -1473,12 +1500,12 @@ export default function Chat() {
             <div className="p-4 overflow-y-auto max-h-[60vh]">
               {companions.length === 0 ? (
                 <p className={`text-center ${uiConfig.colors.hint}`}>
-                  No companions found yet. We're looking for people with similar retirement preferences.
+                  No new companions available at the moment. Check back later!
                 </p>
               ) : (
                 <div className="space-y-4">
                   <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint} mb-4`}>
-                    Based on your preferences, here are people planning similar retirements:
+                    Connect with other Scout2Retire members:
                   </p>
                   {companions.map(companion => (
                     <div 
@@ -1509,22 +1536,6 @@ export default function Chat() {
                         </button>
                       </div>
                       
-                      {/* Show what they have in common */}
-                      <div className={`mt-3 ${uiConfig.font.size.sm} ${uiConfig.colors.hint}`}>
-                        <p className={`${uiConfig.font.weight.medium} mb-1`}>Common interests:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {companion.onboarding_responses?.[0]?.region_preferences?.continents?.slice(0, 2).map(continent => (
-                            <span key={continent} className={`px-2 py-1 ${uiConfig.colors.input} ${uiConfig.layout.radius.full} ${uiConfig.font.size.xs}`}>
-                              {continent.charAt(0).toUpperCase() + continent.slice(1).replace('_', ' ')}
-                            </span>
-                          ))}
-                          {companion.onboarding_responses?.[0]?.budget?.monthly_budget && (
-                            <span className={`px-2 py-1 ${uiConfig.colors.input} ${uiConfig.layout.radius.full} ${uiConfig.font.size.xs}`}>
-                              ${companion.onboarding_responses[0].budget.monthly_budget}/mo budget
-                            </span>
-                          )}
-                        </div>
-                      </div>
                     </div>
                   ))}
                 </div>
