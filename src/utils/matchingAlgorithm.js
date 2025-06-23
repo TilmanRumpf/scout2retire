@@ -34,11 +34,12 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     // 3. Score each town based on user preferences using premium algorithm
     const scoredTowns = allTowns.map(town => {
       const premiumResult = calculatePremiumMatch(town, userPreferences);
+      
       return {
         ...town,
         matchScore: premiumResult.score,
         matchReasons: premiumResult.matchReasons,
-        categoryScores: premiumResult.breakdown,
+        categoryScores: premiumResult.breakdown, // Now using correct category names
         warnings: premiumResult.warnings,
         insights: premiumResult.insights,
         highlights: premiumResult.highlights,

@@ -64,41 +64,42 @@ export default function TownRadarChart({ townData }) {
     return Math.round(avg);
   };
 
-  // Prepare data for the radar chart
+  // Convert percentage scores to 1-10 scale
+  const convertScore = (percentage) => {
+    if (!percentage && percentage !== 0) return 5; // Default middle value
+    return Math.round(percentage / 10); // Convert 0-100 to 0-10
+  };
+
+  // Prepare data for the radar chart using the 6 accepted categories
   const data = [
     {
-      category: 'Overall',
-      value: getOverallRating(),
+      category: 'Region',
+      value: townData.categoryScores?.region ? convertScore(townData.categoryScores.region) : 7,
       fullMark: 10
     },
     {
       category: 'Climate',
-      value: townData.climate_rating || 5,
+      value: townData.categoryScores?.climate ? convertScore(townData.categoryScores.climate) : (townData.climate_rating || 5),
       fullMark: 10
     },
     {
-      category: 'Cost of Living',
-      value: getCostRating(townData.cost_index),
+      category: 'Culture',
+      value: townData.categoryScores?.culture ? convertScore(townData.categoryScores.culture) : getLifestyleRating(),
       fullMark: 10
     },
     {
-      category: 'Healthcare',
-      value: townData.healthcare_score || 5,
+      category: 'Hobbies',
+      value: townData.categoryScores?.hobbies ? convertScore(townData.categoryScores.hobbies) : 5,
       fullMark: 10
     },
     {
-      category: 'Lifestyle',
-      value: getLifestyleRating(),
+      category: 'Administration',
+      value: townData.categoryScores?.administration ? convertScore(townData.categoryScores.administration) : Math.round((townData.healthcare_score || 5) + (townData.safety_score || 5)) / 2,
       fullMark: 10
     },
     {
-      category: 'Safety',
-      value: townData.safety_score || 5,
-      fullMark: 10
-    },
-    {
-      category: 'Infrastructure',
-      value: getInfrastructureRating(),
+      category: 'Budget',
+      value: townData.categoryScores?.budget ? convertScore(townData.categoryScores.budget) : getCostRating(townData.cost_index),
       fullMark: 10
     }
   ];

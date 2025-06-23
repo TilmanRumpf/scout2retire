@@ -1,25 +1,29 @@
 // Premium Matching Algorithm for Scout2Retire
 // Enhanced algorithm with adaptive weights, fuzzy matching, and deeper insights
 
+import { 
+  getCategoryWeights, 
+  getBudgetScoringRanges,
+  getAdministrationWeights,
+  getHobbiesScoringBonuses,
+  getRegionScoringValues 
+} from './scoringConfigLoader';
+
 /**
  * Enhanced matching algorithm with premium features
  */
 export const calculatePremiumMatch = (town, userPreferences) => {
-  // Get adaptive weights based on user's profile
-  const weights = calculateAdaptiveWeights(userPreferences);
+  // Get adaptive weights from configuration
+  const weights = getCategoryWeights(userPreferences);
   
-  // Calculate enhanced scores for each category
+  // Calculate enhanced scores for the 6 accepted categories only
   const categoryScores = {
-    budget: calculatePremiumBudgetScore(town, userPreferences),
-    healthcare: calculatePremiumHealthcareScore(town, userPreferences),
-    safety: calculateSafetyScore(town, userPreferences),
+    region: calculateRegionScore(town, userPreferences),
     climate: calculatePremiumClimateScore(town, userPreferences),
     culture: calculatePremiumCultureScore(town, userPreferences),
-    lifestyle: calculateLifestyleScore(town, userPreferences),
-    infrastructure: calculateInfrastructureScore(town),
-    connectivity: calculateConnectivityScore(town, userPreferences),
-    region: calculateRegionScore(town, userPreferences),
-    administration: calculateAdministrationScore(town, userPreferences)
+    hobbies: calculateHobbiesScore(town, userPreferences),
+    administration: calculateEnhancedAdministrationScore(town, userPreferences),
+    budget: calculatePremiumBudgetScore(town, userPreferences)
   };
   
   // Calculate weighted total
@@ -63,27 +67,24 @@ export const calculatePremiumMatch = (town, userPreferences) => {
  * Calculate adaptive weights based on user's priorities
  */
 const calculateAdaptiveWeights = (preferences) => {
+  // Base weights for the 6 accepted categories
   const baseWeights = {
-    budget: 0.20,
-    healthcare: 0.15,
-    safety: 0.15,
-    climate: 0.10,
-    culture: 0.10,
-    lifestyle: 0.10,
-    infrastructure: 0.05,
-    connectivity: 0.05,
-    region: 0.05,
-    administration: 0.05
+    region: 0.10,
+    climate: 0.15,
+    culture: 0.15,
+    hobbies: 0.15,
+    administration: 0.20,  // Includes healthcare, safety, visa, tax
+    budget: 0.25
   };
   
   const weights = { ...baseWeights };
   
-  // Healthcare priority adjustment
+  // Healthcare priority adjustment (now part of administration)
   if (preferences.administration?.health_considerations?.healthcare_access) {
     const access = preferences.administration.health_considerations.healthcare_access;
     if (access === 'full_access' || access === 'hospital_specialists') {
-      weights.healthcare = 0.25;
-      weights.lifestyle -= 0.05;
+      weights.administration = 0.30;
+      weights.hobbies -= 0.05;
       weights.culture -= 0.05;
     }
   }
@@ -92,17 +93,16 @@ const calculateAdaptiveWeights = (preferences) => {
   if (preferences.costs?.property_tax_sensitive || 
       preferences.costs?.income_tax_sensitive || 
       preferences.costs?.sales_tax_sensitive) {
-    weights.budget = 0.25;
-    weights.administration = 0.10;
-    weights.infrastructure -= 0.05;
-    weights.connectivity -= 0.05;
+    weights.budget = 0.30;
+    weights.administration = 0.25;
+    weights.hobbies -= 0.05;
   }
   
   // Active lifestyle adjustment
   if (preferences.hobbies?.activities?.length > 5 || 
       preferences.hobbies?.interests?.length > 5) {
-    weights.lifestyle = 0.15;
-    weights.culture = 0.15;
+    weights.hobbies = 0.20;
+    weights.culture = 0.20;
     weights.administration -= 0.05;
     weights.region -= 0.05;
   }
@@ -110,11 +110,11 @@ const calculateAdaptiveWeights = (preferences) => {
   // Climate sensitive adjustment
   if (preferences.climate_preferences?.seasonal_preference && 
       preferences.climate_preferences.seasonal_preference !== 'Optional') {
-    weights.climate = 0.15;
-    weights.connectivity -= 0.05;
+    weights.climate = 0.20;
+    weights.hobbies -= 0.05;
   }
   
-  // Normalize weights
+  // Normalize weights to ensure they sum to 1.0
   const sum = Object.values(weights).reduce((a, b) => a + b, 0);
   Object.keys(weights).forEach(key => {
     weights[key] = weights[key] / sum;
@@ -406,9 +406,9 @@ const calculatePremiumCultureScore = (town, preferences) => {
 };
 
 /**
- * Lifestyle scoring based on activities and interests
+ * Hobbies scoring based on activities and interests
  */
-const calculateLifestyleScore = (town, preferences) => {
+const calculateHobbiesScore = (town, preferences) => {
   if (!preferences.hobbies) return 70;
   
   let totalScore = 0;
@@ -436,27 +436,51 @@ const calculateLifestyleScore = (town, preferences) => {
       if (description.includes('golf')) activityScore += 15;
     }
     
+    // Cycling
+    if (activities.includes('cycling')) {
+      if (description.includes('cycling') || description.includes('bike')) activityScore += 15;
+    }
+    
+    // Fishing
+    if (activities.includes('fishing')) {
+      if (features.includes('coast') || description.includes('fishing')) activityScore += 15;
+    }
+    
     totalScore += Math.min(100, activityScore);
     factors++;
   }
   
-  // Cultural importance
-  if (preferences.culture_preferences?.cultural_importance) {
-    const importance = preferences.culture_preferences.cultural_importance;
-    let culturalScore = 70;
+  // Interest matching
+  if (preferences.hobbies.interests?.length > 0) {
+    let interestScore = 50;
+    const interests = preferences.hobbies.interests;
+    const description = (town.description || '').toLowerCase();
     
-    // High importance items (4-5 on scale)
-    if (importance.dining_nightlife >= 4) {
-      if (town.population > 100000) culturalScore += 10;
-    }
-    if (importance.museums >= 4) {
-      if (town.population > 500000) culturalScore += 10;
-    }
-    if (importance.cultural_events >= 4) {
-      if (town.expat_population?.includes('Large')) culturalScore += 10;
+    // History & Arts
+    if (interests.includes('history') || interests.includes('arts')) {
+      if (description.includes('historic') || description.includes('heritage') || 
+          description.includes('museum') || description.includes('cultural')) {
+        interestScore += 20;
+      }
     }
     
-    totalScore += Math.min(100, culturalScore);
+    // Nature
+    if (interests.includes('nature')) {
+      if (description.includes('nature') || description.includes('park') || 
+          description.includes('wildlife')) {
+        interestScore += 20;
+      }
+    }
+    
+    // Wine & Food
+    if (interests.includes('wine') || interests.includes('cooking')) {
+      if (description.includes('wine') || description.includes('culinary') || 
+          description.includes('cuisine')) {
+        interestScore += 15;
+      }
+    }
+    
+    totalScore += Math.min(100, interestScore);
     factors++;
   }
   
@@ -655,11 +679,25 @@ const calculateRegionScore = (town, preferences) => {
   return Math.round(score / factors);
 };
 
-const calculateAdministrationScore = (town, preferences) => {
+const calculateEnhancedAdministrationScore = (town, preferences) => {
   if (!preferences.administration) return 70;
   
   let totalScore = 0;
   let factors = 0;
+  
+  // Healthcare scoring (major component of administration)
+  if (town.healthcare_score) {
+    let healthScore = calculatePremiumHealthcareScore(town, preferences);
+    totalScore += healthScore * 1.5; // Higher weight for healthcare
+    factors += 1.5;
+  }
+  
+  // Safety scoring
+  if (town.safety_score) {
+    let safetyScore = calculateSafetyScore(town, preferences);
+    totalScore += safetyScore;
+    factors++;
+  }
   
   // Visa preferences
   if (preferences.administration.visa_preference?.length > 0) {
@@ -687,8 +725,26 @@ const calculateAdministrationScore = (town, preferences) => {
     factors++;
   }
   
+  // Government efficiency
+  if (preferences.administration.government_efficiency?.length > 0) {
+    let govScore = 70;
+    if (preferences.administration.government_efficiency.includes('good')) {
+      if (town.government_rating >= 7) govScore = 90;
+      else if (town.government_rating >= 5) govScore = 75;
+    }
+    totalScore += govScore * 0.5; // Lower weight
+    factors += 0.5;
+  }
+  
+  // Infrastructure (now part of administration)
+  const infraScore = calculateInfrastructureScore(town);
+  totalScore += infraScore * 0.5;
+  factors += 0.5;
+  
   return factors > 0 ? totalScore / factors : 70;
 };
+
+const calculateAdministrationScore = calculateEnhancedAdministrationScore;
 
 /**
  * Premium insight generation

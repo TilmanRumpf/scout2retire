@@ -2,6 +2,59 @@ import supabase from './supabaseClient';
 
 // Companion/Friend management utilities
 
+// Cancel a sent invitation
+export const cancelInvitation = async (invitationId, userId) => {
+  try {
+    // First, let's check what we're trying to delete
+    const { data: checkData, error: checkError } = await supabase
+      .from('user_connections')
+      .select('*')
+      .eq('id', invitationId)
+      .single();
+      
+    console.log("Invitation to cancel:", { checkData, checkError });
+    
+    // Try to update the status to 'cancelled' first (more likely to work with RLS)
+    const { data: updateData, error: updateError } = await supabase
+      .from('user_connections')
+      .update({ 
+        status: 'cancelled'
+      })
+      .eq('id', invitationId)
+      .eq('user_id', userId)
+      .select();
+      
+    console.log("Update to cancelled result:", { updateData, updateError });
+      
+    if (!updateError && updateData && updateData.length > 0) {
+      console.log("Successfully cancelled invitation");
+      return { success: true };
+    }
+    
+    // If update failed, try delete as fallback
+    const { data: deleteData, error: deleteError } = await supabase
+      .from('user_connections')
+      .delete()
+      .eq('id', invitationId)
+      .eq('user_id', userId)
+      .select();
+      
+    console.log("Delete attempt result:", { deleteData, deleteError });
+      
+    if (!deleteError) {
+      return { success: true };
+    }
+    
+    // If both failed, return the error
+    const finalError = updateError || deleteError;
+    console.error("Failed to cancel invitation:", finalError);
+    return { success: false, error: finalError };
+  } catch (err) {
+    console.error("Error in cancelInvitation:", err);
+    return { success: false, error: err };
+  }
+};
+
 export const fetchCompanions = async (userId) => {
   try {
     // Fetch accepted friendships where the user is either the requester or receiver

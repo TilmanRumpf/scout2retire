@@ -25,15 +25,15 @@ export default function TownComparison() {
     return townIds ? townIds.split(',') : [];
   };
 
-  // Categories for comparison tabs
+  // Categories for comparison tabs - Updated to match the 6 onboarding categories
   const categories = [
     { id: 'overview', label: 'Overview' },
+    { id: 'region', label: 'Region' },
     { id: 'climate', label: 'Climate' },
-    { id: 'cost', label: 'Cost of Living' },
-    { id: 'healthcare', label: 'Healthcare' },
-    { id: 'lifestyle', label: 'Lifestyle' },
-    { id: 'safety', label: 'Safety' },
-    { id: 'infrastructure', label: 'Infrastructure' }
+    { id: 'culture', label: 'Culture' },
+    { id: 'hobbies', label: 'Hobbies' },
+    { id: 'administration', label: 'Administration' },
+    { id: 'budget', label: 'Budget' }
   ];
 
   // Load data
@@ -184,38 +184,16 @@ export default function TownComparison() {
           return Math.round(rating);
         }
         return null;
-      case 'healthcare':
-        return town.healthcare_score || null;
-      case 'lifestyle':
-        // Average of lifestyle sub-ratings
-        const lifestyleRatings = [
-          town.nightlife_rating,
-          town.restaurants_rating,
-          town.cultural_rating,
-          town.outdoor_rating,
-          town.quality_of_life
-        ].filter(r => r !== null && r !== undefined);
-        
-        if (lifestyleRatings.length > 0) {
-          const avg = lifestyleRatings.reduce((a, b) => a + b, 0) / lifestyleRatings.length;
-          return Math.round(avg);
-        }
-        return null;
-      case 'safety':
-        return town.safety_score || null;
-      case 'infrastructure':
-        // Average of infrastructure sub-ratings
-        const infraRatings = [
-          town.public_transport_quality,
-          town.walkability,
-          town.infrastructure_rating
-        ].filter(r => r !== null && r !== undefined);
-        
-        if (infraRatings.length > 0) {
-          const avg = infraRatings.reduce((a, b) => a + b, 0) / infraRatings.length;
-          return Math.round(avg);
-        }
-        return null;
+      case 'region':
+        return town.categoryScores?.region ? Math.round(town.categoryScores.region / 10) : null;
+      case 'culture':
+        return town.categoryScores?.culture ? Math.round(town.categoryScores.culture / 10) : null;
+      case 'hobbies':
+        return town.categoryScores?.hobbies ? Math.round(town.categoryScores.hobbies / 10) : null;
+      case 'administration':
+        return town.categoryScores?.administration ? Math.round(town.categoryScores.administration / 10) : null;
+      case 'budget':
+        return town.categoryScores?.budget ? Math.round(town.categoryScores.budget / 10) : null;
       default:
         return null;
     }
@@ -234,15 +212,19 @@ export default function TownComparison() {
                   ${town.cost_index}/mo
                 </span>
               )}
-              {town.healthcare_score && (
-                <span className={`px-2 py-1 ${uiConfig.colors.statusInfo} text-xs rounded-full`}>
-                  Healthcare: {town.healthcare_score}/10
-                </span>
-              )}
-              {town.safety_score && (
-                <span className="px-2 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-800 dark:text-violet-200 text-xs rounded-full">
-                  Safety: {town.safety_score}/10
-                </span>
+              {town.categoryScores && (
+                <>
+                  {town.categoryScores.region && (
+                    <span className={`px-2 py-1 ${uiConfig.colors.statusInfo} text-xs rounded-full`}>
+                      Region: {Math.round(town.categoryScores.region)}%
+                    </span>
+                  )}
+                  {town.categoryScores.administration && (
+                    <span className="px-2 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-800 dark:text-violet-200 text-xs rounded-full">
+                      Admin: {Math.round(town.categoryScores.administration)}%
+                    </span>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -359,6 +341,201 @@ export default function TownComparison() {
                   <p className={`text-xs ${uiConfig.colors.hint} mb-1`}>Total Costs/Month</p>
                   <p className={`text-2xl font-bold ${uiConfig.colors.success}`}>
                     ${town.cost_index || 'N/A'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'region':
+        return (
+          <div className="h-full flex flex-col">
+            <p className={`mb-3 ${uiConfig.colors.body} min-h-[7.5rem] line-clamp-5`}>
+              {town.description || 'Explore this region\'s unique characteristics and accessibility.'}
+            </p>
+            <div className="space-y-3 flex-1">
+              {/* Location Details */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[7.5rem]">
+                <h4 className="font-medium text-sm mb-2">Location Details</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className={uiConfig.colors.hint}>Country:</span>
+                    <span className="font-medium">{town.country || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={uiConfig.colors.hint}>Region:</span>
+                    <span className="font-medium">{town.region || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={uiConfig.colors.hint}>Population:</span>
+                    <span className="font-medium">{town.population ? town.population.toLocaleString() : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Region Score */}
+              <div className={`bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg p-3 h-[4rem] flex items-center justify-center`}>
+                <div className="text-center">
+                  <p className={`text-xs ${uiConfig.colors.hint} mb-1`}>Region Match</p>
+                  <p className={`text-2xl font-bold ${uiConfig.colors.success}`}>
+                    {town.categoryScores?.region ? `${Math.round(town.categoryScores.region)}%` : 'N/A'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'culture':
+        return (
+          <div className="h-full flex flex-col">
+            <p className={`mb-3 ${uiConfig.colors.body} min-h-[7.5rem] line-clamp-5`}>
+              {town.culture_description || 'Discover the cultural richness and social atmosphere of this location.'}
+            </p>
+            <div className="space-y-3 flex-1">
+              {/* Cultural Features */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[7.5rem]">
+                <h4 className="font-medium text-sm mb-2">Cultural Features</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className={uiConfig.colors.hint}>Language:</span>
+                    <span className="font-medium">{town.primary_language || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={uiConfig.colors.hint}>Cultural Scene:</span>
+                    <span className="font-medium">{town.cultural_rating ? `${town.cultural_rating}/10` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={uiConfig.colors.hint}>Expat Community:</span>
+                    <span className="font-medium">{town.expat_population || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Culture Score */}
+              <div className={`bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg p-3 h-[4rem] flex items-center justify-center`}>
+                <div className="text-center">
+                  <p className={`text-xs ${uiConfig.colors.hint} mb-1`}>Culture Match</p>
+                  <p className={`text-2xl font-bold ${uiConfig.colors.success}`}>
+                    {town.categoryScores?.culture ? `${Math.round(town.categoryScores.culture)}%` : 'N/A'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'hobbies':
+        return (
+          <div className="h-full flex flex-col">
+            <p className={`mb-3 ${uiConfig.colors.body} min-h-[7.5rem] line-clamp-5`}>
+              {town.lifestyle_description || 'Explore activities and lifestyle opportunities in this area.'}
+            </p>
+            <div className="space-y-3 flex-1">
+              {/* Activities & Recreation */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[7.5rem]">
+                <h4 className="font-medium text-sm mb-2">Activities & Recreation</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className={uiConfig.colors.hint}>Outdoor Activities:</span>
+                    <span className="font-medium">{town.outdoor_rating ? `${town.outdoor_rating}/10` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={uiConfig.colors.hint}>Dining Options:</span>
+                    <span className="font-medium">{town.restaurants_rating ? `${town.restaurants_rating}/10` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={uiConfig.colors.hint}>Nightlife:</span>
+                    <span className="font-medium">{town.nightlife_rating ? `${town.nightlife_rating}/10` : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Hobbies Score */}
+              <div className={`bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg p-3 h-[4rem] flex items-center justify-center`}>
+                <div className="text-center">
+                  <p className={`text-xs ${uiConfig.colors.hint} mb-1`}>Hobbies Match</p>
+                  <p className={`text-2xl font-bold ${uiConfig.colors.success}`}>
+                    {town.categoryScores?.hobbies ? `${Math.round(town.categoryScores.hobbies)}%` : 'N/A'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'administration':
+        return (
+          <div className="h-full flex flex-col">
+            <p className={`mb-3 ${uiConfig.colors.body} min-h-[7.5rem] line-clamp-5`}>
+              {town.healthcare_description || town.safety_description || 'Administrative services, healthcare, and safety information.'}
+            </p>
+            <div className="space-y-3 flex-1">
+              {/* Healthcare & Safety */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[7.5rem]">
+                <h4 className="font-medium text-sm mb-2">Healthcare & Safety</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className={uiConfig.colors.hint}>Healthcare Quality:</span>
+                    <span className="font-medium">{town.healthcare_score ? `${town.healthcare_score}/10` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={uiConfig.colors.hint}>Safety Score:</span>
+                    <span className="font-medium">{town.safety_score ? `${town.safety_score}/10` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={uiConfig.colors.hint}>Infrastructure:</span>
+                    <span className="font-medium">{town.infrastructure_score ? `${town.infrastructure_score}/10` : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Admin Score */}
+              <div className={`bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg p-3 h-[4rem] flex items-center justify-center`}>
+                <div className="text-center">
+                  <p className={`text-xs ${uiConfig.colors.hint} mb-1`}>Admin Match</p>
+                  <p className={`text-2xl font-bold ${uiConfig.colors.success}`}>
+                    {town.categoryScores?.administration ? `${Math.round(town.categoryScores.administration)}%` : 'N/A'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'budget':
+        return (
+          <div className="h-full flex flex-col">
+            <p className={`mb-3 ${uiConfig.colors.body} min-h-[7.5rem] line-clamp-5`}>
+              {town.cost_description || 'Understand the cost of living and budget requirements.'}
+            </p>
+            <div className="space-y-3 flex-1">
+              {/* Budget Overview */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 h-[7.5rem]">
+                <h4 className="font-medium text-sm mb-2">Budget Overview</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className={uiConfig.colors.hint}>Monthly Cost:</span>
+                    <span className="font-medium">{town.cost_index ? `$${town.cost_index}` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={uiConfig.colors.hint}>Housing (1BR):</span>
+                    <span className="font-medium">{town.rent_1bed ? `$${town.rent_1bed}/mo` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={uiConfig.colors.hint}>Tax Regime:</span>
+                    <span className="font-medium">{town.tax_rate || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Budget Score */}
+              <div className={`bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg p-3 h-[4rem] flex items-center justify-center`}>
+                <div className="text-center">
+                  <p className={`text-xs ${uiConfig.colors.hint} mb-1`}>Budget Match</p>
+                  <p className={`text-2xl font-bold ${uiConfig.colors.success}`}>
+                    {town.categoryScores?.budget ? `${Math.round(town.categoryScores.budget)}%` : 'N/A'}
                   </p>
                 </div>
               </div>

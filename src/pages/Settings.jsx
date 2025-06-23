@@ -184,14 +184,14 @@ export default function Settings() {
   // Render loading state
   if (loading && !user) {
     return (
-      <div className={`min-h-screen ${uiConfig.colors.background} p-4 flex items-center justify-center`}>
+      <div className={`min-h-screen ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
         <div className={`animate-pulse ${uiConfig.colors.accent} font-semibold`}>Loading settings...</div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen ${uiConfig.colors.background} pb-20 md:pb-4`}>
+    <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
       {/* Header */}
       <header className={`${uiConfig.colors.card} shadow-sm`}>
         <div className="max-w-4xl mx-auto px-4 py-4">
@@ -203,7 +203,7 @@ export default function Settings() {
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* App Appearance */}
-        <div className={`${uiConfig.colors.card} ${uiConfig.borders.card}`}>
+        <div className={`${uiConfig.colors.card} rounded-lg border ${uiConfig.colors.border}`}>
           <div className="p-6">
             <h2 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-6`}>
               App Appearance
@@ -219,8 +219,8 @@ export default function Settings() {
                     onClick={() => handleThemeChange('light')}
                     className={`flex-1 p-4 rounded-lg border-2 transition-colors ${
                       theme === 'light'
-                        ? `${uiConfig.colors.btnAccent} ${uiConfig.colors.btnAccentBg}`
-                        : uiConfig.colors.btnDefault
+                        ? `border-scout-accent-600 bg-scout-accent-50 text-scout-accent-700`
+                        : uiConfig.colors.btnNeutral
                     }`}
                   >
                     <div className="flex items-center justify-center mb-2">
@@ -237,8 +237,8 @@ export default function Settings() {
                     onClick={() => handleThemeChange('dark')}
                     className={`flex-1 p-4 rounded-lg border-2 transition-colors ${
                       theme === 'dark'
-                        ? `${uiConfig.colors.btnAccent} ${uiConfig.colors.btnAccentBg}`
-                        : uiConfig.colors.btnDefault
+                        ? `border-scout-accent-600 bg-scout-accent-50 text-scout-accent-700`
+                        : uiConfig.colors.btnNeutral
                     }`}
                   >
                     <div className="flex items-center justify-center mb-2">
@@ -277,7 +277,7 @@ export default function Settings() {
         </div>
         
         {/* Notifications */}
-        <div className={`${uiConfig.colors.card} ${uiConfig.borders.card}`}>
+        <div className={`${uiConfig.colors.card} rounded-lg border ${uiConfig.colors.border}`}>
           <div className="p-6">
             <h2 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-6`}>
               Notifications
@@ -424,7 +424,7 @@ export default function Settings() {
         </div>
         
         {/* Privacy */}
-        <div className={`${uiConfig.colors.card} ${uiConfig.borders.card}`}>
+        <div className={`${uiConfig.colors.card} rounded-lg border ${uiConfig.colors.border}`}>
           <div className="p-6">
             <h2 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-6`}>
               Privacy
@@ -503,7 +503,7 @@ export default function Settings() {
         </div>
         
         {/* Password */}
-        <div className={`${uiConfig.colors.card} ${uiConfig.borders.card}`}>
+        <div className={`${uiConfig.colors.card} rounded-lg border ${uiConfig.colors.border}`}>
           <div className="p-6">
             <h2 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-6`}>
               Change Password
@@ -572,7 +572,7 @@ export default function Settings() {
         </div>
         
         {/* Danger Zone */}
-        <div className={`${uiConfig.colors.card} ${uiConfig.borders.card}`}>
+        <div className={`${uiConfig.colors.card} rounded-lg border ${uiConfig.colors.border}`}>
           <div className="p-6">
             <h2 className={`text-lg font-semibold ${uiConfig.colors.error} mb-6`}>
               Danger Zone
@@ -596,7 +596,7 @@ export default function Settings() {
       
       {/* Delete account confirmation modal */}
       {showDeleteConfirm && (
-        <div className={`fixed inset-0 ${uiConfig.colors.modalBackdrop} flex items-center justify-center z-50 p-4`}>
+        <div className={`fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4`}>
           <div className={`${uiConfig.colors.card} rounded-lg shadow-xl max-w-md w-full p-6`}>
             <h3 className={`text-xl font-bold ${uiConfig.colors.heading} mb-4`}>
               Delete Account?

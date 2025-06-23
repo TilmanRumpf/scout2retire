@@ -209,16 +209,13 @@ export const getTownOfTheDay = async (userId) => {
     // DO NOT normalize user ID
     const userIdString = String(userId).trim();
     
-    // First get user preferences
-    const { data: preferences, error: prefError } = await supabase
-      .from('onboarding_responses')
-      .select('*')
-      .eq('user_id', userIdString)
-      .maybeSingle(); // Changed to maybeSingle() to handle no preferences case
-
-    if (prefError) {
-      console.error("Error fetching user preferences:", prefError);
-      return { success: false, error: prefError };
+    // First get user preferences using the proper utility
+    const { getOnboardingProgress } = await import('./onboardingUtils');
+    const { success: onboardingSuccess, data: preferences } = await getOnboardingProgress(userId);
+    
+    if (!onboardingSuccess || !preferences) {
+      console.log("No onboarding preferences found for daily town");
+      // Continue without preferences - town will be selected without personalization
     }
 
 
@@ -265,7 +262,40 @@ export const getTownOfTheDay = async (userId) => {
 
     // Randomly select one town
     const randomIndex = Math.floor(Math.random() * towns.length);
-    const selectedTown = towns[randomIndex];
+    let selectedTown = towns[randomIndex];
+
+    // If we have preferences, enhance the town with match scores
+    if (preferences) {
+      try {
+        // Import the matching algorithm
+        const { calculatePremiumMatch } = await import('./premiumMatchingAlgorithm');
+        
+        // Calculate match score and category scores
+        const matchResult = calculatePremiumMatch(selectedTown, preferences);
+        
+        // Enhance the town with scores
+        selectedTown = {
+          ...selectedTown,
+          matchScore: matchResult.score,
+          matchReasons: matchResult.matchReasons || [],
+          insights: matchResult.insights || [],
+          highlights: matchResult.highlights || [],
+          warnings: matchResult.warnings || [],
+          categoryScores: matchResult.breakdown || {},
+          confidence: matchResult.confidence || 'Medium',
+          valueRating: matchResult.value_rating
+        };
+        
+        console.log("Enhanced daily town with scores:", {
+          name: selectedTown.name,
+          matchScore: selectedTown.matchScore,
+          categoryScores: selectedTown.categoryScores
+        });
+      } catch (error) {
+        console.error("Error calculating match scores for daily town:", error);
+        // Continue without scores if calculation fails
+      }
+    }
 
     return { success: true, town: selectedTown };
   } catch (error) {

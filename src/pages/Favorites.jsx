@@ -3,11 +3,40 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchFavorites } from '../utils/townUtils';
 import { getCurrentUser } from '../utils/authUtils';
-import TownCard from '../components/TownCard';
+import LikeButton from '../components/LikeButton';
+import SimpleImage from '../components/SimpleImage';
+import { MapPin } from 'lucide-react';
 import QuickNav from '../components/QuickNav';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
-import { Filter, X, ChevronDown, SortDesc } from 'lucide-react';
+import FilterBarV3 from '../components/FilterBarV3';
+
+// Predefined regions and their countries from onboarding
+const REGIONS = [
+  'North America',
+  'Central America',
+  'Caribbean',
+  'South America',
+  'Europe',
+  'Mediterranean',
+  'Asia',
+  'Africa',
+  'Australia & New Zealand',
+  'Oceania'
+];
+
+const REGION_COUNTRIES = {
+  'North America': ['Mexico', 'United States', 'Canada'],
+  'Central America': ['Belize', 'Costa Rica', 'El Salvador', 'Guatemala', 'Honduras', 'Nicaragua', 'Panama'],
+  'Caribbean': ['Antigua and Barbuda', 'Bahamas', 'Barbados', 'Cuba', 'Dominica', 'Dominican Republic', 'Grenada', 'Haiti', 'Jamaica', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Trinidad and Tobago'],
+  'South America': ['Argentina', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Ecuador', 'French Guiana', 'Guyana', 'Paraguay', 'Peru', 'Suriname', 'Uruguay', 'Venezuela'],
+  'Europe': ['Albania', 'Andorra', 'Austria', 'Belarus', 'Belgium', 'Bosnia and Herzegovina', 'Bulgaria', 'Croatia', 'Cyprus', 'Czech Republic', 'Denmark', 'Estonia', 'Finland', 'France', 'Germany', 'Greece', 'Hungary', 'Iceland', 'Ireland', 'Italy', 'Latvia', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Malta', 'Moldova', 'Monaco', 'Montenegro', 'Netherlands', 'North Macedonia', 'Norway', 'Poland', 'Portugal', 'Romania', 'Russia', 'San Marino', 'Serbia', 'Slovakia', 'Slovenia', 'Spain', 'Sweden', 'Switzerland', 'Turkey', 'Ukraine', 'United Kingdom', 'Vatican City'],
+  'Mediterranean': ['Spain', 'France', 'Monaco', 'Italy', 'Slovenia', 'Croatia', 'Bosnia and Herzegovina', 'Montenegro', 'Albania', 'Greece', 'Turkey', 'Cyprus', 'Syria', 'Lebanon', 'Israel', 'Egypt', 'Libya', 'Tunisia', 'Algeria', 'Morocco', 'Malta'],
+  'Asia': ['Afghanistan', 'Armenia', 'Azerbaijan', 'Bahrain', 'Bangladesh', 'Bhutan', 'Brunei', 'Cambodia', 'China', 'Cyprus', 'East Timor', 'Georgia', 'India', 'Indonesia', 'Iran', 'Iraq', 'Israel', 'Japan', 'Jordan', 'Kazakhstan', 'Kuwait', 'Kyrgyzstan', 'Laos', 'Lebanon', 'Malaysia', 'Maldives', 'Mongolia', 'Myanmar', 'Nepal', 'North Korea', 'Oman', 'Pakistan', 'Palestine', 'Philippines', 'Qatar', 'Russia', 'Saudi Arabia', 'Singapore', 'South Korea', 'Sri Lanka', 'Syria', 'Taiwan', 'Tajikistan', 'Thailand', 'Turkey', 'Turkmenistan', 'United Arab Emirates', 'Uzbekistan', 'Vietnam', 'Yemen'],
+  'Africa': ['Algeria', 'Angola', 'Benin', 'Botswana', 'Burkina Faso', 'Burundi', 'Cameroon', 'Cape Verde', 'Central African Republic', 'Chad', 'Comoros', 'Democratic Republic of the Congo', 'Republic of the Congo', 'Djibouti', 'Egypt', 'Equatorial Guinea', 'Eritrea', 'Eswatini', 'Ethiopia', 'Gabon', 'Gambia', 'Ghana', 'Guinea', 'Guinea-Bissau', 'Ivory Coast', 'Kenya', 'Lesotho', 'Liberia', 'Libya', 'Madagascar', 'Malawi', 'Mali', 'Mauritania', 'Mauritius', 'Morocco', 'Mozambique', 'Namibia', 'Niger', 'Nigeria', 'Rwanda', 'São Tomé and Príncipe', 'Senegal', 'Seychelles', 'Sierra Leone', 'Somalia', 'South Africa', 'South Sudan', 'Sudan', 'Tanzania', 'Togo', 'Tunisia', 'Uganda', 'Zambia', 'Zimbabwe'],
+  'Australia & New Zealand': ['Australia', 'New Zealand'],
+  'Oceania': ['Fiji', 'Kiribati', 'Marshall Islands', 'Micronesia', 'Nauru', 'Palau', 'Papua New Guinea', 'Samoa', 'Solomon Islands', 'Tonga', 'Tuvalu', 'Vanuatu']
+};
 
 export default function Favorites() {
   const [favorites, setFavorites] = useState([]);
@@ -18,7 +47,6 @@ export default function Favorites() {
   const [filterRegion, setFilterRegion] = useState('all');
   const [filterCostRange, setFilterCostRange] = useState('all');
   const [filterMatchRange, setFilterMatchRange] = useState('all');
-  const [showFilters, setShowFilters] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -60,14 +88,27 @@ export default function Favorites() {
 
   // Get unique values for filters
   const getUniqueCountries = () => {
-    const countries = [...new Set(favorites.map(fav => fav.towns?.country).filter(Boolean))];
-    return countries.sort();
+    const allCountries = [...new Set(favorites.map(fav => fav.towns?.country).filter(Boolean))];
+    
+    // If a region is selected, filter countries to only show those in that region
+    if (filterRegion !== 'all' && REGION_COUNTRIES[filterRegion]) {
+      return allCountries.filter(country => 
+        REGION_COUNTRIES[filterRegion].includes(country)
+      ).sort();
+    }
+    
+    return allCountries.sort();
   };
-
-  const getUniqueRegions = () => {
-    const regions = [...new Set(favorites.map(fav => fav.towns?.region).filter(Boolean))];
-    return regions.sort();
-  };
+  
+  // When region changes, reset country filter if the selected country is not in the new region
+  useEffect(() => {
+    if (filterRegion !== 'all' && filterCountry !== 'all') {
+      const availableCountries = getUniqueCountries();
+      if (!availableCountries.includes(filterCountry)) {
+        setFilterCountry('all');
+      }
+    }
+  }, [filterRegion]);
 
   // Cost range helper
   const getCostRange = (cost) => {
@@ -109,13 +150,16 @@ export default function Favorites() {
   const getSortedAndFilteredFavorites = () => {
     let filtered = [...favorites];
     
-    // Apply filters
-    if (filterCountry !== 'all') {
-      filtered = filtered.filter(fav => fav.towns?.country === filterCountry);
+    // Apply region filter - filter by countries in the selected region
+    if (filterRegion !== 'all' && REGION_COUNTRIES[filterRegion]) {
+      filtered = filtered.filter(fav => 
+        REGION_COUNTRIES[filterRegion].includes(fav.towns?.country)
+      );
     }
     
-    if (filterRegion !== 'all') {
-      filtered = filtered.filter(fav => fav.towns?.region === filterRegion);
+    // Apply country filter
+    if (filterCountry !== 'all') {
+      filtered = filtered.filter(fav => fav.towns?.country === filterCountry);
     }
     
     if (filterCostRange !== 'all') {
@@ -140,11 +184,23 @@ export default function Favorites() {
       case 'cost-high':
         filtered.sort((a, b) => (b.towns?.cost_index || 0) - (a.towns?.cost_index || 0));
         break;
-      case 'healthcare':
-        filtered.sort((a, b) => (b.towns?.healthcare_score || 0) - (a.towns?.healthcare_score || 0));
+      case 'region':
+        filtered.sort((a, b) => ((b.towns?.categoryScores?.region || 0) - (a.towns?.categoryScores?.region || 0)));
         break;
-      case 'safety':
-        filtered.sort((a, b) => (b.towns?.safety_score || 0) - (a.towns?.safety_score || 0));
+      case 'climate':
+        filtered.sort((a, b) => ((b.towns?.categoryScores?.climate || 0) - (a.towns?.categoryScores?.climate || 0)));
+        break;
+      case 'culture':
+        filtered.sort((a, b) => ((b.towns?.categoryScores?.culture || 0) - (a.towns?.categoryScores?.culture || 0)));
+        break;
+      case 'hobbies':
+        filtered.sort((a, b) => ((b.towns?.categoryScores?.hobbies || 0) - (a.towns?.categoryScores?.hobbies || 0)));
+        break;
+      case 'administration':
+        filtered.sort((a, b) => ((b.towns?.categoryScores?.administration || 0) - (a.towns?.categoryScores?.administration || 0)));
+        break;
+      case 'budget':
+        filtered.sort((a, b) => ((b.towns?.categoryScores?.budget || 0) - (a.towns?.categoryScores?.budget || 0)));
         break;
       case 'date':
       default:
@@ -174,7 +230,6 @@ export default function Favorites() {
 
   const sortedFavorites = getSortedAndFilteredFavorites();
   const countries = getUniqueCountries();
-  const regions = getUniqueRegions();
   const filterCount = activeFilterCount();
 
   return (
@@ -217,191 +272,36 @@ export default function Favorites() {
           </div>
         ) : (
           <>
-            {/* Filters and Sorting Section */}
-            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.sm} p-4 mb-6`}>
-              {/* Sort and Filter Controls */}
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                {/* Sort Dropdown */}
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <SortDesc size={16} className={uiConfig.colors.body} />
-                    <label htmlFor="sort" className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body}`}>
-                      Sort by:
-                    </label>
-                    <select
-                      id="sort"
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      className={`px-3 py-1.5 ${uiConfig.colors.border} ${uiConfig.layout.radius.md} ${uiConfig.colors.input} ${uiConfig.colors.heading} ${uiConfig.font.size.sm}`}
-                    >
-                      <option value="match">Best Match %</option>
-                      <option value="date">Recently Added</option>
-                      <option value="name">Name (A-Z)</option>
-                      <option value="cost-low">Cost (Low to High)</option>
-                      <option value="cost-high">Cost (High to Low)</option>
-                      <option value="healthcare">Healthcare Score</option>
-                      <option value="safety">Safety Score</option>
-                    </select>
-                  </div>
-
-                  {/* Filter Toggle Button */}
-                  <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    className={`flex items-center gap-2 px-3 py-1.5 ${uiConfig.colors.border} ${uiConfig.layout.radius.md} ${uiConfig.colors.btnSecondary} ${uiConfig.font.size.sm} ${showFilters ? uiConfig.colors.accent : ''}`}
-                  >
-                    <Filter size={16} />
-                    Filters
-                    {filterCount > 0 && (
-                      <span className={`ml-1 px-1.5 py-0.5 ${uiConfig.layout.radius.full} ${uiConfig.colors.badge} text-xs`}>
-                        {filterCount}
-                      </span>
-                    )}
-                    <ChevronDown size={16} className={`transform transition-transform ${showFilters ? 'rotate-180' : ''}`} />
-                  </button>
-                </div>
-
-                {/* Results Count and Actions */}
-                <div className="flex items-center gap-3">
-                  <span className={`${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
-                    {sortedFavorites.length} {sortedFavorites.length === 1 ? 'town' : 'towns'}
-                  </span>
-                  {favorites.length >= 2 && (
-                    <button
-                      onClick={handleCompareSelected}
-                      className={`px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.md}`}
-                    >
-                      Compare Top 3
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Expandable Filters */}
-              {showFilters && (
-                <div className={`mt-4 pt-4 border-t ${uiConfig.colors.border}`}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {/* Country Filter */}
-                    <div>
-                      <label className={`block ${uiConfig.font.size.xs} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1`}>
-                        Country
-                      </label>
-                      <select
-                        value={filterCountry}
-                        onChange={(e) => setFilterCountry(e.target.value)}
-                        className={`w-full px-3 py-1.5 ${uiConfig.colors.border} ${uiConfig.layout.radius.md} ${uiConfig.colors.input} ${uiConfig.colors.heading} ${uiConfig.font.size.sm}`}
-                      >
-                        <option value="all">All Countries</option>
-                        {countries.map(country => (
-                          <option key={country} value={country}>{country}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Region Filter */}
-                    {regions.length > 0 && (
-                      <div>
-                        <label className={`block ${uiConfig.font.size.xs} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1`}>
-                          Region
-                        </label>
-                        <select
-                          value={filterRegion}
-                          onChange={(e) => setFilterRegion(e.target.value)}
-                          className={`w-full px-3 py-1.5 ${uiConfig.colors.border} ${uiConfig.layout.radius.md} ${uiConfig.colors.input} ${uiConfig.colors.heading} ${uiConfig.font.size.sm}`}
-                        >
-                          <option value="all">All Regions</option>
-                          {regions.map(region => (
-                            <option key={region} value={region}>{region}</option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-
-                    {/* Cost Range Filter */}
-                    <div>
-                      <label className={`block ${uiConfig.font.size.xs} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1`}>
-                        Monthly Cost
-                      </label>
-                      <select
-                        value={filterCostRange}
-                        onChange={(e) => setFilterCostRange(e.target.value)}
-                        className={`w-full px-3 py-1.5 ${uiConfig.colors.border} ${uiConfig.layout.radius.md} ${uiConfig.colors.input} ${uiConfig.colors.heading} ${uiConfig.font.size.sm}`}
-                      >
-                        <option value="all">All Ranges</option>
-                        <option value="under2000">Under $2,000</option>
-                        <option value="2000-3000">$2,000 - $3,000</option>
-                        <option value="3000-4000">$3,000 - $4,000</option>
-                        <option value="over4000">Over $4,000</option>
-                      </select>
-                    </div>
-
-                    {/* Match Score Filter */}
-                    <div>
-                      <label className={`block ${uiConfig.font.size.xs} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1`}>
-                        Match Score
-                      </label>
-                      <select
-                        value={filterMatchRange}
-                        onChange={(e) => setFilterMatchRange(e.target.value)}
-                        className={`w-full px-3 py-1.5 ${uiConfig.colors.border} ${uiConfig.layout.radius.md} ${uiConfig.colors.input} ${uiConfig.colors.heading} ${uiConfig.font.size.sm}`}
-                      >
-                        <option value="all">All Scores</option>
-                        <option value="excellent">Excellent (80%+)</option>
-                        <option value="good">Good (60-79%)</option>
-                        <option value="fair">Fair (40-59%)</option>
-                        <option value="low">Low (Below 40%)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Clear Filters Button */}
-                  {filterCount > 0 && (
-                    <button
-                      onClick={clearFilters}
-                      className={`mt-3 flex items-center gap-1 text-sm ${uiConfig.colors.accent} hover:opacity-80`}
-                    >
-                      <X size={14} />
-                      Clear all filters
-                    </button>
-                  )}
-                </div>
-              )}
+            {/* Filter Bar */}
+            <div className="mb-6">
+              <FilterBarV3
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                filterRegion={filterRegion}
+                setFilterRegion={setFilterRegion}
+                filterCountry={filterCountry}
+                setFilterCountry={setFilterCountry}
+                filterCostRange={filterCostRange}
+                setFilterCostRange={setFilterCostRange}
+                filterMatchRange={filterMatchRange}
+                setFilterMatchRange={setFilterMatchRange}
+                regions={REGIONS}
+                countries={countries}
+                filterCount={filterCount}
+                clearFilters={clearFilters}
+                resultsCount={sortedFavorites.length}
+              />
             </div>
 
-            {/* Active Filter Pills */}
-            {filterCount > 0 && !showFilters && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                {filterCountry !== 'all' && (
-                  <span className={`inline-flex items-center gap-1 px-3 py-1 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} text-xs`}>
-                    Country: {filterCountry}
-                    <button onClick={() => setFilterCountry('all')} className="ml-1">
-                      <X size={12} />
-                    </button>
-                  </span>
-                )}
-                {filterRegion !== 'all' && (
-                  <span className={`inline-flex items-center gap-1 px-3 py-1 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} text-xs`}>
-                    Region: {filterRegion}
-                    <button onClick={() => setFilterRegion('all')} className="ml-1">
-                      <X size={12} />
-                    </button>
-                  </span>
-                )}
-                {filterCostRange !== 'all' && (
-                  <span className={`inline-flex items-center gap-1 px-3 py-1 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} text-xs`}>
-                    Cost: {filterCostRange === 'under2000' ? 'Under $2k' : filterCostRange === 'over4000' ? 'Over $4k' : `$${filterCostRange}`}
-                    <button onClick={() => setFilterCostRange('all')} className="ml-1">
-                      <X size={12} />
-                    </button>
-                  </span>
-                )}
-                {filterMatchRange !== 'all' && (
-                  <span className={`inline-flex items-center gap-1 px-3 py-1 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} text-xs`}>
-                    Match: {filterMatchRange}
-                    <button onClick={() => setFilterMatchRange('all')} className="ml-1">
-                      <X size={12} />
-                    </button>
-                  </span>
-                )}
+            {/* Compare Button - Show separately when there are enough favorites */}
+            {favorites.length >= 2 && (
+              <div className="mb-4 flex justify-end">
+                <button
+                  onClick={handleCompareSelected}
+                  className={`px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.md}`}
+                >
+                  Compare Top 3
+                </button>
               </div>
             )}
 
@@ -420,16 +320,139 @@ export default function Favorites() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {sortedFavorites.map((favorite) => (
-                  <TownCard
-                    key={favorite.town_id}
-                    town={favorite.towns}
-                    userId={userId}
-                    initiallyFavorited={true}
-                    onFavoriteChange={handleFavoriteChange}
-                    variant="default"
-                  />
-                ))}
+                {sortedFavorites.map((favorite) => {
+                  const town = favorite.towns;
+                  return (
+                    <div
+                      key={favorite.town_id}
+                      className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden ${uiConfig.animation.transition} hover:${uiConfig.layout.shadow.lg}`}
+                    >
+                      <div className="relative h-40">
+                        <SimpleImage
+                          src={town.image_url_1}
+                          alt={town.name}
+                          className="w-full h-full object-cover"
+                          fallbackIcon={MapPin}
+                          fallbackIconSize={48}
+                        />
+                        
+                        {/* Match Score with Value Rating */}
+                        {town.matchScore && (
+                          <div className="absolute top-2 left-2">
+                            <div className={`px-2 py-1 ${uiConfig.layout.radius.full} bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm text-xs font-medium ${
+                              town.matchScore >= 80 ? 'text-scout-accent-700 dark:text-scout-accent-400' :
+                              town.matchScore >= 60 ? 'text-gray-700 dark:text-gray-300' :
+                              'text-gray-600 dark:text-gray-400'
+                            }`}>
+                              {town.matchScore}%
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="absolute top-2 right-2">
+                          {userId && (
+                            <LikeButton
+                              townId={town.id}
+                              userId={userId}
+                              initialState={true}
+                              onToggle={(isLiked, action) => handleFavoriteChange(town.id, isLiked)}
+                            />
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="p-4">
+                        {/* Header: Town Name, Country (left) and Cost (right) */}
+                        <div className="flex justify-between items-baseline mb-3">
+                          <div className={`text-sm ${uiConfig.colors.heading}`}>
+                            {town.name}, {town.country}
+                          </div>
+                          {town.cost_index && (
+                            <span className={`text-sm ${uiConfig.colors.body}`}>
+                              ${town.cost_index}/mo
+                            </span>
+                          )}
+                        </div>
+                        
+                        {/* Highlights - Always 2 lines */}
+                        <div className={`mb-3 h-8 ${uiConfig.colors.body} text-xs leading-4`}>
+                          {town.insights && town.insights.length > 0 ? (
+                            <div className="line-clamp-2">
+                              {town.insights[0]}
+                            </div>
+                          ) : town.matchReasons && town.matchReasons.length > 0 ? (
+                            <div className="line-clamp-2">
+                              {town.matchReasons.slice(0, 2).join('. ')}
+                            </div>
+                          ) : (
+                            <div className="line-clamp-2">
+                              {town.highlights ? town.highlights.slice(0, 2).join('. ') : 'Discover this beautiful retirement destination'}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Category Scores Grid - All 6 Onboarding Categories */}
+                        {town.categoryScores && (
+                          <>
+                            <div className={`text-xs ${uiConfig.colors.body} mb-1.5`}>
+                              Matching your preferences:
+                            </div>
+                            <div className="mb-3 grid grid-rows-2 grid-flow-col gap-x-4 gap-y-1.5 text-xs">
+                              <div className="flex items-center gap-1">
+                                <span className={`${uiConfig.colors.hint} capitalize`}>Region</span>
+                                <span className={`font-medium ${uiConfig.colors.hint}`}>{Math.round(town.categoryScores.region || 0)}%</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className={`${uiConfig.colors.hint} capitalize`}>Climate</span>
+                                <span className={`font-medium ${uiConfig.colors.hint}`}>{Math.round(town.categoryScores.climate || 0)}%</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className={`${uiConfig.colors.hint} capitalize`}>Culture</span>
+                                <span className={`font-medium ${uiConfig.colors.hint}`}>{Math.round(town.categoryScores.culture || 0)}%</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className={`${uiConfig.colors.hint} capitalize`}>Hobbies</span>
+                                <span className={`font-medium ${uiConfig.colors.hint}`}>{Math.round(town.categoryScores.hobbies || 0)}%</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className={`${uiConfig.colors.hint} capitalize`}>Admin</span>
+                                <span className={`font-medium ${uiConfig.colors.hint}`}>{Math.round(town.categoryScores.administration || 0)}%</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className={`${uiConfig.colors.hint} capitalize`}>Budget</span>
+                                <span className={`font-medium ${uiConfig.colors.hint}`}>{Math.round(town.categoryScores.budget || 0)}%</span>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                        
+                        {/* Synopsis - Always 3 lines */}
+                        <p className={`${uiConfig.colors.body} text-xs mb-4 line-clamp-3 h-12 leading-4`}>
+                          {town.description || "Discover this beautiful town for your retirement."}
+                        </p>
+                        
+                        <div className="flex justify-between items-center">
+                          <button
+                            onClick={() => navigate(`/discover?town=${town.id}`)}
+                            className={`px-3 py-1.5 text-xs ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md}`}
+                          >
+                            Explore
+                          </button>
+                          <button
+                            onClick={() => {
+                              const otherFavorites = favorites.filter(f => String(f.town_id) !== String(town.id))
+                                                              .map(f => f.town_id);
+                              navigate(`/compare?towns=${[town.id, ...otherFavorites].slice(0, 3).join(',')}`);
+                            }}
+                            className={`px-3 py-1.5 text-xs ${uiConfig.colors.success} hover:underline`}
+                          >
+                            Compare
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
