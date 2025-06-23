@@ -12,6 +12,11 @@ export default function SimpleImage({
 }) {
   const [hasError, setHasError] = useState(false);
   const FallbackIcon = fallbackIcon;
+  
+  // Debug logging for image issues
+  if (import.meta.env.DEV && src) {
+    console.log(`SimpleImage rendering: ${alt} - ${src}`);
+  }
 
   // No image or error? Show icon
   if (!src || hasError) {
