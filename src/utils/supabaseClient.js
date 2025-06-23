@@ -5,9 +5,11 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Debug logging (remove in production)
-console.log('Supabase URL from env:', supabaseUrl)
-console.log('Supabase Key exists:', !!supabaseAnonKey)
+// Debug logging (only in development)
+if (import.meta.env.DEV) {
+  console.log('Supabase URL from env:', supabaseUrl)
+  console.log('Supabase Key exists:', !!supabaseAnonKey)
+}
 
 // Validate environment variables
 if (!supabaseUrl) {
@@ -78,7 +80,7 @@ async function testSupabaseConnection() {
 }
 
 // Test database table access
-async function testTableAccess(tableName = 'profiles') {
+async function testTableAccess(tableName = 'users') {
   try {
     const { data, error } = await supabase
       .from(tableName)
@@ -114,18 +116,16 @@ async function discoverTables() {
   console.log('🔍 Checking for common tables...')
   const foundTables = []
   
-  // Common table names to check
+  // Common table names to check - updated for scout2retire
   const commonTables = [
-    'profiles', 
-    'users', 
-    'posts', 
-    'user_profiles',
-    'accounts',
-    'sessions',
-    'todos',
-    'projects',
-    'teams',
-    'organizations'
+    'users',
+    'towns', 
+    'favorites',
+    'saved_locations',
+    'journal_entries',
+    'user_connections',
+    'regional_inspirations',
+    'onboarding_progress'
   ]
   
   for (const tableName of commonTables) {
@@ -172,8 +172,8 @@ if (import.meta.env.DEV) {
     const connected = await testSupabaseConnection()
     
     if (connected) {
-      // Test table access with common table names
-      const commonTables = ['profiles', 'users', 'posts', 'todos']
+      // Test table access with scout2retire table names
+      const commonTables = ['users', 'towns', 'favorites', 'journal_entries']
       let foundAnyTable = false
       
       for (const tableName of commonTables) {
@@ -198,11 +198,13 @@ if (import.meta.env.DEV) {
 
 // Auth state change listener
 supabase.auth.onAuthStateChange((event, session) => {
-  console.log('Auth state changed:', event)
-  if (session) {
-    console.log('User authenticated:', session.user.email)
-  } else {
-    console.log('User signed out')
+  if (import.meta.env.DEV) {
+    console.log('Auth state changed:', event)
+    if (session) {
+      console.log('User authenticated:', session.user.email)
+    } else {
+      console.log('User signed out')
+    }
   }
 })
 
