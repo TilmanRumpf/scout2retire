@@ -107,14 +107,8 @@ UPDATE towns
 SET image_url_1 = 'https://images.unsplash.com/photo-1561553873-e8491a564fd0?w=800&q=80'
 WHERE country = 'United States' AND name = 'Gainesville, FL';
 
--- Add a timestamp to track when this emergency fix was applied
-UPDATE towns 
-SET updated_at = NOW() 
-WHERE country IN (
-  'Thailand', 'Panama', 'Portugal', 'Spain', 'Mexico', 'Italy', 
-  'France', 'Greece', 'Croatia', 'Slovenia', 'Netherlands', 
-  'Latvia', 'Colombia', 'Ecuador', 'Vietnam', 'Malaysia', 'United States'
-);
+-- Note: Emergency image fix applied on this date
+-- (No updated_at column exists in towns table)
 
 -- Verify the fix
 SELECT 
