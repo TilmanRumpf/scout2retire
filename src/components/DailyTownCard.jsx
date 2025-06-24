@@ -171,8 +171,9 @@ export default function DailyTownCard() {
         {/* Category Scores Grid - All 6 Onboarding Categories */}
         {town.categoryScores && (
           <>
-            <div className={`text-sm ${uiConfig.colors.body} mb-2`}>
-              Matching your preferences:
+            <div className={`text-sm ${uiConfig.colors.body} mb-2 flex items-center gap-2`}>
+              <span>Matching your preferences</span>
+              <span className={`${uiConfig.colors.hint} text-sm`}>(weighted avg: {town.matchScore}%)</span>
             </div>
             <div className="mb-4 grid grid-rows-2 grid-flow-col gap-x-6 gap-y-2 text-sm">
               <div className="flex items-center gap-2">

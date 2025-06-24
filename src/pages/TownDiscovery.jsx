@@ -713,8 +713,9 @@ export default function TownDiscovery() {
                 {/* Category Scores Grid - All 6 Onboarding Categories */}
                 {town.categoryScores && (
                   <>
-                    <div className={`text-xs ${uiConfig.colors.body} mb-1.5`}>
-                      Matching your preferences:
+                    <div className={`text-xs ${uiConfig.colors.body} mb-1.5 flex items-center gap-1`}>
+                      <span>Matching your preferences</span>
+                      <span className={`${uiConfig.colors.hint} text-xs`}>(weighted avg: {town.matchScore}%)</span>
                     </div>
                     <div className="mb-3 grid grid-rows-2 grid-flow-col gap-x-4 gap-y-1.5 text-xs">
                       <div className="flex items-center gap-1">
