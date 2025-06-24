@@ -105,38 +105,54 @@ export default function DailyRedesignV2() {
     try {
       let query = supabase.from('towns').select('*');
       
-      // Check if it's a broader region or a specific country
-      if (regionName === 'Europe') {
-        // Define European countries in the database
-        const europeanCountries = [
+      // Define regions and their countries
+      const regionDefinitions = {
+        'Europe': [
           'Portugal', 'Spain', 'France', 'Italy', 'Greece', 
           'Netherlands', 'Germany', 'Belgium', 'Austria', 'Switzerland',
           'Czech Republic', 'Poland', 'Croatia', 'Malta', 'Cyprus',
           'Slovenia', 'Latvia', 'Estonia', 'Lithuania', 'Hungary',
           'Slovakia', 'Romania', 'Bulgaria', 'Turkey'
-        ];
-        query = query.in('country', europeanCountries);
-      } else if (regionName === 'Central America') {
-        // Define Central American countries
-        const centralAmericanCountries = [
+        ],
+        'Central America': [
           'Costa Rica', 'Panama', 'Nicaragua', 'Guatemala', 
           'Belize', 'Honduras', 'El Salvador'
-        ];
-        query = query.in('country', centralAmericanCountries);
+        ],
+        'Mediterranean': [
+          'Spain', 'France', 'Italy', 'Greece', 'Turkey',
+          'Croatia', 'Malta', 'Cyprus', 'Morocco', 'Tunisia'
+        ],
+        'Caribbean': [
+          'Barbados', 'Dominican Republic', 'Jamaica', 'Bahamas',
+          'Trinidad and Tobago', 'Cuba', 'Puerto Rico'
+        ],
+        'Southeast Asia': [
+          'Thailand', 'Malaysia', 'Philippines', 'Vietnam', 
+          'Cambodia', 'Indonesia', 'Singapore', 'Laos', 'Myanmar'
+        ]
+      };
+      
+      const isRegion = regionDefinitions.hasOwnProperty(regionName);
+      
+      if (isRegion) {
+        // Use the regions array column which is now populated
+        query = query.contains('regions', [regionName]);
       } else {
         // It's a specific country name
         query = query.eq('country', regionName);
       }
       
       // For regions, get more towns and ensure variety
-      const limit = (regionName === 'Europe' || regionName === 'Central America') ? 20 : 6;
+      const limit = isRegion ? 20 : 6;
       const { data, error } = await query.limit(limit);
       
       if (error) {
         console.error("Error fetching inspiration towns:", error);
+        console.error("Query was for:", regionName, "isRegion:", isRegion);
       } else if (data) {
+        console.log(`Fetched ${data.length} towns for ${regionName}:`, data.map(t => `${t.name} (${t.country})`));
         // For regions, try to get variety by selecting from different countries
-        if (regionName === 'Europe' || regionName === 'Central America') {
+        if (isRegion && data.length > 6) {
           const townsByCountry = {};
           data.forEach(town => {
             if (!townsByCountry[town.country]) {
@@ -150,7 +166,7 @@ export default function DailyRedesignV2() {
           const countries = Object.keys(townsByCountry);
           let countryIndex = 0;
           
-          while (selectedTowns.length < 6 && selectedTowns.length < data.length) {
+          while (selectedTowns.length < 13 && selectedTowns.length < data.length) {
             const country = countries[countryIndex % countries.length];
             if (townsByCountry[country] && townsByCountry[country].length > 0) {
               selectedTowns.push(townsByCountry[country].shift());
@@ -160,8 +176,8 @@ export default function DailyRedesignV2() {
           
           setInspirationTowns(selectedTowns);
         } else {
-          // For single countries, just use the first 6
-          setInspirationTowns(data.slice(0, 6));
+          // For single countries or small results, just use what we have
+          setInspirationTowns(data);
         }
       }
     } catch (err) {
@@ -323,7 +339,7 @@ export default function DailyRedesignV2() {
         description: "From Mediterranean beaches to Alpine villages, Europe offers endless retirement possibilities. Rich history, excellent healthcare, and diverse cultures create opportunities for every lifestyle.",
         region: "Europe",
         image: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800&q=80", // European variety
-        link: "/discover?region=Europe"
+        link: "/discover?filterRegion=Europe"
       },
       {
         title: "Baltic charm awaits?",
@@ -358,7 +374,7 @@ export default function DailyRedesignV2() {
         description: "Colonial cities, beach towns, and mountain retreats offer affordable luxury across two continents. Rich cultures, warm climates, and welcoming communities define retirement south of the border.",
         region: "Central America",
         image: "https://images.unsplash.com/photo-1512813498716-3e640fed3f39?w=800&q=80", // Central American colonial
-        link: "/discover?region=Central America"
+        link: "/discover?filterRegion=Central America"
       }
     ];
     
@@ -517,28 +533,28 @@ export default function DailyRedesignV2() {
                     </div>
 
                     {/* Towns in this region - matching preferences style */}
-                    <div className={`text-sm ${uiConfig.colors.body} mb-2`}>
-                      Towns in {todaysInspiration.region}:
-                    </div>
-                    
-                    {/* Towns list */}
-                    <div className="mb-5">
-                      {inspirationTowns.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {inspirationTowns.map((town) => (
-                            <Link
-                              key={town.id}
-                              to={`/discover?town=${town.id}`}
-                              className={`text-xs px-2 py-1 ${uiConfig.colors.btnSecondary} ${uiConfig.layout.radius.md} hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors`}
-                            >
-                              {town.name}
-                            </Link>
-                          ))}
+                    {inspirationTowns.length > 0 && (
+                      <>
+                        <div className={`text-sm ${uiConfig.colors.body} mb-2`}>
+                          Towns in {todaysInspiration.region}:
                         </div>
-                      ) : (
-                        <p className={`text-xs ${uiConfig.colors.body}`}>Loading towns...</p>
-                      )}
-                    </div>
+                        
+                        {/* Towns list */}
+                        <div className="mb-5">
+                          <div className="flex flex-wrap gap-2">
+                            {inspirationTowns.map((town) => (
+                              <Link
+                                key={town.id}
+                                to={`/discover?town=${town.id}`}
+                                className={`text-xs px-2 py-1 ${uiConfig.colors.btnSecondary} ${uiConfig.layout.radius.md} hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors`}
+                              >
+                                {town.name}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
                     
                     {/* Action buttons matching DailyTownCard */}
                     <div className="flex justify-between items-center">

@@ -64,8 +64,15 @@ export default function TownDiscovery() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const townId = params.get('town');
+    const regionFilter = params.get('filterRegion');
+    
     if (townId) {
       setSelectedTown(townId);
+    }
+    
+    // Set region filter from URL parameter
+    if (regionFilter && REGIONS.includes(regionFilter)) {
+      setFilterRegion(regionFilter);
     }
   }, [location.search]);
 

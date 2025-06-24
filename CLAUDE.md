@@ -107,6 +107,43 @@ Primary brand color is sage green (`scout-accent-*` in Tailwind config) with ful
 - **ASK QUESTIONS** - Don't hesitate to clarify requirements
 - **TEAM APPROACH** - We work together; both make mistakes and improve
 - **PERFORMANCE FOCUSED** - Deliver the best work possible without social pleasantries
+- **NO JUMPING TO CONCLUSIONS** - When user reports what they see, don't assume they understand why. Investigate first, explain what's happening, then propose solutions
+- **AVOID HYPERACTIVITY** - Don't rush to fix things without understanding the full context
+
+## CRITICAL: Step-by-Step Execution - NEVER FORGET
+
+### Database Changes MUST Follow This Process:
+1. **CHECK FIRST** - ALWAYS verify current table structure before writing SQL
+   ```sql
+   -- ALWAYS run this first:
+   SELECT column_name, data_type FROM information_schema.columns 
+   WHERE table_name = 'your_table' ORDER BY ordinal_position;
+   ```
+2. **ONE CHANGE AT A TIME** - Never stack multiple SQL files without execution
+3. **VERIFY SUCCESS** - Wait for user confirmation before proceeding to next step
+4. **NO ASSUMPTIONS** - Never assume columns exist. Never assume previous steps succeeded
+5. **CLEAR INSTRUCTIONS** - Tell user exactly which file to run and in what order
+
+### Example of CORRECT Process:
+```
+1. "First, run check_table_structure.sql to see what we have"
+2. [Wait for user response]
+3. "Now run add_missing_column.sql"
+4. [Wait for confirmation]
+5. "Finally, run populate_data.sql"
+```
+
+### Example of WRONG Process:
+❌ Creating 5 SQL files at once
+❌ Assuming table structure
+❌ Writing SQL that depends on previous uncommitted changes
+❌ Not verifying each step
+
+### Remember:
+- The user makes mistakes (wrong file, typos)
+- Claude makes mistakes (wrong assumptions, syntax errors)
+- Complex changes MUST be broken into verifiable steps
+- **STACK NOTHING** - Complete one action before starting the next
 
 ## Scoring Transparency - CRITICAL
 
@@ -185,6 +222,34 @@ Before implementing any data changes:
 
 ### Current State
 The towns table contains good foundational data (id, name, country, description, population, images) but is **missing critical fields** that were added during onboarding improvements.
+
+### Water Bodies Support - CRITICAL
+Coastal towns now have a dedicated `water_bodies[]` array field for precise geographic classification:
+
+#### Database Structure
+1. **water_bodies table**: Defines all water bodies (oceans, seas, gulfs, bays, lakes)
+2. **towns.water_bodies[]**: Array field for multiple water body associations
+3. **Clean separation**: Water bodies are NOT regions - they're physical geography
+
+#### Usage Examples
+```javascript
+// Query Atlantic coastal towns in Europe
+query = query.contains('regions', ['Europe']).contains('water_bodies', ['Atlantic Ocean']);
+
+// Mediterranean coastal towns under €1500
+query = query.contains('water_bodies', ['Mediterranean Sea']).lte('cost_index', 1500);
+
+// Baltic Sea towns
+query = query.contains('water_bodies', ['Baltic Sea']);
+```
+
+#### Key Water Bodies
+- **Oceans**: Atlantic Ocean, Pacific Ocean, Indian Ocean
+- **Major Seas**: Mediterranean Sea, Caribbean Sea, Baltic Sea, North Sea, Black Sea
+- **Regional Seas**: Adriatic Sea, Aegean Sea, Tyrrhenian Sea, Andaman Sea
+- **Other**: Gulf of Mexico, Bay of Biscay, Major Lakes
+
+This enables searches like "Mediterranean coastal EU towns" or "Atlantic beaches in Portugal" with full accuracy.
 
 ### Missing Alignment Fields
 The following fields must be added to align with onboarding:
