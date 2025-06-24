@@ -106,17 +106,63 @@ export default function DailyRedesignV2() {
       let query = supabase.from('towns').select('*');
       
       // Check if it's a broader region or a specific country
-      if (regionName === 'Europe' || regionName === 'Central America') {
-        query = query.eq('region', regionName);
+      if (regionName === 'Europe') {
+        // Define European countries in the database
+        const europeanCountries = [
+          'Portugal', 'Spain', 'France', 'Italy', 'Greece', 
+          'Netherlands', 'Germany', 'Belgium', 'Austria', 'Switzerland',
+          'Czech Republic', 'Poland', 'Croatia', 'Malta', 'Cyprus',
+          'Slovenia', 'Latvia', 'Estonia', 'Lithuania', 'Hungary',
+          'Slovakia', 'Romania', 'Bulgaria', 'Turkey'
+        ];
+        query = query.in('country', europeanCountries);
+      } else if (regionName === 'Central America') {
+        // Define Central American countries
+        const centralAmericanCountries = [
+          'Costa Rica', 'Panama', 'Nicaragua', 'Guatemala', 
+          'Belize', 'Honduras', 'El Salvador'
+        ];
+        query = query.in('country', centralAmericanCountries);
       } else {
-        // It's a country name
+        // It's a specific country name
         query = query.eq('country', regionName);
       }
       
-      const { data, error } = await query.limit(6);
+      // For regions, get more towns and ensure variety
+      const limit = (regionName === 'Europe' || regionName === 'Central America') ? 20 : 6;
+      const { data, error } = await query.limit(limit);
       
-      if (data) {
-        setInspirationTowns(data);
+      if (error) {
+        console.error("Error fetching inspiration towns:", error);
+      } else if (data) {
+        // For regions, try to get variety by selecting from different countries
+        if (regionName === 'Europe' || regionName === 'Central America') {
+          const townsByCountry = {};
+          data.forEach(town => {
+            if (!townsByCountry[town.country]) {
+              townsByCountry[town.country] = [];
+            }
+            townsByCountry[town.country].push(town);
+          });
+          
+          // Select up to 6 towns, preferring variety across countries
+          const selectedTowns = [];
+          const countries = Object.keys(townsByCountry);
+          let countryIndex = 0;
+          
+          while (selectedTowns.length < 6 && selectedTowns.length < data.length) {
+            const country = countries[countryIndex % countries.length];
+            if (townsByCountry[country] && townsByCountry[country].length > 0) {
+              selectedTowns.push(townsByCountry[country].shift());
+            }
+            countryIndex++;
+          }
+          
+          setInspirationTowns(selectedTowns);
+        } else {
+          // For single countries, just use the first 6
+          setInspirationTowns(data.slice(0, 6));
+        }
       }
     } catch (err) {
       console.error("Error fetching inspiration towns:", err);
