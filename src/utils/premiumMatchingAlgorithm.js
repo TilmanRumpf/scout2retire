@@ -17,7 +17,8 @@ export const calculatePremiumMatch = (town, userPreferences) => {
   const weights = getCategoryWeights(userPreferences);
   
   // Calculate enhanced scores for the 6 accepted categories only
-  const categoryScores = {
+  // Round each score to match what users see in the UI
+  const rawScores = {
     region: calculateRegionScore(town, userPreferences),
     climate: calculatePremiumClimateScore(town, userPreferences),
     culture: calculatePremiumCultureScore(town, userPreferences),
@@ -25,6 +26,23 @@ export const calculatePremiumMatch = (town, userPreferences) => {
     administration: calculateEnhancedAdministrationScore(town, userPreferences),
     budget: calculatePremiumBudgetScore(town, userPreferences)
   };
+  
+  const categoryScores = {
+    region: Math.round(rawScores.region),
+    climate: Math.round(rawScores.climate),
+    culture: Math.round(rawScores.culture),
+    hobbies: Math.round(rawScores.hobbies),
+    administration: Math.round(rawScores.administration),
+    budget: Math.round(rawScores.budget)
+  };
+  
+  if (town.name === 'Bordeaux') {
+    console.log('Bordeaux scoring:', {
+      rawScores,
+      roundedScores: categoryScores,
+      weights
+    });
+  }
   
   // Calculate weighted total
   let totalScore = 0;
@@ -41,9 +59,18 @@ export const calculatePremiumMatch = (town, userPreferences) => {
   // Normalize score
   const normalizedScore = totalWeight > 0 ? totalScore / totalWeight : 0;
   
-  // Apply quality bonus for premium destinations
-  const qualityBonus = calculateQualityBonus(town, categoryScores);
-  const finalScore = Math.min(100, normalizedScore + qualityBonus);
+  // No hidden bonuses - score is exactly what users see
+  const finalScore = normalizedScore;
+  
+  if (town.name === 'Bordeaux') {
+    console.log('Bordeaux final calculation:', {
+      totalScore,
+      totalWeight,
+      normalizedScore,
+      finalScore,
+      roundedFinal: Math.round(finalScore)
+    });
+  }
   
   // Generate comprehensive insights
   const insights = generatePremiumInsights(town, userPreferences, categoryScores);

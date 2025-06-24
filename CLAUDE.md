@@ -108,6 +108,14 @@ Primary brand color is sage green (`scout-accent-*` in Tailwind config) with ful
 - **TEAM APPROACH** - We work together; both make mistakes and improve
 - **PERFORMANCE FOCUSED** - Deliver the best work possible without social pleasantries
 
+## Scoring Transparency - CRITICAL
+
+### Match Score Display
+- **ALWAYS SHOW WEIGHTED AVERAGE** - When displaying category scores, indicate that the overall score is a weighted average
+- **FORMAT**: "Matching your preferences (weighted avg: XX%)" to clarify the calculation method
+- **RATIONALE**: Users see individual category scores as whole numbers and may calculate a simple average, which won't match the displayed overall score due to adaptive weighting
+- **CONSISTENCY**: Apply this pattern wherever category breakdowns are shown (TownDiscovery, DailyTownCard, etc.)
+
 ### CLAUDE.md Maintenance
 - **ANALYZE EACH CHANGE** - After implementing user requests, evaluate if the change represents a pattern or principle that should be documented
 - **DOCUMENT PATTERNS** - Record recurring decisions, terminology choices, or design principles that should be consistent across the codebase
