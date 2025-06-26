@@ -296,6 +296,7 @@ function App() {
             </ProtectedRoute>
           } />
 
+
           {/* Default redirect */}
           <Route path="/" element={<Navigate to="/welcome" replace />} />
           <Route path="*" element={<Navigate to="/welcome" replace />} />
