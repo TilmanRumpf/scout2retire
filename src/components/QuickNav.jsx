@@ -51,8 +51,7 @@ export default function QuickNav() {
     { path: '/schedule', label: 'Schedule' },
     { path: '/chat', label: 'Chat' },
     { path: '/journal', label: 'Journal' },
-    { path: '/profile', label: 'Profile' },
-    { path: '/settings', label: 'Settings' }
+    { path: '/profile', label: 'Profile' }
   ];
 
   return (

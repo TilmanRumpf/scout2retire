@@ -127,7 +127,7 @@ const OnboardingStepNavigation = ({
     <>
       <div className={`${className}`}>
         {/* Step icons and labels with hamburger menu */}
-        <div className="flex justify-center items-start space-x-2 sm:space-x-4 mb-6 px-4">
+        <div className="flex justify-center items-start space-x-2 sm:space-x-4 mb-6">
           {steps.map((step, index) => {
             const status = getStepStatus(step.key);
             const StepIcon = step.icon;
