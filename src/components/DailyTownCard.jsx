@@ -129,7 +129,7 @@ export default function DailyTownCard() {
         {town.matchScore && (
           <div className="absolute top-3 left-3">
             <div className={`px-3 py-1.5 ${uiConfig.layout.radius.full} bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm text-sm font-medium ${
-              town.matchScore >= 80 ? 'text-scout-accent-700 dark:text-scout-accent-400' :
+              town.matchScore >= 80 ? 'text-scout-accent-600 dark:text-scout-accent-400' :
               town.matchScore >= 60 ? 'text-gray-700 dark:text-gray-300' :
               'text-gray-600 dark:text-gray-400'
             }`}>

@@ -105,7 +105,7 @@ export default function Journal() {
   };
 
   const getEntryIcon = (entryType) => {
-    const iconProps = { size: 16, className: "text-scout-accent-600" };
+    const iconProps = { size: 16, className: "text-scout-accent-500" };
     
     if (entryType === 'journal') return <FileText {...iconProps} />;
     if (entryType.startsWith('town_')) return <MapPin {...iconProps} />;

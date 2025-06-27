@@ -3,68 +3,69 @@
 // Fixed: Using scout-accent colors to match Tailwind config
 
 export const colors = {
-  // Backgrounds
-  page: 'bg-gray-50 dark:bg-gray-900',
-  card: 'bg-white dark:bg-gray-800',
-  modal: 'bg-white dark:bg-gray-800',
-  input: 'bg-white dark:bg-gray-700',
-  tabActive: 'bg-scout-accent-600 text-white',
-  tabInactive: 'bg-white dark:bg-gray-700 text-scout-accent-600 dark:text-white',
+  // Backgrounds - iOS-optimized dark mode
+  page: 'bg-gray-50 dark:bg-gray-950',
+  card: 'bg-white dark:bg-gray-900',
+  modal: 'bg-white dark:bg-gray-900',
+  input: 'bg-white dark:bg-gray-800',
+  tabActive: 'bg-scout-accent-500 text-white dark:bg-scout-accent-400',
+  tabInactive: 'bg-white dark:bg-gray-800 text-scout-accent-600 dark:text-scout-accent-300',
 
-  // Text
-  heading: 'text-gray-800 dark:text-white',
-  body: 'text-gray-700 dark:text-gray-300',
-  hint: 'text-gray-500 dark:text-gray-400',
-  muted: 'text-gray-400 dark:text-gray-500',
-  accent: 'text-scout-accent-600',
+  // Text - Improved dark mode contrast
+  heading: 'text-gray-900 dark:text-gray-50',
+  body: 'text-gray-700 dark:text-gray-200',
+  hint: 'text-gray-600 dark:text-gray-300',
+  muted: 'text-gray-500 dark:text-gray-400',
+  accent: 'text-scout-accent-600 dark:text-scout-accent-300',
   error: 'text-red-600 dark:text-red-400',
-  success: 'text-scout-accent-600 dark:text-scout-accent-400',
+  success: 'text-scout-accent-600 dark:text-scout-accent-300',
 
-  // Border - Updated 10JUN25: Using scout-accent
-  border: 'border-gray-300 dark:border-gray-600',
-  borderLight: 'border-gray-200 dark:border-gray-700',
-  borderActive: 'border-scout-accent-600',
-  borderDanger: 'border-red-600',
-  borderSuccess: 'border-scout-accent-400',
+  // Border - iOS-style subtle borders
+  border: 'border-gray-200 dark:border-gray-700',
+  borderLight: 'border-gray-100 dark:border-gray-800',
+  borderActive: 'border-scout-accent-500 dark:border-scout-accent-400',
+  borderDanger: 'border-red-500 dark:border-red-400',
+  borderSuccess: 'border-scout-accent-400 dark:border-scout-accent-300',
 
-  // Buttons - Updated 10JUN25: Scout-accent (sage green) theme
-  btnPrimary: 'bg-scout-accent-300 text-white hover:bg-scout-accent-400 transition-colors',
-  btnSecondary: 'bg-scout-accent-100 dark:bg-scout-accent-800 text-scout-accent-700 dark:text-scout-accent-200 hover:bg-scout-accent-200 dark:hover:bg-scout-accent-700 transition-colors',
-  btnDanger: 'bg-red-600 hover:bg-red-700 text-white transition-colors',
-  btnNeutral: 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors',
+  // Buttons - Toned down dark mode colors
+  btnPrimary: 'bg-scout-accent-500 text-white hover:bg-scout-accent-600 dark:bg-scout-accent-400 dark:hover:bg-scout-accent-500 transition-colors',
+  btnSecondary: 'bg-scout-accent-100 dark:bg-gray-800 text-scout-accent-700 dark:text-scout-accent-300 hover:bg-scout-accent-200 dark:hover:bg-gray-700 transition-colors',
+  btnDanger: 'bg-red-500 hover:bg-red-600 text-white dark:bg-red-600 dark:hover:bg-red-700 transition-colors',
+  btnNeutral: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors',
 
-  // Toggles - Updated 10JUN25: Scout-accent
-  toggleOn: 'bg-scout-accent-600',
-  toggleOff: 'bg-gray-300 dark:bg-gray-600',
-  toggleKnob: 'bg-white dark:bg-gray-200',
+  // Toggles - Softer dark mode colors
+  toggleOn: 'bg-scout-accent-500 dark:bg-scout-accent-400',
+  toggleOff: 'bg-gray-300 dark:bg-gray-700',
+  toggleKnob: 'bg-white',
 
-  // Match badges - Updated 10JUN25: Using scout-accent palette
-  badge: 'bg-scout-accent-100 text-scout-accent-800 dark:bg-scout-accent-900 dark:text-scout-accent-200',
-  matchStrong: 'bg-scout-accent-600 text-white',
-  matchMedium: 'bg-yellow-500 text-white',
-  matchLow: 'bg-red-500 text-white',
+  // Match badges - Balanced dark mode
+  badge: 'bg-scout-accent-100 text-scout-accent-800 dark:bg-scout-accent-900/30 dark:text-scout-accent-300',
+  matchStrong: 'bg-scout-accent-500 text-white dark:bg-scout-accent-400',
+  matchMedium: 'bg-yellow-500 text-white dark:bg-yellow-600',
+  matchLow: 'bg-red-500 text-white dark:bg-red-600',
 
-  // Status indicators - Updated 10JUN25: Using scout-accent
-  statusSuccess: 'bg-scout-accent-100 text-scout-accent-800 dark:bg-scout-accent-900 dark:text-scout-accent-200',
-  statusWarning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-  statusError: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-  statusInfo: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  // Status indicators - Subtle dark mode
+  statusSuccess: 'bg-scout-accent-100 text-scout-accent-800 dark:bg-scout-accent-900/20 dark:text-scout-accent-300',
+  statusWarning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300',
+  statusError: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300',
+  statusInfo: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300',
 
-  // Focus states - Updated 10JUN25: Scout-accent focus rings
-  focusRing: 'focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75',
-  focusRingDanger: 'focus:ring-2 focus:ring-red-400 focus:ring-opacity-75',
+  // Focus states - iOS-style focus rings
+  focusRing: 'focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-50 dark:focus:ring-scout-accent-500',
+  focusRingDanger: 'focus:ring-2 focus:ring-red-400 focus:ring-opacity-50 dark:focus:ring-red-500',
 };
 
 export const font = {
-  family: `'Inter', system-ui, sans-serif`,
+  family: `font-sans`, // Uses iOS system font stack from Tailwind
   size: {
-    xs: 'text-xs',
-    sm: 'text-sm',
-    base: 'text-base',
-    lg: 'text-lg',
-    xl: 'text-xl',
-    '2xl': 'text-2xl',
-    '3xl': 'text-3xl',
+    xs: 'text-xs',     // 12px
+    sm: 'text-sm',     // 14px
+    base: 'text-base', // 16px
+    lg: 'text-lg',     // 18px
+    xl: 'text-xl',     // 20px
+    '2xl': 'text-2xl', // 24px
+    '3xl': 'text-3xl', // 30px
+    '4xl': 'text-4xl', // 36px
   },
   weight: {
     light: 'font-light',
@@ -77,52 +78,79 @@ export const font = {
 
 export const layout = {
   spacing: {
-    section: 'py-6 px-4',
-    card: 'p-6',
-    cardCompact: 'p-4',
-    field: 'mb-4',
-    fieldCompact: 'mb-2',
+    // iOS 8-point grid spacing
+    section: 'py-6 px-4',      // 24px vertical, 16px horizontal
+    card: 'p-6',               // 24px
+    cardCompact: 'p-4',        // 16px
+    field: 'mb-4',             // 16px
+    fieldCompact: 'mb-2',      // 8px
+    // Additional iOS spacing
+    xs: 'p-1',                 // 4px
+    sm: 'p-2',                 // 8px
+    md: 'p-3',                 // 12px
+    lg: 'p-4',                 // 16px
+    xl: 'p-6',                 // 24px
+    '2xl': 'p-8',              // 32px
   },
   radius: {
     none: 'rounded-none',
-    sm: 'rounded',
-    md: 'rounded-md',
-    lg: 'rounded-lg',
-    xl: 'rounded-xl',
-    '2xl': 'rounded-2xl',
+    sm: 'rounded-sm',          // 4px
+    DEFAULT: 'rounded',        // 8px
+    md: 'rounded-md',          // 10px
+    lg: 'rounded-lg',          // 12px
+    xl: 'rounded-xl',          // 16px
+    '2xl': 'rounded-2xl',      // 20px
     full: 'rounded-full',
   },
   shadow: {
     none: 'shadow-none',
     sm: 'shadow-sm',
+    DEFAULT: 'shadow',
     md: 'shadow-md',
     lg: 'shadow-lg',
     xl: 'shadow-xl',
-    '2xl': 'shadow-2xl',
+    // Dark mode shadows
+    'dark-sm': 'dark:shadow-dark-sm',
+    'dark': 'dark:shadow-dark',
+    'dark-md': 'dark:shadow-dark-md',
   },
   width: {
     container: 'max-w-4xl mx-auto w-full',
     containerWide: 'max-w-6xl mx-auto w-full',
     containerNarrow: 'max-w-2xl mx-auto w-full',
+    // Mobile-first widths
+    mobile: 'max-w-sm mx-auto w-full',
+    tablet: 'max-w-2xl mx-auto w-full',
+    desktop: 'max-w-4xl mx-auto w-full',
   }
 };
 
 export const animation = {
-  transition: 'transition-all duration-200 ease-in-out',
-  transitionFast: 'transition-all duration-150 ease-in-out',
-  transitionSlow: 'transition-all duration-300 ease-in-out',
-  hover: 'transform hover:scale-105 transition-transform duration-200',
+  // iOS-style timing functions
+  transition: 'transition-all duration-200 ease-ios',
+  transitionFast: 'transition-all duration-150 ease-ios',
+  transitionSlow: 'transition-all duration-300 ease-ios',
+  hover: 'transform hover:scale-105 transition-transform duration-200 ease-ios',
+  // iOS animations
+  fadeIn: 'animate-fadeIn',
+  slideUp: 'animate-slideUp',
+  slideDown: 'animate-slideDown',
+  scaleIn: 'animate-scaleIn',
   pulse: 'animate-pulse',
+  spin: 'animate-spin',
 };
 
 export const icons = {
-  default: 'lucide-react', // Using lucide as requested
+  default: 'lucide-react',
   size: {
-    xs: 'w-3 h-3',
-    sm: 'w-4 h-4', 
-    md: 'w-5 h-5',
-    lg: 'w-6 h-6',
-    xl: 'w-8 h-8',
+    xs: 'w-3 h-3',     // 12px
+    sm: 'w-4 h-4',     // 16px
+    md: 'w-5 h-5',     // 20px
+    lg: 'w-6 h-6',     // 24px
+    xl: 'w-8 h-8',     // 32px
+    '2xl': 'w-10 h-10', // 40px
+    // Touch targets (minimum 44px)
+    touch: 'w-11 h-11',
   }
 };
 
@@ -134,19 +162,19 @@ export const stepNavigation = {
     iconRow: 'flex justify-center items-center space-x-4 mb-4',
     labelRow: 'flex justify-center items-center space-x-4',
     
-    // Icon styles
+    // Icon styles - Toned down dark mode
     icon: {
       base: 'w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200',
-      current: 'bg-scout-accent-600 text-white shadow-lg scale-110',
-      completed: 'bg-scout-accent-500 text-white hover:bg-scout-accent-600 cursor-pointer hover:scale-105',
-      future: 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+      current: 'bg-scout-accent-500 text-white shadow-lg scale-110 dark:bg-scout-accent-400',
+      completed: 'bg-scout-accent-400 text-white hover:bg-scout-accent-500 cursor-pointer hover:scale-105 dark:bg-scout-accent-500 dark:hover:bg-scout-accent-600',
+      future: 'bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'
     },
     
-    // Label styles
+    // Label styles - Better contrast
     labels: {
       base: 'text-xs text-center w-12',
-      current: 'text-scout-accent-600 dark:text-scout-accent-400 font-semibold',
-      completed: 'text-scout-accent-500 dark:text-scout-accent-400',
+      current: 'text-scout-accent-600 dark:text-scout-accent-300 font-semibold',
+      completed: 'text-scout-accent-500 dark:text-scout-accent-300',
       future: 'text-gray-400 dark:text-gray-500'
     }
   },

@@ -82,10 +82,10 @@ const OnboardingStepNavigation = ({
     switch (status) {
       case 'completed':
         // Light green with darker green outline and icon
-        return `${baseClasses} w-10 h-10 bg-scout-accent-100 border-scout-accent-600 text-scout-accent-700 hover:bg-scout-accent-200 cursor-pointer`;
+        return `${baseClasses} w-10 h-10 bg-scout-accent-100 border-scout-accent-500 text-scout-accent-600 hover:bg-scout-accent-200 cursor-pointer`;
       case 'current':
         // REVERSED: Dark green fill with light green border and icon
-        return `${baseClasses} w-10 h-10 bg-scout-accent-600 border-scout-accent-200 text-scout-accent-100 shadow-lg ring-2 ring-scout-accent-300 dark:ring-scout-accent-700`;
+        return `${baseClasses} w-10 h-10 bg-scout-accent-500 border-scout-accent-200 text-white shadow-lg ring-2 ring-scout-accent-300 dark:ring-scout-accent-400`;
       case 'future':
         // Warm peach tone for not edited steps
         return `${baseClasses} w-10 h-10 bg-scout-progress-100 border-scout-progress-300 text-scout-progress-500 hover:bg-scout-progress-200 hover:border-scout-progress-400 cursor-pointer`;
@@ -100,10 +100,10 @@ const OnboardingStepNavigation = ({
     
     switch (status) {
       case 'completed':
-        return `${baseClasses} text-scout-accent-700 dark:text-scout-accent-400 font-medium`;
+        return `${baseClasses} text-scout-accent-600 dark:text-scout-accent-400 font-medium`;
       case 'current':
         // Bold text for current step but same size
-        return `${baseClasses} text-scout-accent-700 dark:text-scout-accent-300 font-bold`;
+        return `${baseClasses} text-scout-accent-600 dark:text-scout-accent-300 font-bold`;
       case 'future':
         return `${baseClasses} text-scout-progress-500 dark:text-scout-progress-400 font-normal`;
       default:
@@ -197,7 +197,7 @@ const OnboardingStepNavigation = ({
         <div className="hidden sm:block relative mb-6 mx-8">
           <div className="absolute top-0 left-0 w-full h-1 bg-scout-progress-200 dark:bg-scout-progress-700 rounded-full"></div>
           <div 
-            className="absolute top-0 left-0 h-1 bg-scout-accent-600 rounded-full transition-all duration-500 ease-out"
+            className="absolute top-0 left-0 h-1 bg-scout-accent-500 rounded-full transition-all duration-500 ease-out"
             style={{
               width: `${((steps.findIndex(s => s.key === currentStep) + 1) / steps.length) * 100}%`
             }}

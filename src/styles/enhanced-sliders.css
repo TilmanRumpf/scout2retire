@@ -138,7 +138,7 @@
 .btn-variant-selected {
   background: #f2f7f2; /* scout-accent-50 */
   border-color: #8fbc8f !important; /* scout-accent-300 */
-  color: #346738; /* scout-accent-600 */
+  color: #689f6a; /* scout-accent-400 */
 }
 
 .dark .btn-variant-selected {

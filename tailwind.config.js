@@ -64,19 +64,126 @@ module.exports = {
           800: '#4F684F',  // Very dark sage
           900: '#3F523F',  // Darkest sage
           DEFAULT: '#8FAF8F', // Makes text-scout-nav work
-        }
+        },
+        // Dark mode optimized colors
+        gray: {
+          // iOS-style grays for dark mode
+          50: '#fafafa',
+          100: '#f4f4f5',
+          200: '#e4e4e7',
+          300: '#d4d4d8',
+          400: '#a1a1aa',
+          500: '#71717a',
+          600: '#52525b',
+          700: '#3f3f46',
+          800: '#27272a',
+          900: '#18181b',
+          950: '#09090b',
+        },
+      },
+      spacing: {
+        // iOS 8-point grid system
+        '0': '0px',
+        '1': '4px',
+        '2': '8px',
+        '3': '12px',
+        '4': '16px',
+        '5': '20px',
+        '6': '24px',
+        '8': '32px',
+        '10': '40px',
+        '12': '48px',
+        '16': '64px',
+        '20': '80px',
+        '24': '96px',
+        '32': '128px',
+        '18': '72px', // Added for specific needs
+        '15': '60px', // Touch target helper
+        '11': '44px', // iOS minimum touch target
+      },
+      screens: {
+        // Mobile-first breakpoints
+        'xs': '375px',   // iPhone SE
+        'sm': '428px',   // iPhone 14 Pro Max
+        'md': '768px',   // iPad Portrait
+        'lg': '1024px',  // iPad Landscape
+        'xl': '1280px',  // Desktop
+        '2xl': '1536px', // Large Desktop
       },
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+        // iOS system font stack
+        sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'SF Pro Text', 'system-ui', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'],
+        mono: ['SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'monospace'],
+      },
+      fontSize: {
+        // iOS Dynamic Type scale
+        'xs': ['12px', { lineHeight: '16px' }],
+        'sm': ['14px', { lineHeight: '20px' }],
+        'base': ['16px', { lineHeight: '24px' }],
+        'lg': ['18px', { lineHeight: '28px' }],
+        'xl': ['20px', { lineHeight: '28px' }],
+        '2xl': ['24px', { lineHeight: '32px' }],
+        '3xl': ['30px', { lineHeight: '36px' }],
+        '4xl': ['36px', { lineHeight: '40px' }],
+      },
+      borderRadius: {
+        // iOS-style radii
+        'none': '0',
+        'sm': '4px',
+        'DEFAULT': '8px',
+        'md': '10px',
+        'lg': '12px',
+        'xl': '16px',
+        '2xl': '20px',
+        'full': '9999px',
+      },
+      boxShadow: {
+        // iOS-style shadows
+        'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        'DEFAULT': '0 2px 4px 0 rgba(0, 0, 0, 0.06)',
+        'md': '0 4px 6px -1px rgba(0, 0, 0, 0.07)',
+        'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.08)',
+        'xl': '0 20px 25px -5px rgba(0, 0, 0, 0.08)',
+        'none': 'none',
+        // Dark mode shadows
+        'dark-sm': '0 1px 2px 0 rgba(0, 0, 0, 0.3)',
+        'dark': '0 2px 4px 0 rgba(0, 0, 0, 0.4)',
+        'dark-md': '0 4px 6px -1px rgba(0, 0, 0, 0.5)',
       },
       animation: {
-        fadeIn: 'fadeIn 0.3s ease-in-out forwards',
+        // iOS-style animations
+        'fadeIn': 'fadeIn 0.3s ease-out',
+        'slideUp': 'slideUp 0.3s ease-out',
+        'slideDown': 'slideDown 0.3s ease-out',
+        'scaleIn': 'scaleIn 0.2s ease-out',
+        'spin': 'spin 1s linear infinite',
       },
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
+        slideUp: {
+          '0%': { transform: 'translateY(10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        slideDown: {
+          '0%': { transform: 'translateY(-10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        scaleIn: {
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        spin: {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+      },
+      transitionTimingFunction: {
+        // iOS spring animations
+        'ios': 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        'ios-bounce': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
       },
     },
   },

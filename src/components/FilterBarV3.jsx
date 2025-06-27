@@ -68,7 +68,7 @@ export default function FilterBarV3({
                       }}
                       className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 ${
                         sortBy === option 
-                          ? 'bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-400' 
+                          ? 'bg-scout-accent-50 dark:bg-scout-accent-400/20 text-scout-accent-600 dark:text-scout-accent-300' 
                           : 'text-gray-700 dark:text-gray-300'
                       }`}
                     >
@@ -96,14 +96,14 @@ export default function FilterBarV3({
                 onClick={() => toggleDropdown('location')}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   activeFilters.location > 0
-                    ? 'bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-400'
+                    ? 'bg-scout-accent-50 dark:bg-scout-accent-400/20 text-scout-accent-600 dark:text-scout-accent-300'
                     : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
                 <Globe size={16} />
                 <span className="hidden sm:inline">Location</span>
                 {activeFilters.location > 0 && (
-                  <span className="inline-flex items-center justify-center w-5 h-5 bg-scout-accent-600 text-white text-xs rounded-full">
+                  <span className="inline-flex items-center justify-center w-5 h-5 bg-scout-accent-500 text-white text-xs rounded-full">
                     {activeFilters.location}
                   </span>
                 )}
@@ -160,7 +160,7 @@ export default function FilterBarV3({
                   {/* Apply button */}
                   <button
                     onClick={() => setOpenDropdown(null)}
-                    className="w-full mt-3 px-3 py-2 bg-scout-accent-600 text-white rounded-md text-sm font-medium hover:bg-scout-accent-700"
+                    className="w-full mt-3 px-3 py-2 bg-scout-accent-500 text-white rounded-md text-sm font-medium hover:bg-scout-accent-600"
                   >
                     Apply Filters
                   </button>
@@ -174,7 +174,7 @@ export default function FilterBarV3({
                 onClick={() => toggleDropdown('price')}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   isFilterActive(filterCostRange)
-                    ? 'bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-400'
+                    ? 'bg-scout-accent-50 dark:bg-scout-accent-400/20 text-scout-accent-600 dark:text-scout-accent-300'
                     : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -243,7 +243,7 @@ export default function FilterBarV3({
                 onClick={() => toggleDropdown('match')}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   isFilterActive(filterMatchRange)
-                    ? 'bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-400'
+                    ? 'bg-scout-accent-50 dark:bg-scout-accent-400/20 text-scout-accent-600 dark:text-scout-accent-300'
                     : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
