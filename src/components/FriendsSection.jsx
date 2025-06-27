@@ -24,7 +24,7 @@ export default function FriendsSection({
             onClick={() => setFriendsTabActive('friends')}
             className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               friendsTabActive === 'friends'
-                ? 'border-scout-accent-600 text-scout-accent-600' 
+                ? 'border-scout-accent-500 text-scout-accent-500' 
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
             }`}
           >
@@ -41,7 +41,7 @@ export default function FriendsSection({
             onClick={() => setFriendsTabActive('requests')}
             className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               friendsTabActive === 'requests'
-                ? 'border-scout-accent-600 text-scout-accent-600' 
+                ? 'border-scout-accent-500 text-scout-accent-500' 
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
             }`}
           >
@@ -88,7 +88,7 @@ export default function FriendsSection({
                         <div className="mt-3 flex gap-2">
                           <button
                             onClick={() => acceptInvitation(invite.id)}
-                            className="px-4 py-1.5 bg-scout-accent-600 text-white text-sm rounded-md hover:bg-scout-accent-700 transition-colors"
+                            className="px-4 py-1.5 bg-scout-accent-500 text-white text-sm rounded-md hover:bg-scout-accent-600 transition-colors"
                           >
                             Accept
                           </button>
@@ -172,7 +172,7 @@ export default function FriendsSection({
                         </div>
                       </div>
                       {chatType === 'friends' && activeFriend?.friend_id === friend.friend_id && (
-                        <div className="w-2 h-2 bg-scout-accent-600 rounded-full"></div>
+                        <div className="w-2 h-2 bg-scout-accent-500 rounded-full"></div>
                       )}
                     </div>
                   </button>

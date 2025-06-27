@@ -132,7 +132,7 @@ export default function NotificationBell() {
                   >
                     <div className="flex items-start">
                       <div className="flex-shrink-0 w-10 h-10 bg-scout-accent-100 dark:bg-scout-accent-900 rounded-full flex items-center justify-center">
-                        <span className="text-scout-accent-700 dark:text-scout-accent-300 font-medium">
+                        <span className="text-scout-accent-600 dark:text-scout-accent-300 font-medium">
                           {invitation.user?.full_name?.charAt(0) || invitation.user?.email?.charAt(0) || '?'}
                         </span>
                       </div>
@@ -162,7 +162,7 @@ export default function NotificationBell() {
                     setShowDropdown(false);
                     navigate('/chat');
                   }}
-                  className="w-full text-center text-sm text-scout-accent-600 hover:text-scout-accent-700 font-medium"
+                  className="w-full text-center text-sm text-scout-accent-500 hover:text-scout-accent-600 font-medium"
                 >
                   View all in Chat
                 </button>
