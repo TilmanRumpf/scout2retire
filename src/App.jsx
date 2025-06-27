@@ -14,9 +14,8 @@ import Welcome from "./pages/Welcome";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
-import Settings from "./pages/Settings";
 import Favorites from "./pages/Favorites";
-import Profile from "./pages/Profile";
+import ProfileUnified from "./pages/ProfileUnified";
 import MasterSchedule from "./pages/MasterSchedule";
 import TownComparison from "./pages/TownComparison";
 import TownDiscovery from "./pages/TownDiscovery";
@@ -275,17 +274,11 @@ function App() {
           <Route path="/profile" element={
             <ProtectedRoute onboardingRequired={true}>
               <AuthenticatedLayout>
-                <Profile />
+                <ProfileUnified />
               </AuthenticatedLayout>
             </ProtectedRoute>
           } />
-          <Route path="/settings" element={
-            <ProtectedRoute>
-              <AuthenticatedLayout>
-                <Settings />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          } />
+          <Route path="/settings" element={<Navigate to="/profile?tab=account" replace />} />
 
           {/* Admin routes */}
           <Route path="/admin/data-import" element={
@@ -295,7 +288,6 @@ function App() {
               </AuthenticatedLayout>
             </ProtectedRoute>
           } />
-
 
           {/* Default redirect */}
           <Route path="/" element={<Navigate to="/welcome" replace />} />

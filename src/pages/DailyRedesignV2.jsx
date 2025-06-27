@@ -394,7 +394,9 @@ export default function DailyRedesignV2() {
     }
     
     const now = new Date();
-    const retirementDate = new Date(user.retirement_year_estimate, 0, 1);
+    const retirementDate = user.retirement_date 
+      ? new Date(user.retirement_date)
+      : new Date(user.retirement_year_estimate, 0, 1);
     
     // If date is in the past, show retired
     if (retirementDate <= now) {

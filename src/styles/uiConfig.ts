@@ -247,8 +247,8 @@ export const stepNavigation = {
 export const bottomNavigation = {
   styles: {
     container: 'flex justify-between items-center pt-8 mt-8 border-t border-gray-200 dark:border-gray-700',
-    backButton: 'inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2 transition-all duration-200',
-    nextButton: 'inline-flex items-center px-6 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-scout-accent-300 hover:bg-scout-accent-400 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
+    backButton: 'inline-flex items-center px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-scout-accent-400 focus:ring-offset-2 transition-all duration-200',
+    nextButton: 'inline-flex items-center px-4 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-scout-accent-500 hover:bg-scout-accent-600 dark:bg-scout-accent-400 dark:hover:bg-scout-accent-500 focus:outline-none focus:ring-2 focus:ring-scout-accent-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
   }
 };
 
@@ -257,7 +257,8 @@ export const components = {
   // Form inputs - Updated with scout-accent theme
   input: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent-600 transition-all duration-200',
   textarea: 'w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent-600 resize-vertical transition-all duration-200',
-  select: 'w-full px-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent-600 transition-all duration-200',
+  select: 'w-full py-2 px-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 focus:border-scout-accent-600 transition-all duration-200 text-sm',
+  selectActive: 'w-full py-2 px-3 border-2 border-scout-accent-600 dark:border-scout-accent-500 rounded-lg bg-scout-accent-600 dark:bg-scout-accent-500 text-white focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-75 transition-all duration-200 text-sm',
   
   // Checkboxes and radios - Updated 10JUN25: Scout-accent with proper styling
   checkbox: 'h-4 w-4 text-scout-accent-600 focus:ring-scout-accent-500 focus:ring-offset-0 border-2 border-gray-300 dark:border-gray-600 rounded transition-all duration-200',
@@ -299,15 +300,24 @@ export const components = {
   // Toggle switches - Updated 10JUN25: Scout-accent toggles
   toggle: 'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2',
   toggleKnob: 'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200',
-  toggleOn: 'bg-scout-accent-600',
-  toggleOff: 'bg-gray-300 dark:bg-gray-600',
+  toggleOn: 'bg-scout-accent-500 dark:bg-scout-accent-400',
+  toggleOff: 'bg-gray-300 dark:bg-gray-700',
   
-  // Button variants - Updated 22JUN25: Reduced padding and font size for space efficiency
+  // Button sizes - SINGLE SOURCE OF TRUTH
+  buttonSizes: {
+    xs: 'py-1 px-2 text-xs',         // 24px height - Absolute minimum
+    sm: 'py-1.5 px-2.5 text-sm',     // 32px height - Compact desktop
+    default: 'py-2 px-3 text-sm',    // 36px height - STANDARD SIZE
+    md: 'py-2.5 px-4 text-sm',       // 44px height - iOS minimum touch
+    lg: 'py-3 px-6 text-base',       // 48px height - ONLY when required
+  },
+  
+  // Button variants - Using standard size from buttonSizes.default
   buttonVariants: {
-    primary: 'py-2.5 px-3 rounded-lg border-2 border-transparent text-xs sm:text-sm font-medium text-center transition-all duration-200 bg-scout-accent-300 text-white hover:bg-scout-accent-400 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2',
-    secondary: 'py-2.5 px-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-xs sm:text-sm font-medium text-center transition-all duration-200 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-scout-accent-300 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2',
-    selected: 'py-2.5 px-3 rounded-lg border-2 border-scout-accent-300 text-xs sm:text-sm font-medium text-center transition-all duration-200 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-300 dark:text-scout-accent-300',
-    unselected: 'py-2.5 px-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-xs sm:text-sm font-medium text-center transition-all duration-200 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:ring-offset-2'
+    primary: 'py-2 px-3 rounded-lg border-2 border-transparent text-sm font-medium text-center transition-all duration-200 bg-scout-accent-500 text-white hover:bg-scout-accent-600 dark:bg-scout-accent-400 dark:hover:bg-scout-accent-500 focus:outline-none focus:ring-2 focus:ring-scout-accent-400 focus:ring-offset-2',
+    secondary: 'py-2 px-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 text-sm font-medium text-center transition-all duration-200 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-scout-accent-300 dark:hover:border-scout-accent-400 focus:outline-none focus:ring-2 focus:ring-scout-accent-400 focus:ring-offset-2',
+    selected: 'py-2 px-3 rounded-lg border-2 border-scout-accent-600 text-sm font-medium text-center transition-all duration-200 bg-scout-accent-600 dark:bg-scout-accent-500 text-white',
+    unselected: 'py-2 px-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 text-sm font-medium text-center transition-all duration-200 bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:border-scout-accent-300 dark:hover:border-scout-accent-400 focus:outline-none focus:ring-2 focus:ring-scout-accent-400 focus:ring-offset-2'
   },
   
   // File inputs
@@ -328,10 +338,10 @@ export const components = {
   helpText: 'mt-2 text-xs text-gray-500 dark:text-gray-400',
   errorText: 'mt-2 text-xs text-red-600 dark:text-red-400',
   
-  // Buttons
-  button: 'inline-flex items-center px-4 py-2 border border-transparent rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors',
-  buttonPrimary: 'inline-flex items-center px-4 py-2 border border-transparent rounded-md font-medium text-white bg-scout-accent-300 hover:bg-scout-accent-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-scout-accent-500 transition-colors',
-  buttonSecondary: 'inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-scout-accent-500 transition-colors',
+  // Buttons - Using standard size (py-2 px-3)
+  button: 'inline-flex items-center px-3 py-2 border border-transparent rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors',
+  buttonPrimary: 'inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-scout-accent-500 hover:bg-scout-accent-600 dark:bg-scout-accent-400 dark:hover:bg-scout-accent-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-scout-accent-400 transition-colors',
+  buttonSecondary: 'inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors',
   
   // Cards
   card: 'bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg',

@@ -7,27 +7,32 @@ import OnboardingStepNavigation from '../../components/OnboardingStepNavigation'
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
-// Option Button Component - Optimized for mobile
+// Option Button Component - Responsive for mobile and desktop
 const OptionButton = ({ label, description, isSelected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`p-2.5 sm:p-3 lg:p-4 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] ${
+    className={`${uiConfig.components.buttonSizes.default} lg:py-3 lg:px-4 xl:py-4 xl:px-5 ${uiConfig.layout.radius.md} lg:rounded-lg border-2 ${uiConfig.animation.transition} text-center ${
       isSelected
         ? uiConfig.components.buttonVariants.selected
         : uiConfig.components.buttonVariants.unselected
     }`}
   >
-    <div className={`text-xs sm:text-sm lg:text-base ${uiConfig.font.weight.medium} ${isSelected ? 'text-scout-accent-300 dark:text-scout-accent-300' : ''}`}>{label}</div>
-    {description && <div className={`text-[10px] sm:text-xs mt-0.5 ${isSelected ? 'text-scout-accent-300 dark:text-scout-accent-300' : uiConfig.colors.hint}`}>{description}</div>}
+    <div className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${isSelected ? 'text-white' : uiConfig.colors.body}`}>{label}</div>
+    {description && <div className={`${uiConfig.font.size.xs} lg:text-sm mt-0.5 lg:mt-1 ${isSelected ? 'text-white' : uiConfig.colors.hint}`}>{description}</div>}
   </button>
 );
 
 export default function OnboardingCurrentStatus() {
+  const [touchedFields, setTouchedFields] = useState({});
+  const [hasLoadedData, setHasLoadedData] = useState(false);
+  const defaultYear = new Date().getFullYear() + 5;
   const [formData, setFormData] = useState({
     retirement_timeline: {
       status: '',
       target_year: new Date().getFullYear() + 5,
+      target_month: 1,
+      target_day: 1,
       flexibility: ''
     },
     family_situation: '',
@@ -90,6 +95,7 @@ export default function OnboardingCurrentStatus() {
         setProgress(userProgress);
         
         if (data && data.current_status) {
+          setHasLoadedData(true);
           setFormData(prev => ({
             ...prev,
             retirement_timeline: data.current_status.retirement_timeline || prev.retirement_timeline,
@@ -113,6 +119,12 @@ export default function OnboardingCurrentStatus() {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
+    
+    // Mark field as touched
+    setTouchedFields(prev => ({
+      ...prev,
+      [name]: true
+    }));
     
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
@@ -150,6 +162,17 @@ export default function OnboardingCurrentStatus() {
         [name]: type === 'checkbox' ? checked : value
       }));
     }
+  };
+
+  // Helper function to check if retirement date dropdowns should show active state
+  const isRetirementDateActive = (field, value, defaultValue) => {
+    return touchedFields[field] || value !== defaultValue || hasLoadedData;
+  };
+
+  // Helper function to check if citizenship dropdowns should show active state  
+  const isCitizenshipActive = (value) => {
+    // Always show active if there's any value selected
+    return Boolean(value && value !== '');
   };
 
   const handleFamilyStatusChange = (status) => {
@@ -269,33 +292,33 @@ export default function OnboardingCurrentStatus() {
   const isCouple = formData.family_situation === 'couple';
 
   return (
-    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 ${uiConfig.responsive.sm}pb-4`}>
-      <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 sm:pb-4`}>
+      <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
         <OnboardingStepNavigation 
           currentStep="current_status" 
           completedSteps={progress.completedSteps} 
-          className="mb-3" 
+          className="mb-4 lg:mb-6" 
         />
         
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 sm:p-6 lg:p-8`}>
+        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} lg:rounded-2xl ${uiConfig.layout.shadow.md} lg:shadow-lg p-4 sm:p-6 lg:p-8 xl:p-10`}>
           {/* Header */}
-          <div className="mb-3">
-            <h1 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Current Status</h1>
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-0.5`}>
+          <div className="mb-4 lg:mb-6">
+            <h1 className={`${uiConfig.font.size.lg} lg:text-2xl xl:text-3xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Current Status</h1>
+            <p className={`${uiConfig.font.size.xs} lg:text-sm xl:text-base ${uiConfig.colors.hint} mt-1 lg:mt-2`}>
               Tell us about your retirement timeline and family situation
             </p>
           </div>
 
           {/* Retirement Status */}
-          <div className="mb-3">
-            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
-              <Calendar size={16} className="mr-1.5" />
+          <div className="mb-4 lg:mb-6">
+            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
+              <Calendar size={16} className="mr-1.5 lg:mr-2" />
               Retirement Timeline
             </label>
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-2`}>
+            <p className={`${uiConfig.font.size.xs} lg:text-sm ${uiConfig.colors.hint} mb-3 lg:mb-4`}>
               Where are you in your retirement journey? *
             </p>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
               <OptionButton
                 label="Planning"
                 description="5+ years away"
@@ -317,35 +340,66 @@ export default function OnboardingCurrentStatus() {
             </div>
           </div>
 
-          {/* Target Year */}
+          {/* Target Date */}
           {formData.retirement_timeline.status !== 'already_retired' && (
-            <div className="mb-3">
-              <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 block`}>
-                Target Retirement Year
+            <div className="mb-4 lg:mb-6">
+              <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 block`}>
+                Target Retirement Date
               </label>
-              <select
-                name="retirement_timeline.target_year"
-                value={formData.retirement_timeline.target_year}
-                onChange={handleInputChange}
-                className={`${uiConfig.components.select} h-[44px]`}
-              >
-                {retirementYearOptions.map(year => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
+              <div className="grid grid-cols-3 gap-2 lg:gap-3 xl:gap-4">
+                <select
+                  name="retirement_timeline.target_month"
+                  value={formData.retirement_timeline.target_month}
+                  onChange={handleInputChange}
+                  className={isRetirementDateActive('retirement_timeline.target_month', formData.retirement_timeline.target_month, 1) ? uiConfig.components.selectActive : uiConfig.components.select}
+                >
+                  <option value={1}>January</option>
+                  <option value={2}>February</option>
+                  <option value={3}>March</option>
+                  <option value={4}>April</option>
+                  <option value={5}>May</option>
+                  <option value={6}>June</option>
+                  <option value={7}>July</option>
+                  <option value={8}>August</option>
+                  <option value={9}>September</option>
+                  <option value={10}>October</option>
+                  <option value={11}>November</option>
+                  <option value={12}>December</option>
+                </select>
+                <select
+                  name="retirement_timeline.target_day"
+                  value={formData.retirement_timeline.target_day}
+                  onChange={handleInputChange}
+                  className={isRetirementDateActive('retirement_timeline.target_day', formData.retirement_timeline.target_day, 1) ? uiConfig.components.selectActive : uiConfig.components.select}
+                >
+                  {Array.from({length: 31}, (_, i) => i + 1).map(day => (
+                    <option key={day} value={day}>{day}</option>
+                  ))}
+                </select>
+                <select
+                  name="retirement_timeline.target_year"
+                  value={formData.retirement_timeline.target_year}
+                  onChange={handleInputChange}
+                  className={isRetirementDateActive('retirement_timeline.target_year', formData.retirement_timeline.target_year, defaultYear) ? uiConfig.components.selectActive : uiConfig.components.select}
+                >
+                  {retirementYearOptions.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
 
           {/* Family Situation */}
-          <div className="mb-3">
-            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
-              <Users size={16} className="mr-1.5" />
+          <div className="mb-4 lg:mb-6">
+            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
+              <Users size={16} className="mr-1.5 lg:mr-2" />
               Family Situation
             </label>
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-2`}>
+            <p className={`${uiConfig.font.size.xs} lg:text-sm ${uiConfig.colors.hint} mb-3 lg:mb-4`}>
               Who's joining you on this adventure? *
             </p>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
               <OptionButton
                 label="Solo"
                 description="Just me"
@@ -368,15 +422,15 @@ export default function OnboardingCurrentStatus() {
           </div>
 
           {/* Citizenship */}
-          <div className="mb-3">
-            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
-              <Globe size={16} className="mr-1.5" />
+          <div className="mb-4 lg:mb-6" key={`citizenship-section-${formData.family_situation}`}>
+            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
+              <Globe size={16} className="mr-1.5 lg:mr-2" />
               Citizenship
             </label>
             
             {isCouple ? (
               <>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4 xl:gap-6">
                   <div>
                     <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>
                       Your citizenship *
@@ -385,7 +439,7 @@ export default function OnboardingCurrentStatus() {
                       name="citizenship.primary_citizenship"
                       value={formData.citizenship.primary_citizenship}
                       onChange={handleInputChange}
-                      className={`${uiConfig.components.select} ${uiConfig.font.size.xs} h-[44px]`}
+                      className={isCitizenshipActive(formData.citizenship.primary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
                     >
                       <option value="">Select citizenship</option>
                       {countries.map(country => (
@@ -433,7 +487,7 @@ export default function OnboardingCurrentStatus() {
                             handleInputChange(e);
                           }
                         }}
-                        className={`${uiConfig.components.select} mt-1.5 ${uiConfig.font.size.xs} h-[44px]`}
+                        className={isCitizenshipActive(formData.citizenship.secondary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
                       >
                         <option value="">Select citizenship</option>
                         {countries
@@ -453,10 +507,11 @@ export default function OnboardingCurrentStatus() {
                       Partner's citizenship *
                     </p>
                     <select
+                      key={`partner-primary-${formData.family_situation}`}
                       name="partner_citizenship.primary_citizenship"
                       value={formData.partner_citizenship.primary_citizenship}
                       onChange={handleInputChange}
-                      className={`${uiConfig.components.select} ${uiConfig.font.size.xs} h-[44px]`}
+                      className={isCitizenshipActive(formData.partner_citizenship.primary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
                     >
                       <option value="">Select citizenship</option>
                       {countries.map(country => (
@@ -497,6 +552,7 @@ export default function OnboardingCurrentStatus() {
                     
                     {formData.partner_citizenship.dual_citizenship && (
                       <select
+                        key={`partner-secondary-${formData.family_situation}`}
                         name="partner_citizenship.secondary_citizenship"
                         value={formData.partner_citizenship.secondary_citizenship === formData.partner_citizenship.primary_citizenship ? '' : formData.partner_citizenship.secondary_citizenship}
                         onChange={(e) => {
@@ -504,7 +560,7 @@ export default function OnboardingCurrentStatus() {
                             handleInputChange(e);
                           }
                         }}
-                        className={`${uiConfig.components.select} mt-1.5 ${uiConfig.font.size.xs} h-[44px]`}
+                        className={isCitizenshipActive(formData.partner_citizenship.secondary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
                       >
                         <option value="">Select citizenship</option>
                         {countries
@@ -529,7 +585,7 @@ export default function OnboardingCurrentStatus() {
                   name="citizenship.primary_citizenship"
                   value={formData.citizenship.primary_citizenship}
                   onChange={handleInputChange}
-                  className={`${uiConfig.components.select} h-[44px]`}
+                  className={isCitizenshipActive(formData.citizenship.primary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
                 >
                   <option value="">Select citizenship</option>
                   {countries.map(country => (
@@ -591,7 +647,7 @@ export default function OnboardingCurrentStatus() {
                           handleInputChange(e);
                         }
                       }}
-                      className={`${uiConfig.components.select} h-[44px]`}
+                      className={isCitizenshipActive(formData.citizenship.secondary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
                     >
                       <option value="">Select citizenship</option>
                       {countries
@@ -610,12 +666,12 @@ export default function OnboardingCurrentStatus() {
           </div>
 
           {/* Pet Owner */}
-          <div className="mb-3">
-            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
-              <PawPrint size={16} className="mr-1.5" />
+          <div className="mb-4 lg:mb-6">
+            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
+              <PawPrint size={16} className="mr-1.5 lg:mr-2" />
               Pet Owner
             </label>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
               <OptionButton
                 label="Cat"
                 isSelected={formData.pet_owner?.includes('cat') || false}
@@ -636,7 +692,7 @@ export default function OnboardingCurrentStatus() {
 
           {/* Summary Section */}
           {(formData.retirement_timeline.status || formData.family_situation) && (
-            <div className={`mb-3 p-2.5 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg}`}>
+            <div className={`mb-4 lg:mb-6 p-3 lg:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
               <div className={`${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
                 <span className={`${uiConfig.font.weight.medium}`}>Summary:</span>
                 <div className={`mt-0.5 ${uiConfig.font.size.xs}`}>
@@ -644,7 +700,7 @@ export default function OnboardingCurrentStatus() {
                   {formData.retirement_timeline.status === 'retiring_soon' && 'Retiring within 5 years'}
                   {formData.retirement_timeline.status === 'already_retired' && 'Already retired'}
                   {formData.retirement_timeline.status !== 'already_retired' && 
-                    ` in ${formData.retirement_timeline.target_year}`}
+                    ` on ${new Date(formData.retirement_timeline.target_year, formData.retirement_timeline.target_month - 1, formData.retirement_timeline.target_day).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`}
                   {' • '}
                   {formData.family_situation === 'solo' && 'Solo'}
                   {formData.family_situation === 'couple' && 'Couple'}
@@ -666,7 +722,7 @@ export default function OnboardingCurrentStatus() {
           )}
 
           {/* Pro Tip */}
-          <div className={`mb-3 p-2.5 ${uiConfig.notifications.info} ${uiConfig.layout.radius.lg}`}>
+          <div className={`mb-4 lg:mb-6 p-3 lg:p-4 bg-scout-accent-50 dark:bg-scout-accent-900/20 border border-scout-accent-300 dark:border-scout-accent-600 ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
             <div className="flex items-start">
               <div className="mr-2">
                 <svg className={`${uiConfig.icons.size.sm} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
@@ -683,21 +739,21 @@ export default function OnboardingCurrentStatus() {
         </form>
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
-        <div className={`fixed ${uiConfig.responsive.sm}sticky bottom-0 left-0 right-0 ${uiConfig.responsive.sm}relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 ${uiConfig.responsive.sm}p-0 ${uiConfig.responsive.sm}border-0 ${uiConfig.responsive.sm}bg-transparent ${uiConfig.responsive.sm}mt-4`}>
-          <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto">
+        <div className={`fixed sm:sticky lg:relative bottom-0 left-0 right-0 ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} sm:border-0 p-4 sm:p-0 sm:bg-transparent sm:mt-4 lg:mt-6`}>
+          <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto">
             <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.border} p-3 ${uiConfig.layout.shadow.lg} ${uiConfig.responsive.sm}shadow-none`}>
               <div className="flex justify-between items-center gap-2">
                 <button
                   type="button"
                   onClick={() => navigate('/welcome')}
-                  className={`px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 text-sm sm:text-base ${uiConfig.colors.body} hover:${uiConfig.colors.heading} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[44px] sm:min-h-[48px] lg:min-h-[52px]`}
+                  className={uiConfig.components.buttonSecondary}
                 >
                   ← Back
                 </button>
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className={`px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 text-sm sm:text-base ${uiConfig.colors.hint} hover:${uiConfig.colors.body} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[44px] sm:min-h-[48px] lg:min-h-[52px]`}
+                  className={uiConfig.components.buttonSecondary}
                 >
                   Skip
                 </button>
@@ -705,7 +761,7 @@ export default function OnboardingCurrentStatus() {
                   type="submit"
                   disabled={loading}
                   onClick={handleSubmit}
-                  className={`px-6 py-2.5 sm:px-8 sm:py-3 lg:px-10 lg:py-3.5 text-sm sm:text-base ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.lg} ${uiConfig.states.disabled} min-h-[44px] sm:min-h-[48px] lg:min-h-[52px]`}
+                  className={uiConfig.components.buttonPrimary}
                 >
                   {loading ? 'Saving...' : 'Next →'}
                 </button>

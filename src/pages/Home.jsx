@@ -64,8 +64,10 @@ export default function Home() {
       return date;
     }
     
-    // Set to January 1st of the retirement year
-    const retirementDate = new Date(user.retirement_year_estimate, 0, 1);
+    // Use full retirement date if available, otherwise January 1st of the retirement year
+    const retirementDate = user.retirement_date 
+      ? new Date(user.retirement_date)
+      : new Date(user.retirement_year_estimate, 0, 1);
     return retirementDate;
   };
 

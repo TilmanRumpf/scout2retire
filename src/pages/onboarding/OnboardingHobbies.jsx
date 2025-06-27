@@ -226,12 +226,12 @@ export default function OnboardingHobbies() {
       <div className="mb-2">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center">
-            <Icon size={16} className={`mr-1.5 ${uiConfig.colors.body}`} />
-            <span className={`${uiConfig.font.size.xs} ${uiConfig.responsive.sm}${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
+            <Icon size={16} className={`mr-1.5 lg:mr-2 ${uiConfig.colors.body}`} />
+            <span className={`${uiConfig.font.size.xs} lg:text-sm ${uiConfig.colors.body}`}>
               {category.label}
             </span>
           </div>
-          <span className={`${uiConfig.font.size.xs} ${uiConfig.responsive.sm}${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} text-scout-accent-300 dark:text-scout-accent-300`}>
+          <span className={`${uiConfig.font.size.xs} lg:text-sm ${uiConfig.font.weight.medium} text-scout-accent-300 dark:text-scout-accent-300`}>
             {((value - 1) * 25)}%
           </span>
         </div>
@@ -253,7 +253,7 @@ export default function OnboardingHobbies() {
 
   return (
     <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 ${uiConfig.responsive.sm}pb-4`}>
-      <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+      <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
         <OnboardingStepNavigation 
           currentStep="hobbies" 
           completedSteps={progress.completedSteps} 
@@ -383,7 +383,7 @@ export default function OnboardingHobbies() {
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
         <div className={`fixed ${uiConfig.responsive.sm}sticky bottom-0 left-0 right-0 ${uiConfig.responsive.sm}relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 ${uiConfig.responsive.sm}p-0 ${uiConfig.responsive.sm}border-0 ${uiConfig.responsive.sm}bg-transparent ${uiConfig.responsive.sm}mt-4`}>
-          <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto">
+          <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto">
             <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.border} p-3 ${uiConfig.layout.shadow.lg} ${uiConfig.responsive.sm}shadow-none`}>
               <div className="flex justify-between items-center gap-2">
                 <button

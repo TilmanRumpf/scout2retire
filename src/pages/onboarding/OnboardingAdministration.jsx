@@ -7,19 +7,19 @@ import OnboardingStepNavigation from '../../components/OnboardingStepNavigation'
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
-// Option Button Component
+// Option Button Component - Responsive for mobile and desktop
 const OptionButton = ({ label, description, isSelected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`p-2.5 sm:p-3 lg:p-4 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] ${
+    className={`${uiConfig.components.buttonSizes.default} lg:py-3 lg:px-4 xl:py-4 xl:px-5 ${uiConfig.layout.radius.md} lg:rounded-lg border-2 ${uiConfig.animation.transition} text-center ${
       isSelected
         ? uiConfig.components.buttonVariants.selected
         : uiConfig.components.buttonVariants.unselected
     }`}
   >
-    <div className={`text-xs sm:text-sm lg:text-base ${uiConfig.font.weight.medium} ${isSelected ? 'text-scout-accent-300 dark:text-scout-accent-300' : ''}`}>{label}</div>
-    {description && <div className={`text-[10px] sm:text-xs mt-0.5 ${isSelected ? 'text-scout-accent-300 dark:text-scout-accent-300' : uiConfig.colors.hint}`}>{description}</div>}
+    <div className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${isSelected ? 'text-white' : uiConfig.colors.body}`}>{label}</div>
+    {description && <div className={`${uiConfig.font.size.xs} lg:text-sm mt-0.5 lg:mt-1 ${isSelected ? 'text-white' : uiConfig.colors.hint}`}>{description}</div>}
   </button>
 );
 
@@ -277,33 +277,33 @@ export default function OnboardingAdministration() {
   ];
 
   return (
-    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 ${uiConfig.responsive.sm}pb-4`}>
-      <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 sm:pb-4`}>
+      <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
         <OnboardingStepNavigation 
           currentStep="administration" 
           completedSteps={progress.completedSteps} 
-          className="mb-3" 
+          className="mb-4 lg:mb-6" 
         />
         
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 sm:p-6 lg:p-8`}>
+        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} lg:rounded-2xl ${uiConfig.layout.shadow.md} lg:shadow-lg p-4 sm:p-6 lg:p-8 xl:p-10`}>
           {/* Header */}
-          <div className="mb-3">
-            <h1 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Healthcare & Administration</h1>
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-0.5`}>
+          <div className="mb-4 lg:mb-6">
+            <h1 className={`${uiConfig.font.size.lg} lg:text-2xl xl:text-3xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Healthcare & Administration</h1>
+            <p className={`${uiConfig.font.size.xs} lg:text-sm xl:text-base ${uiConfig.colors.hint} mt-1 lg:mt-2`}>
               Tell us about your healthcare and administrative preferences
             </p>
           </div>
 
           {/* Health & Medical */}
-          <div className="mb-3">
-            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
-              <Heart size={16} className="mr-1.5" />
+          <div className="mb-4 lg:mb-6">
+            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
+              <Heart size={16} className="mr-1.5 lg:mr-2" />
               Healthcare Preferences
             </label>
             
             {/* Healthcare */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Healthcare</p>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 mb-2.5">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -316,7 +316,7 @@ export default function OnboardingAdministration() {
 
             {/* Health Considerations - using dropdowns */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Health Considerations</p>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 mb-2.5">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 mb-2.5">
               {/* Healthcare Access */}
               <HealthSelect
                 value={formData.health_considerations.healthcare_access || ''}
@@ -344,7 +344,7 @@ export default function OnboardingAdministration() {
 
             {/* Health Insurance */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Health Insurance</p>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 mb-2.5">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -357,15 +357,15 @@ export default function OnboardingAdministration() {
           </div>
 
           {/* Safety & Security */}
-          <div className="mb-3">
-            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
-              <Shield size={16} className="mr-1.5" />
+          <div className="mb-4 lg:mb-6">
+            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
+              <Shield size={16} className="mr-1.5 lg:mr-2" />
               Safety & Security
             </label>
             
             {/* Safety */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Safety</p>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 mb-2.5">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -378,7 +378,7 @@ export default function OnboardingAdministration() {
 
             {/* Emergency Services */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Emergency Services</p>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 mb-2.5">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -391,7 +391,7 @@ export default function OnboardingAdministration() {
 
             {/* Political Stability */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Political Stability</p>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
               {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -404,15 +404,15 @@ export default function OnboardingAdministration() {
           </div>
 
           {/* Governance & Legal */}
-          <div className="mb-3">
-            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
-              <Building size={16} className="mr-1.5" />
+          <div className="mb-4 lg:mb-6">
+            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
+              <Building size={16} className="mr-1.5 lg:mr-2" />
               Government & Taxes
             </label>
             
             {/* Tax System */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Tax System</p>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 mb-2.5">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -425,7 +425,7 @@ export default function OnboardingAdministration() {
 
             {/* Government Efficiency */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Government Efficiency</p>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
               {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -438,15 +438,15 @@ export default function OnboardingAdministration() {
           </div>
 
           {/* Immigration & Residency */}
-          <div className="mb-3">
-            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
-              <FileText size={16} className="mr-1.5" />
+          <div className="mb-4 lg:mb-6">
+            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
+              <FileText size={16} className="mr-1.5 lg:mr-2" />
               Visa & Residency
             </label>
             
             {/* Visa Process */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Visa Process</p>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 mb-2.5">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 mb-2.5">
               {qualityOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -459,7 +459,7 @@ export default function OnboardingAdministration() {
 
             {/* Stay Duration */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>How long do you plan to stay?</p>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 mb-2.5">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 mb-2.5">
               {stayDurationOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -472,7 +472,7 @@ export default function OnboardingAdministration() {
 
             {/* Residency Path */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Residency goals</p>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
               {residencyPathOptions.map((option) => (
                 <OptionButton
                   key={option.value}
@@ -485,7 +485,7 @@ export default function OnboardingAdministration() {
           </div>
 
           {/* Summary Section */}
-          <div className={`mb-3 p-2.5 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg}`}>
+          <div className={`mb-4 lg:mb-6 p-3 lg:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
             <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} mb-1.5 ${uiConfig.font.size.sm}`}>
               Your Administrative Preferences:
             </h3>
@@ -528,7 +528,7 @@ export default function OnboardingAdministration() {
           </div>
 
           {/* Pro Tip */}
-          <div className={`mb-3 p-2.5 ${uiConfig.notifications.info} ${uiConfig.layout.radius.lg}`}>
+          <div className={`mb-4 lg:mb-6 p-3 lg:p-4 bg-scout-accent-50 dark:bg-scout-accent-900/20 border border-scout-accent-300 dark:border-scout-accent-600 ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
             <div className="flex items-start">
               <div className="mr-2">
                 <svg className={`${uiConfig.icons.size.sm} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
@@ -545,21 +545,21 @@ export default function OnboardingAdministration() {
         </form>
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
-        <div className={`fixed ${uiConfig.responsive.sm}sticky bottom-0 left-0 right-0 ${uiConfig.responsive.sm}relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 ${uiConfig.responsive.sm}p-0 ${uiConfig.responsive.sm}border-0 ${uiConfig.responsive.sm}bg-transparent ${uiConfig.responsive.sm}mt-4`}>
-          <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto">
+        <div className={`fixed sm:sticky lg:relative bottom-0 left-0 right-0 ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} sm:border-0 p-4 sm:p-0 sm:bg-transparent sm:mt-4 lg:mt-6`}>
+          <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto">
             <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.border} p-3 ${uiConfig.layout.shadow.lg} ${uiConfig.responsive.sm}shadow-none`}>
               <div className="flex justify-between items-center gap-2">
                 <button
                   type="button"
                   onClick={() => navigate('/onboarding/hobbies')}
-                  className={`px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 text-sm sm:text-base ${uiConfig.colors.body} hover:${uiConfig.colors.heading} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[44px] sm:min-h-[48px] lg:min-h-[52px]`}
+                  className={uiConfig.components.buttonSecondary}
                 >
                   ← Back
                 </button>
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className={`px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 text-sm sm:text-base ${uiConfig.colors.hint} hover:${uiConfig.colors.body} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[44px] sm:min-h-[48px] lg:min-h-[52px]`}
+                  className={uiConfig.components.buttonSecondary}
                 >
                   Skip
                 </button>
@@ -567,7 +567,7 @@ export default function OnboardingAdministration() {
                   type="submit"
                   disabled={loading}
                   onClick={handleSubmit}
-                  className={`px-6 py-2.5 sm:px-8 sm:py-3 lg:px-10 lg:py-3.5 text-sm sm:text-base ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.lg} ${uiConfig.states.disabled} min-h-[44px] sm:min-h-[48px] lg:min-h-[52px]`}
+                  className={uiConfig.components.buttonPrimary}
                 >
                   {loading ? 'Saving...' : 'Next →'}
                 </button>

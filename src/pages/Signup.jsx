@@ -210,15 +210,15 @@ export default function Signup() {
     setLoading(true);
     
     try {
-      const currentYear = new Date().getFullYear();
-      const retirementYear = currentYear + 5; // Default to 5 years from now
+      const defaultRetirementDate = new Date();
+      defaultRetirementDate.setFullYear(defaultRetirementDate.getFullYear() + 5);
       
       const { success, reason, error, user } = await signUp(
         sanitizedEmail,
         sanitizedPassword,
         sanitizedName,
         'usa', // Default nationality
-        retirementYear
+        defaultRetirementDate.toISOString().split('T')[0] // Format as YYYY-MM-DD
       );
       
       if (success) {

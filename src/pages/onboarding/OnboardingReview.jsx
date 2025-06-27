@@ -85,8 +85,12 @@ export default function OnboardingReview() {
             </p>
             {data.retirement_timeline?.target_year && (
               <p>
-                <span className={`${uiConfig.font.weight.medium}`}>Target Year:</span>{' '}
-                {data.retirement_timeline.target_year}
+                <span className={`${uiConfig.font.weight.medium}`}>Target Date:</span>{' '}
+                {new Date(
+                  data.retirement_timeline.target_year,
+                  data.retirement_timeline.target_month - 1 || 0,
+                  data.retirement_timeline.target_day || 1
+                ).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             )}
             <p>
@@ -358,8 +362,8 @@ export default function OnboardingReview() {
   ];
 
   return (
-    <div className={`min-h-screen ${uiConfig.colors.page} p-4`}>
-      <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto">
+    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 sm:pb-4`}>
+      <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
         <OnboardingStepNavigation 
           currentStep="review" 
           completedSteps={progress.completedSteps} 

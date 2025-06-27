@@ -12,14 +12,14 @@ const OptionButton = ({ label, description, isSelected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`p-2 sm:p-2.5 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center min-h-[44px] ${
+    className={`p-2 sm:p-2.5 md:p-3 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center min-h-[44px] sm:min-h-[48px] ${
       isSelected
         ? uiConfig.components.buttonVariants.selected
         : uiConfig.components.buttonVariants.unselected
     }`}
   >
-    <div className={`${uiConfig.font.size.xs} ${uiConfig.responsive.sm}${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${isSelected ? uiConfig.colors.accent : ''}`}>{label}</div>
-    {description && <div className={`text-[10px] ${uiConfig.responsive.sm}${uiConfig.font.size.xs} mt-0.5 ${isSelected ? uiConfig.colors.accent : uiConfig.colors.hint}`}>{description}</div>}
+    <div className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${isSelected ? uiConfig.colors.accent : ''}`}>{label}</div>
+    {description && <div className={`text-[10px] sm:text-xs mt-0.5 ${isSelected ? uiConfig.colors.accent : uiConfig.colors.hint}`}>{description}</div>}
   </button>
 );
 
@@ -403,42 +403,42 @@ const OnboardingRegion = () => {
   if (initialLoading) {
     return (
       <div className={`min-h-[100svh] ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
-        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.success} ${uiConfig.font.weight.semibold}`}>Loading...</div>
+        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.success} ${uiConfig.font.weight.semibold} ${uiConfig.font.size.base}`}>Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 ${uiConfig.responsive.sm}pb-4`}>
-      <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 sm:pb-4`}>
+      <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
         <OnboardingStepNavigation 
           currentStep="region_preferences" 
           completedSteps={progress.completedSteps} 
-          className="mb-3" 
+          className="mb-4 sm:mb-6" 
         />
         
         <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 sm:p-6 lg:p-8`}>
           {/* Header */}
-          <div className="mb-3">
-            <h1 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Regional Preferences</h1>
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-0.5`}>
+          <div className="mb-4 sm:mb-6">
+            <h1 className={`${uiConfig.font.size.lg} sm:${uiConfig.font.size.xl} lg:${uiConfig.font.size['2xl']} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Regional Preferences</h1>
+            <p className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.colors.hint} mt-1 sm:mt-2`}>
               All choices are optional - select "Recommended" to keep options open
             </p>
           </div>
 
           {/* Geographical Preferences section */}
-          <div className="mb-3">
-            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
-              <Globe size={16} className="mr-1.5" />
+          <div className="mb-4 sm:mb-6">
+            <label className={`${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 sm:mb-3 flex items-center`}>
+              <Globe size={16} className="mr-1.5 sm:mr-2" />
               Geographical Preferences
             </label>
             
-            <div className="space-y-3">
+            <div className="space-y-3 sm:space-y-4">
               {[0, 1].map(index => (
                 <div key={index} className="space-y-2">
                   {/* Region dropdown */}
                   <div>
-                    <label className={`${uiConfig.font.size.xs} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 block`}>
+                    <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 sm:mb-1.5 block`}>
                       {getPreferenceLabel(index)}
                     </label>
                     <div className="relative">
@@ -456,7 +456,7 @@ const OnboardingRegion = () => {
                             setSelectedProvinces(newProvinces);
                           }
                         }}
-                        className={`${uiConfig.components.select} appearance-none cursor-pointer focus:ring-0 focus:${uiConfig.colors.borderActive} ${uiConfig.animation.transition} h-[44px]`}
+                        className={`${uiConfig.components.select} appearance-none cursor-pointer focus:ring-0 focus:${uiConfig.colors.borderActive} ${uiConfig.animation.transition} h-[44px] sm:h-[48px]`}
                       >
                         <option value="">Select region</option>
                         {getAvailableRegions(index).map(region => (
@@ -467,7 +467,7 @@ const OnboardingRegion = () => {
                       </select>
                       {/* Show hierarchical selection as overlay text when selections are made */}
                       {(selectedCountries[index] !== '' || selectedProvinces[index] !== '') && (
-                        <div className={`absolute inset-0 px-3 py-2 ${uiConfig.font.size.sm} ${uiConfig.colors.heading} ${uiConfig.colors.badge} border ${uiConfig.colors.borderActive} ${uiConfig.layout.radius.lg} pointer-events-none flex items-center`}>
+                        <div className={`absolute inset-0 px-3 py-2 sm:py-2.5 ${uiConfig.font.size.sm} ${uiConfig.colors.heading} ${uiConfig.colors.badge} border ${uiConfig.colors.borderActive} ${uiConfig.layout.radius.lg} pointer-events-none flex items-center`}>
                           {getDisplayValue(index)}
                         </div>
                       )}
@@ -485,7 +485,7 @@ const OnboardingRegion = () => {
                     }`}
                   >
                     <div>
-                      <label className={`${uiConfig.font.size.xs} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 block`}>
+                      <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 sm:mb-1.5 block`}>
                         Country/State
                       </label>
                       <div className="relative">
@@ -493,7 +493,7 @@ const OnboardingRegion = () => {
                           value={selectedCountries[index]}
                           onChange={(e) => handleCountryChange(index, e.target.value)}
                           onBlur={() => handleCountryBlur(index)}
-                          className={`${uiConfig.components.select} appearance-none cursor-pointer focus:ring-0 focus:${uiConfig.colors.borderActive} ${uiConfig.animation.transition} h-[44px]`}
+                          className={`${uiConfig.components.select} appearance-none cursor-pointer focus:ring-0 focus:${uiConfig.colors.borderActive} ${uiConfig.animation.transition} h-[44px] sm:h-[48px]`}
                         >
                           <option value="">Select country</option>
                           {getFilteredCountries(index).filter(c => c !== '').map(country => (
@@ -517,7 +517,7 @@ const OnboardingRegion = () => {
                     }`}
                   >
                     <div>
-                      <label className={`${uiConfig.font.size.xs} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 block`}>
+                      <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 sm:mb-1.5 block`}>
                         Province
                       </label>
                       <div className="relative">
@@ -525,7 +525,7 @@ const OnboardingRegion = () => {
                           value={selectedProvinces[index]}
                           onChange={(e) => handleProvinceChange(index, e.target.value)}
                           onBlur={() => handleProvinceBlur(index)}
-                          className={`${uiConfig.components.select} appearance-none cursor-pointer focus:ring-0 focus:${uiConfig.colors.borderActive} ${uiConfig.animation.transition} h-[44px]`}
+                          className={`${uiConfig.components.select} appearance-none cursor-pointer focus:ring-0 focus:${uiConfig.colors.borderActive} ${uiConfig.animation.transition} h-[44px] sm:h-[48px]`}
                         >
                           <option value="">Select province</option>
                           {getFilteredProvinces(index).filter(p => p !== '').map(province => (
@@ -542,23 +542,23 @@ const OnboardingRegion = () => {
                     </div>
                   </div>
 
-                  {index === 0 && <div className={`border-t ${uiConfig.colors.borderLight} my-2`}></div>}
+                  {index === 0 && <div className={`border-t ${uiConfig.colors.borderLight} my-2 sm:my-3`}></div>}
                 </div>
               ))}
             </div>
           </div>
 
           {/* Geographic Features section */}
-          <div className="mb-3">
-            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
-              <MapPin size={16} className="mr-1.5" />
+          <div className="mb-4 sm:mb-6">
+            <label className={`${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 sm:mb-3 flex items-center`}>
+              <MapPin size={16} className="mr-1.5 sm:mr-2" />
               Geographic Features
             </label>
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-2`}>
+            <p className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.colors.hint} mb-2 sm:mb-3`}>
               Select preferred geographic features (optional)
             </p>
             
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 gap-2 sm:gap-2.5">
               {geographicFeatures.map(feature => (
                 <OptionButton
                   key={feature}
@@ -571,16 +571,16 @@ const OnboardingRegion = () => {
           </div>
 
           {/* Vegetation section */}
-          <div className="mb-3">
-            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
-              <Trees size={16} className="mr-1.5" />
+          <div className="mb-4 sm:mb-6">
+            <label className={`${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 sm:mb-3 flex items-center`}>
+              <Trees size={16} className="mr-1.5 sm:mr-2" />
               Vegetation Types
             </label>
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-2`}>
+            <p className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.colors.hint} mb-2 sm:mb-3`}>
               Select preferred vegetation types (optional)
             </p>
             
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
               {vegetationTypes.map(vegetation => (
                 <OptionButton
                   key={vegetation}
@@ -593,11 +593,11 @@ const OnboardingRegion = () => {
           </div>
 
           {/* Summary section */}
-          <div className={`mb-3 p-2.5 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg}`}>
-            <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} mb-1.5 ${uiConfig.font.size.sm}`}>
+          <div className={`mb-4 sm:mb-6 p-3 sm:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg}`}>
+            <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} mb-2 sm:mb-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base}`}>
               Your Geographical Preferences:
             </h3>
-            <div className={`space-y-0.5 ${uiConfig.font.size.xs} ${uiConfig.colors.body}`}>
+            <div className={`space-y-1 sm:space-y-1.5 ${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
               <div>
                 <span className={`${uiConfig.font.weight.medium}`}>Regions:</span>{' '}
                 {selectedRegions.filter(region => region !== 'Recommended').length > 0 
@@ -632,15 +632,15 @@ const OnboardingRegion = () => {
           </div>
 
           {/* Pro Tip */}
-          <div className={`mb-3 p-2.5 ${uiConfig.notifications.info} ${uiConfig.layout.radius.lg}`}>
+          <div className={`mb-4 sm:mb-6 p-3 sm:p-4 ${uiConfig.notifications.info} ${uiConfig.layout.radius.lg}`}>
             <div className="flex items-start">
-              <div className="mr-2">
-                <svg className={`${uiConfig.icons.size.sm} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
+              <div className="mr-2 sm:mr-3 flex-shrink-0">
+                <svg className={`${uiConfig.icons.size.sm} sm:${uiConfig.icons.size.md} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
               </div>
               <div>
-                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.body}`}>
+                <p className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
                   <span className={`${uiConfig.font.weight.medium}`}>Pro Tip:</span> Keep your options open by selecting "Recommended" for regions. You can drill down to specific countries or provinces if you have strong preferences.
                 </p>
               </div>
@@ -649,21 +649,22 @@ const OnboardingRegion = () => {
         </form>
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
-        <div className={`fixed ${uiConfig.responsive.sm}sticky bottom-0 left-0 right-0 ${uiConfig.responsive.sm}relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 ${uiConfig.responsive.sm}p-0 ${uiConfig.responsive.sm}border-0 ${uiConfig.responsive.sm}bg-transparent ${uiConfig.responsive.sm}mt-4`}>
-          <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto">
-            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.border} p-3 ${uiConfig.layout.shadow.lg} ${uiConfig.responsive.sm}shadow-none`}>
-              <div className="flex justify-between items-center gap-2">
+        <div className={`fixed sm:sticky bottom-0 left-0 right-0 sm:relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-3 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-6`}>
+          <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto">
+            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.border} p-3 sm:p-4 ${uiConfig.layout.shadow.lg} sm:shadow-none`}>
+              <div className="flex justify-between items-center gap-2 sm:gap-3">
                 <button
                   type="button"
                   onClick={() => navigate('/onboarding/current-status')}
-                  className={`px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 text-sm sm:text-base ${uiConfig.colors.body} hover:${uiConfig.colors.heading} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[44px] sm:min-h-[48px] lg:min-h-[52px]`}
+                  className={`px-3 py-2 sm:px-4 sm:py-2.5 md:px-5 md:py-3 text-sm sm:text-base ${uiConfig.colors.body} hover:${uiConfig.colors.heading} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[40px] sm:min-h-[44px] md:min-h-[48px] flex items-center`}
                 >
-                  ← Back
+                  <span className="sm:hidden">←</span>
+                  <span className="hidden sm:inline">← Back</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className={`px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 text-sm sm:text-base ${uiConfig.colors.hint} hover:${uiConfig.colors.body} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[44px] sm:min-h-[48px] lg:min-h-[52px]`}
+                  className={`px-3 py-2 sm:px-4 sm:py-2.5 md:px-5 md:py-3 text-sm sm:text-base ${uiConfig.colors.hint} hover:${uiConfig.colors.body} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[40px] sm:min-h-[44px] md:min-h-[48px]`}
                 >
                   Skip
                 </button>
@@ -671,9 +672,19 @@ const OnboardingRegion = () => {
                   type="submit"
                   disabled={loading}
                   onClick={handleSubmit}
-                  className={`px-6 py-2.5 sm:px-8 sm:py-3 lg:px-10 lg:py-3.5 text-sm sm:text-base ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.lg} ${uiConfig.states.disabled} min-h-[44px] sm:min-h-[48px] lg:min-h-[52px]`}
+                  className={`px-4 py-2 sm:px-6 sm:py-2.5 md:px-8 md:py-3 text-sm sm:text-base ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.lg} ${uiConfig.states.disabled} min-h-[40px] sm:min-h-[44px] md:min-h-[48px] flex items-center justify-center`}
                 >
-                  {loading ? 'Saving...' : 'Next →'}
+                  {loading ? (
+                    <span className="flex items-center">
+                      <span className="sm:hidden">...</span>
+                      <span className="hidden sm:inline">Saving...</span>
+                    </span>
+                  ) : (
+                    <span className="flex items-center">
+                      <span className="sm:hidden">Next →</span>
+                      <span className="hidden sm:inline">Next →</span>
+                    </span>
+                  )}
                 </button>
               </div>
             </div>

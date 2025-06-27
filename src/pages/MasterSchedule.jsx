@@ -68,10 +68,10 @@ export default function MasterSchedule() {
   // Create default milestones for new users
   const createDefaultMilestones = async (userId) => {
     try {
-      // Get user retirement year
+      // Get user retirement date
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('retirement_year_estimate')
+        .select('retirement_year_estimate, retirement_date')
         .eq('id', userId)
         .single();
       
@@ -79,9 +79,12 @@ export default function MasterSchedule() {
         throw new Error(userError.message);
       }
       
-      const retirementYear = userData?.retirement_year_estimate || new Date().getFullYear() + 5;
-      const currentYear = new Date().getFullYear();
-      const yearsToRetirement = retirementYear - currentYear;
+      const retirementDate = userData?.retirement_date 
+        ? new Date(userData.retirement_date)
+        : new Date(userData?.retirement_year_estimate || new Date().getFullYear() + 5, 0, 1);
+      const currentDate = new Date();
+      const monthsToRetirement = Math.floor((retirementDate - currentDate) / (1000 * 60 * 60 * 24 * 30));
+      const yearsToRetirement = Math.floor(monthsToRetirement / 12);
       
       // Default milestones
       const defaultMilestones = [
