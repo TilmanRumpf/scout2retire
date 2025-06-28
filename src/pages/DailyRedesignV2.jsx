@@ -782,7 +782,7 @@ export default function DailyRedesignV2() {
                 <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-4`}>
                   Retirement Planning Tips
                 </h3>
-                <div className={`${uiConfig.colors.statusInfo} ${uiConfig.layout.radius.lg} p-4`}>
+                <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-5`}>
                   {dailyTip ? (
                     <>
                       <div className="flex items-center justify-between mb-2">
