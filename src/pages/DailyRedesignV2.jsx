@@ -28,6 +28,7 @@ export default function DailyRedesignV2() {
   const [savedLocationsUpdates, setSavedLocationsUpdates] = useState([]);
   const [todaysInspiration, setTodaysInspiration] = useState(null);
   const [inspirationTowns, setInspirationTowns] = useState([]);
+  const [dailyTip, setDailyTip] = useState(null);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -61,6 +62,9 @@ export default function DailyRedesignV2() {
           if (inspiration) {
             fetchInspirationTowns(inspiration.region);
           }
+          
+          // Fetch daily retirement tip
+          fetchDailyTip();
         }
       } catch (err) {
         console.error("Error loading user data:", err);
@@ -97,6 +101,41 @@ export default function DailyRedesignV2() {
       }
     } catch (err) {
       console.error("Error fetching recent towns:", err);
+    }
+  };
+
+  // Fetch daily retirement tip
+  const fetchDailyTip = async () => {
+    try {
+      // First, try to get all tips to select one based on day
+      const { data: allTips, error: countError } = await supabase
+        .from('retirement_tips')
+        .select('*')
+        .order('id');
+      
+      if (countError || !allTips || allTips.length === 0) {
+        // Fallback to a default tip if table is empty or there's an error
+        setDailyTip({
+          title: 'Visit during different seasons',
+          content: 'Consider visiting your top retirement destinations during different seasons. Weather, crowds, and local activities can vary significantly throughout the year.',
+          category: 'lifestyle'
+        });
+        return;
+      }
+      
+      // Use day of year to rotate through tips
+      const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+      const tipIndex = dayOfYear % allTips.length;
+      setDailyTip(allTips[tipIndex]);
+      
+    } catch (err) {
+      console.error("Error fetching daily tip:", err);
+      // Set fallback tip on error
+      setDailyTip({
+        title: 'Visit during different seasons',
+        content: 'Consider visiting your top retirement destinations during different seasons. Weather, crowds, and local activities can vary significantly throughout the year.',
+        category: 'lifestyle'
+      });
     }
   };
 
@@ -739,14 +778,33 @@ export default function DailyRedesignV2() {
               </section>
 
               {/* Daily Tip */}
-              <section className={`${uiConfig.colors.statusInfo} ${uiConfig.layout.radius.lg} p-4`}>
-                <h4 className={`font-medium ${uiConfig.colors.heading} mb-2 text-sm`}>
-                  Retirement Planning Tip
-                </h4>
-                <p className={`text-sm ${uiConfig.colors.body}`}>
-                  Consider visiting your top retirement destinations during different seasons. 
-                  Weather, crowds, and local activities can vary significantly throughout the year.
-                </p>
+              <section>
+                <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-4`}>
+                  Retirement Planning Tips
+                </h3>
+                <div className={`${uiConfig.colors.statusInfo} ${uiConfig.layout.radius.lg} p-4`}>
+                  {dailyTip ? (
+                    <>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className={`font-medium ${uiConfig.colors.heading}`}>
+                          {dailyTip.title}
+                        </h4>
+                        {dailyTip.category && (
+                          <span className={`text-xs px-2 py-1 ${uiConfig.colors.btnSecondary} ${uiConfig.layout.radius.full} capitalize`}>
+                            {dailyTip.category}
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-sm ${uiConfig.colors.body}`}>
+                        {dailyTip.content}
+                      </p>
+                    </>
+                  ) : (
+                    <p className={`text-sm ${uiConfig.colors.body}`}>
+                      Loading today's tip...
+                    </p>
+                  )}
+                </div>
               </section>
             </div>
           </div>
