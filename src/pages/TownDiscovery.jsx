@@ -343,19 +343,6 @@ export default function TownDiscovery() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className={`text-xl font-bold ${uiConfig.colors.heading}`}>Discover Towns</h1>
-              {isPersonalized && onboardingCompleted && (
-                <p className={`text-sm ${uiConfig.colors.success} mt-1 flex items-center gap-1`}>
-                  <Sparkles size={16} className="text-scout-accent-600" />
-                  Personalized recommendations based on your preferences
-                </p>
-              )}
-              {onboardingCompleted && userPreferences && (
-                <div className={`text-xs ${uiConfig.colors.hint} mt-1`}>
-                  Matching: Budget ${userPreferences.costs?.total_monthly_budget || 'Any'} • 
-                  Healthcare {userPreferences.administration?.healthcare_quality?.join('/') || 'Any'} • 
-                  {userPreferences.region_preferences?.countries?.length || 0} regions
-                </div>
-              )}
             </div>
           </div>
         </div>
