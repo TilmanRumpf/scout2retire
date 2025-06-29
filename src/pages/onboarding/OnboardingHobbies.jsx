@@ -4,6 +4,7 @@ import { Heart, Plane, Activity, ShoppingBag, Sparkles } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import OnboardingProgressiveNav from '../../components/OnboardingProgressiveNav';
+import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
@@ -356,50 +357,39 @@ export default function OnboardingHobbies() {
           )}
 
           {/* Pro Tip */}
-          <div className={`mb-3 p-2.5 ${uiConfig.notifications.info} ${uiConfig.layout.radius.lg}`}>
-            <div className="flex items-start">
-              <div className="mr-2">
-                <svg className={`${uiConfig.icons.size.sm} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div>
-                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.body}`}>
-                  <span className={`${uiConfig.font.weight.medium}`}>Pro Tip:</span> Your hobbies help us identify locations with active communities and facilities that match your interests.
-                </p>
-              </div>
-            </div>
-          </div>
+          <ProTip>
+            Your hobbies help us identify locations with active communities and facilities that match your interests.
+          </ProTip>
         </form>
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
-        <div className={`fixed ${uiConfig.responsive.sm}sticky bottom-0 left-0 right-0 ${uiConfig.responsive.sm}relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 ${uiConfig.responsive.sm}p-0 ${uiConfig.responsive.sm}border-0 ${uiConfig.responsive.sm}bg-transparent ${uiConfig.responsive.sm}mt-4`}>
-          <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto">
-            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.border} p-3 ${uiConfig.layout.shadow.lg} ${uiConfig.responsive.sm}shadow-none`}>
-              <div className="flex justify-between items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => navigate('/onboarding/culture')}
-                  className={`px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 text-sm sm:text-base ${uiConfig.colors.body} hover:${uiConfig.colors.heading} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[44px] sm:min-h-[48px] lg:min-h-[52px]`}
-                >
-                  ← Back
-                </button>
+        <div className={`fixed sm:sticky bottom-0 left-0 right-0 sm:relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-6 lg:mt-8`}>
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center">
+              <button
+                type="button"
+                onClick={() => navigate('/onboarding/culture')}
+                className={uiConfig.components.buttonSecondary}
+              >
+                ← Back
+              </button>
+              <div className="flex-1 flex justify-center">
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className={`px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 text-sm sm:text-base ${uiConfig.colors.hint} hover:${uiConfig.colors.body} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[44px] sm:min-h-[48px] lg:min-h-[52px]`}
+                  className={uiConfig.components.buttonSecondary}
                 >
                   Skip
                 </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  onClick={handleSubmit}
-                  className={`px-6 py-2.5 sm:px-8 sm:py-3 lg:px-10 lg:py-3.5 text-sm sm:text-base ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.lg} ${uiConfig.states.disabled} min-h-[44px] sm:min-h-[48px] lg:min-h-[52px]`}
-                >
-                  {loading ? 'Saving...' : 'Next →'}
-                </button>
               </div>
+              <button
+                type="submit"
+                disabled={loading}
+                onClick={handleSubmit}
+                className={uiConfig.components.buttonPrimary}
+              >
+                {loading ? 'Saving...' : 'Next →'}
+              </button>
             </div>
           </div>
         </div>

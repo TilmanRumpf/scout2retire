@@ -8,21 +8,15 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
   const isOpen = propIsOpen !== undefined ? propIsOpen : internalIsOpen;
   const location = useLocation();
 
-  // Close menu when route changes
-  useEffect(() => {
-    if (onClose) {
-      onClose();
-    } else {
-      setInternalIsOpen(false);
-    }
-  }, [location.pathname]);
+  // Note: Removed location change effect as it was causing immediate closes
 
   // Close menu when clicking outside
   useEffect(() => {
+    if (!isOpen) return;
+    
     const handleClickOutside = (event) => {
       // Check if click is outside the nav and not on the toggle button
-      if (isOpen && 
-          !event.target.closest('.nav-menu') && 
+      if (!event.target.closest('.nav-menu') && 
           !event.target.closest('.nav-toggle')) {
         if (onClose) {
           onClose();
@@ -32,11 +26,16 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
       }
     };
 
-    document.addEventListener('click', handleClickOutside);
+    // Add listener after a small delay to avoid catching the opening click
+    const timer = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside);
+    }, 100);
+
     return () => {
+      clearTimeout(timer);
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   // Handle escape key to close menu
   useEffect(() => {

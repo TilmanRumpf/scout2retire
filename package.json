@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify:styles": "node scripts/verify-styles.js",
+    "verify:navigation": "node scripts/verify-navigation.js",
+    "verify:all": "npm run lint && npm run verify:styles && npm run verify:navigation",
+    "precommit": "bash scripts/pre-commit-check.sh"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.8",

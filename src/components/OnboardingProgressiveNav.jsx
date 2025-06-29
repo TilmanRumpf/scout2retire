@@ -24,57 +24,65 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
   ];
   
   // Find current step number
-  const currentStepNum = currentStep === 'review' ? 7 : (allSteps.findIndex(s => s.key === currentStep) + 1 || 1);
+  const currentStepNum = currentStep === 'progress' ? 0 : (allSteps.findIndex(s => s.key === currentStep) + 1 || 1);
+
+  const handleMenuClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsQuickNavOpen(true);
+  };
 
   return (
     <>
       {/* Unified header matching Discover/Favorites design */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
-        {/* Title Row - 36px */}
-        <div className="h-9 flex items-center justify-between px-4">
-          <h1 className="text-base font-semibold text-gray-900 dark:text-white">
-            Onboarding
-            <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
-              {currentStepNum} of 7
-            </span>
-          </h1>
-          <button 
-            onClick={() => setIsQuickNavOpen(!isQuickNavOpen)}
-            className="p-1.5 -mr-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            aria-label="Open navigation menu"
-          >
-            <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-          </button>
-        </div>
-        
-        {/* Steps Row - 32px - Horizontal scrolling */}
-        <div className="h-8 flex items-center overflow-hidden">
-          {/* Scrollable steps container */}
-          <div className="flex-1 overflow-x-auto scrollbar-hide">
-            <div className="flex items-center px-4 gap-3 sm:gap-4">
-              {allSteps.map((step) => {
-                const Icon = step.icon;
-                const isActive = step.key === currentStep;
-                const isCompleted = completedSteps[step.key];
-                
-                return (
-                  <Link
-                    key={step.key}
-                    to={step.path}
-                    className={`flex items-center gap-1 text-sm whitespace-nowrap transition-colors ${
-                      isActive 
-                        ? 'font-medium text-gray-900 dark:text-gray-100' 
-                        : isCompleted
-                        ? 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
-                        : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                    }`}
-                  >
-                    <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-scout-accent-600 dark:text-scout-accent-400' : ''}`} />
-                    <span>{step.label}</span>
-                    {isActive && <span className="text-scout-accent-600 dark:text-scout-accent-400 ml-1">•</span>}
-                  </Link>
-                );
-              })}
+      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto">
+          {/* Title Row - 36px */}
+          <div className="h-9 flex items-center justify-between px-4">
+            <h1 className="text-base font-semibold text-gray-900 dark:text-white">
+              Onboarding
+              <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+                {currentStep === 'progress' ? 'Progress Overview' : currentStep === 'review' ? 'Summary' : `${currentStepNum} of 7`}
+              </span>
+            </h1>
+            <button 
+              onClick={handleMenuClick}
+              className="nav-toggle p-1.5 -mr-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label="Open navigation menu"
+              type="button"
+            >
+              <Menu className="w-5 h-5 text-gray-900 dark:text-gray-100" />
+            </button>
+          </div>
+          
+          {/* Steps Row - 32px - Horizontal scrolling */}
+          <div className="h-8 flex items-center overflow-hidden">
+            {/* Scrollable steps container */}
+            <div className="flex-1 overflow-x-auto scrollbar-hide">
+              <div className="flex items-center px-4 gap-3 sm:gap-4">
+                {allSteps.map((step) => {
+                  const Icon = step.icon;
+                  const isActive = step.key === currentStep && currentStep !== 'progress';
+                  const isCompleted = completedSteps[step.key];
+                  
+                  return (
+                    <Link
+                      key={step.key}
+                      to={step.path}
+                      className={`flex items-center gap-1 text-sm whitespace-nowrap transition-colors ${
+                        isActive 
+                          ? 'font-medium text-gray-900 dark:text-gray-100' 
+                          : isCompleted
+                          ? 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
+                          : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                      }`}
+                    >
+                      <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-scout-accent-600 dark:text-scout-accent-400' : ''}`} />
+                      <span>{step.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>

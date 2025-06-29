@@ -17,6 +17,7 @@ import {
   Lightbulb
 } from 'lucide-react';
 import { uiConfig } from '../../styles/uiConfig';
+import OnboardingProgressiveNav from '../../components/OnboardingProgressiveNav';
 
 export default function OnboardingProgress() {
   const [progress, setProgress] = useState({
@@ -74,7 +75,7 @@ export default function OnboardingProgress() {
       description: 'Your administrative preferences'
     },
     { 
-      key: 'budget', 
+      key: 'costs', 
       label: 'Budget & Costs', 
       path: '/onboarding/costs',
       icon: DollarSign,
@@ -194,45 +195,20 @@ export default function OnboardingProgress() {
   }
 
   return (
-    <div className={`min-h-screen ${uiConfig.colors.page} pb-20 ${uiConfig.responsive.md}pb-4`}>
-      {/* Header with progress overview using uiConfig styles */}
-      <header className={`${uiConfig.colors.card} ${uiConfig.layout.shadow.sm}`}>
-        <div className={`${uiConfig.layout.width.container} ${uiConfig.layout.spacing.card}`}>
-          <div className={`text-center ${uiConfig.layout.spacing.field}`}>
-            <h1 className={`${uiConfig.font.size['2xl']} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading} ${uiConfig.layout.spacing.fieldCompact}`}>
-              Your Retirement Profile Setup
-            </h1>
-            <p className={`${uiConfig.colors.body}`}>
-              Complete all steps to get personalized retirement destination recommendations
-            </p>
+    <div className={`min-h-screen ${uiConfig.colors.page}`}>
+      <OnboardingProgressiveNav 
+        currentStep="progress" 
+        completedSteps={progress.completedSteps} 
+      />
+      <main className="max-w-7xl mx-auto px-4 py-6">
+          {/* Help text with same formatting as step items */}
+          <div className={`mb-6 flex items-center text-sm ${uiConfig.colors.body}`}>
+            <Lightbulb className="w-5 h-5 mr-2 text-scout-accent-600 dark:text-scout-accent-400" />
+            <span>Click on completed steps to edit them. Complete all steps for the best recommendations.</span>
           </div>
-          
-          {/* Overall completion percentage using uiConfig progress styles */}
-          <div className={`${uiConfig.colors.input} ${uiConfig.layout.radius.lg} ${uiConfig.layout.spacing.cardCompact}`}>
-            <div className={`flex justify-between items-center ${uiConfig.layout.spacing.fieldCompact}`}>
-              <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body}`}>
-                Overall Progress
-              </span>
-              <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.semibold} ${uiConfig.colors.success}`}>
-                {progress.percentage}% Complete
-              </span>
-            </div>
-            <div className={`w-full ${uiConfig.progress.track} ${uiConfig.layout.radius.lg} h-3`}>
-              <div 
-                className={`${uiConfig.progress.fill} h-3 ${uiConfig.layout.radius.lg} ${uiConfig.animation.transitionSlow}`}
-                style={{ width: `${progress.percentage}%` }}
-              ></div>
-            </div>
-            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`} style={{ marginTop: '0.25rem' }}>
-              {progress.completedCount} of {progress.totalSteps} steps completed
-            </div>
-          </div>
-        </div>
-      </header>
 
-      <main className={`${uiConfig.layout.width.container} ${uiConfig.layout.spacing.section}`}>
-        {/* Three-column table layout following uiConfig patterns */}
-        <div className={`${uiConfig.components.card} ${uiConfig.layout.shadow.md}`}>
+          {/* Three-column table layout following uiConfig patterns */}
+          <div className={`${uiConfig.components.card} ${uiConfig.layout.shadow.md}`}>
           <div className={`${uiConfig.layout.spacing.card} border-b ${uiConfig.colors.borderLight}`}>
             <h2 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
               Setup Steps
@@ -292,21 +268,13 @@ export default function OnboardingProgress() {
         </div>
         
         {/* Continue button using uiConfig button styles */}
-        <div className={`${uiConfig.layout.spacing.field} flex justify-center`}>
+        <div className={`mt-8 flex justify-center`}>
           <button
             onClick={handleContinue}
             className={`${uiConfig.components.buttonPrimary} ${uiConfig.bottomNavigation.styles.nextButton}`}
           >
-            {progress.percentage === 100 ? 'Review Profile' : `Continue: ${getNextStep().label}`}
+            {progress.percentage === 100 ? 'Detailed Summary' : `Continue: ${getNextStep().label}`}
           </button>
-        </div>
-        
-        {/* Help text using uiConfig typography */}
-        <div className={`${uiConfig.layout.spacing.cardCompact} text-center`}>
-          <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint} flex items-center justify-center gap-1`}>
-            <Lightbulb size={16} className="text-scout-accent-600" />
-            Click on completed steps to edit them. Complete all steps for the best recommendations.
-          </p>
         </div>
       </main>
     </div>
