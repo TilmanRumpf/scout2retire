@@ -18,7 +18,8 @@ export default function FilterBarV3({
   countries,
   filterCount,
   clearFilters,
-  resultsCount
+  resultsCount,
+  variant = 'default' // 'default' or 'integrated'
 }) {
   const [openDropdown, setOpenDropdown] = useState(null);
 
@@ -36,6 +37,96 @@ export default function FilterBarV3({
     match: filterMatchRange !== 'all' ? 1 : 0
   };
 
+  // Integrated variant for CompactPageHeader
+  if (variant === 'integrated') {
+    return (
+      <div className="flex items-center w-full sm:w-auto sm:gap-4">
+        {/* Sort Button */}
+        <button
+          onClick={() => toggleDropdown('sort')}
+          className="flex-1 sm:flex-initial flex items-center justify-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors relative"
+        >
+          <SortDesc size={14} />
+          <span>Sort</span>
+          <ChevronDown size={12} className={`transition-transform ${openDropdown === 'sort' ? 'rotate-180' : ''}`} />
+          
+          {openDropdown === 'sort' && (
+            <div className="absolute top-full mt-1 left-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+              {['match', 'name', 'cost-low', 'cost-high', 'region', 'climate', 'culture', 'hobbies', 'administration', 'budget'].map(option => (
+                <button
+                  key={option}
+                  onClick={() => {
+                    setSortBy(option);
+                    setOpenDropdown(null);
+                  }}
+                  className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                    sortBy === option 
+                      ? 'bg-scout-accent-50 dark:bg-scout-accent-400/20 text-scout-accent-600 dark:text-scout-accent-300' 
+                      : 'text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  {option === 'match' ? 'Best Match' : 
+                   option === 'name' ? 'Name (A-Z)' :
+                   option === 'cost-low' ? 'Cost (Low to High)' :
+                   option === 'cost-high' ? 'Cost (High to Low)' :
+                   option === 'region' ? 'Region Score' :
+                   option === 'climate' ? 'Climate Score' :
+                   option === 'culture' ? 'Culture Score' :
+                   option === 'hobbies' ? 'Hobbies Score' :
+                   option === 'administration' ? 'Admin Score' :
+                   'Budget Score'}
+                </button>
+              ))}
+            </div>
+          )}
+        </button>
+        
+        {/* Location Filter */}
+        <button
+          onClick={() => toggleDropdown('location')}
+          className={`flex-1 sm:flex-initial flex items-center justify-center gap-1 text-sm ${
+            activeFilters.location > 0
+              ? 'text-scout-accent-600 dark:text-scout-accent-400 font-medium'
+              : 'text-gray-600 dark:text-gray-400'
+          } hover:text-gray-900 dark:hover:text-gray-100 transition-colors relative`}
+        >
+          <Globe size={14} />
+          <span>Location</span>
+          {activeFilters.location > 0 && (
+            <span className="text-xs">({activeFilters.location})</span>
+          )}
+        </button>
+        
+        {/* Cost Filter */}
+        <button
+          onClick={() => toggleDropdown('cost')}
+          className={`flex-1 sm:flex-initial flex items-center justify-center gap-1 text-sm ${
+            isFilterActive(filterCostRange)
+              ? 'text-scout-accent-600 dark:text-scout-accent-400 font-medium'
+              : 'text-gray-600 dark:text-gray-400'
+          } hover:text-gray-900 dark:hover:text-gray-100 transition-colors`}
+        >
+          <DollarSign size={14} />
+          <span>Cost</span>
+        </button>
+        
+        {/* Match Filter */}
+        <button
+          onClick={() => toggleDropdown('match')}
+          className={`flex-1 sm:flex-initial flex items-center justify-center gap-1 text-sm ${
+            isFilterActive(filterMatchRange)
+              ? 'text-scout-accent-600 dark:text-scout-accent-400 font-medium'
+              : 'text-gray-600 dark:text-gray-400'
+          } hover:text-gray-900 dark:hover:text-gray-100 transition-colors`}
+        >
+          <Crosshair size={14} />
+          <span>Match</span>
+        </button>
+      </div>
+    );
+  }
+
+  // Default variant with borders
   return (
     <div className="relative">
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
