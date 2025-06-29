@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
-import QuickNav from '../components/QuickNav';
+import AppHeader from '../components/AppHeader';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
@@ -355,14 +355,9 @@ export default function MasterSchedule() {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
-      {/* Header */}
-      <header className={`${uiConfig.colors.card} ${uiConfig.layout.shadow.sm}`}>
-        <div className="max-w-5xl mx-auto px-4 py-4">
-          <h1 className={`text-xl font-bold ${uiConfig.colors.heading}`}>
-            Retirement Master Schedule
-          </h1>
-        </div>
-      </header>
+      <AppHeader 
+        title="Retirement Master Schedule"
+      />
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         {/* Action buttons */}
@@ -667,7 +662,6 @@ export default function MasterSchedule() {
       </main>
       
       {/* Bottom navigation for mobile */}
-      <QuickNav />
     </div>
   );
 }
