@@ -4,6 +4,7 @@ import { ChevronDown, Globe, MapPin, Trees } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import OnboardingProgressiveNav from '../../components/OnboardingProgressiveNav';
+import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
@@ -623,61 +624,39 @@ const OnboardingRegion = () => {
           </div>
 
           {/* Pro Tip */}
-          <div className={`mb-4 p-3 sm:p-4 ${uiConfig.notifications.info} ${uiConfig.layout.radius.lg}`}>
-            <div className="flex items-start">
-              <div className="mr-2 sm:mr-3 flex-shrink-0">
-                <svg className={`${uiConfig.icons.size.sm} sm:${uiConfig.icons.size.md} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div>
-                <p className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
-                  <span className={`${uiConfig.font.weight.medium}`}>Pro Tip:</span> Keep your options open by selecting "Recommended" for regions. You can drill down to specific countries or provinces if you have strong preferences.
-                </p>
-              </div>
-            </div>
-          </div>
+          <ProTip>
+            Keep your options open by selecting "Recommended" for regions. You can drill down to specific countries or provinces if you have strong preferences.
+          </ProTip>
         </form>
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
-        <div className={`fixed sm:sticky bottom-0 left-0 right-0 sm:relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-3 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-6`}>
-          <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto">
-            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.border} p-3 sm:p-4 ${uiConfig.layout.shadow.lg} sm:shadow-none`}>
-              <div className="flex justify-between items-center gap-2 sm:gap-3">
-                <button
-                  type="button"
-                  onClick={() => navigate('/onboarding/current-status')}
-                  className={`px-3 py-2 sm:px-4 sm:py-2.5 md:px-5 md:py-3 text-sm sm:text-base ${uiConfig.colors.body} hover:${uiConfig.colors.heading} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[40px] sm:min-h-[44px] md:min-h-[48px] flex items-center`}
-                >
-                  <span className="sm:hidden">←</span>
-                  <span className="hidden sm:inline">← Back</span>
-                </button>
+        <div className={`fixed sm:sticky bottom-0 left-0 right-0 sm:relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-6 lg:mt-8`}>
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center">
+              <button
+                type="button"
+                onClick={() => navigate('/onboarding/current-status')}
+                className={uiConfig.components.buttonSecondary}
+              >
+                ← Back
+              </button>
+              <div className="flex-1 flex justify-center">
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className={`px-3 py-2 sm:px-4 sm:py-2.5 md:px-5 md:py-3 text-sm sm:text-base ${uiConfig.colors.hint} hover:${uiConfig.colors.body} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} min-h-[40px] sm:min-h-[44px] md:min-h-[48px]`}
+                  className={uiConfig.components.buttonSecondary}
                 >
                   Skip
                 </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  onClick={handleSubmit}
-                  className={`px-4 py-2 sm:px-6 sm:py-2.5 md:px-8 md:py-3 text-sm sm:text-base ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.lg} ${uiConfig.states.disabled} min-h-[40px] sm:min-h-[44px] md:min-h-[48px] flex items-center justify-center`}
-                >
-                  {loading ? (
-                    <span className="flex items-center">
-                      <span className="sm:hidden">...</span>
-                      <span className="hidden sm:inline">Saving...</span>
-                    </span>
-                  ) : (
-                    <span className="flex items-center">
-                      <span className="sm:hidden">Next →</span>
-                      <span className="hidden sm:inline">Next →</span>
-                    </span>
-                  )}
-                </button>
               </div>
+              <button
+                type="submit"
+                disabled={loading}
+                onClick={handleSubmit}
+                className={uiConfig.components.buttonPrimary}
+              >
+                {loading ? 'Saving...' : 'Next →'}
+                </button>
             </div>
           </div>
         </div>

@@ -64,7 +64,7 @@ const OnboardingWrapper = ({ children, nextPath, prevPath }) => {
 };
 
 // Protected Route component
-const ProtectedRoute = ({ children, onboardingRequired = false }) => {
+const ProtectedRoute = ({ children }) => {
   const [user, setUser] = useState(null);
   const [onboardingCompleted, setOnboardingCompleted] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -122,13 +122,12 @@ const ProtectedRoute = ({ children, onboardingRequired = false }) => {
     return <Navigate to="/welcome" replace />;
   }
 
-  // Redirect to onboarding if it's not completed and the route requires it
-  if (onboardingRequired && onboardingCompleted === false) {
-    return <Navigate to="/onboarding/progress" replace />;
-  }
+  // Note: Users can abandon onboarding at any time and navigate to other pages
+  // This respects user choice to not share personal data
+  // Only suggest onboarding, don't force it
 
   // Redirect to daily dashboard if onboarding is completed but user tries to access onboarding
-  if (!onboardingRequired && onboardingCompleted === true && window.location.pathname.startsWith('/onboarding')) {
+  if (onboardingCompleted === true && window.location.pathname.startsWith('/onboarding')) {
     return <Navigate to="/daily" replace />;
   }
 
@@ -220,49 +219,49 @@ function App() {
 
           {/* Protected routes (require login AND completed onboarding) */}
           <Route path="/daily" element={
-            <ProtectedRoute onboardingRequired={true}>
+            <ProtectedRoute >
               <AuthenticatedLayout>
                 <DailyRedesignV2 />
               </AuthenticatedLayout>
             </ProtectedRoute>
           } />
           <Route path="/home" element={
-            <ProtectedRoute onboardingRequired={true}>
+            <ProtectedRoute >
               <AuthenticatedLayout>
                 <Home />
               </AuthenticatedLayout>
             </ProtectedRoute>
           } />
           <Route path="/discover" element={
-            <ProtectedRoute onboardingRequired={true}>
+            <ProtectedRoute >
               <AuthenticatedLayout>
                 <TownDiscovery />
               </AuthenticatedLayout>
             </ProtectedRoute>
           } />
           <Route path="/compare" element={
-            <ProtectedRoute onboardingRequired={true}>
+            <ProtectedRoute >
               <AuthenticatedLayout>
                 <TownComparison />
               </AuthenticatedLayout>
             </ProtectedRoute>
           } />
           <Route path="/favorites" element={
-            <ProtectedRoute onboardingRequired={true}>
+            <ProtectedRoute >
               <AuthenticatedLayout>
                 <Favorites />
               </AuthenticatedLayout>
             </ProtectedRoute>
           } />
           <Route path="/schedule" element={
-            <ProtectedRoute onboardingRequired={true}>
+            <ProtectedRoute >
               <AuthenticatedLayout>
                 <MasterSchedule />
               </AuthenticatedLayout>
             </ProtectedRoute>
           } />
           <Route path="/journal" element={
-            <ProtectedRoute onboardingRequired={true}>
+            <ProtectedRoute >
               <AuthenticatedLayout>
                 <Journal />
               </AuthenticatedLayout>
@@ -274,21 +273,21 @@ function App() {
             </ProtectedRoute>
           } />
           <Route path="/chat" element={
-            <ProtectedRoute onboardingRequired={true}>
+            <ProtectedRoute >
               <AuthenticatedLayout>
                 <Chat />
               </AuthenticatedLayout>
             </ProtectedRoute>
           } />
           <Route path="/chat/:townId" element={
-            <ProtectedRoute onboardingRequired={true}>
+            <ProtectedRoute >
               <AuthenticatedLayout>
                 <Chat />
               </AuthenticatedLayout>
             </ProtectedRoute>
           } />
           <Route path="/profile" element={
-            <ProtectedRoute onboardingRequired={true}>
+            <ProtectedRoute >
               <AuthenticatedLayout>
                 <ProfileUnified />
               </AuthenticatedLayout>

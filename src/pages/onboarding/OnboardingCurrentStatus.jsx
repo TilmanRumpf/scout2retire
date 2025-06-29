@@ -4,6 +4,7 @@ import { Calendar, Users, Globe, PawPrint } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import OnboardingProgressiveNav from '../../components/OnboardingProgressiveNav';
+import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
@@ -424,7 +425,7 @@ export default function OnboardingCurrentStatus() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4 xl:gap-6">
                   <div>
                     <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>
-                      Your citizenship *
+                      Your Citizenship *
                     </p>
                     <select
                       name="citizenship.primary_citizenship"
@@ -440,14 +441,15 @@ export default function OnboardingCurrentStatus() {
                       ))}
                     </select>
                     
-                    <div className="mt-1.5 flex items-center">
+                    <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-3`}>
+                      Dual Citizenship
                       <input
                         id="dual_citizenship"
                         name="citizenship.dual_citizenship"
                         type="checkbox"
                         checked={formData.citizenship.dual_citizenship}
                         onChange={handleInputChange}
-                        className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
+                        className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer ml-2"
                         style={{ 
                           accentColor: '#8fbc8f',
                           WebkitAppearance: 'none',
@@ -464,10 +466,7 @@ export default function OnboardingCurrentStatus() {
                           transition: 'all 0.15s ease-in-out'
                         }}
                       />
-                      <label htmlFor="dual_citizenship" className={`ml-1.5 text-[11px] ${uiConfig.colors.body} cursor-pointer`}>
-                        Dual citizenship
-                      </label>
-                    </div>
+                    </p>
                     
                     {formData.citizenship.dual_citizenship && (
                       <select
@@ -495,7 +494,7 @@ export default function OnboardingCurrentStatus() {
                   
                   <div>
                     <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>
-                      Partner's citizenship *
+                      Partner's Citizenship *
                     </p>
                     <select
                       key={`partner-primary-${formData.family_situation}`}
@@ -512,14 +511,15 @@ export default function OnboardingCurrentStatus() {
                       ))}
                     </select>
                     
-                    <div className="mt-1.5 flex items-center">
+                    <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-3`}>
+                      Dual Citizenship
                       <input
                         id="partner_dual_citizenship"
                         name="partner_citizenship.dual_citizenship"
                         type="checkbox"
                         checked={formData.partner_citizenship.dual_citizenship}
                         onChange={handleInputChange}
-                        className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
+                        className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer ml-2"
                         style={{ 
                           accentColor: '#8fbc8f',
                           WebkitAppearance: 'none',
@@ -536,10 +536,7 @@ export default function OnboardingCurrentStatus() {
                           transition: 'all 0.15s ease-in-out'
                         }}
                       />
-                      <label htmlFor="partner_dual_citizenship" className={`ml-1.5 text-[11px] ${uiConfig.colors.body} cursor-pointer`}>
-                        Dual citizenship
-                      </label>
-                    </div>
+                    </p>
                     
                     {formData.partner_citizenship.dual_citizenship && (
                       <select
@@ -569,8 +566,8 @@ export default function OnboardingCurrentStatus() {
               </>
             ) : (
               <>
-                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-2`}>
-                  Primary citizenship *
+                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>
+                  Your Citizenship *
                 </p>
                 <select
                   name="citizenship.primary_citizenship"
@@ -586,14 +583,15 @@ export default function OnboardingCurrentStatus() {
                   ))}
                 </select>
                 
-                <div className="mt-2 flex items-center">
+                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-3`}>
+                  Dual Citizenship
                   <input
-                    id="dual_citizenship"
+                    id="dual_citizenship_single"
                     name="citizenship.dual_citizenship"
                     type="checkbox"
                     checked={formData.citizenship.dual_citizenship}
                     onChange={handleInputChange}
-                    className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
+                    className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer ml-2"
                     style={{ 
                       accentColor: '#8fbc8f',
                       WebkitAppearance: 'none',
@@ -610,10 +608,7 @@ export default function OnboardingCurrentStatus() {
                       transition: 'all 0.15s ease-in-out'
                     }}
                   />
-                  <label htmlFor="dual_citizenship" className={`ml-2 ${uiConfig.font.size.sm} ${uiConfig.colors.body} cursor-pointer`}>
-                    I have dual/multiple citizenship
-                  </label>
-                </div>
+                </p>
                 
                 {formData.citizenship.dual_citizenship && (
                   <div className="mt-2">
@@ -713,34 +708,23 @@ export default function OnboardingCurrentStatus() {
           )}
 
           {/* Pro Tip */}
-          <div className={`mb-4 p-3 lg:p-4 bg-scout-accent-50 dark:bg-scout-accent-900/20 border border-scout-accent-300 dark:border-scout-accent-600 ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
-            <div className="flex items-start">
-              <div className="mr-2">
-                <svg className={`${uiConfig.icons.size.sm} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div>
-                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.body}`}>
-                  <span className={`${uiConfig.font.weight.medium}`}>Pro Tip:</span> Your citizenship affects visa requirements, tax implications, and healthcare access in different countries.
-                </p>
-              </div>
-            </div>
-          </div>
+          <ProTip>
+            Your citizenship affects visa requirements, tax implications, and healthcare access in different countries.
+          </ProTip>
         </form>
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
-        <div className={`fixed sm:sticky lg:relative bottom-0 left-0 right-0 ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} sm:border-0 p-4 sm:p-0 sm:bg-transparent sm:mt-4 lg:mt-6`}>
-          <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto">
-            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.border} p-3 ${uiConfig.layout.shadow.lg} ${uiConfig.responsive.sm}shadow-none`}>
-              <div className="flex justify-between items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => navigate('/welcome')}
-                  className={uiConfig.components.buttonSecondary}
-                >
-                  ← Back
-                </button>
+        <div className={`fixed sm:sticky bottom-0 left-0 right-0 sm:relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-6 lg:mt-8`}>
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center">
+              <button
+                type="button"
+                onClick={() => navigate('/welcome')}
+                className={uiConfig.components.buttonSecondary}
+              >
+                ← Back
+              </button>
+              <div className="flex-1 flex justify-center">
                 <button
                   type="button"
                   onClick={handleSkip}
@@ -748,15 +732,15 @@ export default function OnboardingCurrentStatus() {
                 >
                   Skip
                 </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  onClick={handleSubmit}
-                  className={uiConfig.components.buttonPrimary}
-                >
-                  {loading ? 'Saving...' : 'Next →'}
-                </button>
               </div>
+              <button
+                type="submit"
+                disabled={loading}
+                onClick={handleSubmit}
+                className={uiConfig.components.buttonPrimary}
+              >
+                {loading ? 'Saving...' : 'Next →'}
+              </button>
             </div>
           </div>
         </div>
