@@ -74,10 +74,20 @@ const ProtectedRoute = ({ children, onboardingRequired = false }) => {
     // Check authentication status
     const checkAuth = async () => {
       try {
+        // First check if there's a stored session
         const { data: { session } } = await supabase.auth.getSession();
+        
+        // If no session, check if we're still loading from storage
         if (!session) {
-          navigate('/welcome');
-          return;
+          // Give it a moment for session to restore from storage
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          // Check again
+          const { data: { session: retrySession } } = await supabase.auth.getSession();
+          if (!retrySession) {
+            navigate('/welcome');
+            return;
+          }
         }
         setUser(session.user);
         // Get user profile to check onboarding status
