@@ -6,6 +6,8 @@ import { uiConfig } from '../styles/uiConfig';
 export default function AppHeader({ title, subtitle, rightElement }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  
+  console.log('AppHeader render, isMenuOpen:', isMenuOpen);
 
   // Close menu when route changes
   useEffect(() => {
@@ -65,7 +67,9 @@ export default function AppHeader({ title, subtitle, rightElement }) {
               <button
                 onClick={() => {
                   console.log('Hamburger clicked, current state:', isMenuOpen);
-                  setIsMenuOpen(!isMenuOpen);
+                  const newState = !isMenuOpen;
+                  console.log('Setting new state to:', newState);
+                  setIsMenuOpen(newState);
                 }}
                 className="nav-toggle p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 aria-label={isMenuOpen ? "Close menu" : "Open menu"}
