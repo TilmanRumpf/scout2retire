@@ -6,7 +6,7 @@ import CompactCountdown from '../components/CompactCountdown';
 import DailyTownCard from '../components/DailyTownCard';
 import TownCard from '../components/TownCard';
 import PageErrorBoundary from '../components/PageErrorBoundary';
-import QuickNav from '../components/QuickNav';
+import AppHeader from '../components/AppHeader';
 import { fetchFavorites } from '../utils/townUtils';
 import { saveJournalEntry } from '../utils/journalUtils';
 import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
@@ -133,21 +133,16 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 md:pb-4">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-800 dark:text-white">
-            Scout<span className="text-green-600">2</span>Retire
-          </h1>
-          <div className="flex items-center space-x-3">
-            <Link to="/profile" className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-600 dark:text-green-400">
-                {user?.full_name?.charAt(0) || '?'}
-              </div>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <AppHeader 
+        title={<>Scout<span className="text-green-600">2</span>Retire</>}
+        rightElement={
+          <Link to="/profile" className="flex items-center">
+            <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-600 dark:text-green-400">
+              {user?.full_name?.charAt(0) || '?'}
+            </div>
+          </Link>
+        }
+      />
 
       <PageErrorBoundary
         fallbackTitle="Dashboard Error"
@@ -331,7 +326,6 @@ export default function Home() {
       </PageErrorBoundary>
 
       {/* Bottom Navigation (Mobile) */}
-      <QuickNav />
     </div>
   );
 }
