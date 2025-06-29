@@ -29,6 +29,9 @@ export default function DailyRedesignV2() {
   const [todaysInspiration, setTodaysInspiration] = useState(null);
   const [inspirationTowns, setInspirationTowns] = useState([]);
   const [dailyTip, setDailyTip] = useState(null);
+  
+  // Debug
+  console.log('DailyRedesignV2 rendering');
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -479,10 +482,19 @@ export default function DailyRedesignV2() {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
-      <AppHeader 
-        title={`${getGreeting()}, ${user?.full_name?.split(' ')[0] || 'Explorer'}`}
-        subtitle={getRetirementTimeline()}
-      />
+      {(() => {
+        try {
+          return (
+            <AppHeader 
+              title={`${getGreeting()}, ${user?.full_name?.split(' ')[0] || 'Explorer'}`}
+              subtitle={getRetirementTimeline()}
+            />
+          );
+        } catch (error) {
+          console.error('AppHeader error:', error);
+          return <div className="bg-red-500 text-white p-4">AppHeader Error: {error.message}</div>;
+        }
+      })()}
 
       <PageErrorBoundary
         fallbackTitle="Dashboard Error"
