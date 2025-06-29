@@ -4,7 +4,7 @@ import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils';
 import { getCurrentUser } from '../utils/authUtils';
 import TownRadarChart from '../components/TownRadarChart';
 import LikeButton from '../components/LikeButton';
-import QuickNav from '../components/QuickNav';
+import AppHeader from '../components/AppHeader';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 
@@ -763,14 +763,11 @@ export default function TownComparison() {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page} pb-16 md:pb-4`}>
-      {/* Header */}
-      <header className={`sticky top-0 z-10 ${uiConfig.colors.card} shadow-sm`}>
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
-            <h1 className={`text-xl font-bold ${uiConfig.colors.heading}`}>Compare Towns</h1>
-            
-            {/* Category tabs */}
-            <div className="flex overflow-x-auto pb-2 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 space-x-2">
+      <AppHeader 
+        title="Compare Towns"
+        rightElement={
+          /* Category tabs */
+          <div className="flex overflow-x-auto pb-2 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 space-x-2">
               {categories.map((category) => (
                 <button
                   key={category.id}
@@ -785,9 +782,8 @@ export default function TownComparison() {
                 </button>
               ))}
             </div>
-          </div>
-        </div>
-      </header>
+        }
+      />
 
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Error message */}
@@ -941,8 +937,6 @@ export default function TownComparison() {
         )}
       </main>
 
-      {/* Bottom navigation (mobile) */}
-      <QuickNav />
     </div>
   );
 }
