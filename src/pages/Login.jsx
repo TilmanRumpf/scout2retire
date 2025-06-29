@@ -1,6 +1,6 @@
 // src/pages/Login.jsx
 // Fixed 10JUN25: Updated navigation to use /onboarding/progress
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signIn } from '../utils/authUtils';
 import supabase from '../utils/supabaseClient';
@@ -13,7 +13,16 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [rememberMe, setRememberMe] = useState(true); // Default to checked
   const navigate = useNavigate();
+  
+  // Load saved email on component mount
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('scout2retire_last_email');
+    if (savedEmail) {
+      setEmail(savedEmail);
+    }
+  }, []);
 
   // Basic email format validation
   const validateEmail = (email) => {
@@ -104,6 +113,13 @@ export default function Login() {
       if (success && user) {
         toast.success('Logged in successfully!');
         
+        // Save email if Remember Me is checked
+        if (rememberMe) {
+          localStorage.setItem('scout2retire_last_email', sanitizedEmail);
+        } else {
+          localStorage.removeItem('scout2retire_last_email');
+        }
+        
         // Fetch user profile to check onboarding status
         const { data: userData, error: userError } = await supabase
           .from('users')
@@ -162,10 +178,14 @@ export default function Login() {
                   id="email"
                   name="email"
                   type="email"
-                  autoComplete="email"
+                  autoComplete="email username"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
                   required
                   value={email}
                   onChange={handleEmailChange}
+                  placeholder="your@email.com"
                   className={`${uiConfig.components.input} ${
                     emailError ? uiConfig.colors.borderDanger : ''
                   }`}
@@ -185,10 +205,11 @@ export default function Login() {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete="current-password webauthn"
                   required
                   value={password}
                   onChange={handlePasswordChange}
+                  placeholder="••••••••"
                   className={`${uiConfig.components.input} ${
                     passwordError ? uiConfig.colors.borderDanger : ''
                   }`}
@@ -200,9 +221,22 @@ export default function Login() {
             </div>
 
             <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 text-scout-accent-600 focus:ring-scout-accent-500 border-gray-300 rounded"
+                />
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                  Remember me
+                </label>
+              </div>
               <div className="text-sm">
                 <Link to="/reset-password" className={`font-medium ${uiConfig.colors.accent} hover:opacity-80`}>
-                  Forgot your password?
+                  Forgot password?
                 </Link>
               </div>
             </div>

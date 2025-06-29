@@ -30,7 +30,25 @@ if (!supabaseClient) {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      storage: {
+        // Use localStorage explicitly for better mobile support
+        getItem: (key) => {
+          if (typeof window !== 'undefined') {
+            return window.localStorage.getItem(key);
+          }
+        },
+        setItem: (key, value) => {
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem(key, value);
+          }
+        },
+        removeItem: (key) => {
+          if (typeof window !== 'undefined') {
+            window.localStorage.removeItem(key);
+          }
+        }
+      }
     },
     realtime: {
       params: {
