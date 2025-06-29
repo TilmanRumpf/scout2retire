@@ -63,7 +63,10 @@ export default function AppHeader({ title, subtitle, rightElement }) {
               
               {/* Hamburger menu button */}
               <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                onClick={() => {
+                  console.log('Hamburger clicked, current state:', isMenuOpen);
+                  setIsMenuOpen(!isMenuOpen);
+                }}
                 className="nav-toggle p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 aria-label={isMenuOpen ? "Close menu" : "Open menu"}
               >
@@ -80,9 +83,10 @@ export default function AppHeader({ title, subtitle, rightElement }) {
 
       {/* Slide-out navigation menu */}
       <div
-        className={`nav-menu fixed top-0 right-0 h-full bg-white dark:bg-gray-800 shadow-lg z-50 w-64 transform transition-transform duration-300 ease-in-out ${
+        className={`nav-menu fixed top-0 right-0 h-full bg-white dark:bg-gray-800 shadow-lg w-64 transform transition-transform duration-300 ease-in-out ${
           isMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
+        style={{ zIndex: 9999 }}
       >
         <div className="pt-16 pb-6 px-4">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
@@ -119,9 +123,10 @@ export default function AppHeader({ title, subtitle, rightElement }) {
       {/* Overlay for clicking outside to close */}
       {isMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/30 z-40"
+          className="fixed inset-0 bg-black/30"
           onClick={() => setIsMenuOpen(false)}
           aria-hidden="true"
+          style={{ zIndex: 9998 }}
         />
       )}
     </>
