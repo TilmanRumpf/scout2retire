@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchJournalEntries, deleteJournalEntry, saveJournalEntry } from '../utils/journalUtils';
 import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
-import QuickNav from '../components/QuickNav';
+import AppHeader from '../components/AppHeader';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 import { FileText, MapPin, Users, CheckCircle, File } from 'lucide-react';
@@ -186,11 +186,9 @@ export default function Journal() {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
-      <header className={`${uiConfig.colors.card} ${uiConfig.layout.shadow.sm} mb-6`}>
-        <div className="max-w-5xl mx-auto px-4 py-4">
-          <h1 className={`text-2xl font-bold ${uiConfig.colors.heading}`}>Your Retirement Journey</h1>
-        </div>
-      </header>
+      <AppHeader 
+        title="Your Retirement Journey"
+      />
 
       <main className="max-w-5xl mx-auto px-4">
         {/* Filters */}
@@ -389,8 +387,6 @@ export default function Journal() {
           )}
         </div>
       </main>
-
-      <QuickNav />
     </div>
   );
 }

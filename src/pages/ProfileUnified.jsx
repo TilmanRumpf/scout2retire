@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getCurrentUser, signOut, updatePassword } from '../utils/authUtils';
 import { useTheme } from '../contexts/ThemeContext';
-import QuickNav from '../components/QuickNav';
+import AppHeader from '../components/AppHeader';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
@@ -267,13 +267,9 @@ export default function ProfileUnified() {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
-      <header className={`${uiConfig.colors.card} shadow-sm`}>
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <h1 className={`text-xl font-bold ${uiConfig.colors.heading}`}>
-            Profile & Settings
-          </h1>
-        </div>
-      </header>
+      <AppHeader 
+        title="Profile & Settings"
+      />
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Profile Overview */}
@@ -696,7 +692,6 @@ export default function ProfileUnified() {
         </div>
       )}
 
-      <QuickNav />
     </div>
   );
 }
