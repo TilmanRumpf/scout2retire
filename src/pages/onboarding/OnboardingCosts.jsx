@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { DollarSign, Home, Heart, Car } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
-import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
+import OnboardingProgressiveNav from '../../components/OnboardingProgressiveNav';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
@@ -220,25 +220,16 @@ export default function OnboardingCosts() {
   };
 
   return (
-    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 sm:pb-4`}>
-      <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
-        <OnboardingStepNavigation 
-          currentStep="costs" 
-          completedSteps={progress.completedSteps} 
-          className="mb-4 lg:mb-6" 
-        />
+    <div className={`min-h-[100svh] ${uiConfig.colors.page}`}>
+      <OnboardingProgressiveNav 
+        currentStep="costs" 
+        completedSteps={progress.completedSteps} 
+      />
+      <main className="max-w-7xl mx-auto px-4 py-6">
         
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} lg:rounded-2xl ${uiConfig.layout.shadow.md} lg:shadow-lg p-4 sm:p-6 lg:p-8 xl:p-10`}>
-          {/* Header */}
-          <div className="mb-4 lg:mb-6">
-            <h1 className={`${uiConfig.font.size.lg} lg:text-2xl xl:text-3xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Budget & Costs</h1>
-            <p className={`${uiConfig.font.size.xs} lg:text-sm xl:text-base ${uiConfig.colors.hint} mt-1 lg:mt-2`}>
-              Set your budget limits for retirement locations
-            </p>
-          </div>
-
-          {/* Total Monthly Budget Slider */}
-          <div className="mb-4 lg:mb-6">
+        <form onSubmit={handleSubmit} className="py-6">
+          {/* Total Monthly Budget Slider */>
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <DollarSign size={16} className="mr-1.5 lg:mr-2" />
               Total Monthly Budget
@@ -270,7 +261,7 @@ export default function OnboardingCosts() {
           </div>
 
           {/* Housing Costs */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Home size={16} className="mr-1.5 lg:mr-2" />
               Housing Budget
@@ -330,7 +321,7 @@ export default function OnboardingCosts() {
           </div>
 
           {/* Healthcare Budget Slider */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Heart size={16} className="mr-1.5 lg:mr-2" />
               Healthcare Budget
@@ -362,7 +353,7 @@ export default function OnboardingCosts() {
           </div>
 
           {/* Mobility Preferences */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Car size={16} className="mr-1.5 lg:mr-2" />
               Mobility Preferences
@@ -395,7 +386,7 @@ export default function OnboardingCosts() {
           </div>
 
           {/* Tax Sensitivity */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 block`}>
               Tax Considerations
             </label>
@@ -493,7 +484,7 @@ export default function OnboardingCosts() {
           </div>
 
           {/* Summary Section */}
-          <div className={`mb-4 lg:mb-6 p-3 lg:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
+          <div className={`mb-4 p-3 lg:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
             <div className={`${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
               <span className={`${uiConfig.font.weight.medium}`}>Budget Summary:</span>
               <div className={`mt-1 ${uiConfig.font.size.xs} space-y-1`}>
@@ -520,7 +511,7 @@ export default function OnboardingCosts() {
           </div>
 
           {/* Pro Tip */}
-          <div className={`mb-4 lg:mb-6 p-3 lg:p-4 bg-scout-accent-50 dark:bg-scout-accent-900/20 border border-scout-accent-300 dark:border-scout-accent-600 ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
+          <div className={`mb-4 p-3 lg:p-4 bg-scout-accent-50 dark:bg-scout-accent-900/20 border border-scout-accent-300 dark:border-scout-accent-600 ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
             <div className="flex items-start">
               <div className="mr-2">
                 <svg className={`${uiConfig.icons.size.sm} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
@@ -569,7 +560,7 @@ export default function OnboardingCosts() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

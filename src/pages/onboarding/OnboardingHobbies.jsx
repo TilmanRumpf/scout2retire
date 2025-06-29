@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Heart, Plane, Activity, ShoppingBag, Sparkles } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
-import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
+import OnboardingProgressiveNav from '../../components/OnboardingProgressiveNav';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
@@ -252,25 +252,16 @@ export default function OnboardingHobbies() {
   };
 
   return (
-    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 ${uiConfig.responsive.sm}pb-4`}>
-      <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
-        <OnboardingStepNavigation 
-          currentStep="hobbies" 
-          completedSteps={progress.completedSteps} 
-          className="mb-3" 
-        />
+    <div className={`min-h-[100svh] ${uiConfig.colors.page}`}>
+      <OnboardingProgressiveNav 
+        currentStep="hobbies" 
+        completedSteps={progress.completedSteps} 
+      />
+      <main className="max-w-7xl mx-auto px-4 py-6">
         
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 sm:p-6 lg:p-8`}>
-          {/* Header */}
-          <div className="mb-3">
-            <h1 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Hobbies & Interests</h1>
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-0.5`}>
-              Share your activities and lifestyle preferences, and help us find companions on your journey
-            </p>
-          </div>
-
+        <form onSubmit={handleSubmit} className="py-6">
           {/* Physical Activities */}
-          <div className="mb-3">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
               <Activity size={16} className="mr-1.5" />
               Physical Activities
@@ -412,7 +403,7 @@ export default function OnboardingHobbies() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

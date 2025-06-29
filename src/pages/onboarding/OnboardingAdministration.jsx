@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Heart, Building, FileText, Stethoscope } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
-import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
+import OnboardingProgressiveNav from '../../components/OnboardingProgressiveNav';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
@@ -277,25 +277,16 @@ export default function OnboardingAdministration() {
   ];
 
   return (
-    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 sm:pb-4`}>
-      <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
-        <OnboardingStepNavigation 
-          currentStep="administration" 
-          completedSteps={progress.completedSteps} 
-          className="mb-4 lg:mb-6" 
-        />
+    <div className={`min-h-[100svh] ${uiConfig.colors.page}`}>
+      <OnboardingProgressiveNav 
+        currentStep="administration" 
+        completedSteps={progress.completedSteps} 
+      />
+      <main className="max-w-7xl mx-auto px-4 py-6">
         
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} lg:rounded-2xl ${uiConfig.layout.shadow.md} lg:shadow-lg p-4 sm:p-6 lg:p-8 xl:p-10`}>
-          {/* Header */}
-          <div className="mb-4 lg:mb-6">
-            <h1 className={`${uiConfig.font.size.lg} lg:text-2xl xl:text-3xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Healthcare & Administration</h1>
-            <p className={`${uiConfig.font.size.xs} lg:text-sm xl:text-base ${uiConfig.colors.hint} mt-1 lg:mt-2`}>
-              Tell us about your healthcare and administrative preferences
-            </p>
-          </div>
-
+        <form onSubmit={handleSubmit} className="py-6">
           {/* Health & Medical */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Heart size={16} className="mr-1.5 lg:mr-2" />
               Healthcare Preferences
@@ -357,7 +348,7 @@ export default function OnboardingAdministration() {
           </div>
 
           {/* Safety & Security */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Shield size={16} className="mr-1.5 lg:mr-2" />
               Safety & Security
@@ -404,7 +395,7 @@ export default function OnboardingAdministration() {
           </div>
 
           {/* Governance & Legal */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Building size={16} className="mr-1.5 lg:mr-2" />
               Government & Taxes
@@ -438,7 +429,7 @@ export default function OnboardingAdministration() {
           </div>
 
           {/* Immigration & Residency */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <FileText size={16} className="mr-1.5 lg:mr-2" />
               Visa & Residency
@@ -485,7 +476,7 @@ export default function OnboardingAdministration() {
           </div>
 
           {/* Summary Section */}
-          <div className={`mb-4 lg:mb-6 p-3 lg:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
+          <div className={`mb-4 p-3 lg:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
             <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} mb-1.5 ${uiConfig.font.size.sm}`}>
               Your Administrative Preferences:
             </h3>
@@ -528,7 +519,7 @@ export default function OnboardingAdministration() {
           </div>
 
           {/* Pro Tip */}
-          <div className={`mb-4 lg:mb-6 p-3 lg:p-4 bg-scout-accent-50 dark:bg-scout-accent-900/20 border border-scout-accent-300 dark:border-scout-accent-600 ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
+          <div className={`mb-4 p-3 lg:p-4 bg-scout-accent-50 dark:bg-scout-accent-900/20 border border-scout-accent-300 dark:border-scout-accent-600 ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
             <div className="flex items-start">
               <div className="mr-2">
                 <svg className={`${uiConfig.icons.size.sm} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
@@ -575,7 +566,7 @@ export default function OnboardingAdministration() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

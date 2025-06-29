@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Users, Globe2, Languages, Utensils, Building, Music, Calendar, Gauge, Home } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
-import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
+import OnboardingProgressiveNav from '../../components/OnboardingProgressiveNav';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
@@ -348,25 +348,16 @@ export default function OnboardingCulture() {
   };
 
   return (
-    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 sm:pb-4`}>
-      <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
-        <OnboardingStepNavigation 
-          currentStep="culture_preferences" 
-          completedSteps={progress.completedSteps} 
-          className="mb-4 lg:mb-6" 
-        />
+    <div className={`min-h-[100svh] ${uiConfig.colors.page}`}>
+      <OnboardingProgressiveNav 
+        currentStep="culture_preferences" 
+        completedSteps={progress.completedSteps} 
+      />
+      <main className="max-w-7xl mx-auto px-4 py-6">
         
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} lg:rounded-2xl ${uiConfig.layout.shadow.md} lg:shadow-lg p-4 sm:p-6 lg:p-8 xl:p-10`}>
-          {/* Header */}
-          <div className="mb-4 lg:mb-6">
-            <h1 className={`${uiConfig.font.size.lg} lg:text-2xl xl:text-3xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Culture & Lifestyle</h1>
-            <p className={`${uiConfig.font.size.xs} lg:text-sm xl:text-base ${uiConfig.colors.hint} mt-1 lg:mt-2`}>
-              Tell us about your cultural preferences
-            </p>
-          </div>
-
-          {/* Living Environment - moved to first position */}
-          <div className="mb-4 lg:mb-6">
+        <form onSubmit={handleSubmit} className="py-6">
+          {/* Living Environment - moved to first position */>
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Home size={16} className="mr-1.5 lg:mr-2" />
               Living Environment
@@ -384,7 +375,7 @@ export default function OnboardingCulture() {
           </div>
 
           {/* Pace of Life - moved to second position */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Gauge size={16} className="mr-1.5 lg:mr-2" />
               Pace of Life
@@ -402,7 +393,7 @@ export default function OnboardingCulture() {
           </div>
 
           {/* Social Preference - between Pace of Life and Expat Community */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Users size={16} className="mr-1.5 lg:mr-2" />
               Social Preference
@@ -426,7 +417,7 @@ export default function OnboardingCulture() {
           </div>
 
           {/* Expat Community */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Users size={16} className="mr-1.5 lg:mr-2" />
               Expat Community
@@ -444,7 +435,7 @@ export default function OnboardingCulture() {
           </div>
 
           {/* Language Preferences - moved to fourth position */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Languages size={16} className="mr-1.5 lg:mr-2" />
               Language Preference
@@ -462,7 +453,7 @@ export default function OnboardingCulture() {
           </div>
 
           {/* Languages you speak - after Language Preference */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Languages size={16} className="mr-1.5 lg:mr-2" />
               Languages you speak
@@ -510,7 +501,7 @@ export default function OnboardingCulture() {
           </div>
 
           {/* Cultural & Lifestyle Priorities */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 block`}>
               Cultural & Lifestyle Priorities
             </label>
@@ -532,7 +523,7 @@ export default function OnboardingCulture() {
             formData.lifestyle_preferences.social_preference ||
             formData.language_comfort.preferences.length > 0 ||
             formData.language_comfort.already_speak.length > 0) && (
-            <div className={`mb-4 lg:mb-6 p-3 lg:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
+            <div className={`mb-4 p-3 lg:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
               <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} mb-1.5 ${uiConfig.font.size.sm}`}>
                 Your Culture & Lifestyle:
               </h3>
@@ -562,7 +553,7 @@ export default function OnboardingCulture() {
           )}
 
           {/* Pro Tip */}
-          <div className={`mb-4 lg:mb-6 p-3 lg:p-4 bg-scout-accent-50 dark:bg-scout-accent-900/20 border border-scout-accent-300 dark:border-scout-accent-600 ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
+          <div className={`mb-4 p-3 lg:p-4 bg-scout-accent-50 dark:bg-scout-accent-900/20 border border-scout-accent-300 dark:border-scout-accent-600 ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
             <div className="flex items-start">
               <div className="mr-2">
                 <svg className={`${uiConfig.icons.size.sm} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
@@ -609,7 +600,7 @@ export default function OnboardingCulture() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

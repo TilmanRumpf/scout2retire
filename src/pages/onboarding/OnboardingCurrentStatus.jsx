@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, Users, Globe, PawPrint } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
-import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
+import OnboardingProgressiveNav from '../../components/OnboardingProgressiveNav';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
@@ -292,25 +292,16 @@ export default function OnboardingCurrentStatus() {
   const isCouple = formData.family_situation === 'couple';
 
   return (
-    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 sm:pb-4`}>
-      <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
-        <OnboardingStepNavigation 
-          currentStep="current_status" 
-          completedSteps={progress.completedSteps} 
-          className="mb-4 lg:mb-6" 
-        />
+    <div className={`min-h-[100svh] ${uiConfig.colors.page}`}>
+      <OnboardingProgressiveNav 
+        currentStep="current_status" 
+        completedSteps={progress.completedSteps} 
+      />
+      <main className="max-w-7xl mx-auto px-4 py-6">
         
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} lg:rounded-2xl ${uiConfig.layout.shadow.md} lg:shadow-lg p-4 sm:p-6 lg:p-8 xl:p-10`}>
-          {/* Header */}
-          <div className="mb-4 lg:mb-6">
-            <h1 className={`${uiConfig.font.size.lg} lg:text-2xl xl:text-3xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Current Status</h1>
-            <p className={`${uiConfig.font.size.xs} lg:text-sm xl:text-base ${uiConfig.colors.hint} mt-1 lg:mt-2`}>
-              Tell us about your retirement timeline and family situation
-            </p>
-          </div>
-
+        <form onSubmit={handleSubmit} className="py-6">
           {/* Retirement Status */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Calendar size={16} className="mr-1.5 lg:mr-2" />
               Retirement Timeline
@@ -342,7 +333,7 @@ export default function OnboardingCurrentStatus() {
 
           {/* Target Date */}
           {formData.retirement_timeline.status !== 'already_retired' && (
-            <div className="mb-4 lg:mb-6">
+            <div className="mb-4">
               <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 block`}>
                 Target Retirement Date
               </label>
@@ -391,7 +382,7 @@ export default function OnboardingCurrentStatus() {
           )}
 
           {/* Family Situation */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Users size={16} className="mr-1.5 lg:mr-2" />
               Family Situation
@@ -666,7 +657,7 @@ export default function OnboardingCurrentStatus() {
           </div>
 
           {/* Pet Owner */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <PawPrint size={16} className="mr-1.5 lg:mr-2" />
               Pet Owner
@@ -692,7 +683,7 @@ export default function OnboardingCurrentStatus() {
 
           {/* Summary Section */}
           {(formData.retirement_timeline.status || formData.family_situation) && (
-            <div className={`mb-4 lg:mb-6 p-3 lg:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
+            <div className={`mb-4 p-3 lg:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
               <div className={`${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
                 <span className={`${uiConfig.font.weight.medium}`}>Summary:</span>
                 <div className={`mt-0.5 ${uiConfig.font.size.xs}`}>
@@ -722,7 +713,7 @@ export default function OnboardingCurrentStatus() {
           )}
 
           {/* Pro Tip */}
-          <div className={`mb-4 lg:mb-6 p-3 lg:p-4 bg-scout-accent-50 dark:bg-scout-accent-900/20 border border-scout-accent-300 dark:border-scout-accent-600 ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
+          <div className={`mb-4 p-3 lg:p-4 bg-scout-accent-50 dark:bg-scout-accent-900/20 border border-scout-accent-300 dark:border-scout-accent-600 ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
             <div className="flex items-start">
               <div className="mr-2">
                 <svg className={`${uiConfig.icons.size.sm} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
@@ -769,7 +760,7 @@ export default function OnboardingCurrentStatus() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
