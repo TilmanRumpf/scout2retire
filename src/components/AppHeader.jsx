@@ -83,10 +83,11 @@ export default function AppHeader({ title, subtitle, rightElement }) {
 
       {/* Slide-out navigation menu */}
       <div
-        className={`nav-menu fixed top-0 right-0 h-full bg-white dark:bg-gray-800 shadow-lg w-64 transform transition-transform duration-300 ease-in-out ${
-          isMenuOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-        style={{ zIndex: 9999 }}
+        className="nav-menu fixed top-0 h-full bg-white dark:bg-gray-800 shadow-lg w-64 transition-all duration-300 ease-in-out"
+        style={{ 
+          zIndex: 9999,
+          right: isMenuOpen ? '0' : '-256px'
+        }}
       >
         <div className="pt-16 pb-6 px-4">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
