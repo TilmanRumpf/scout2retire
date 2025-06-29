@@ -65,7 +65,8 @@ export default function AppHeader({ title, subtitle, rightElement }) {
               
               {/* Hamburger menu button */}
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   console.log('Hamburger clicked, current state:', isMenuOpen);
                   const newState = !isMenuOpen;
                   console.log('Setting new state to:', newState);
