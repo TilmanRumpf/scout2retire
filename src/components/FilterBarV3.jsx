@@ -40,7 +40,8 @@ export default function FilterBarV3({
   // Integrated variant for CompactPageHeader
   if (variant === 'integrated') {
     return (
-      <div className="flex items-center w-full sm:w-auto sm:gap-4">
+      <>
+        <div className="flex items-center w-full sm:w-auto sm:gap-4">
         {/* Sort Button */}
         <button
           onClick={() => toggleDropdown('sort')}
@@ -243,16 +244,17 @@ export default function FilterBarV3({
             </div>
           )}
         </div>
-      </div>
-      
-      {/* Click outside to close dropdowns */}
-      {openDropdown && (
-        <div 
-          className="fixed inset-0 z-40" 
-          onClick={() => setOpenDropdown(null)}
-        />
-      )}
-    </>
+        </div>
+        
+        {/* Click outside to close dropdowns */}
+        {openDropdown && (
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => setOpenDropdown(null)}
+          />
+        )}
+      </>
+    );
   }
 
   // Default variant with borders
