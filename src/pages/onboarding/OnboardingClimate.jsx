@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Sun, Snowflake, Droplets, Cloud, CloudRain } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
-import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
+import OnboardingProgressiveNav from '../../components/OnboardingProgressiveNav';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
@@ -203,25 +203,16 @@ export default function OnboardingClimate() {
   ];
 
   return (
-    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 sm:pb-4`}>
-      <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
-        <OnboardingStepNavigation 
-          currentStep="climate_preferences" 
-          completedSteps={progress.completedSteps} 
-          className="mb-4 lg:mb-6" 
-        />
-        
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} lg:rounded-2xl ${uiConfig.layout.shadow.md} lg:shadow-lg p-4 sm:p-6 lg:p-8 xl:p-10`}>
-          {/* Header */}
-          <div className="mb-4 lg:mb-6">
-            <h1 className={`${uiConfig.font.size.lg} lg:text-2xl xl:text-3xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Climate Preferences</h1>
-            <p className={`${uiConfig.font.size.xs} lg:text-sm xl:text-base ${uiConfig.colors.hint} mt-1 lg:mt-2`}>
-              Select your ideal climate conditions - choose multiple options
-            </p>
-          </div>
-
+    <div className={`min-h-[100svh] ${uiConfig.colors.page}`}>
+      <OnboardingProgressiveNav 
+        currentStep="climate_preferences" 
+        completedSteps={progress.completedSteps} 
+      />
+      
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        <form onSubmit={handleSubmit} className="py-6">
           {/* Summer Climate */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Sun size={16} className="mr-1.5 lg:mr-2" />
               Summer Climate
@@ -239,7 +230,7 @@ export default function OnboardingClimate() {
           </div>
 
           {/* Winter Climate */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Snowflake size={16} className="mr-1.5 lg:mr-2" />
               Winter Climate
@@ -257,7 +248,7 @@ export default function OnboardingClimate() {
           </div>
 
           {/* Humidity */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Droplets size={16} className="mr-1.5 lg:mr-2" />
               Humidity
@@ -275,7 +266,7 @@ export default function OnboardingClimate() {
           </div>
 
           {/* Sunshine */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <Sun size={16} className="mr-1.5 lg:mr-2" />
               Sunshine
@@ -293,7 +284,7 @@ export default function OnboardingClimate() {
           </div>
 
           {/* Precipitation */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
               <CloudRain size={16} className="mr-1.5 lg:mr-2" />
               Precipitation
@@ -311,7 +302,7 @@ export default function OnboardingClimate() {
           </div>
 
           {/* Seasonal Preference */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 block`}>
               Seasonal Preference
             </label>
@@ -335,7 +326,7 @@ export default function OnboardingClimate() {
             formData.humidity_level.length > 0 ||
             formData.sunshine.length > 0 ||
             formData.precipitation.length > 0) && (
-            <div className={`mb-4 lg:mb-6 p-3 lg:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
+            <div className={`mb-4 p-3 lg:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
               <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} mb-2 ${uiConfig.font.size.sm}`}>
                 Your Climate Preferences:
               </h3>
@@ -363,7 +354,7 @@ export default function OnboardingClimate() {
           )}
 
           {/* Pro Tip */}
-          <div className={`mb-4 lg:mb-6 p-3 lg:p-4 bg-scout-accent-50 dark:bg-scout-accent-900/20 border border-scout-accent-300 dark:border-scout-accent-600 ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
+          <div className={`mb-4 p-3 lg:p-4 bg-scout-accent-50 dark:bg-scout-accent-900/20 border border-scout-accent-300 dark:border-scout-accent-600 ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
             <div className="flex items-start">
               <div className="mr-2">
                 <svg className={`${uiConfig.icons.size.sm} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
@@ -410,7 +401,7 @@ export default function OnboardingClimate() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

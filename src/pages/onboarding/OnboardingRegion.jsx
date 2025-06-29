@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Globe, MapPin, Trees } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
-import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
+import OnboardingProgressiveNav from '../../components/OnboardingProgressiveNav';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
@@ -409,25 +409,16 @@ const OnboardingRegion = () => {
   }
 
   return (
-    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 sm:pb-4`}>
-      <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
-        <OnboardingStepNavigation 
-          currentStep="region_preferences" 
-          completedSteps={progress.completedSteps} 
-          className="mb-4 sm:mb-6" 
-        />
+    <div className={`min-h-[100svh] ${uiConfig.colors.page}`}>
+      <OnboardingProgressiveNav 
+        currentStep="region_preferences" 
+        completedSteps={progress.completedSteps} 
+      />
+      <main className="max-w-7xl mx-auto px-4 py-6">
         
-        <form onSubmit={handleSubmit} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 sm:p-6 lg:p-8`}>
-          {/* Header */}
-          <div className="mb-4 sm:mb-6">
-            <h1 className={`${uiConfig.font.size.lg} sm:${uiConfig.font.size.xl} lg:${uiConfig.font.size['2xl']} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Regional Preferences</h1>
-            <p className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.colors.hint} mt-1 sm:mt-2`}>
-              All choices are optional - select "Recommended" to keep options open
-            </p>
-          </div>
-
+        <form onSubmit={handleSubmit} className="py-6">
           {/* Geographical Preferences section */}
-          <div className="mb-4 sm:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 sm:mb-3 flex items-center`}>
               <Globe size={16} className="mr-1.5 sm:mr-2" />
               Geographical Preferences
@@ -549,7 +540,7 @@ const OnboardingRegion = () => {
           </div>
 
           {/* Geographic Features section */}
-          <div className="mb-4 sm:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 sm:mb-3 flex items-center`}>
               <MapPin size={16} className="mr-1.5 sm:mr-2" />
               Geographic Features
@@ -571,7 +562,7 @@ const OnboardingRegion = () => {
           </div>
 
           {/* Vegetation section */}
-          <div className="mb-4 sm:mb-6">
+          <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 sm:mb-3 flex items-center`}>
               <Trees size={16} className="mr-1.5 sm:mr-2" />
               Vegetation Types
@@ -593,7 +584,7 @@ const OnboardingRegion = () => {
           </div>
 
           {/* Summary section */}
-          <div className={`mb-4 sm:mb-6 p-3 sm:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg}`}>
+          <div className={`mb-4 p-3 sm:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg}`}>
             <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} mb-2 sm:mb-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base}`}>
               Your Geographical Preferences:
             </h3>
@@ -632,7 +623,7 @@ const OnboardingRegion = () => {
           </div>
 
           {/* Pro Tip */}
-          <div className={`mb-4 sm:mb-6 p-3 sm:p-4 ${uiConfig.notifications.info} ${uiConfig.layout.radius.lg}`}>
+          <div className={`mb-4 p-3 sm:p-4 ${uiConfig.notifications.info} ${uiConfig.layout.radius.lg}`}>
             <div className="flex items-start">
               <div className="mr-2 sm:mr-3 flex-shrink-0">
                 <svg className={`${uiConfig.icons.size.sm} sm:${uiConfig.icons.size.md} ${uiConfig.colors.accent}`} fill="currentColor" viewBox="0 0 20 20">
@@ -690,7 +681,7 @@ const OnboardingRegion = () => {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

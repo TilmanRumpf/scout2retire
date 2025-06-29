@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../../utils/authUtils';
 import { getOnboardingProgress, completeOnboarding } from '../../utils/onboardingUtils';
-import OnboardingStepNavigation from '../../components/OnboardingStepNavigation';
+import OnboardingProgressiveNav from '../../components/OnboardingProgressiveNav';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
@@ -362,15 +362,14 @@ export default function OnboardingReview() {
   ];
 
   return (
-    <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 sm:pb-4`}>
-      <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
-        <OnboardingStepNavigation 
-          currentStep="review" 
-          completedSteps={progress.completedSteps} 
-          className="mb-4" 
-        />
+    <div className={`min-h-[100svh] ${uiConfig.colors.page}`}>
+      <OnboardingProgressiveNav 
+        currentStep="review" 
+        completedSteps={progress.completedSteps} 
+      />
 
-        <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 sm:p-6 lg:p-8`}>
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        <div className="py-6">
           {/* Header */}
           <div className="mb-4">
             <h1 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>Review Your Preferences</h1>
@@ -439,7 +438,7 @@ export default function OnboardingReview() {
             <div></div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
