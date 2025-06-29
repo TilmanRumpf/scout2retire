@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
 import DailyTownCard from '../components/DailyTownCard';
 import { fetchFavorites } from '../utils/townUtils';
 import { saveJournalEntry } from '../utils/journalUtils';
 import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
 import PageErrorBoundary from '../components/PageErrorBoundary';
-import QuickNav from '../components/QuickNav';
 import SimpleImage from '../components/SimpleImage';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
@@ -14,7 +13,7 @@ import supabase from '../utils/supabaseClient';
 import { 
   MapPin, TrendingUp, DollarSign, Cloud, Users, 
   Heart, Compass, Book, MessageSquare, Calendar,
-  ArrowRight, RefreshCw, Bell, Sparkles
+  ArrowRight, RefreshCw, Bell, Sparkles, Menu
 } from 'lucide-react';
 
 export default function DailyRedesignV2() {
@@ -29,6 +28,8 @@ export default function DailyRedesignV2() {
   const [todaysInspiration, setTodaysInspiration] = useState(null);
   const [inspirationTowns, setInspirationTowns] = useState([]);
   const [dailyTip, setDailyTip] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -480,7 +481,7 @@ export default function DailyRedesignV2() {
   return (
     <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
       {/* Simplified Header */}
-      <header className={`${uiConfig.colors.card} shadow-sm`}>
+      <header className={`${uiConfig.colors.card} shadow-sm sticky top-0 z-40`}>
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
             <div>
@@ -491,9 +492,13 @@ export default function DailyRedesignV2() {
                 {getRetirementTimeline()}
               </p>
             </div>
-            <Link to="/profile" className={`p-2 ${uiConfig.colors.btnSecondary} ${uiConfig.layout.radius.full}`}>
-              <Bell className={`${uiConfig.icons.size.md} ${uiConfig.colors.body}`} />
-            </Link>
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className={`p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors`}
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            >
+              <Menu className={`h-6 w-6 ${uiConfig.colors.body}`} />
+            </button>
           </div>
         </div>
       </header>
@@ -829,7 +834,60 @@ export default function DailyRedesignV2() {
         </main>
       </PageErrorBoundary>
 
-      <QuickNav />
+      {/* Slide-out navigation menu - same as CompactPageHeader */}
+      <div
+        className={`fixed top-0 right-0 h-full bg-white dark:bg-gray-800 shadow-lg z-50 w-64 transform transition-transform duration-300 ease-in-out ${
+          isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="pt-16 pb-6 px-4">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
+            Scout<span className="text-green-600">2</span>Retire
+          </h2>
+          <nav className="space-y-1">
+            {[
+              { path: '/daily', label: 'Today' },
+              { path: '/discover', label: 'Discover' },
+              { path: '/favorites', label: 'Favorites' },
+              { path: '/compare', label: 'Compare' },
+              { path: '/schedule', label: 'Schedule' },
+              { path: '/chat', label: 'Chat' },
+              { path: '/journal', label: 'Journal' },
+              { path: '/profile', label: 'Profile' }
+            ].map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setIsMenuOpen(false)}
+                className={`flex items-center p-3 rounded-md transition-colors ${
+                  location.pathname === item.path
+                    ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+              >
+                <span className="font-medium">{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+        </div>
+        <div className="absolute bottom-8 left-0 right-0 px-4">
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <div className="text-sm text-gray-500 dark:text-gray-400 text-center">
+              &copy; 2025 Scout2Retire
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Overlay for clicking outside to close */}
+      {isMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-40"
+          onClick={() => setIsMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
     </div>
   );
 }
