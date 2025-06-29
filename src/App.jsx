@@ -22,6 +22,7 @@ import TownDiscovery from "./pages/TownDiscovery";
 import Chat from "./pages/Chat";
 import Journal from "./pages/Journal";
 import DataImport from "./pages/admin/DataImport";
+import HeaderMockup from "./pages/HeaderMockup";
 
 // Onboarding Flow
 import OnboardingProgress from "./pages/onboarding/OnboardingProgress";
@@ -255,6 +256,11 @@ function App() {
               <AuthenticatedLayout>
                 <Journal />
               </AuthenticatedLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/mockup" element={
+            <ProtectedRoute>
+              <HeaderMockup />
             </ProtectedRoute>
           } />
           <Route path="/chat" element={

@@ -6,10 +6,9 @@ import { getCurrentUser } from '../utils/authUtils';
 import LikeButton from '../components/LikeButton';
 import SimpleImage from '../components/SimpleImage';
 import { MapPin } from 'lucide-react';
-import QuickNav from '../components/QuickNav';
+import CompactPageHeader from '../components/CompactPageHeader';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
-import FilterBarV3 from '../components/FilterBarV3';
 
 // Predefined regions and their countries from onboarding
 const REGIONS = [
@@ -40,6 +39,7 @@ const REGION_COUNTRIES = {
 
 export default function Favorites() {
   const [favorites, setFavorites] = useState([]);
+  const [totalFavoriteCount, setTotalFavoriteCount] = useState(0);
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState('match'); // Changed default to 'match'
@@ -233,22 +233,30 @@ export default function Favorites() {
   const filterCount = activeFilterCount();
 
   return (
-    <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
-      {/* Header */}
-      <header className={`${uiConfig.colors.card} ${uiConfig.layout.shadow.sm} sticky top-0 z-10`}>
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className={`${uiConfig.font.size.xl} ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>My Favorites</h1>
-            <Link to="/profile" className="p-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className={`${uiConfig.icons.size.lg} ${uiConfig.colors.body}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </Link>
-          </div>
-        </div>
-      </header>
+    <div className={`min-h-screen ${uiConfig.colors.page}`}>
+      {/* Compact Header with integrated filters and menu */}
+      <CompactPageHeader
+        title="Favorites"
+        totalCount={favorites.length}
+        filteredCount={sortedFavorites.length}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        filterRegion={filterRegion}
+        setFilterRegion={setFilterRegion}
+        filterCountry={filterCountry}
+        setFilterCountry={setFilterCountry}
+        filterCostRange={filterCostRange}
+        setFilterCostRange={setFilterCostRange}
+        filterMatchRange={filterMatchRange}
+        setFilterMatchRange={setFilterMatchRange}
+        regions={REGIONS}
+        countries={countries}
+        filterCount={filterCount}
+        clearFilters={clearFilters}
+        showFilters={favorites.length > 0} // Only show filters if there are favorites
+      />
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-7xl mx-auto px-4 py-3">
         {favorites.length === 0 ? (
           <div className="text-center py-12">
             <svg xmlns="http://www.w3.org/2000/svg" className={`mx-auto h-24 w-24 ${uiConfig.colors.muted} mb-6`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -272,26 +280,6 @@ export default function Favorites() {
           </div>
         ) : (
           <>
-            {/* Filter Bar */}
-            <div className="mb-6">
-              <FilterBarV3
-                sortBy={sortBy}
-                setSortBy={setSortBy}
-                filterRegion={filterRegion}
-                setFilterRegion={setFilterRegion}
-                filterCountry={filterCountry}
-                setFilterCountry={setFilterCountry}
-                filterCostRange={filterCostRange}
-                setFilterCostRange={setFilterCostRange}
-                filterMatchRange={filterMatchRange}
-                setFilterMatchRange={setFilterMatchRange}
-                regions={REGIONS}
-                countries={countries}
-                filterCount={filterCount}
-                clearFilters={clearFilters}
-                resultsCount={sortedFavorites.length}
-              />
-            </div>
 
             {/* Compare Button - Show separately when there are enough favorites */}
             {favorites.length >= 2 && (
@@ -474,8 +462,6 @@ export default function Favorites() {
         )}
       </main>
 
-      {/* Bottom Navigation (Mobile) */}
-      <QuickNav />
     </div>
   );
 }

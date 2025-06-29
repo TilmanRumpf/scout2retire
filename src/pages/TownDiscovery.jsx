@@ -5,12 +5,12 @@ import { getCurrentUser } from '../utils/authUtils';
 import LikeButton from '../components/LikeButton';
 import SimpleImage from '../components/SimpleImage';
 import PageErrorBoundary from '../components/PageErrorBoundary';
-import QuickNav from '../components/QuickNav';
+import CompactPageHeader from '../components/CompactPageHeader';
 import TownRadarChart from '../components/TownRadarChart';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 import { Sparkles, MapPin } from 'lucide-react';
-import FilterBarV3 from '../components/FilterBarV3';
+import supabase from '../utils/supabaseClient';
 
 // Predefined regions and their countries from onboarding
 const REGIONS = [
@@ -41,6 +41,7 @@ const REGION_COUNTRIES = {
 
 export default function TownDiscovery() {
   const [towns, setTowns] = useState([]);
+  const [totalTownCount, setTotalTownCount] = useState(0);
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -155,6 +156,36 @@ export default function TownDiscovery() {
     
     loadData();
   }, [navigate, selectedTown]);
+
+  // Fetch total town count separately
+  useEffect(() => {
+    const fetchTotalCount = async () => {
+      const { count } = await supabase
+        .from('towns')
+        .select('*', { count: 'exact', head: true });
+      
+      if (count !== null) {
+        setTotalTownCount(count);
+      }
+    };
+
+    fetchTotalCount();
+
+    // Set up real-time subscription for count updates
+    const subscription = supabase
+      .channel('towns-count')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'towns' }, 
+        () => {
+          fetchTotalCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   // Check if a town is favorited
   const isFavorited = (townId) => {
@@ -336,25 +367,36 @@ export default function TownDiscovery() {
   const filterCount = activeFilterCount();
 
   return (
-    <div className={`min-h-screen ${uiConfig.colors.page} pb-16 md:pb-4`}>
-      {/* Header */}
-      <header className={`${uiConfig.colors.card} ${uiConfig.layout.shadow.sm}`}>
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className={`text-xl font-bold ${uiConfig.colors.heading}`}>Discover Towns</h1>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className={`min-h-screen ${uiConfig.colors.page}`}>
+      {/* Compact Header with integrated filters and menu */}
+      <CompactPageHeader
+        title="Discover"
+        totalCount={totalTownCount || towns.length}
+        filteredCount={sortedAndFilteredTowns.length}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        filterRegion={filterRegion}
+        setFilterRegion={setFilterRegion}
+        filterCountry={filterCountry}
+        setFilterCountry={setFilterCountry}
+        filterCostRange={filterCostRange}
+        setFilterCostRange={setFilterCostRange}
+        filterMatchRange={filterMatchRange}
+        setFilterMatchRange={setFilterMatchRange}
+        regions={REGIONS}
+        countries={countries}
+        filterCount={filterCount}
+        clearFilters={clearFilters}
+        showFilters={true}
+      />
 
       <PageErrorBoundary
         fallbackTitle="Discovery Error"
         fallbackMessage="We're having trouble loading town recommendations. Please try refreshing the page."
         onReset={() => window.location.reload()}
       >
-        {/* Main content */}
-        <main className="max-w-7xl mx-auto px-4 py-6">
+        {/* Main content - reduced top padding */}
+        <main className="max-w-7xl mx-auto px-4 py-3">
         {error && (
           <div className={`${uiConfig.colors.statusError} border ${uiConfig.colors.borderDanger} p-4 ${uiConfig.layout.radius.lg} mb-6`}>
             {error}
@@ -597,26 +639,6 @@ export default function TownDiscovery() {
           </div>
         )}
 
-        {/* Filter Bar */}
-        <div className="mb-6">
-          <FilterBarV3
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            filterRegion={filterRegion}
-            setFilterRegion={setFilterRegion}
-            filterCountry={filterCountry}
-            setFilterCountry={setFilterCountry}
-            filterCostRange={filterCostRange}
-            setFilterCostRange={setFilterCostRange}
-            filterMatchRange={filterMatchRange}
-            setFilterMatchRange={setFilterMatchRange}
-            regions={REGIONS}
-            countries={countries}
-            filterCount={filterCount}
-            clearFilters={clearFilters}
-            resultsCount={sortedAndFilteredTowns.length}
-          />
-        </div>
 
         {/* Town grid */}
         {sortedAndFilteredTowns.length === 0 ? (
@@ -771,8 +793,6 @@ export default function TownDiscovery() {
         </main>
       </PageErrorBoundary>
 
-      {/* Bottom Navigation (Mobile) */}
-      <QuickNav />
     </div>
   );
 }
