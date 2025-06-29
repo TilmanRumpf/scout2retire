@@ -2,13 +2,19 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-export default function QuickNav() {
-  const [isOpen, setIsOpen] = useState(false);
+export default function QuickNav({ isOpen: propIsOpen, onClose }) {
+  // Use props if provided, otherwise manage state internally
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = propIsOpen !== undefined ? propIsOpen : internalIsOpen;
   const location = useLocation();
 
   // Close menu when route changes
   useEffect(() => {
-    setIsOpen(false);
+    if (onClose) {
+      onClose();
+    } else {
+      setInternalIsOpen(false);
+    }
   }, [location.pathname]);
 
   // Close menu when clicking outside
@@ -18,7 +24,11 @@ export default function QuickNav() {
       if (isOpen && 
           !event.target.closest('.nav-menu') && 
           !event.target.closest('.nav-toggle')) {
-        setIsOpen(false);
+        if (onClose) {
+          onClose();
+        } else {
+          setInternalIsOpen(false);
+        }
       }
     };
 
@@ -32,7 +42,11 @@ export default function QuickNav() {
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key === 'Escape') {
-        setIsOpen(false);
+        if (onClose) {
+          onClose();
+        } else {
+          setInternalIsOpen(false);
+        }
       }
     };
 
@@ -56,24 +70,26 @@ export default function QuickNav() {
 
   return (
     <>
-      {/* Hamburger toggle button - fixed in upper right corner with increased z-index */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="nav-toggle fixed top-4 right-4 z-[100] p-2 rounded-md bg-white dark:bg-gray-800 shadow-md"
-        aria-label={isOpen ? "Close menu" : "Open menu"}
-      >
-        {isOpen ? (
-          // X icon when menu is open
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-800 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
-          // Hamburger icon when menu is closed
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-800 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        )}
-      </button>
+      {/* Hamburger toggle button - only show when QuickNav manages its own state */}
+      {propIsOpen === undefined && (
+        <button
+          onClick={() => setInternalIsOpen(!internalIsOpen)}
+          className="nav-toggle fixed top-4 right-4 z-[100] p-2 rounded-md bg-white dark:bg-gray-800 shadow-md"
+          aria-label={isOpen ? "Close menu" : "Open menu"}
+        >
+          {isOpen ? (
+            // X icon when menu is open
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-800 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            // Hamburger icon when menu is closed
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-800 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          )}
+        </button>
+      )}
 
       {/* Slide-out navigation menu with increased z-index */}
       <div
@@ -118,7 +134,13 @@ export default function QuickNav() {
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/30 z-[80]"
-          onClick={() => setIsOpen(false)}
+          onClick={() => {
+            if (onClose) {
+              onClose();
+            } else {
+              setInternalIsOpen(false);
+            }
+          }}
           aria-hidden="true"
         ></div>
       )}
