@@ -8,19 +8,19 @@ import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
-// Option Button Component - Optimized for mobile
+// Option Button Component - Responsive for mobile and desktop
 const OptionButton = ({ label, description, isSelected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`p-2 sm:p-2.5 md:p-3 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center min-h-[44px] sm:min-h-[48px] ${
+    className={`${uiConfig.components.buttonSizes.default} lg:py-3 lg:px-4 xl:py-4 xl:px-5 ${uiConfig.layout.radius.md} lg:rounded-lg border-2 ${uiConfig.animation.transition} text-center ${
       isSelected
         ? uiConfig.components.buttonVariants.selected
         : uiConfig.components.buttonVariants.unselected
     }`}
   >
-    <div className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${isSelected ? uiConfig.colors.accent : ''}`}>{label}</div>
-    {description && <div className={`text-[10px] sm:text-xs mt-0.5 ${isSelected ? uiConfig.colors.accent : uiConfig.colors.hint}`}>{description}</div>}
+    <div className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium}`}>{label}</div>
+    {description && <div className={`${uiConfig.font.size.xs} lg:text-sm mt-0.5 lg:mt-1`}>{description}</div>}
   </button>
 );
 
