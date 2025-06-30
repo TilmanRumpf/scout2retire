@@ -27,7 +27,7 @@ module.exports = {
           50: '#f2f7f2',   // Almost white with sage tint
           100: '#e0edde',  // Very light sage - great for backgrounds
           200: '#c2dac0',  // Light sage - subtle borders, hover states
-          300: '#8fbc8f',  // Your main brand color - perfect balance!
+          300: '#8fbc8f',  // Your Scout2Retire brand color - actions, buttons
           400: '#689f6a',  // Medium sage - great for secondary actions
           500: '#47824b',  // Darker sage - text on light backgrounds
           600: '#346738',  // Dark sage - strong contrast

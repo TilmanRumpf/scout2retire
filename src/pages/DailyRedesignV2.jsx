@@ -58,7 +58,7 @@ export default function DailyRedesignV2() {
           fetchRecentTowns();
           
           // Set today's regional inspiration
-          const inspiration = getDailyInspiration();
+          const inspiration = await getDailyInspiration();
           setTodaysInspiration(inspiration);
           
           // Fetch towns for today's inspiration
@@ -275,157 +275,52 @@ export default function DailyRedesignV2() {
     return "Good evening";
   };
 
-  // Get daily regional inspiration
-  const getDailyInspiration = (random = false) => {
-    const inspirations = [
-      {
-        title: "Harbor towns and seafood?",
-        description: "Historic port cellars age world-famous wines while riverside restaurants serve the Atlantic's daily catch. Climb medieval streets to viewpoints where the city spreads below in terracotta and blue.",
-        region: "Portugal",
-        image: "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?w=800&q=80", // Porto's iconic Dom Luis bridge and port wine cellars
-        link: "/discover?country=Portugal"
-      },
-      {
-        title: "Authentic Spanish living?",
-        description: "Orange groves surround traditional pueblos where plaza life defines the daily rhythm. Extended family lunches, afternoon siestas, and evening strolls create a lifestyle focused on community and connection.",
-        region: "Spain",
-        image: "https://images.unsplash.com/photo-1543783207-ec64e4d95325?w=800&q=80", // Valencia's City of Arts and Sciences
-        link: "/discover?country=Spain"
-      },
-      {
-        title: "French Riviera dreaming?",
-        description: "Medieval hilltop towns offer spectacular vistas where Alps meet azure Mediterranean. Morning markets showcase regional produce while coastal paths connect charming villages perfect for exploration.",
-        region: "France",
-        image: "https://images.unsplash.com/photo-1584266766915-53036a2c4e3b?w=800&q=80", // Nice's famous Promenade des Anglais
-        link: "/discover?country=France"
-      },
-      {
-        title: "Italian dolce vita?",
-        description: "Rolling hills dotted with cypress trees lead to medieval towns where life unfolds at a perfect pace. Local trattorias serve regional specialties while sunset turns vineyard-covered valleys golden.",
-        region: "Italy",
-        image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80", // Lucca's famous city walls and towers
-        link: "/discover?country=Italy"
-      },
-      {
-        title: "Greek island paradise?",
-        description: "Whitewashed villages cascade toward sapphire seas where traditional life continues unchanged. Fresh feta, local wine, and grilled fish define meals shared in tavernas overlooking endless Aegean views.",
-        region: "Greece",
-        image: "https://images.unsplash.com/photo-1598037001124-55ddd0f00baf?w=800&q=80", // Crete's iconic pink sand beach of Balos
-        link: "/discover?country=Greece"
-      },
-      {
-        title: "Turkish coastal charm?",
-        description: "Ancient harbors meet modern marinas where East meets West in perfect harmony. Enjoy fresh seafood by turquoise waters while exploring a culture that bridges continents with warmth and hospitality.",
-        region: "Turkey",
-        image: "https://images.unsplash.com/photo-1593238739364-18cfde30e522?w=800&q=80", // Antalya's harbor with mountains
-        link: "/discover?country=Turkey"
-      },
-      {
-        title: "Mexican beach life?",
-        description: "Caribbean waters lap white sand beaches while colonial architecture adds historic charm. Fresh ceviche, cold margaritas, and year-round sunshine create the perfect retirement paradise.",
-        region: "Mexico",
-        image: "https://images.unsplash.com/photo-1568402102990-bc541580b59f?w=800&q=80", // Playa del Carmen beach and turquoise water
-        link: "/discover?country=Mexico"
-      },
-      {
-        title: "Costa Rica pura vida?",
-        description: "Rainforest meets ocean where wildlife thrives and expats find their paradise. Sustainable living, fresh tropical fruits, and the famous 'pura vida' lifestyle await in this Central American gem.",
-        region: "Costa Rica",
-        image: "https://images.unsplash.com/photo-1605723517503-3cadb5818a0c?w=800&q=80", // Tamarindo beach sunset
-        link: "/discover?country=Costa Rica"
-      },
-      {
-        title: "Panama mountain escape?",
-        description: "Cool mountain towns offer spring-like weather year-round with stunning valley views. Coffee plantations, hiking trails, and a thriving expat community create an ideal retirement haven.",
-        region: "Panama",
-        image: "https://images.unsplash.com/photo-1580257521667-116f90abca01?w=800&q=80", // Boquete's famous volcanic landscape
-        link: "/discover?country=Panama"
-      },
-      {
-        title: "Ecuador colonial charm?",
-        description: "UNESCO World Heritage cities blend indigenous culture with Spanish colonial architecture. Affordable living, perfect climate, and rich cultural experiences define life in the Andes.",
-        region: "Ecuador",
-        image: "https://images.unsplash.com/photo-1533600298287-9a3629a89789?w=800&q=80", // Cuenca's iconic blue domed cathedral
-        link: "/discover?country=Ecuador"
-      },
-      {
-        title: "Colombian renaissance?",
-        description: "Modern cities nestled in eternal spring valleys offer world-class healthcare and vibrant culture. Coffee culture, friendly locals, and dramatic mountain views create an exciting retirement option.",
-        region: "Colombia",
-        image: "https://images.unsplash.com/photo-1597531013114-d5e317a08c17?w=800&q=80", // Medellín's modern skyline with mountains
-        link: "/discover?country=Colombia"
-      },
-      {
-        title: "Thai temple towns?",
-        description: "Ancient temples dot modern cities where street food culture thrives and costs stay low. Buddhist traditions, tropical climate, and world-renowned hospitality make retirement truly special.",
-        region: "Thailand",
-        image: "https://images.unsplash.com/photo-1598981457915-aea220950616?w=800&q=80", // Chiang Mai's Doi Suthep temple
-        link: "/discover?country=Thailand"
-      },
-      {
-        title: "Malaysian melting pot?",
-        description: "Colonial architecture meets modern amenities in cities where cultures blend seamlessly. Excellent healthcare, diverse cuisine, and English-speaking environment simplify the transition to expat life.",
-        region: "Malaysia",
-        image: "https://images.unsplash.com/photo-1581622558663-b2e33377dfb2?w=800&q=80", // Penang's George Town street art
-        link: "/discover?country=Malaysia"
-      },
-      {
-        title: "Dutch waterways and cycling?",
-        description: "Charming canal towns where bicycles outnumber cars and water shapes daily life. Excellent healthcare, progressive culture, and flat landscapes perfect for active retirees seeking European sophistication.",
-        region: "Netherlands",
-        image: "https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800&q=80", // Amsterdam canals iconic view
-        link: "/discover?country=Netherlands"
-      },
-      {
-        title: "European variety?",
-        description: "From Mediterranean beaches to Alpine villages, Europe offers endless retirement possibilities. Rich history, excellent healthcare, and diverse cultures create opportunities for every lifestyle.",
-        region: "Europe",
-        image: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800&q=80", // European variety
-        link: "/discover?filterRegion=Europe"
-      },
-      {
-        title: "Baltic charm awaits?",
-        description: "Art nouveau architecture meets vibrant cultural life in walkable historic centers. EU membership ensures quality healthcare while costs remain refreshingly low compared to Western Europe.",
-        region: "Latvia",
-        image: "https://images.unsplash.com/photo-1599057463911-0649c7711f85?w=800&q=80", // Riga's Art Nouveau district
-        link: "/discover?country=Latvia"
-      },
-      {
-        title: "Hidden Alpine gem?",
-        description: "Europe's best-kept secret combines Mediterranean warmth with Alpine beauty. Pristine nature, excellent healthcare, and a relaxed pace of life in one of Europe's safest capitals.",
-        region: "Slovenia",
-        image: "https://images.unsplash.com/photo-1558271736-cd043ef2e855?w=800&q=80", // Ljubljana castle and river
-        link: "/discover?country=Slovenia"
-      },
-      {
-        title: "Adriatic paradise?",
-        description: "Crystal-clear waters meet ancient Roman architecture along dramatic coastlines. EU membership, affordable living, and over 1,000 islands create endless exploration opportunities.",
-        region: "Croatia",
-        image: "https://images.unsplash.com/photo-1555990538-1e6e5b3d0b3b?w=800&q=80", // Split waterfront
-        link: "/discover?country=Croatia"
-      },
-      {
-        title: "Southeast Asian discovery?",
-        description: "Modern cities blend French colonial charm with Vietnamese tradition. Incredible cuisine, warm hospitality, and coastal beauty offer retirement at a fraction of Western costs.",
-        region: "Vietnam",
-        image: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=800&q=80", // Da Nang Dragon Bridge
-        link: "/discover?country=Vietnam"
-      },
-      {
-        title: "Latin American adventure?",
-        description: "Colonial cities, beach towns, and mountain retreats offer affordable luxury across two continents. Rich cultures, warm climates, and welcoming communities define retirement south of the border.",
-        region: "Central America",
-        image: "https://images.unsplash.com/photo-1512813498716-3e640fed3f39?w=800&q=80", // Central American colonial
-        link: "/discover?filterRegion=Central America"
+  // Get daily regional inspiration from database
+  const getDailyInspiration = async () => {
+    try {
+      // Fetch all inspirations from database
+      const { data, error } = await supabase
+        .from('regional_inspirations')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order');
+      
+      if (error || !data || data.length === 0) {
+        console.error('Error fetching inspirations:', error);
+        // Fallback to a default inspiration
+        return {
+          title: "Discover your perfect retirement destination",
+          description: "Explore personalized recommendations based on your preferences for climate, culture, and lifestyle.",
+          region: "Worldwide",
+          image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
+          link: "/discover"
+        };
       }
-    ];
-    
-    // Use day of year to rotate through inspirations, or random if requested
-    if (random) {
-      return inspirations[Math.floor(Math.random() * inspirations.length)];
-    } else {
+      
+      // Use day of year to rotate through inspirations
       const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-      return inspirations[dayOfYear % inspirations.length];
+      const inspirationIndex = dayOfYear % data.length;
+      
+      // Map database fields to component fields
+      const inspiration = data[inspirationIndex];
+      return {
+        title: inspiration.title,
+        description: inspiration.description,
+        region: inspiration.region_name,
+        image: inspiration.image_url,
+        link: inspiration.link
+      };
+      
+    } catch (err) {
+      console.error("Error in getDailyInspiration:", err);
+      // Return fallback
+      return {
+        title: "Discover your perfect retirement destination",
+        description: "Explore personalized recommendations based on your preferences for climate, culture, and lifestyle.",
+        region: "Worldwide",
+        image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
+        link: "/discover"
+      };
     }
   };
 
@@ -528,11 +423,37 @@ export default function DailyRedesignV2() {
                   Today's Inspiration
                 </h2>
                 <button 
-                  onClick={() => {
-                    const newInspiration = getDailyInspiration(true);
-                    setTodaysInspiration(newInspiration);
-                    if (newInspiration) {
+                  onClick={async () => {
+                    try {
+                      // Fetch all inspirations
+                      const { data, error } = await supabase
+                        .from('regional_inspirations')
+                        .select('*')
+                        .eq('is_active', true);
+                      
+                      if (error || !data || data.length === 0) {
+                        console.error('Error fetching inspirations:', error);
+                        return;
+                      }
+                      
+                      // Get a random inspiration different from current
+                      let newInspiration;
+                      do {
+                        const randomIndex = Math.floor(Math.random() * data.length);
+                        const inspiration = data[randomIndex];
+                        newInspiration = {
+                          title: inspiration.title,
+                          description: inspiration.description,
+                          region: inspiration.region_name,
+                          image: inspiration.image_url,
+                          link: inspiration.link
+                        };
+                      } while (newInspiration.region === todaysInspiration.region && data.length > 1);
+                      
+                      setTodaysInspiration(newInspiration);
                       fetchInspirationTowns(newInspiration.region);
+                    } catch (err) {
+                      console.error("Error getting new inspiration:", err);
                     }
                   }}
                   className={`flex items-center gap-1 text-sm ${uiConfig.colors.accent} hover:underline`}
