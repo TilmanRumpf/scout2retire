@@ -4,7 +4,8 @@ import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils';
 import { getCurrentUser } from '../utils/authUtils';
 import TownRadarChart from '../components/TownRadarChart';
 import LikeButton from '../components/LikeButton';
-import AppHeader from '../components/AppHeader';
+import QuickNav from '../components/QuickNav';
+import { Menu, Eye, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 
@@ -15,8 +16,14 @@ export default function TownComparison() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState('overview');
+  const [isQuickNavOpen, setIsQuickNavOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Close menu when route changes
+  useEffect(() => {
+    setIsQuickNavOpen(false);
+  }, [location.pathname]);
 
   // Parse town IDs from URL
   const getSelectedTownIds = () => {
@@ -27,13 +34,13 @@ export default function TownComparison() {
 
   // Categories for comparison tabs - Updated to match the 6 onboarding categories
   const categories = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'region', label: 'Region' },
-    { id: 'climate', label: 'Climate' },
-    { id: 'culture', label: 'Culture' },
-    { id: 'hobbies', label: 'Hobbies' },
-    { id: 'administration', label: 'Administration' },
-    { id: 'budget', label: 'Budget' }
+    { id: 'overview', label: 'Overview', icon: Eye },
+    { id: 'region', label: 'Region', icon: Globe },
+    { id: 'climate', label: 'Climate', icon: CloudSun },
+    { id: 'culture', label: 'Culture', icon: Users },
+    { id: 'hobbies', label: 'Hobbies', icon: SmilePlus },
+    { id: 'administration', label: 'Admin', icon: HousePlus },
+    { id: 'budget', label: 'Costs', icon: DollarSign }
   ];
 
   // Load data
@@ -763,27 +770,64 @@ export default function TownComparison() {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page} pb-16 md:pb-4`}>
-      <AppHeader 
-        title="Compare Towns"
-        rightElement={
-          /* Category tabs */
-          <div className="flex overflow-x-auto pb-2 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 space-x-2">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => setActiveCategory(category.id)}
-                  className={`px-3 py-1 rounded-md text-sm whitespace-nowrap ${
-                    activeCategory === category.id
-                      ? uiConfig.colors.tabActive
-                      : `bg-gray-100 dark:bg-gray-700 ${uiConfig.colors.heading} hover:bg-gray-200 dark:hover:bg-gray-600`
-                  }`}
-                >
-                  {category.label}
-                </button>
-              ))}
+      {/* Onboarding-style header */}
+      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto">
+          {/* Title Row - 36px */}
+          <div className="h-9 flex items-center justify-between px-4">
+            <h1 className="text-base font-semibold text-gray-900 dark:text-white">
+              Compare Towns
+            </h1>
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsQuickNavOpen(true);
+              }}
+              className="nav-toggle p-1.5 -mr-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label="Open navigation menu"
+              type="button"
+            >
+              <Menu className="w-5 h-5 text-gray-900 dark:text-gray-100" />
+            </button>
+          </div>
+          
+          {/* Category tabs row - 32px - Horizontal scrolling */}
+          <div className="h-8 flex items-center overflow-hidden">
+            <div className="flex-1 overflow-x-auto scrollbar-hide">
+              <div className="flex items-center px-4 gap-3 sm:gap-4">
+                {categories.map((category) => {
+                  const Icon = category.icon;
+                  const isActive = activeCategory === category.id;
+                  
+                  return (
+                    <button
+                      key={category.id}
+                      onClick={() => setActiveCategory(category.id)}
+                      className={`flex items-center gap-1 text-sm whitespace-nowrap transition-colors ${
+                        isActive 
+                          ? 'font-medium text-gray-900 dark:text-gray-100' 
+                          : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                      }`}
+                    >
+                      <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-scout-accent-600 dark:text-scout-accent-400' : ''}`} />
+                      <span>{category.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-        }
-      />
+          </div>
+        </div>
+      </header>
+
+      {/* Quick Navigation Overlay */}
+      {isQuickNavOpen && (
+        <QuickNav 
+          isOpen={isQuickNavOpen} 
+          onClose={() => setIsQuickNavOpen(false)} 
+        />
+      )}
 
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Error message */}
