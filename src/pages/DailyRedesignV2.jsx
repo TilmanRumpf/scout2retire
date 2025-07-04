@@ -6,7 +6,7 @@ import { fetchFavorites } from '../utils/townUtils';
 import { saveJournalEntry } from '../utils/journalUtils';
 import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
 import PageErrorBoundary from '../components/PageErrorBoundary';
-import AppHeader from '../components/AppHeader';
+import UnifiedHeader from '../components/UnifiedHeader';
 import SimpleImage from '../components/SimpleImage';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
@@ -380,9 +380,9 @@ export default function DailyRedesignV2() {
       {(() => {
         try {
           return (
-            <AppHeader 
-              title={`${getGreeting()}, ${user?.full_name?.split(' ')[0] || 'Explorer'}`}
-              subtitle={getRetirementTimeline()}
+            <UnifiedHeader 
+              title="brings your future home to life long before you arrive..."
+              subtitle={`${getGreeting()}, ${user?.full_name?.split(' ')[0] || 'Explorer'}! ${getRetirementTimeline()}`}
             />
           );
         } catch (error) {

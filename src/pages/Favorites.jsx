@@ -6,7 +6,7 @@ import { getCurrentUser } from '../utils/authUtils';
 import LikeButton from '../components/LikeButton';
 import SimpleImage from '../components/SimpleImage';
 import { MapPin } from 'lucide-react';
-import CompactPageHeader from '../components/CompactPageHeader';
+import UnifiedHeader from '../components/UnifiedHeader';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 
@@ -234,26 +234,31 @@ export default function Favorites() {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page}`}>
-      {/* Compact Header with integrated filters and menu */}
-      <CompactPageHeader
+      {/* Unified Header with integrated filters and menu */}
+      <UnifiedHeader
+        variant="compact"
         title="Favorites"
         totalCount={favorites.length}
         filteredCount={sortedFavorites.length}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-        filterRegion={filterRegion}
-        setFilterRegion={setFilterRegion}
-        filterCountry={filterCountry}
-        setFilterCountry={setFilterCountry}
-        filterCostRange={filterCostRange}
-        setFilterCostRange={setFilterCostRange}
-        filterMatchRange={filterMatchRange}
-        setFilterMatchRange={setFilterMatchRange}
-        regions={REGIONS}
-        countries={countries}
-        filterCount={filterCount}
-        clearFilters={clearFilters}
         showFilters={favorites.length > 0} // Only show filters if there are favorites
+        filterProps={{
+          variant: "integrated",
+          sortBy: sortBy,
+          setSortBy: setSortBy,
+          filterRegion: filterRegion,
+          setFilterRegion: setFilterRegion,
+          filterCountry: filterCountry,
+          setFilterCountry: setFilterCountry,
+          filterCostRange: filterCostRange,
+          setFilterCostRange: setFilterCostRange,
+          filterMatchRange: filterMatchRange,
+          setFilterMatchRange: setFilterMatchRange,
+          regions: REGIONS,
+          countries: countries,
+          filterCount: filterCount,
+          clearFilters: clearFilters,
+          resultsCount: sortedFavorites.length
+        }}
       />
 
       <main className="max-w-7xl mx-auto px-4 py-3">

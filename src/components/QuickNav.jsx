@@ -92,9 +92,12 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
 
       {/* Slide-out navigation menu with increased z-index */}
       <div
-        className={`nav-menu fixed top-0 right-0 h-full bg-white dark:bg-gray-800 shadow-lg z-[90] w-64 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className="nav-menu fixed top-0 h-full bg-white dark:bg-gray-800 shadow-lg w-64"
+        style={{ 
+          zIndex: 90,
+          right: isOpen ? '0' : '-256px',
+          transition: 'right 0.3s ease-in-out'
+        }}
       >
         <div className="pt-16 pb-6 px-4">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
@@ -132,7 +135,8 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
       {/* Overlay for clicking outside to close with increased z-index */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/30 z-[80]"
+          className="fixed inset-0 bg-black/30"
+          style={{ zIndex: 80 }}
           onClick={() => {
             if (onClose) {
               onClose();

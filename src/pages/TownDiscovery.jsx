@@ -5,7 +5,7 @@ import { getCurrentUser } from '../utils/authUtils';
 import LikeButton from '../components/LikeButton';
 import SimpleImage from '../components/SimpleImage';
 import PageErrorBoundary from '../components/PageErrorBoundary';
-import CompactPageHeader from '../components/CompactPageHeader';
+import UnifiedHeader from '../components/UnifiedHeader';
 import TownRadarChart from '../components/TownRadarChart';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
@@ -368,26 +368,31 @@ export default function TownDiscovery() {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page}`}>
-      {/* Compact Header with integrated filters and menu */}
-      <CompactPageHeader
+      {/* Unified Header with integrated filters and menu */}
+      <UnifiedHeader
+        variant="compact"
         title="Discover"
         totalCount={totalTownCount || towns.length}
         filteredCount={sortedAndFilteredTowns.length}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-        filterRegion={filterRegion}
-        setFilterRegion={setFilterRegion}
-        filterCountry={filterCountry}
-        setFilterCountry={setFilterCountry}
-        filterCostRange={filterCostRange}
-        setFilterCostRange={setFilterCostRange}
-        filterMatchRange={filterMatchRange}
-        setFilterMatchRange={setFilterMatchRange}
-        regions={REGIONS}
-        countries={countries}
-        filterCount={filterCount}
-        clearFilters={clearFilters}
         showFilters={true}
+        filterProps={{
+          variant: "integrated",
+          sortBy: sortBy,
+          setSortBy: setSortBy,
+          filterRegion: filterRegion,
+          setFilterRegion: setFilterRegion,
+          filterCountry: filterCountry,
+          setFilterCountry: setFilterCountry,
+          filterCostRange: filterCostRange,
+          setFilterCostRange: setFilterCostRange,
+          filterMatchRange: filterMatchRange,
+          setFilterMatchRange: setFilterMatchRange,
+          regions: REGIONS,
+          countries: countries,
+          filterCount: filterCount,
+          clearFilters: clearFilters,
+          resultsCount: sortedAndFilteredTowns.length
+        }}
       />
 
       <PageErrorBoundary
