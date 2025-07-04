@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
-import AppHeader from '../components/AppHeader';
+import UnifiedHeader from '../components/UnifiedHeader';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
@@ -355,11 +355,11 @@ export default function MasterSchedule() {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
-      <AppHeader 
+      <UnifiedHeader 
         title="Retirement Master Schedule"
       />
 
-      <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Action buttons */}
         <div className="flex justify-between items-center">
           <h2 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>

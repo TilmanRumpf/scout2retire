@@ -114,6 +114,13 @@ module.exports = {
         // iOS system font stack
         sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'SF Pro Text', 'system-ui', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'],
         mono: ['SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'monospace'],
+        // Google Fonts
+        'kalam': ['Kalam', 'cursive'],
+        'montserrat': ['Montserrat', 'sans-serif'],
+        'dancing': ['Dancing Script', 'cursive'],
+        'pacifico': ['Pacifico', 'cursive'],
+        'satisfy': ['Satisfy', 'cursive'],
+        'caveat': ['Caveat', 'cursive'],
       },
       fontSize: {
         // iOS Dynamic Type scale

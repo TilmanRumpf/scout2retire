@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getCurrentUser, signOut, updatePassword } from '../utils/authUtils';
 import { useTheme } from '../contexts/ThemeContext';
-import AppHeader from '../components/AppHeader';
+import UnifiedHeader from '../components/UnifiedHeader';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
@@ -267,8 +267,16 @@ export default function ProfileUnified() {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
-      <AppHeader 
+      <UnifiedHeader 
         title="Profile & Settings"
+        maxWidth="max-w-4xl"
+        tabs={tabs.map(tab => ({
+          id: tab.id,
+          label: tab.label,
+          icon: tab.icon,
+          isActive: activeTab === tab.id,
+          onClick: () => handleTabChange(tab.id)
+        }))}
       />
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
@@ -331,31 +339,8 @@ export default function ProfileUnified() {
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Tab Content */}
         <div className={`${uiConfig.colors.card} rounded-lg border ${uiConfig.colors.border}`}>
-          {/* Tab Navigation */}
-          <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="flex -mb-px overflow-x-auto">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleTabChange(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                      isActive
-                        ? 'border-scout-accent-500 text-scout-accent-600 dark:text-scout-accent-400'
-                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                    }`}
-                  >
-                    <Icon size={16} />
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
 
           {/* Tab Content */}
           <div className="p-6">

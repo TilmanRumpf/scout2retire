@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handwriting Font Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .handwritten {
+            font-family: 'Caveat', cursive;
+            font-weight: 700;
+            font-size: clamp(1.25rem, 3.5vw, 2rem);
+            font-style: italic;
+            transform: rotate(-2deg);
+            display: inline-block;
+            color: #374151;
+        }
+        
+        .comparison {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h2>Handwriting Font Test</h2>
+        
+        <div class="comparison">
+            <div class="label">Normal text:</div>
+            <div>The app that brings your future home to life long before you arrive</div>
+        </div>
+        
+        <div class="comparison">
+            <div class="label">With handwritten style (exact same as UnifiedHeader):</div>
+            <div class="handwritten">The app that brings your future home to life long before you arrive</div>
+        </div>
+        
+        <div class="comparison">
+            <div class="label">Inline style test:</div>
+            <div style="font-family: 'Caveat', cursive; font-weight: 700; font-size: clamp(1.25rem, 3.5vw, 2rem); font-style: italic; transform: rotate(-2deg); display: inline-block; color: #374151;">
+                The app that brings your future home to life long before you arrive
+            </div>
+        </div>
+        
+        <div class="comparison">
+            <div class="label">Font family test:</div>
+            <div style="font-family: 'Caveat', cursive; font-size: 24px;">
+                Testing if Caveat font loads: The app that brings your future home
+            </div>
+        </div>
+    </div>
+</body>
+</html>

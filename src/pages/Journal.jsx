@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchJournalEntries, deleteJournalEntry, saveJournalEntry } from '../utils/journalUtils';
 import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
-import AppHeader from '../components/AppHeader';
+import UnifiedHeader from '../components/UnifiedHeader';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 import { FileText, MapPin, Users, CheckCircle, File } from 'lucide-react';
@@ -186,73 +186,22 @@ export default function Journal() {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
-      <AppHeader 
+      <UnifiedHeader 
         title="Your Retirement Journey"
+        tabs={[
+          { id: 'all', label: 'All', isActive: filterType === 'all', onClick: () => setFilterType('all') },
+          { id: 'journal', label: 'Journal', icon: FileText, isActive: filterType === 'journal', onClick: () => setFilterType('journal') },
+          { id: 'town', label: 'Town', icon: MapPin, isActive: filterType === 'town', onClick: () => setFilterType('town') },
+          { id: 'social', label: 'Social', icon: Users, isActive: filterType === 'social', onClick: () => setFilterType('social') },
+          { id: 'tasks', label: 'Tasks', icon: CheckCircle, isActive: filterType === 'tasks', onClick: () => setFilterType('tasks') }
+        ]}
       />
 
-      <main className="max-w-5xl mx-auto px-4">
-        {/* Filters */}
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        {/* Date filter */}
         <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 mb-6`}>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-            {/* Type filters */}
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setFilterType('all')}
-                className={`px-4 py-2 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
-                  filterType === 'all'
-                    ? uiConfig.colors.tabActive
-                    : uiConfig.colors.tabInactive
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setFilterType('journal')}
-                className={`px-4 py-2 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
-                  filterType === 'journal'
-                    ? uiConfig.colors.tabActive
-                    : uiConfig.colors.tabInactive
-                }`}
-              >
-                <FileText size={16} className="inline mr-1" />
-                Journal
-              </button>
-              <button
-                onClick={() => setFilterType('town')}
-                className={`px-4 py-2 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
-                  filterType === 'town'
-                    ? uiConfig.colors.tabActive
-                    : uiConfig.colors.tabInactive
-                }`}
-              >
-                <MapPin size={16} className="inline mr-1" />
-                Town
-              </button>
-              <button
-                onClick={() => setFilterType('social')}
-                className={`px-4 py-2 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
-                  filterType === 'social'
-                    ? uiConfig.colors.tabActive
-                    : uiConfig.colors.tabInactive
-                }`}
-              >
-                <Users size={16} className="inline mr-1" />
-                Social
-              </button>
-              <button
-                onClick={() => setFilterType('tasks')}
-                className={`px-4 py-2 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
-                  filterType === 'tasks'
-                    ? uiConfig.colors.tabActive
-                    : uiConfig.colors.tabInactive
-                }`}
-              >
-                <CheckCircle size={16} className="inline mr-1" />
-                Tasks
-              </button>
-            </div>
-
-            {/* Date filter */}
+          <div className="flex justify-between items-center">
+            <span className={`text-sm ${uiConfig.colors.body}`}>Filter by date:</span>
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}

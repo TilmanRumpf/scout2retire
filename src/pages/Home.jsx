@@ -6,7 +6,7 @@ import CompactCountdown from '../components/CompactCountdown';
 import DailyTownCard from '../components/DailyTownCard';
 import TownCard from '../components/TownCard';
 import PageErrorBoundary from '../components/PageErrorBoundary';
-import AppHeader from '../components/AppHeader';
+import UnifiedHeader from '../components/UnifiedHeader';
 import { fetchFavorites } from '../utils/townUtils';
 import { saveJournalEntry } from '../utils/journalUtils';
 import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
@@ -133,15 +133,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 md:pb-4">
-      <AppHeader 
-        title={<>Scout<span className="text-green-600">2</span>Retire</>}
-        rightElement={
-          <Link to="/profile" className="flex items-center">
-            <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-600 dark:text-green-400">
-              {user?.full_name?.charAt(0) || '?'}
-            </div>
-          </Link>
-        }
+      <UnifiedHeader 
+        title="Home Dashboard"
       />
 
       <PageErrorBoundary
@@ -150,7 +143,7 @@ export default function Home() {
         onReset={() => window.location.reload()}
       >
         {/* Main content */}
-        <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+        <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Welcome message */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
