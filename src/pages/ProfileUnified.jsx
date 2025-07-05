@@ -174,8 +174,10 @@ export default function ProfileUnified() {
         // update the profile with the onboarding data
         if (data.current_status?.retirement_timeline && !userProfile?.retirement_date) {
           const timeline = data.current_status.retirement_timeline;
-          if (timeline.target_year && timeline.target_month && timeline.target_day) {
-            const retirementDate = new Date(timeline.target_year, timeline.target_month - 1, timeline.target_day);
+          if (timeline.target_year && timeline.target_day) {
+            // Handle missing target_month - default to January (1)
+            const month = timeline.target_month || 1;
+            const retirementDate = new Date(timeline.target_year, month - 1, timeline.target_day);
             
             // Update the user's profile with the retirement date
             await supabase
@@ -475,8 +477,10 @@ export default function ProfileUnified() {
                             return 'Already retired';
                           }
                           
-                          if (timeline.target_year && timeline.target_month && timeline.target_day) {
-                            const date = new Date(timeline.target_year, timeline.target_month - 1, timeline.target_day);
+                          if (timeline.target_year && timeline.target_day) {
+                            // Handle missing target_month - default to January (1)
+                            const month = timeline.target_month || 1;
+                            const date = new Date(timeline.target_year, month - 1, timeline.target_day);
                             return date.toLocaleDateString('en-US', { 
                               year: 'numeric', 
                               month: 'long', 
