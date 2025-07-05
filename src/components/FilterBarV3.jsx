@@ -1,7 +1,6 @@
 // Option 3: Icon-based Compact Design
 import { ChevronDown, X, Globe, DollarSign, Crosshair, SortDesc } from 'lucide-react';
 import { useState } from 'react';
-import { uiConfig } from '../styles/uiConfig';
 
 export default function FilterBarV3({
   sortBy,
