@@ -115,6 +115,7 @@ export default function ProfileUnified() {
       // Load onboarding data
       const { success, data } = await getOnboardingProgress(currentUser.id);
       if (success && data) {
+        console.log('Onboarding data loaded - retirement timeline:', data?.current_status?.retirement_timeline);
         setOnboardingData(data);
       }
       
@@ -387,12 +388,15 @@ export default function ProfileUnified() {
                       <p className={uiConfig.colors.body}>
                         {(() => {
                           const timeline = onboardingData?.current_status?.retirement_timeline;
+                          
                           if (!timeline) return 'Not set';
                           
+                          // Check for already retired status
                           if (timeline.status === 'already_retired') {
                             return 'Already retired';
                           }
                           
+                          // Format retirement date
                           if (timeline.target_year && timeline.target_month && timeline.target_day) {
                             const date = new Date(timeline.target_year, timeline.target_month - 1, timeline.target_day);
                             return date.toLocaleDateString('en-US', { 
