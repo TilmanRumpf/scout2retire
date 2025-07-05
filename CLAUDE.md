@@ -247,6 +247,13 @@ npm run preview      # Test production build
 - Include "🤖 Generated with Claude Code" in commits
 - Never commit without user approval
 
+### Safe Points
+When creating GitHub safe points (tags):
+- Use format: `safe-point-YYYY-MM-DD-HHMM` (e.g., safe-point-2025-07-05-0035)
+- Include current date and time (24-hour format, no colon between hours and minutes)
+- Add descriptive message about what was accomplished
+- Always push the tag to GitHub after creating it
+
 ---
 
 ## 📝 Document Maintenance
