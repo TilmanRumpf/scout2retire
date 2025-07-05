@@ -156,7 +156,10 @@ export default function ProfileUnified() {
       if (error) throw error;
 
       toast.success('Loading your preferences...');
-      navigate('/onboarding/current-status');
+      
+      // Force page reload to ensure all cached state is refreshed
+      // This prevents the ProtectedRoute from redirecting back to /daily
+      window.location.href = '/onboarding/current-status';
     } catch (err) {
       console.error('Error:', err);
       toast.error('Failed to access preferences');
