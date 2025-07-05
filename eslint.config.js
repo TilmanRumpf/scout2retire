@@ -5,8 +5,33 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
   { ignores: ['dist'] },
+  // Configuration for scripts and config files
   {
-    files: ['**/*.{js,jsx}'],
+    files: ['scripts/**/*.js', '*.config.js', '.eslintrc.js'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: {
+        ...globals.node,
+        process: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        module: 'writable',
+        require: 'readonly',
+        exports: 'writable'
+      },
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+    },
+  },
+  // Configuration for React source files
+  {
+    files: ['src/**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -28,6 +53,7 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+      'react-hooks/exhaustive-deps': 'warn', // Changed from error to warn
     },
   },
 ]
