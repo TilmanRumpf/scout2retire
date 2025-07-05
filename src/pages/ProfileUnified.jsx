@@ -114,29 +114,28 @@ export default function ProfileUnified() {
       
       // Load onboarding data
       const { success, data } = await getOnboardingProgress(currentUser.id);
-      console.log('=== DEBUGGING RETIREMENT DATE ISSUE ===');
-      console.log('getOnboardingProgress result:', { success, data });
-      console.log('User ID:', currentUser.id);
       
       if (success && data) {
-        console.log('Full onboarding data:', JSON.stringify(data, null, 2));
-        console.log('current_status exists?', !!data.current_status);
-        console.log('current_status content:', data.current_status);
-        console.log('retirement_timeline exists?', !!data.current_status?.retirement_timeline);
-        console.log('retirement_timeline content:', data.current_status?.retirement_timeline);
-        
-        if (data.current_status?.retirement_timeline) {
-          console.log('target_year:', data.current_status.retirement_timeline.target_year);
-          console.log('target_month:', data.current_status.retirement_timeline.target_month);
-          console.log('target_day:', data.current_status.retirement_timeline.target_day);
-        }
-        
         setOnboardingData(data);
-      } else {
-        console.error('Failed to load onboarding data!');
-        console.error('This is why retirement date shows "Not set"');
+        
+        // Fallback: if onboarding data exists but profile doesn't have retirement date,
+        // update the profile with the onboarding data
+        if (data.current_status?.retirement_timeline && !userProfile?.retirement_date) {
+          const timeline = data.current_status.retirement_timeline;
+          if (timeline.target_year && timeline.target_month && timeline.target_day) {
+            const retirementDate = new Date(timeline.target_year, timeline.target_month - 1, timeline.target_day);
+            
+            // Update the user's profile with the retirement date
+            await supabase
+              .from('users')
+              .update({ 
+                retirement_date: retirementDate.toISOString(),
+                retirement_year_estimate: timeline.target_year
+              })
+              .eq('id', currentUser.id);
+          }
+        }
       }
-      console.log('=== END DEBUGGING ===');
       
       // Load favorites count
       const { count } = await supabase
@@ -406,54 +405,33 @@ export default function ProfileUnified() {
                       <label className={uiConfig.components.label}>Retirement Date</label>
                       <p className={uiConfig.colors.body}>
                         {(() => {
-                          console.log('=== RENDERING RETIREMENT DATE ===');
-                          console.log('onboardingData:', onboardingData);
-                          console.log('onboardingData?.current_status:', onboardingData?.current_status);
-                          
-                          const timeline = onboardingData?.current_status?.retirement_timeline;
-                          console.log('timeline:', timeline);
-                          
-                          if (!timeline) {
-                            console.log('No timeline found, returning "Not set"');
-                            return 'Not set';
+                          // First check if we have retirement date in profile
+                          if (profile?.retirement_date) {
+                            return new Date(profile.retirement_date).toLocaleDateString('en-US', { 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric' 
+                            });
                           }
                           
-                          // Check for already retired status
+                          // Then check onboarding data
+                          const timeline = onboardingData?.current_status?.retirement_timeline;
+                          
+                          if (!timeline) return 'Not set';
+                          
                           if (timeline.status === 'already_retired') {
                             return 'Already retired';
                           }
                           
-                          console.log('Checking date fields:', {
-                            target_year: timeline.target_year,
-                            target_month: timeline.target_month,
-                            target_day: timeline.target_day,
-                            year: timeline.year,
-                            month: timeline.month,
-                            day: timeline.day
-                          });
-                          
-                          // Format retirement date - check both naming conventions
                           if (timeline.target_year && timeline.target_month && timeline.target_day) {
                             const date = new Date(timeline.target_year, timeline.target_month - 1, timeline.target_day);
-                            const formatted = date.toLocaleDateString('en-US', { 
+                            return date.toLocaleDateString('en-US', { 
                               year: 'numeric', 
                               month: 'long', 
                               day: 'numeric' 
                             });
-                            console.log('Formatted date (target_*):', formatted);
-                            return formatted;
-                          } else if (timeline.year && timeline.month && timeline.day) {
-                            const date = new Date(timeline.year, timeline.month - 1, timeline.day);
-                            const formatted = date.toLocaleDateString('en-US', { 
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric' 
-                            });
-                            console.log('Formatted date (year/month/day):', formatted);
-                            return formatted;
                           }
                           
-                          console.log('No valid date fields found, returning "Not set"');
                           return 'Not set';
                         })()}
                       </p>
