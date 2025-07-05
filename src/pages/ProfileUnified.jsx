@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getCurrentUser, signOut, updatePassword } from '../utils/authUtils';
+import { getOnboardingProgress } from '../utils/onboardingUtils';
 import { useTheme } from '../contexts/ThemeContext';
 import UnifiedHeader from '../components/UnifiedHeader';
 import toast from 'react-hot-toast';
@@ -49,6 +50,7 @@ export default function ProfileUnified() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [onboardingData, setOnboardingData] = useState(null);
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [activeTab, setActiveTab] = useState('account');
   const [retakingOnboarding, setRetakingOnboarding] = useState(false);
@@ -109,6 +111,12 @@ export default function ProfileUnified() {
       }
       setUser(currentUser);
       setProfile(userProfile);
+      
+      // Load onboarding data
+      const { success, data } = await getOnboardingProgress(currentUser.id);
+      if (success && data) {
+        setOnboardingData(data);
+      }
       
       // Load favorites count
       const { count } = await supabase
@@ -362,25 +370,57 @@ export default function ProfileUnified() {
                     <div>
                       <label className={uiConfig.components.label}>Nationality</label>
                       <p className={uiConfig.colors.body}>
-                        {profile?.nationality ? profile.nationality.toUpperCase() : 'Not set'}
+                        {(() => {
+                          const citizenship = onboardingData?.current_status?.citizenship;
+                          if (!citizenship?.primary_citizenship) return 'Not set';
+                          
+                          let nationalities = citizenship.primary_citizenship.toUpperCase();
+                          if (citizenship.dual_citizenship && citizenship.secondary_citizenship) {
+                            nationalities += ` / ${citizenship.secondary_citizenship.toUpperCase()}`;
+                          }
+                          return nationalities;
+                        })()}
                       </p>
                     </div>
                     <div>
                       <label className={uiConfig.components.label}>Retirement Date</label>
                       <p className={uiConfig.colors.body}>
-                        {profile?.retirement_date 
-                          ? new Date(profile.retirement_date).toLocaleDateString('en-US', { 
+                        {(() => {
+                          const timeline = onboardingData?.current_status?.retirement_timeline;
+                          if (!timeline) return 'Not set';
+                          
+                          if (timeline.status === 'already_retired') {
+                            return 'Already retired';
+                          }
+                          
+                          if (timeline.target_year && timeline.target_month && timeline.target_day) {
+                            const date = new Date(timeline.target_year, timeline.target_month - 1, timeline.target_day);
+                            return date.toLocaleDateString('en-US', { 
                               year: 'numeric', 
                               month: 'long', 
                               day: 'numeric' 
-                            })
-                          : profile?.retirement_year_estimate 
-                            ? new Date(profile.retirement_year_estimate, 0, 1).toLocaleDateString('en-US', { 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                              })
-                            : 'Not set'}
+                            });
+                          }
+                          
+                          return 'Not set';
+                        })()}
+                      </p>
+                    </div>
+                    <div>
+                      <label className={uiConfig.components.label}>Family Status</label>
+                      <p className={uiConfig.colors.body}>
+                        {(() => {
+                          const status = onboardingData?.current_status?.family_situation?.status;
+                          if (!status) return 'Not set';
+                          
+                          const statusMap = {
+                            'solo': 'Solo',
+                            'couple': 'Couple',
+                            'family': 'Family'
+                          };
+                          
+                          return statusMap[status] || status;
+                        })()}
                       </p>
                     </div>
                   </div>
