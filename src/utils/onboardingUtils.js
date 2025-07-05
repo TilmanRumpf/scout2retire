@@ -110,19 +110,11 @@ export const completeOnboarding = async (userId) => {
 
 export const getOnboardingProgress = async (userId) => {
   try {
-    console.log('[getOnboardingProgress] Starting fetch for userId:', userId);
     // Remove .single() to avoid 406 error
     const { data, error } = await supabase
       .from('onboarding_responses')
       .select('*')
       .eq('user_id', userId);
-    
-    console.log('[getOnboardingProgress] Supabase response:', { 
-      dataLength: data?.length, 
-      hasError: !!error,
-      error: error,
-      firstRow: data?.[0]
-    });
     
     // Define the expected steps - Updated 19JUN25: Using 'costs' to match database
     const steps = [
@@ -137,7 +129,6 @@ export const getOnboardingProgress = async (userId) => {
     
     // If no data exists yet or data is empty array
     if (!data || data.length === 0) {
-      console.log('[getOnboardingProgress] No data found for user - returning null');
       const completedSteps = {};
       steps.forEach(step => {
         completedSteps[step] = false;
@@ -163,8 +154,6 @@ export const getOnboardingProgress = async (userId) => {
     
     // Use first row from the result array
     const userData = data[0];
-    console.log('[getOnboardingProgress] userData current_status:', userData?.current_status);
-    console.log('[getOnboardingProgress] retirement_timeline:', userData?.current_status?.retirement_timeline);
     
     // Check which steps are completed
     const completedSteps = {};
