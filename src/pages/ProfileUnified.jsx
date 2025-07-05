@@ -9,6 +9,58 @@ import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
 import { User, Settings, Bell, Shield, Palette, Globe } from 'lucide-react';
 
+// Debug function for retirement date issue
+window.debugRetirementDate = async () => {
+  console.log('=== DEBUGGING RETIREMENT DATE ===');
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    console.log('No authenticated user');
+    return;
+  }
+  
+  console.log('User ID:', user.id);
+  console.log('User Email:', user.email);
+  
+  // Get onboarding data
+  const { data: onboarding, error } = await supabase
+    .from('onboarding_responses')
+    .select('*')
+    .eq('user_id', user.id);
+    
+  if (error) {
+    console.error('Error fetching onboarding:', error);
+    return;
+  }
+  
+  console.log('Onboarding records found:', onboarding?.length || 0);
+  
+  if (onboarding && onboarding.length > 0) {
+    const data = onboarding[0];
+    console.log('Full onboarding data:', data);
+    console.log('current_status:', data.current_status);
+    console.log('retirement_timeline:', data.current_status?.retirement_timeline);
+    
+    if (data.current_status?.retirement_timeline) {
+      const timeline = data.current_status.retirement_timeline;
+      console.log('Timeline fields:', {
+        target_year: timeline.target_year,
+        target_month: timeline.target_month,
+        target_day: timeline.target_day,
+        status: timeline.status
+      });
+    }
+  }
+  
+  // Get user profile
+  const { data: profile } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', user.id);
+    
+  console.log('User profile:', profile?.[0]);
+};
+
 // Reusable toggle switch component
 const ToggleSwitch = ({ id, checked, onChange, label, description }) => (
   <div className="flex items-center justify-between">
