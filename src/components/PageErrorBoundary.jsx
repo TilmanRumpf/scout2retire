@@ -7,6 +7,7 @@ class PageErrorBoundary extends React.Component {
     this.state = { hasError: false, error: null };
   }
 
+  // eslint-disable-next-line no-unused-vars
   static getDerivedStateFromError(error) {
     return { hasError: true };
   }
@@ -54,7 +55,7 @@ class PageErrorBoundary extends React.Component {
             </button>
 
             {/* Show error details in development */}
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-700 rounded text-left">
                 <p className="text-xs font-mono text-gray-600 dark:text-gray-400">
                   {this.state.error.toString()}

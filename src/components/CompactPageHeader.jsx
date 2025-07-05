@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import FilterBarV3 from './FilterBarV3';
-import { uiConfig } from '../styles/uiConfig';
 
 export default function CompactPageHeader({
   title,

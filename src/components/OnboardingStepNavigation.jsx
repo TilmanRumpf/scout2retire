@@ -112,12 +112,12 @@ const OnboardingStepNavigation = ({
   };
 
   // Container classes for proper spacing with current step
-  const getContainerClasses = (status) => {
+  const getContainerClasses = () => {
     return 'flex flex-col items-center w-16 sm:w-20';
   };
 
   // Handle step click - Allow clicking any step
-  const handleStepClick = (step, status) => {
+  const handleStepClick = (step) => {
     if (onStepClick) {
       onStepClick(step);
     }
@@ -128,13 +128,13 @@ const OnboardingStepNavigation = ({
       <div className={`${className}`}>
         {/* Step icons and labels with hamburger menu */}
         <div className="flex justify-center items-start space-x-2 sm:space-x-4 mb-6">
-          {steps.map((step, index) => {
+          {steps.map((step) => {
             const status = getStepStatus(step.key);
             const StepIcon = step.icon;
             const canClick = true; // Always allow clicking
             
             return (
-              <div key={step.key} className={getContainerClasses(status)}>
+              <div key={step.key} className={getContainerClasses()}>
                 {/* Icon */}
                 <div className="flex justify-center mb-1">
                   {canClick && !onStepClick ? (
@@ -149,7 +149,7 @@ const OnboardingStepNavigation = ({
                   ) : canClick && onStepClick ? (
                     <button 
                       type="button"
-                      onClick={() => handleStepClick(step, status)}
+                      onClick={() => handleStepClick(step)}
                     >
                       <div className={getIconClasses(status)}>
                         <StepIcon 

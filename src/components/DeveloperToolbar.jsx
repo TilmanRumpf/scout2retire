@@ -4,7 +4,6 @@
 import { useState, useEffect } from 'react';
 import { AlertCircle, CheckCircle, XCircle, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import errorReporter from '../utils/errorReporter';
-import { uiConfig } from '../styles/uiConfig';
 
 export default function DeveloperToolbar() {
   const [isVisible, setIsVisible] = useState(true);
@@ -13,11 +12,6 @@ export default function DeveloperToolbar() {
   const [darkMode, setDarkMode] = useState(
     document.documentElement.classList.contains('dark')
   );
-
-  // Only show in development
-  if (process.env.NODE_ENV !== 'development') {
-    return null;
-  }
 
   useEffect(() => {
     // Update violations every second
@@ -40,6 +34,11 @@ export default function DeveloperToolbar() {
       observer.disconnect();
     };
   }, []);
+
+  // Only show in development
+  if (!import.meta.env.DEV) {
+    return null;
+  }
 
   const toggleDarkMode = () => {
     document.documentElement.classList.toggle('dark');

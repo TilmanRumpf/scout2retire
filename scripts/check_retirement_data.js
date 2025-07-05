@@ -16,7 +16,7 @@ async function checkRetirementData() {
 
   try {
     // 1. Find user by email
-    const { data: authUser, error: authError } = await supabase.auth.admin.listUsers();
+    const { error: authError } = await supabase.auth.admin.listUsers();
     if (authError) {
       console.error('Error getting auth users:', authError);
       // Try different approach
