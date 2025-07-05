@@ -1,10 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-
-const ThemeContext = createContext();
-
-export function useTheme() {
-  return useContext(ThemeContext);
-}
+import React, { useState, useEffect } from 'react';
+import { ThemeContext } from './useTheme';
 
 export function ThemeProvider({ children }) {
   // Check local storage or system preference

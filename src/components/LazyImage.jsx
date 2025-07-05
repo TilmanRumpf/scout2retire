@@ -20,6 +20,8 @@ export default function LazyImage({
 
   // Intersection Observer to detect when image is in viewport
   useEffect(() => {
+    const currentElement = imgRef.current;
+    
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
@@ -34,13 +36,13 @@ export default function LazyImage({
       }
     );
 
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
+    if (currentElement) {
+      observer.observe(currentElement);
     }
 
     return () => {
-      if (imgRef.current) {
-        observer.unobserve(imgRef.current);
+      if (currentElement) {
+        observer.unobserve(currentElement);
       }
     };
   }, []);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, updatePassword } from '../utils/authUtils';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../contexts/useTheme';
 import QuickNav from '../components/QuickNav';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';

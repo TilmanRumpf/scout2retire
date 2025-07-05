@@ -12,7 +12,6 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
   const isOpen = propIsOpen !== undefined ? propIsOpen : internalIsOpen;
   const location = useLocation();
   const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
-  const [user, setUser] = useState(null);
 
   // Note: Removed location change effect as it was causing immediate closes
 
@@ -25,7 +24,6 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
     try {
       const { user: currentUser } = await getCurrentUser();
       if (currentUser) {
-        setUser(currentUser);
         
         // Check for pending invitations
         const { data, error } = await supabase
@@ -156,7 +154,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
     return () => {
       document.removeEventListener('keydown', handleEscape);
     };
-  }, []);
+  }, [onClose]); // onClose is stable and only changes if parent component changes
 
   // FIXED 09JUN25: Clean navigation items - NO MORE SVG ICON BULLSHIT
   const navItems = [

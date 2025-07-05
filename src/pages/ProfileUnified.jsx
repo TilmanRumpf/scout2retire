@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getCurrentUser, signOut, updatePassword } from '../utils/authUtils';
 import { getOnboardingProgress } from '../utils/onboardingUtils';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../contexts/useTheme';
 import UnifiedHeader from '../components/UnifiedHeader';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';

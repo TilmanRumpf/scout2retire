@@ -28,7 +28,7 @@ export default function FontDebugger() {
     document.fonts.ready.then(() => {
       checkFonts();
     });
-  }, []);
+  }, [fonts]); // fonts array is constant but ESLint wants it
 
   return (
     <div className="fixed bottom-4 right-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 text-xs">
