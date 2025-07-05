@@ -776,7 +776,7 @@ export const insertExpandedTownData = async (supabase) => {
     for (let i = 0; i < expandedTownData.length; i += batchSize) {
       const batch = expandedTownData.slice(i, i + batchSize);
       
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('towns')
         .upsert(batch, { 
           onConflict: 'name,country',

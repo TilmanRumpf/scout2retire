@@ -51,7 +51,8 @@ export default function Favorites() {
 
   useEffect(() => {
     loadFavorites();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // loadFavorites is only called on mount and doesn't need to be in dependencies
 
   const loadFavorites = async () => {
     try {
@@ -108,7 +109,8 @@ export default function Favorites() {
         setFilterCountry('all');
       }
     }
-  }, [filterRegion]);
+  }, [filterRegion, filterCountry]); // eslint-disable-line react-hooks/exhaustive-deps
+  // getUniqueCountries uses favorites state which changes independently
 
   // Cost range helper
   const getCostRange = (cost) => {

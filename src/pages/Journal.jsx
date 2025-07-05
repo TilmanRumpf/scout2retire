@@ -22,7 +22,8 @@ export default function Journal() {
 
   useEffect(() => {
     loadEntries();
-  }, [filterType, dateRange]);
+  }, [filterType, dateRange]); // eslint-disable-line react-hooks/exhaustive-deps
+  // loadEntries uses filterType and dateRange internally, but doesn't need to be in dependencies
 
   const loadEntries = async () => {
     try {

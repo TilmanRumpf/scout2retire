@@ -17,7 +17,8 @@ export default function Profile() {
 
   useEffect(() => {
     loadUserData();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // loadUserData is only called on mount and doesn't need to be in dependencies
 
   const loadUserData = async () => {
     try {

@@ -3,7 +3,6 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchTowns, fetchFavorites } from '../utils/townUtils';
 import { sanitizeChatMessage, MAX_LENGTHS } from '../utils/sanitizeUtils';
-import { findUserByEmail } from '../utils/userSearchUtils';
 import { cancelInvitation } from '../utils/companionUtils';
 import { sendInvitationEmailViaAuth } from '../utils/emailUtils';
 import PageErrorBoundary from '../components/PageErrorBoundary';
@@ -192,7 +191,8 @@ export default function Chat() {
     };
     
     loadData();
-  }, [navigate, townId, searchParams]);
+  }, [navigate, townId, searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+  // invitationId, pendingInvitations.received, and switchToScoutChat are handled within loadData
   
   // Load user's friends
   const loadFriends = async (userId) => {
@@ -1011,7 +1011,7 @@ export default function Chat() {
     
     try {
       // Add message to database
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('chat_messages')
         .insert([{
           thread_id: activeThread.id,

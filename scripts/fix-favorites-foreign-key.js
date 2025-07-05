@@ -55,28 +55,13 @@ async function fixFavoritesForeignKey() {
     // 3. Drop and recreate the constraint
     console.log('\n3. Fixing foreign key constraint...');
     
-    // Use RPC to execute DDL commands
-    const fixQuery = `
-      BEGIN;
-      
-      -- Drop the existing constraint if it exists
-      ALTER TABLE favorites DROP CONSTRAINT IF EXISTS favorites_user_id_fkey;
-      
-      -- Add the correct constraint referencing auth.users
-      ALTER TABLE favorites 
-      ADD CONSTRAINT favorites_user_id_fkey 
-      FOREIGN KEY (user_id) 
-      REFERENCES auth.users(id) 
-      ON DELETE CASCADE;
-      
-      COMMIT;
-    `;
+    // DDL commands would go here, but we'll create a migration file instead
 
     // Since we can't run DDL directly, let's create a migration file
     console.log('\nCreating migration file to fix the constraint...');
     
     // Check if we can at least query the favorites table
-    const { data: favCount, error: favError } = await supabase
+    const { error: favError } = await supabase
       .from('favorites')
       .select('count');
 

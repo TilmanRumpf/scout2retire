@@ -34,35 +34,7 @@ export default function TownRadarChart({ townData }) {
     return 5; // Default if no data
   };
 
-  // Helper to calculate infrastructure rating (average of sub-ratings)
-  const getInfrastructureRating = () => {
-    const ratings = [
-      townData.public_transport_quality,
-      townData.walkability,
-      townData.infrastructure_rating
-    ].filter(r => r !== null && r !== undefined);
-    
-    if (ratings.length > 0) {
-      const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
-      return Math.round(avg);
-    }
-    return 5; // Default if no data
-  };
 
-  // Helper to calculate overall rating (average of all categories)
-  const getOverallRating = () => {
-    const ratings = [
-      townData.climate_rating || 5,
-      getCostRating(townData.cost_index),
-      townData.healthcare_score || 5,
-      getLifestyleRating(),
-      townData.safety_score || 5,
-      getInfrastructureRating()
-    ];
-    
-    const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
-    return Math.round(avg);
-  };
 
   // Convert percentage scores to 1-10 scale
   const convertScore = (percentage) => {

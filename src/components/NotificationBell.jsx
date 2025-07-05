@@ -21,9 +21,11 @@ export default function NotificationBell() {
   useEffect(() => {
     if (user) {
       fetchNotifications();
-      setupRealtimeSubscription();
+      const unsubscribe = setupRealtimeSubscription();
+      return unsubscribe;
     }
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+  // fetchNotifications and setupRealtimeSubscription use user internally
 
   const loadUser = async () => {
     try {

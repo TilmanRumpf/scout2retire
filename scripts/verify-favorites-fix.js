@@ -17,7 +17,7 @@ async function verifyFavoritesFix() {
   try {
     // 1. Test query to favorites table
     console.log('1. Testing favorites table query...');
-    const { data: favorites, error: favError, count } = await supabase
+    const { error: favError, count } = await supabase
       .from('favorites')
       .select('*', { count: 'exact' });
 

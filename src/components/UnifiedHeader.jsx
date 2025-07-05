@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign } from 'lucide-react';
 import QuickNav from './QuickNav';
 import FilterBarV3 from './FilterBarV3';
-import { uiConfig } from '../styles/uiConfig';
 
 /**
  * UnifiedHeader - Intelligent header that adapts its second row based on props
