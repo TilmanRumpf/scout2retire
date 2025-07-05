@@ -7,8 +7,12 @@ const transformAdministrationData = (data) => {
   // Create a clean copy with exact structure Supabase expects
   return {
     healthcare_quality: Array.isArray(data.healthcare_quality) ? data.healthcare_quality : [],
+    health_considerations: data.health_considerations || {
+      healthcare_access: '',
+      ongoing_treatment: '',
+      environmental_health: ''
+    },
     insurance_importance: Array.isArray(data.insurance_importance) ? data.insurance_importance : [],
-    special_medical_needs: Boolean(data.special_medical_needs),
     safety_importance: Array.isArray(data.safety_importance) ? data.safety_importance : [],
     emergency_services: Array.isArray(data.emergency_services) ? data.emergency_services : [],
     political_stability: Array.isArray(data.political_stability) ? data.political_stability : [],
