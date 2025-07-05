@@ -1,14 +1,117 @@
 // Updated QuickNav.jsx - FIXED 09JUN25: REMOVED ALL FUCKING ICONS
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import supabase from '../utils/supabaseClient';
+import { getCurrentUser } from '../utils/authUtils';
+import toast from 'react-hot-toast';
+import '../styles/fonts.css';
 
 export default function QuickNav({ isOpen: propIsOpen, onClose }) {
   // Use props if provided, otherwise manage state internally
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const isOpen = propIsOpen !== undefined ? propIsOpen : internalIsOpen;
   const location = useLocation();
+  const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
+  const [user, setUser] = useState(null);
 
   // Note: Removed location change effect as it was causing immediate closes
+
+  // Load user and check for pending invitations
+  useEffect(() => {
+    loadUserAndInvites();
+  }, []);
+
+  const loadUserAndInvites = async () => {
+    try {
+      const { user: currentUser } = await getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+        
+        // Check for pending invitations
+        const { data, error } = await supabase
+          .from('user_connections')
+          .select('id')
+          .eq('friend_id', currentUser.id)
+          .eq('status', 'pending');
+        
+        if (!error && data) {
+          setPendingInvitesCount(data.length);
+        }
+        
+        // Set up real-time subscription for new invitations
+        const subscription = supabase
+          .channel('user_invitations')
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'user_connections',
+              filter: `friend_id=eq.${currentUser.id}`
+            },
+            async (payload) => {
+              if (payload.new.status === 'pending') {
+                setPendingInvitesCount(prev => prev + 1);
+                
+                // Get sender's name for the toast
+                try {
+                  const { data: senderData } = await supabase.rpc('get_user_by_id', { 
+                    user_id: payload.new.user_id 
+                  });
+                  const senderName = senderData?.[0]?.full_name || senderData?.[0]?.email || 'Someone';
+                  
+                  // Show toast notification
+                  toast((t) => (
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">New Friend Request!</p>
+                        <p className="text-sm text-gray-600">{senderName} wants to connect</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          window.location.href = '/chat';
+                          toast.dismiss(t.id);
+                        }}
+                        className="ml-4 text-sm font-medium text-scout-accent-500 hover:text-scout-accent-600"
+                      >
+                        View
+                      </button>
+                    </div>
+                  ), {
+                    duration: 6000,
+                    icon: '👥',
+                  });
+                } catch (error) {
+                  console.error('Error getting sender info:', error);
+                }
+              }
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'user_connections',
+              filter: `friend_id=eq.${currentUser.id}`
+            },
+            (payload) => {
+              // If invitation was accepted/declined, decrease count
+              if (payload.old.status === 'pending' && payload.new.status !== 'pending') {
+                setPendingInvitesCount(prev => Math.max(0, prev - 1));
+              }
+            }
+          )
+          .subscribe();
+        
+        return () => {
+          subscription.unsubscribe();
+        };
+      }
+    } catch (error) {
+      console.error('Error loading user or invites:', error);
+    }
+  };
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -73,7 +176,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
       {propIsOpen === undefined && (
         <button
           onClick={() => setInternalIsOpen(!internalIsOpen)}
-          className="nav-toggle fixed top-4 right-4 z-[100] p-2 rounded-md bg-white dark:bg-gray-800 shadow-md"
+          className="nav-toggle fixed top-3 right-3 z-[100] p-2 rounded-md bg-white dark:bg-gray-800 shadow-md"
           aria-label={isOpen ? "Close menu" : "Open menu"}
         >
           {isOpen ? (
@@ -99,18 +202,20 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
           transition: 'right 0.3s ease-in-out'
         }}
       >
-        <div className="pt-16 pb-6 px-4">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
-            Scout<span className="text-green-600">2</span>Retire
-          </h2>
-          <nav className="space-y-1">
+        <div className="px-4 pb-6">
+          <div className="h-9 flex items-center">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white s2r-logo">
+              Scout<span style={{ color: '#f66527' }}>2</span>Retire
+            </h2>
+          </div>
+          <nav className="space-y-1 mt-6">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center p-3 rounded-md transition-colors ${
+                  className={`flex items-center justify-between p-3 rounded-md transition-colors ${
                     isActive
                       ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -118,6 +223,12 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
                 >
                   {/* FIXED 09JUN25: REMOVED span with mr-3 and item.icon - NO MORE ICONS! */}
                   <span className="font-medium">{item.label}</span>
+                  {/* Show badge for pending invitations on Chat */}
+                  {item.path === '/chat' && pendingInvitesCount > 0 && (
+                    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold text-white bg-red-500 rounded-full">
+                      {pendingInvitesCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
