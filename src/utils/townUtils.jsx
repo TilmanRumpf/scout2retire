@@ -92,6 +92,9 @@ export const toggleFavorite = async (userId, townId, townName = null, townCountr
     
     // Check if town is already favorited - use maybeSingle() instead of single()
     console.log("Checking if town is already favorited...");
+    console.log("User ID:", userIdString);
+    console.log("Town ID:", normalizedTownId);
+    
     const { data: existingFavorite, error: checkError } = await supabase
       .from('favorites')
       .select('*')
@@ -102,6 +105,18 @@ export const toggleFavorite = async (userId, townId, townName = null, townCountr
     if (checkError) {
       console.error("Error checking favorite status:", checkError);
       console.error("Error details:", checkError.details, checkError.hint);
+      console.error("User ID causing error:", userIdString);
+      
+      // If it's a foreign key error, provide helpful message
+      if (checkError.message?.includes('foreign key constraint')) {
+        return { 
+          success: false, 
+          error: { 
+            ...checkError, 
+            message: "Database configuration error. Please contact support." 
+          } 
+        };
+      }
       return { success: false, error: checkError };
     }
 
@@ -149,17 +164,48 @@ export const toggleFavorite = async (userId, townId, townName = null, townCountr
     }
 
     // Otherwise, add as favorite
+    // Make sure we have town name and country for the insert
+    if (!townName || !townCountry) {
+      const { data: townData, error: townError } = await supabase
+        .from('towns')
+        .select('name, country')
+        .eq('id', normalizedTownId)
+        .single();
+
+      if (townError || !townData) {
+        console.error("Error fetching town details:", townError);
+        return { success: false, error: { message: "Could not fetch town details" } };
+      }
+      
+      townName = townData.name;
+      townCountry = townData.country;
+    }
+    
     const { error: addError } = await supabase
       .from('favorites')
       .insert([{
         user_id: userIdString,
         town_id: normalizedTownId,
+        town_name: townName,
+        town_country: townCountry,
         created_at: new Date().toISOString()
       }]);
 
     if (addError) {
       console.error("Error adding favorite:", addError);
       console.error("Insert error details:", addError.details, addError.hint);
+      console.error("Insert data:", { userIdString, normalizedTownId, townName, townCountry });
+      
+      // If it's a foreign key error, provide helpful message
+      if (addError.message?.includes('foreign key constraint')) {
+        return { 
+          success: false, 
+          error: { 
+            ...addError, 
+            message: "Database configuration error. Please run the fix_favorites_issue_now.sql script in Supabase." 
+          } 
+        };
+      }
       return { success: false, error: addError };
     }
     
