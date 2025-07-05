@@ -9,6 +9,59 @@ import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
 import { User, Settings, Bell, Shield, Palette, Globe } from 'lucide-react';
 
+// Fix retirement date missing month
+window.fixRetirementMonth = async () => {
+  console.log('=== FIXING RETIREMENT MONTH ===');
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    console.log('No authenticated user');
+    return;
+  }
+  
+  // Get onboarding data
+  const { data: onboarding, error } = await supabase
+    .from('onboarding_responses')
+    .select('*')
+    .eq('user_id', user.id);
+    
+  if (error || !onboarding || onboarding.length === 0) {
+    console.error('Error or no data:', error);
+    return;
+  }
+  
+  const record = onboarding[0];
+  const timeline = record.current_status?.retirement_timeline;
+  
+  console.log('Current timeline:', timeline);
+  
+  if (timeline && (timeline.target_month === undefined || timeline.target_month === null)) {
+    console.log('Missing target_month detected! Fixing...');
+    
+    const updatedCurrentStatus = {
+      ...record.current_status,
+      retirement_timeline: {
+        ...timeline,
+        target_month: 1
+      }
+    };
+    
+    const { error: updateError } = await supabase
+      .from('onboarding_responses')
+      .update({ current_status: updatedCurrentStatus })
+      .eq('id', record.id);
+      
+    if (updateError) {
+      console.error('Update failed:', updateError);
+    } else {
+      console.log('✅ SUCCESS! target_month set to 1 (January)');
+      console.log('Reload the page to see the updated retirement date');
+    }
+  } else {
+    console.log('target_month already exists:', timeline?.target_month);
+  }
+};
+
 // Debug function for retirement date issue
 window.debugRetirementDate = async () => {
   console.log('=== DEBUGGING RETIREMENT DATE ===');
