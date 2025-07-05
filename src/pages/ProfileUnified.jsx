@@ -9,110 +9,6 @@ import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
 import { User, Settings, Bell, Shield, Palette, Globe } from 'lucide-react';
 
-// Fix retirement date missing month
-window.fixRetirementMonth = async () => {
-  console.log('=== FIXING RETIREMENT MONTH ===');
-  
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    console.log('No authenticated user');
-    return;
-  }
-  
-  // Get onboarding data
-  const { data: onboarding, error } = await supabase
-    .from('onboarding_responses')
-    .select('*')
-    .eq('user_id', user.id);
-    
-  if (error || !onboarding || onboarding.length === 0) {
-    console.error('Error or no data:', error);
-    return;
-  }
-  
-  const record = onboarding[0];
-  const timeline = record.current_status?.retirement_timeline;
-  
-  console.log('Current timeline:', timeline);
-  
-  if (timeline && (timeline.target_month === undefined || timeline.target_month === null)) {
-    console.log('Missing target_month detected! Fixing...');
-    
-    const updatedCurrentStatus = {
-      ...record.current_status,
-      retirement_timeline: {
-        ...timeline,
-        target_month: 1
-      }
-    };
-    
-    const { error: updateError } = await supabase
-      .from('onboarding_responses')
-      .update({ current_status: updatedCurrentStatus })
-      .eq('id', record.id);
-      
-    if (updateError) {
-      console.error('Update failed:', updateError);
-    } else {
-      console.log('✅ SUCCESS! target_month set to 1 (January)');
-      console.log('Reload the page to see the updated retirement date');
-    }
-  } else {
-    console.log('target_month already exists:', timeline?.target_month);
-  }
-};
-
-// Debug function for retirement date issue
-window.debugRetirementDate = async () => {
-  console.log('=== DEBUGGING RETIREMENT DATE ===');
-  
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    console.log('No authenticated user');
-    return;
-  }
-  
-  console.log('User ID:', user.id);
-  console.log('User Email:', user.email);
-  
-  // Get onboarding data
-  const { data: onboarding, error } = await supabase
-    .from('onboarding_responses')
-    .select('*')
-    .eq('user_id', user.id);
-    
-  if (error) {
-    console.error('Error fetching onboarding:', error);
-    return;
-  }
-  
-  console.log('Onboarding records found:', onboarding?.length || 0);
-  
-  if (onboarding && onboarding.length > 0) {
-    const data = onboarding[0];
-    console.log('Full onboarding data:', data);
-    console.log('current_status:', data.current_status);
-    console.log('retirement_timeline:', data.current_status?.retirement_timeline);
-    
-    if (data.current_status?.retirement_timeline) {
-      const timeline = data.current_status.retirement_timeline;
-      console.log('Timeline fields:', {
-        target_year: timeline.target_year,
-        target_month: timeline.target_month,
-        target_day: timeline.target_day,
-        status: timeline.status
-      });
-    }
-  }
-  
-  // Get user profile
-  const { data: profile } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', user.id);
-    
-  console.log('User profile:', profile?.[0]);
-};
 
 // Reusable toggle switch component
 const ToggleSwitch = ({ id, checked, onChange, label, description }) => (
@@ -223,25 +119,8 @@ export default function ProfileUnified() {
       if (success && data) {
         setOnboardingData(data);
         
-        // Fallback: if onboarding data exists but profile doesn't have retirement date,
-        // update the profile with the onboarding data
-        if (data.current_status?.retirement_timeline && !userProfile?.retirement_date) {
-          const timeline = data.current_status.retirement_timeline;
-          if (timeline.target_year && timeline.target_day) {
-            // Handle missing target_month - default to January (1)
-            const month = timeline.target_month || 1;
-            const retirementDate = new Date(timeline.target_year, month - 1, timeline.target_day);
-            
-            // Update the user's profile with the retirement date
-            await supabase
-              .from('users')
-              .update({ 
-                retirement_date: retirementDate.toISOString(),
-                retirement_year_estimate: timeline.target_year
-              })
-              .eq('id', currentUser.id);
-          }
-        }
+        // Note: Removed automatic profile update due to 400 error
+        // The retirement date will be displayed from onboarding data directly
       }
       
       // Load favorites count
