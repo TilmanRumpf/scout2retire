@@ -45,7 +45,7 @@ export default function FilterBarV3({
         {/* Sort Button */}
         <button
           onClick={() => toggleDropdown('sort')}
-          className="flex-1 sm:flex-initial flex items-center justify-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors relative"
+          className="flex-1 sm:flex-initial flex items-center justify-start gap-1 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors relative"
         >
           <SortDesc size={14} />
           <span>Sort</span>
@@ -86,7 +86,7 @@ export default function FilterBarV3({
         <div className="relative">
           <button
             onClick={() => toggleDropdown('location')}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-1 text-sm ${
+            className={`flex-1 sm:flex-initial flex items-center justify-start gap-1 text-sm ${
               activeFilters.location > 0
                 ? 'text-scout-accent-600 dark:text-scout-accent-400 font-medium'
                 : 'text-gray-600 dark:text-gray-400'
@@ -149,7 +149,7 @@ export default function FilterBarV3({
         <div className="relative">
           <button
             onClick={() => toggleDropdown('cost')}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-1 text-sm ${
+            className={`flex-1 sm:flex-initial flex items-center justify-start gap-1 text-sm ${
               isFilterActive(filterCostRange)
                 ? 'text-scout-accent-600 dark:text-scout-accent-400 font-medium'
                 : 'text-gray-600 dark:text-gray-400'
@@ -199,7 +199,7 @@ export default function FilterBarV3({
         <div className="relative">
           <button
             onClick={() => toggleDropdown('match')}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-1 text-sm ${
+            className={`flex-1 sm:flex-initial flex items-center justify-start gap-1 text-sm ${
               isFilterActive(filterMatchRange)
                 ? 'text-scout-accent-600 dark:text-scout-accent-400 font-medium'
                 : 'text-gray-600 dark:text-gray-400'
