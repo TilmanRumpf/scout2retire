@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Globe2, Languages, Utensils, Building, Music, Calendar, Gauge, Home } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
@@ -155,27 +155,7 @@ export default function OnboardingCulture() {
     loadExistingData();
   }, [navigate]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value
-        }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-  };
-
-  const handleMultiSelect = (fieldName, value, isNested = false) => {
+    const handleMultiSelect = (fieldName, value, isNested = false) => {
     if (isNested) {
       const [parent, child] = fieldName.split('.');
       setFormData(prev => {
@@ -316,14 +296,14 @@ export default function OnboardingCulture() {
   ];
 
   // Simple slider component with consistent icon colors
-  const ImportanceSlider = ({ category, icon: Icon }) => {
+  const ImportanceSlider = ({ category, icon }) => {
     const value = formData.cultural_importance[category.id];
     
     return (
       <div className="mb-2">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center">
-            <Icon size={16} className={`mr-1.5 lg:mr-2 ${uiConfig.colors.body}`} />
+            {React.createElement(icon, { size: 16, className: `mr-1.5 lg:mr-2 ${uiConfig.colors.body}` })}
             <span className={`text-xs sm:text-sm lg:text-base ${uiConfig.colors.body}`}>
               {category.label}
             </span>

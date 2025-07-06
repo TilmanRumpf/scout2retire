@@ -24,21 +24,6 @@ export default function HeaderMockup() {
     { id: 7, key: 'costs', label: 'Costs', icon: DollarSign }
   ];
   
-  // Calculate which 5 steps to show based on current step
-  const getVisibleSteps = () => {
-    if (currentOnboardingStep <= 3) {
-      // Show first 5 steps
-      return allOnboardingSteps.slice(0, 5);
-    } else if (currentOnboardingStep >= 5) {
-      // Show last 5 steps
-      return allOnboardingSteps.slice(2, 7);
-    } else {
-      // Center current step (position 3) with 2 before and 2 after
-      const startIndex = currentOnboardingStep - 3;
-      return allOnboardingSteps.slice(startIndex, startIndex + 5);
-    }
-  };
-  
   // Fetch actual town count from database - dynamic, not static
   useEffect(() => {
     const fetchTownCount = async () => {

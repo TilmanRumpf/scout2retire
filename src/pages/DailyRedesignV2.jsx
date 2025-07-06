@@ -93,7 +93,7 @@ export default function DailyRedesignV2() {
   // Mock function to fetch recent towns
   const fetchRecentTowns = async () => {
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('towns')
         .select('*')
         .order('created_at', { ascending: false })
@@ -174,7 +174,7 @@ export default function DailyRedesignV2() {
         ]
       };
       
-      const isRegion = regionDefinitions.hasOwnProperty(regionName);
+      const isRegion = Object.prototype.hasOwnProperty.call(regionDefinitions, regionName);
       
       if (isRegion) {
         // Use the regions array column which is now populated

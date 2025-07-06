@@ -114,7 +114,7 @@ export const getScoreThresholds = () => {
  * Get confidence level based on data completeness
  */
 export const getConfidenceLevel = (dataCompleteness) => {
-  const config = getScoringConfig();
+  // const config = getScoringConfig(); // unused
   if (dataCompleteness >= 90) return 'High';
   if (dataCompleteness >= 70) return 'Medium';
   return 'Low';

@@ -7,7 +7,6 @@ import SimpleImage from '../components/SimpleImage';
 import PageErrorBoundary from '../components/PageErrorBoundary';
 import UnifiedHeader from '../components/UnifiedHeader';
 import TownRadarChart from '../components/TownRadarChart';
-import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 import { Sparkles, MapPin } from 'lucide-react';
 import supabase from '../utils/supabaseClient';
@@ -47,8 +46,6 @@ export default function TownDiscovery() {
   const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
   const [selectedTown, setSelectedTown] = useState(null);
-  const [isPersonalized, setIsPersonalized] = useState(false);
-  const [userPreferences, setUserPreferences] = useState(null);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   
   // Filter and sort states
@@ -114,8 +111,6 @@ export default function TownDiscovery() {
 
         if (townSuccess) {
           setTowns(allTowns);
-          setIsPersonalized(isPersonalizedResult);
-          setUserPreferences(userPrefs); // Store the user preferences
           
           // Log personalization status
           if (isPersonalizedResult) {
@@ -214,7 +209,8 @@ export default function TownDiscovery() {
         setFilterCountry('all');
       }
     }
-  }, [filterRegion, towns]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterRegion, towns, filterCountry]); // getUniqueCountries omitted to avoid infinite loop
 
   // Cost range helper
   const getCostRange = (cost) => {

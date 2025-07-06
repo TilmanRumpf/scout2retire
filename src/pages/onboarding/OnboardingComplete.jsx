@@ -18,7 +18,8 @@ export default function OnboardingComplete() {
 
   useEffect(() => {
     loadTopMatches();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Dependencies intentionally omitted - loadTopMatches should only run once on mount
 
   const loadTopMatches = async () => {
     try {

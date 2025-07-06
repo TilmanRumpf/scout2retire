@@ -1,267 +1,319 @@
 # CLAUDE.md - Scout2Retire Development Guide
 
-This guide helps Claude Code (claude.ai/code) maintain consistency and quality when working on Scout2Retire.
+## 🎯 Project Mission & Current State
 
-## 🎯 Project Mission
+Scout2Retire empowers people aged 55+ to discover their ideal retirement destination. **Current Status**: Frontend is excellent and well-liked. Backend needs work to utilize the powerful onboarding data and frontend capabilities.
 
-Scout2Retire empowers people aged 55+ to discover their ideal retirement destination through personalized, data-driven recommendations. We prioritize clarity, accessibility, and trustworthy guidance for life's next chapter.
-
-**Core Values**: Mobile-first • Accessibility • Data integrity • Professional aesthetics • User empowerment
+**Core Focus**: Make backend match the quality of frontend. Utilize onboarding data better.
 
 ---
 
-## 🔒 SINGLE SOURCE OF TRUTH - NEVER VIOLATE
+## 🔧 SESSION STARTUP (Quick Check)
 
-### Design System Hierarchy
-1. **uiConfig.ts** - The ONLY source for:
-   - All colors, spacing, typography
-   - Button sizes and styles  
-   - Component styles
-   - Layout patterns
+```bash
+# Quick verification (no approval needed)
+curl -f http://localhost:5173 && echo "✅ App running"
+npx supabase status | grep "RUNNING" && echo "✅ Supabase ready"
+cat .env | head -2  # Check environment
+```
 
-2. **tailwind.config.js** - ONLY for:
-   - Base color definitions
-   - Breakpoints
-   - Core utilities
-
-3. **NO INLINE STYLES** - Never use:
-   - Hardcoded padding/margin values
-   - Custom color classes
-   - Ad-hoc sizing
-
-### Onboarding Width Consistency - CRITICAL
-**ALL onboarding steps MUST use identical width classes:**
-- Container: `max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto p-4 sm:p-6 lg:p-8`
-- Bottom Navigation: `max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto`
-- NEVER use `max-w-md` - creates visual inconsistency
-- Test width consistency across ALL steps when making changes
-
-### Button Size Standard
-MINIMUM VIABLE SIZE: Use the smallest possible while maintaining:
-- Mobile tap target: 44px height minimum (iOS standard)
-- Desktop: Can be smaller (36px) with proper hover states
-- Padding: py-2 px-3 (8px vertical, 12px horizontal) DEFAULT
-- NO LARGER unless explicitly required for accessibility
+**Simple Rule**: If localhost:5173 works and Supabase is running, proceed with development.
 
 ---
 
-## ⚠️ CRITICAL EXECUTION RULES
+## 🚫 DANGEROUS ACTIONS - ASK FIRST
 
-### Step-by-Step Database Changes - NEVER SKIP
+**ONLY ask for approval for these TRULY dangerous actions:**
+- Deleting files (`rm`, `DELETE`, removing entire files)
+- Dropping database tables (`DROP TABLE`, `DELETE FROM`)
+- Modifying production database directly
+- Changing .env to point to production  
+- Git force pushes or destructive git operations (`git reset --hard`, `git push --force`)
+- Removing entire code sections or components
 
-**Every database change MUST follow this sequence:**
+## ✅ NORMAL WORK - NEVER ASK FOR APPROVAL
 
-1. **VERIFY STRUCTURE FIRST**
-   ```sql
-   SELECT column_name, data_type FROM information_schema.columns 
-   WHERE table_name = 'your_table' ORDER BY ordinal_position;
-   ```
+**These are ROUTINE development tasks - just do them:**
+- Adding/modifying CSS classes or Tailwind utilities
+- Updating component code and JSX
+- Creating new files or components
+- Reading files, analyzing code, searching codebase
+- **SAFE BASH COMMANDS for analysis: grep, ls, cat, find, wc, head, tail**
+- **Any read-only commands that just examine files or count things**
+- Making non-destructive database queries (SELECT)
+- Testing and debugging
+- Code analysis and recommendations
+- Updating imports or dependencies
+- Modifying styling, layout, or responsive design
+- Adding features or functionality
+- Updating existing components with new props or logic
 
-2. **ONE CHANGE AT A TIME** - Create single-purpose SQL files
-3. **WAIT FOR CONFIRMATION** - User must verify each step
-4. **NO ASSUMPTIONS** - Never assume columns exist or previous steps succeeded
-
-**Example Flow:**
+**SAFE ANALYTICAL BASH COMMANDS (Never ask approval):**
+```bash
+grep -r "pattern" src/           # Searching files
+ls -la src/pages/               # Listing files  
+cat file.jsx                    # Reading files
+find src/ -name "*.jsx"         # Finding files
+wc -l file.jsx                  # Counting lines
+head -10 file.jsx               # Reading file content
 ```
-Claude: "First, run check_table_structure.sql"
-[User confirms]
-Claude: "Now run add_regions_column.sql"
-[User confirms]
-Claude: "Finally, run populate_regions.sql"
-```
 
-### No Assumptions Policy
-- **NO JUMPING TO CONCLUSIONS** - Investigate before proposing solutions
-- **AVOID HYPERACTIVITY** - Understand context before acting
-- **ASK WHEN UNCERTAIN** - Better to clarify than assume
-- **BOTH MAKE MISTAKES** - User typos and Claude errors are normal
-- **NEVER CLAIM "FIXED" WITHOUT VERIFICATION** - Test thoroughly before declaring success
+**Key Rule**: If it's normal coding work OR safe analysis commands, just do it. Don't ask.
 
-### Verification Requirements
-- Test all changes locally before committing
-- Run linting before marking tasks complete
-- Verify dark mode appearance for all UI changes
-- Check mobile responsiveness for new components
+## 🔧 APPROVAL DECISION TREE
+
+**Ask yourself**: "Would a regular developer need permission for this?"
+- **Updating CSS classes**: NO - just do it
+- **Adding responsive breakpoints**: NO - just do it  
+- **Modifying component logic**: NO - just do it
+- **Deleting entire files**: YES - ask first
+- **Dropping database tables**: YES - ask first
+
+**If in doubt about whether something is dangerous**: It probably isn't. Just do normal development work.
 
 ---
 
-## 🏗️ Technical Architecture
+## 🎯 DEVELOPMENT PRIORITIES
 
-### Tech Stack
-- **Frontend**: React 18.2, React Router v6, Vite 6.3
-- **Styling**: Tailwind CSS 3.3 (sage green theme #8fbc8f)
-- **Backend**: Supabase (Auth + PostgreSQL)
-- **UI Libraries**: Lucide React icons, Recharts, React Hot Toast
-- **State**: Context API for themes, local state for components
+### Frontend Status: ✅ EXCELLENT
+- Onboarding flow captures rich user data (7 steps)
+- Modern React 18 + Vite setup
+- Professional UI with uiConfig.ts design system
+- Mobile-first, accessible design
+- **User experience is well-liked and working**
+- **Don't fix what isn't broken**
 
-### Project Structure
-```
-src/
-├── pages/              # Route components
-│   └── onboarding/     # 6-step onboarding flow
-├── components/         # Reusable UI components
-├── styles/            
-│   └── uiConfig.ts     # Centralized design tokens
-├── utils/              # Business logic
-└── contexts/           # Global state management
-```
+### Backend Status: ❌ UNDERUTILIZED  
+**Main Problem**: Backend doesn't leverage the rich onboarding data the frontend collects.
 
-### Key Systems
-- **Authentication**: Supabase Auth with onboarding gates
-- **Routing**: Public → Onboarding → Protected app routes
-- **Matching Algorithm**: Weighted scoring across 6 categories
-- **Dark Mode**: System-wide with refined sage green palette
+**Key Issues to Fix:**
+1. **Matching Logic**: ~5 different approaches exist, need consolidation
+2. **Data Utilization**: Onboarding data not fully used for recommendations
+3. **Database Schema**: Outdated fields, inconsistent with frontend
+4. **Performance**: Backend logic doesn't match frontend quality
 
----
+### Analysis Protocol
+**When asked to analyze frontend/UI:**
+1. **Start with facts**: Count different approaches, list where used
+2. **Assess actual problems**: Are users complaining? Is UX broken?
+3. **Respect working solutions**: Don't redesign what users like
+4. **Simple summary first**: 3-5 lines of facts, not redesign plans
+5. **Ask before major changes**: "Should we change this working system?"
 
-## 🎨 Design Philosophy
+**Example**: "Found 4 width approaches. No user complaints. Current UX works well. Want to standardize anyway?"
 
-### Visual Standards
-- **SUBTLE DESIGN ONLY** - Clean, professional, minimalist
-- **NO EMOJIS IN UI** - Text-based interface only
-- **NO STAR RATINGS** - Use descriptive text (e.g., "Excellent")
-- **SAGE GREEN ACCENT** - Primary brand color #8fbc8f
-- **MOBILE-FIRST** - Every component must work on phones
-
-### UI Principles
-1. **Typography First** - Use font hierarchy for visual interest
-2. **Generous Spacing** - iOS 8-point grid system
-3. **High Contrast** - WCAG AA compliance for 55+ users
-4. **Consistent Components** - Always use uiConfig.ts tokens
-5. **Professional Tone** - Trustworthy, not playful
-
-### Dark Mode Colors
-```
-Light Mode: sage green 500-600 (#47824b - #346738)
-Dark Mode: sage green 300-400 (#8fbc8f - #689f6a)
-Never use muddy dark greens (600-700) in dark mode
-```
+### Current Objective
+**Make backend worthy of the excellent frontend.** Focus on:
+- Database cleanup and optimization
+- Matching logic consolidation  
+- Better utilization of onboarding preference data
+- Performance improvements
 
 ---
 
-## 📊 Data Architecture
+## 🗄️ DATABASE WORK
 
-### Onboarding-Driven Design
-Everything aligns with the 6 onboarding categories:
-1. **Region** - Geographic preferences
-2. **Climate** - Weather preferences  
-3. **Culture** - Lifestyle and community
-4. **Hobbies** - Activities and interests
-5. **Administration** - Healthcare, safety, visa
-6. **Budget** - Cost of living ranges
+### Development Environment
+- **User works**: Local code + Local Supabase
+- **Production**: GitHub → Vercel → Online Supabase  
+- **Claude monitors**: Local database, keeps synchronized
 
-### Data Consistency Rules
-- **Every field traces to onboarding** - No orphan data
-- **Standardized values** - Use exact onboarding options
-- **Array fields for multi-select** - With CHECK constraints
-- **Calculated fields cached** - Not computed real-time
-- **Water bodies separate from regions** - Geographic accuracy
+### Safe Commands (Use Freely)
+```bash
+# Database analysis (no approval needed)
+docker exec supabase_db_scout2retire psql -U postgres -d postgres -c "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';"
 
-### Towns Table Requirements
-Critical fields for matching:
-- `regions[]` - Multiple region associations
-- `water_bodies[]` - Coastal/lake classifications
-- `living_environments[]` - rural/suburban/urban
-- `climate_tags[]` - Standardized weather descriptors
-- Healthcare/safety as good/functional/basic
-- All costs in USD with locale conversion
+# Check data patterns
+docker exec supabase_db_scout2retire psql -U postgres -d postgres -c "SELECT COUNT(*) FROM users;"
 
-### Query Optimization
-- Use materialized views for complex calculations
-- Index all array contains queries
-- Batch similar operations
-- Implement database triggers for auto-updates
+# Analyze schema
+npx supabase db diff
+```
 
----
-
-## 🖼️ Image Management
-
-### Requirements
-- **Location-specific images only** - No generic stock photos
-- **No animals or objects** - Unless defining feature
-- **Professional quality** - Well-composed, good lighting
-- **Fallback hierarchy** - Town → Country → Feature → Generic
-
-### Implementation
-```javascript
-// Always validate town images
-import LazyImageValidated from '../components/LazyImageValidated';
-
-<LazyImageValidated
-  location={town}  // Full context object
-  src={town.image_url_1}
-  alt={`${town.name}, ${town.country}`}
-  className="w-full h-48 object-cover"
-/>
+### Dangerous Commands (Ask First)
+```bash
+# These need approval:
+DROP TABLE...
+DELETE FROM...
+rm -rf...
 ```
 
 ---
 
-## 🤝 Working Principles
+## 🔒 DESIGN SYSTEM
+
+### Single Source of Truth
+- **uiConfig.ts** - ALL styling decisions
+- **scout-accent color** (#8fbc8f) for branding
+- **Mobile-first** approach
+- **Professional aesthetic** (no emojis in UI)
+
+### Width Standards (Responsive Layout System)
+**Standard responsive width progression:**
+- **Mobile (default):** max-w-2xl = 672px max width
+- **Large (lg: 1024px+):** max-w-4xl = 896px max width  
+- **Extra Large (xl: 1280px+):** max-w-5xl = 1024px max width
+- **2X Large (2xl: 1536px+):** max-w-7xl = 1280px (matches daily page)
+
+This approach provides consistency on typical screens while allowing full width on very large displays.
+
+**Implementation Pattern:**
+```jsx
+className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8"
+```
+
+### Critical Standards
+- Onboarding width: Follow responsive progression above
+- Button minimum: `py-2 px-3` (44px mobile tap)
+- Dark mode compatible sage green
+
+---
+
+## ⚡ WORKFLOW PRINCIPLES
+
+## ⚡ WORKFLOW PRINCIPLES
+
+### Analysis Approach - CRITICAL
+**When asked to analyze something, provide SIMPLE FACTS first, not redesign plans.**
+
+**✅ Good Analysis Response:**
+- "You have 4 different width approaches: max-w-md, max-w-4xl, max-w-6xl, max-w-7xl"
+- "Here's where each is used: [list pages]"
+- "Current UX appears to be working well"
+- "No obvious user complaints about this"
+
+**❌ Bad Analysis Response:**
+- Complex tier systems and redesign plans
+- Implementation strategies and migration guides
+- Solutions to problems that may not exist
+- Theoretical improvements to working functionality
+
+### Consistency Analysis Protocol
+**When analyzing for consistency issues:**
+
+1. **Identify the majority pattern**: "Most pages (8 out of 10) use max-w-4xl lg:max-w-6xl"
+2. **Name the majority reference**: "Like the welcome page, profile page, settings page"
+3. **Identify specific outliers**: "A few pages like onboarding step 6 and comparison page don't match this"
+4. **Ask targeted question**: "Shall I make step 6 and comparison page look like the welcome page?"
+
+**Example Consistency Report:**
+- "Most pages use width XYZ, like the welcome page"
+- "A few pages, like pages 6 and 7, don't match this"  
+- "Shall I make page 6 and 7 look like the welcome page?"
+
+**Key Principle**: Don't fix what isn't broken. Frontend is already pretty cool and liked by users. Focus on making outliers consistent with the majority pattern.
+
+### Analysis vs. Implementation
+**TWO SEPARATE PHASES:**
+1. **Analysis Phase**: Simple facts, current state, real problems identified
+2. **Implementation Phase**: Solutions and changes (ONLY if problems are real)
+
+**Never jump from "analyze this" to "here's how to redesign it"**
+
+### Development Efficiency
+**Claude Code should work efficiently:**
+- **Read and analyze freely** - No approval for simple analysis
+- **Think before coding** - Understand actual problems first
+- **Ask only for dangerous actions** - File deletion, production changes
+- **Focus on backend improvement** - Match frontend quality
+- **Utilize onboarding data better** - This is the main goal
+- **Don't over-engineer working solutions** - Respect current UX quality
 
 ### Communication Style
-- **DIRECT & EFFICIENT** - No fluff or pleasantries
-- **FOCUS ON WORK** - Skip praise, deliver results
-- **ASK FOR CLARITY** - Requirements often need refinement
-- **EXPLAIN TECHNICAL DECISIONS** - User needs context
+- **Direct and efficient** - Skip excessive approval requests for routine work
+- **Just do normal coding** - CSS changes, component updates, etc. need no approval
+- **Simple analysis first** - Facts before solutions
+- **Focus on making backend better** - Primary objective
+- **Work at normal development pace** - Stop asking for permission to code
+- **Respect working frontend** - Don't fix what users like
 
-### Development Workflow
-1. **Understand fully** before implementing
-2. **Plan approach** before coding
-3. **Test thoroughly** including edge cases
-4. **Document patterns** in CLAUDE.md
-5. **Verify mobile & dark mode** always
+**STOP ASKING APPROVAL FOR:**
+- Updating CSS classes (like max-w-2xl lg:max-w-4xl)
+- Modifying component code
+- Adding responsive design
+- Normal development tasks
 
-### Score Transparency
-When showing match percentages:
-- Display as "Matching preferences (weighted avg: 73%)"
-- Explain that overall score uses adaptive weights
-- Be consistent across all score displays
+### Safety Balance - CRITICAL CLARIFICATION
+```
+❌ DANGEROUS (Ask first):
+- rm file.jsx (deleting files)
+- DROP TABLE users (destroying data)
+- git push --force (destructive git)
+- Pointing .env to production
 
----
-
-## 📚 Quick Reference
-
-### Essential Commands
-```bash
-npm run dev          # Start development (usually port 5173)
-npm run build        # Production build
-npm run lint         # Check code quality
-npm run preview      # Test production build
+✅ ROUTINE DEVELOPMENT (Never ask):
+- className="max-w-2xl lg:max-w-4xl" (CSS changes)
+- Adding responsive breakpoints  
+- Updating component props
+- Modifying JSX structure
+- Creating new components
+- Database SELECT queries
+- Code analysis and refactoring
+- Adding features or fixing bugs
+- Updating imports or styling
 ```
 
-### Environment Setup
-1. Copy `.env.example` to `.env`
-2. Add Supabase credentials
-3. Verify database schema matches code
-
-### Common Patterns
-- **Navigation**: Onboarding uses wrapper, app uses QuickNav
-- **State**: Theme in context, everything else local
-- **Errors**: Toast notifications for user feedback
-- **Icons**: Lucide React only, consistent sizing
-
-### Git Workflow
-- Clear commit messages explaining "why"
-- Test before committing
-- Include "🤖 Generated with Claude Code" in commits
-- Never commit without user approval
-
-### Safe Points
-When creating GitHub safe points (tags):
-- Use format: `safe-point-YYYY-MM-DD-HHMM` (e.g., safe-point-2025-07-05-0035)
-- Include current date and time (24-hour format, no colon between hours and minutes)
-- Add descriptive message about what was accomplished
-- Always push the tag to GitHub after creating it
+**Golden Rule**: Normal coding work = no approval needed. Only ask for destructive actions.
 
 ---
 
-## 📝 Document Maintenance
+## 📊 ONBOARDING DATA UTILIZATION
 
-Update this guide when:
-- User preferences become patterns
-- New technical decisions affect multiple files
-- Terminology standards emerge
-- Design principles evolve
+### Rich Data Collected (7 Categories)
+1. **Current Status** - Citizenship, timeline, family
+2. **Region** - Geographic preferences  
+3. **Climate** - Weather needs
+4. **Culture** - Lifestyle preferences
+5. **Hobbies** - Activity interests
+6. **Administration** - Healthcare, safety priorities
+7. **Budget** - Financial constraints
 
-Remember: This document ensures consistency across sessions. Keep it current, clear, and actionable.
+### Backend Challenge
+**Frontend collects this rich data, but backend matching logic doesn't fully utilize it.** This is the core problem to solve.
+
+---
+
+## 🎯 SUCCESS METRICS
+
+**Primary Goal**: Make backend functionality match frontend quality **WITHOUT breaking working UX**
+
+**Backend Improvements:**
+- Better utilization of onboarding preference data
+- Consolidated, efficient matching algorithms  
+- Database schema that supports rich recommendations
+- Performance that matches the polished UI experience
+
+**Frontend Protection:**
+- **Preserve working user experience** that users already like
+- Don't change UI elements that are functioning well
+- Only modify frontend if solving actual user problems
+- Analyze before redesigning: "Is this broken or just different?"
+
+**Success Measure**: Users get better town recommendations that truly reflect their detailed onboarding preferences, while keeping the UX they already like.
+
+**Anti-Pattern**: Fixing theoretical problems that don't affect real users.
+
+---
+
+**PRINCIPLE**: Work efficiently, think first, ask only for dangerous actions, focus on backend improvement. **Simple analysis before complex solutions. Don't fix what users already like.**
+
+---
+
+## ⚠️ CRITICAL: STOP OVER-ASKING FOR APPROVAL
+
+**Claude Code: You are asking for approval for ROUTINE CODING TASKS. This must stop.**
+
+**Examples of what NOT to ask approval for:**
+- "Do you want me to update the CSS classes?"
+- "Should I add responsive breakpoints?"
+- "Can I modify this component?"
+- "Do you want me to edit App.jsx?"
+
+**These are NORMAL development tasks. Just do them.**
+
+**ONLY ask for approval if you're about to:**
+- Delete files or data
+- Modify production systems
+- Make destructive changes
+
+**Everything else = just code normally without asking.**

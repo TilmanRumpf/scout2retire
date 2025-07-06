@@ -108,7 +108,7 @@ export default function Login() {
     setLoading(true);
     
     try {
-      const { success, user, session, error } = await signIn(sanitizedEmail, sanitizedPassword);
+      const { success, user, error } = await signIn(sanitizedEmail, sanitizedPassword);
       
       if (success && user) {
         toast.success('Logged in successfully!');

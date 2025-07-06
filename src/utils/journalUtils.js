@@ -72,7 +72,7 @@ export const logTownActivity = async (userId, townId, activityType, townName, to
 };
 
 // Log social connections
-export const logSocialActivity = async (userId, connectedUserId, connectedUserName, activityType = 'connected') => {
+export const logSocialActivity = async (userId, connectedUserId, connectedUserName) => {
   try {
     const content = `Connected with ${connectedUserName}`;
     

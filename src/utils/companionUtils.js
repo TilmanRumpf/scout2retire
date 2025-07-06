@@ -6,13 +6,13 @@ import supabase from './supabaseClient';
 export const cancelInvitation = async (invitationId, userId) => {
   try {
     // First, let's check what we're trying to delete
-    const { data: checkData, error: checkError } = await supabase
+    const { data: checkData } = await supabase
       .from('user_connections')
       .select('*')
       .eq('id', invitationId)
       .single();
       
-    console.log("Invitation to cancel:", { checkData, checkError });
+    console.log("Invitation to cancel:", { checkData });
     
     // Try to update the status to 'cancelled' first (more likely to work with RLS)
     const { data: updateData, error: updateError } = await supabase
@@ -111,7 +111,7 @@ export const sendFriendRequest = async (requesterId, receiverEmail) => {
     const receiverId = userData.id;
 
     // Check if friendship already exists
-    const { data: existingFriendship, error: checkError } = await supabase
+    const { data: existingFriendship } = await supabase
       .from('friendships')
       .select('*')
       .or(
@@ -148,7 +148,7 @@ export const sendFriendRequest = async (requesterId, receiverEmail) => {
 
 export const acceptFriendRequest = async (friendshipId) => {
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('friendships')
       .update({
         status: 'accepted',
@@ -207,7 +207,7 @@ export const blockUser = async (blockerId, blockedUserId) => {
     }
 
     // Add to blocked users table
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('blocked_users')
       .insert([{
         blocker_id: blockerId,

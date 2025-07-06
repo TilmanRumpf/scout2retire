@@ -146,19 +146,7 @@ export default function OnboardingCosts() {
     }));
   };
 
-  const handleMultiSelect = (fieldName, value) => {
-    setFormData(prev => {
-      const current = prev[fieldName] || [];
-      return {
-        ...prev,
-        [fieldName]: current.includes(value) 
-          ? current.filter(v => v !== value)
-          : [...current, value]
-      };
-    });
-  };
-
-  const handleMobilityChange = (field, value) => {
+    const handleMobilityChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       mobility: {

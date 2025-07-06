@@ -308,7 +308,7 @@ export default function OnboardingCurrentStatus() {
               Retirement Timeline
             </label>
             <p className={`${uiConfig.font.size.xs} lg:text-sm ${uiConfig.colors.hint} mb-3 lg:mb-4`}>
-              Where are you in your retirement journey? *
+              Where are you in your retirement journey?
             </p>
             <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
               <OptionButton

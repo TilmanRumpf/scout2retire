@@ -185,12 +185,12 @@ class MetricsCollector {
   calculateDarkModeCompliance() {
     // In a real implementation, this would check actual components
     const darkModeIssues = this.metrics.darkModeIssues.length;
-    const totalComponents = 50; // Approximate number of components
+    // Unused: const totalComponents = 50; // Approximate number of components
     return Math.max(0, 100 - (darkModeIssues * 2));
   }
 
   // Calculate trend
-  calculateTrend(metric) {
+  calculateTrend() {
     // In a real implementation, this would compare with historical data
     const trends = ['improving', 'stable', 'declining'];
     return trends[Math.floor(Math.random() * trends.length)];

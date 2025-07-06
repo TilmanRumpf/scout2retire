@@ -101,7 +101,8 @@ export default function ProfileUnified() {
   // Load user data
   useEffect(() => {
     loadUserData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Dependencies intentionally omitted - loadUserData should only run once on mount
 
   const loadUserData = async () => {
     try {
@@ -211,7 +212,7 @@ export default function ProfileUnified() {
       });
       
       toast.success("Password updated successfully");
-    } catch (err) {
+    } catch {
       setPasswordError("An unexpected error occurred");
     } finally {
       setLoading(false);
@@ -249,7 +250,7 @@ export default function ProfileUnified() {
       
       toast.success("Account deleted successfully");
       navigate('/welcome');
-    } catch (err) {
+    } catch {
       toast.error("Failed to delete account");
     } finally {
       setLoading(false);
