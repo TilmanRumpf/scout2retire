@@ -19,13 +19,6 @@ export default function TownComparison() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Parse town IDs from URL
-  const getSelectedTownIds = () => {
-    const params = new URLSearchParams(location.search);
-    const townIds = params.get('towns');
-    return townIds ? townIds.split(',') : [];
-  };
-
   // Categories for comparison tabs - Updated to match the 6 onboarding categories
   const categories = [
     { id: 'overview', label: 'Overview', icon: Eye },
@@ -62,6 +55,13 @@ export default function TownComparison() {
         }
 
         setFavorites(userFavorites);
+
+        // Parse town IDs from URL
+        const getSelectedTownIds = () => {
+          const params = new URLSearchParams(location.search);
+          const townIds = params.get('towns');
+          return townIds ? townIds.split(',') : [];
+        };
 
         // Get selected town IDs from URL or use top favorites if none specified
         const selectedTownIds = getSelectedTownIds();

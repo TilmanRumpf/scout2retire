@@ -148,7 +148,7 @@ async function discoverTables() {
   
   for (const tableName of commonTables) {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from(tableName)
         .select('*')
         .limit(1)

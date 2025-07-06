@@ -205,7 +205,8 @@ const OnboardingRegion = () => {
     };
     
     loadExistingData();
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate]); // Dependencies intentionally omitted - this should only run once on mount to load saved data
 
   // Preserved original filtering logic
   const getFilteredCountries = (regionIndex) => {
@@ -342,7 +343,7 @@ const OnboardingRegion = () => {
   };
 
   // Function to get available regions (all regions always available)
-  const getAvailableRegions = (index) => {
+  const getAvailableRegions = () => {
     // Always show all regions - user should be able to reselect same region
     return regions;
   };
@@ -415,7 +416,7 @@ const OnboardingRegion = () => {
         currentStep="region_preferences" 
         completedSteps={progress.completedSteps} 
       />
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         
         <form onSubmit={handleSubmit} className="py-6">
           {/* Geographical Preferences section */}
@@ -451,7 +452,7 @@ const OnboardingRegion = () => {
                         className={`${uiConfig.components.select} appearance-none cursor-pointer focus:ring-0 focus:${uiConfig.colors.borderActive} ${uiConfig.animation.transition} h-[44px] sm:h-[48px]`}
                       >
                         <option value="">Select region</option>
-                        {getAvailableRegions(index).map(region => (
+                        {getAvailableRegions().map(region => (
                           <option key={region} value={region}>
                             {region}
                           </option>
@@ -631,7 +632,7 @@ const OnboardingRegion = () => {
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
         <div className={`fixed sm:sticky bottom-0 left-0 right-0 sm:relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-6 lg:mt-8`}>
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto">
             <div className="flex items-center">
               <button
                 type="button"

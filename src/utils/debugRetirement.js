@@ -91,6 +91,7 @@ export async function debugRetirementData(userEmail = 'tilman.rumpf@gmail.com') 
 }
 
 // Run if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  debugRetirementData().then(() => process.exit(0));
-}
+// Commented out as this is only for Node.js environment
+// if (typeof process !== 'undefined' && import.meta.url === `file://${process.argv[1]}`) {
+//   debugRetirementData().then(() => process.exit(0));
+// }

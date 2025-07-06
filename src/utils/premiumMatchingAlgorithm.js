@@ -3,11 +3,7 @@
 
 import { 
   getCategoryWeights, 
-  getBudgetScoringRanges,
-  getAdministrationWeights,
-  getHobbiesScoringBonuses,
-  getRegionScoringValues 
-} from './scoringConfigLoader';
+  } from './scoringConfigLoader';
 
 /**
  * Enhanced matching algorithm with premium features
@@ -93,62 +89,62 @@ export const calculatePremiumMatch = (town, userPreferences) => {
 /**
  * Calculate adaptive weights based on user's priorities
  */
-const calculateAdaptiveWeights = (preferences) => {
-  // Base weights for the 6 accepted categories
-  const baseWeights = {
-    region: 0.10,
-    climate: 0.15,
-    culture: 0.15,
-    hobbies: 0.15,
-    administration: 0.20,  // Includes healthcare, safety, visa, tax
-    budget: 0.25
-  };
-  
-  const weights = { ...baseWeights };
-  
-  // Healthcare priority adjustment (now part of administration)
-  if (preferences.administration?.health_considerations?.healthcare_access) {
-    const access = preferences.administration.health_considerations.healthcare_access;
-    if (access === 'full_access' || access === 'hospital_specialists') {
-      weights.administration = 0.30;
-      weights.hobbies -= 0.05;
-      weights.culture -= 0.05;
-    }
-  }
-  
-  // Budget conscious adjustment
-  if (preferences.costs?.property_tax_sensitive || 
-      preferences.costs?.income_tax_sensitive || 
-      preferences.costs?.sales_tax_sensitive) {
-    weights.budget = 0.30;
-    weights.administration = 0.25;
-    weights.hobbies -= 0.05;
-  }
-  
-  // Active lifestyle adjustment
-  if (preferences.hobbies?.activities?.length > 5 || 
-      preferences.hobbies?.interests?.length > 5) {
-    weights.hobbies = 0.20;
-    weights.culture = 0.20;
-    weights.administration -= 0.05;
-    weights.region -= 0.05;
-  }
-  
-  // Climate sensitive adjustment
-  if (preferences.climate_preferences?.seasonal_preference && 
-      preferences.climate_preferences.seasonal_preference !== 'Optional') {
-    weights.climate = 0.20;
-    weights.hobbies -= 0.05;
-  }
-  
-  // Normalize weights to ensure they sum to 1.0
-  const sum = Object.values(weights).reduce((a, b) => a + b, 0);
-  Object.keys(weights).forEach(key => {
-    weights[key] = weights[key] / sum;
-  });
-  
-  return weights;
-};
+// Unused: const calculateAdaptiveWeights = (preferences) => {
+// //   // Base weights for the 6 accepted categories
+// //   const baseWeights = {
+//     region: 0.10,
+//     climate: 0.15,
+//     culture: 0.15,
+//     hobbies: 0.15,
+//     administration: 0.20,  // Includes healthcare, safety, visa, tax
+//     budget: 0.25
+//   };
+//   
+//   const weights = { ...baseWeights };
+//   
+//   // Healthcare priority adjustment (now part of administration)
+//   if (preferences.administration?.health_considerations?.healthcare_access) {
+//     const access = preferences.administration.health_considerations.healthcare_access;
+//     if (access === 'full_access' || access === 'hospital_specialists') {
+//       weights.administration = 0.30;
+//       weights.hobbies -= 0.05;
+//       weights.culture -= 0.05;
+//     }
+//   }
+//   
+//   // Budget conscious adjustment
+//   if (preferences.costs?.property_tax_sensitive || 
+//       preferences.costs?.income_tax_sensitive || 
+//       preferences.costs?.sales_tax_sensitive) {
+//     weights.budget = 0.30;
+//     weights.administration = 0.25;
+//     weights.hobbies -= 0.05;
+//   }
+//   
+//   // Active lifestyle adjustment
+//   if (preferences.hobbies?.activities?.length > 5 || 
+//       preferences.hobbies?.interests?.length > 5) {
+//     weights.hobbies = 0.20;
+//     weights.culture = 0.20;
+//     weights.administration -= 0.05;
+//     weights.region -= 0.05;
+//   }
+//   
+//   // Climate sensitive adjustment
+//   if (preferences.climate_preferences?.seasonal_preference && 
+//       preferences.climate_preferences.seasonal_preference !== 'Optional') {
+//     weights.climate = 0.20;
+//     weights.hobbies -= 0.05;
+//   }
+//   
+//   // Normalize weights to ensure they sum to 1.0
+//   const sum = Object.values(weights).reduce((a, b) => a + b, 0);
+//   Object.keys(weights).forEach(key => {
+//     weights[key] = weights[key] / sum;
+//   });
+//   
+//   return weights;
+// };
 
 /**
  * Premium budget scoring with fuzzy matching and tax considerations
@@ -546,43 +542,43 @@ const calculateInfrastructureScore = (town) => {
 /**
  * Connectivity scoring for travel and access
  */
-const calculateConnectivityScore = (town, preferences) => {
-  let score = 70;
-  
-  // Travel frequency consideration
-  if (preferences.hobbies?.travel_frequency) {
-    const frequency = preferences.hobbies.travel_frequency;
-    
-    if (frequency === 'frequent') {
-      // Need good airport access
-      if (town.transport_links?.toLowerCase().includes('international airport')) {
-        score += 20;
-      } else if (town.transport_links?.toLowerCase().includes('airport')) {
-        score += 10;
-      }
-    } else if (frequency === 'occasional') {
-      // Some connectivity needed
-      if (town.transport_links?.toLowerCase().includes('airport')) {
-        score += 10;
-      }
-    }
-  }
-  
-  // Mobility preferences
-  if (preferences.costs?.mobility) {
-    const mobility = preferences.costs.mobility;
-    
-    if (mobility.international === 'major_airport') {
-      if (town.transport_links?.toLowerCase().includes('international')) score += 10;
-    }
-    
-    if (mobility.local === 'public_transit') {
-      if (town.public_transport_score >= 7) score += 10;
-    }
-  }
-  
-  return Math.min(100, score);
-};
+// Unused: const calculateConnectivityScore = (town, preferences) => {
+//   let score = 70;
+//   
+//   // Travel frequency consideration
+//   if (preferences.hobbies?.travel_frequency) {
+//     const frequency = preferences.hobbies.travel_frequency;
+//     
+//     if (frequency === 'frequent') {
+//       // Need good airport access
+//       if (town.transport_links?.toLowerCase().includes('international airport')) {
+//         score += 20;
+//       } else if (town.transport_links?.toLowerCase().includes('airport')) {
+//         score += 10;
+//       }
+//     } else if (frequency === 'occasional') {
+//       // Some connectivity needed
+//       if (town.transport_links?.toLowerCase().includes('airport')) {
+//         score += 10;
+//       }
+//     }
+//   }
+//   
+//   // Mobility preferences
+//   if (preferences.costs?.mobility) {
+//     const mobility = preferences.costs.mobility;
+//     
+//     if (mobility.international === 'major_airport') {
+//       if (town.transport_links?.toLowerCase().includes('international')) score += 10;
+//     }
+//     
+//     if (mobility.local === 'public_transit') {
+//       if (town.public_transport_score >= 7) score += 10;
+//     }
+//   }
+//   
+//   return Math.min(100, score);
+// };
 
 /**
  * Basic scoring functions (keeping compatibility)
@@ -771,7 +767,7 @@ const calculateEnhancedAdministrationScore = (town, preferences) => {
   return factors > 0 ? totalScore / factors : 70;
 };
 
-const calculateAdministrationScore = calculateEnhancedAdministrationScore;
+// Unused: const calculateAdministrationScore = calculateEnhancedAdministrationScore;
 
 /**
  * Premium insight generation
@@ -789,7 +785,7 @@ const generatePremiumInsights = (town, preferences, scores) => {
   }
   
   // Perfect match insights
-  const highScores = Object.entries(scores).filter(([_, score]) => score >= 90).length;
+  const highScores = Object.entries(scores).filter((entry) => entry[1] >= 90).length;
   if (highScores >= 5) {
     insights.push({
       type: 'match',
@@ -911,7 +907,7 @@ const generateMatchReasons = (scores, preferences, town) => {
   
   // Find top 3 scoring categories
   const sortedScores = Object.entries(scores)
-    .filter(([cat, score]) => score !== null && score !== undefined)
+    .filter((entry) => entry[1] !== null && entry[1] !== undefined)
     .sort(([,a], [,b]) => b - a)
     .slice(0, 3);
   
@@ -996,7 +992,7 @@ const calculateConfidenceLevel = (town) => {
  * Calculate value rating
  */
 const calculateValueRating = (town, scores) => {
-  const valueScore = (scores.budget * 0.4) + 
+  // Unused: const valueScore = (scores.budget * 0.4) + 
                      (scores.healthcare * 0.3) + 
                      (scores.infrastructure * 0.2) + 
                      (scores.safety * 0.1);
@@ -1006,30 +1002,30 @@ const calculateValueRating = (town, scores) => {
 };
 
 // Quality bonus calculation
-const calculateQualityBonus = (town, scores) => {
-  let bonus = 0;
-  
-  // Premium destination bonus
-  if (scores.healthcare >= 90 && scores.safety >= 90) {
-    bonus += 5;
-  }
-  
-  // Infrastructure excellence
-  if (scores.infrastructure >= 85) {
-    bonus += 3;
-  }
-  
-  // Cultural heritage
-  if (town.unesco_heritage_sites > 0) {
-    bonus += 2;
-  }
-  
-  // Perfect climate
-  if (scores.climate >= 95) {
-    bonus += 2;
-  }
-  
-  return bonus;
-};
+// Unused: const calculateQualityBonus = (town, scores) => {
+//   let bonus = 0;
+//   
+//   // Premium destination bonus
+//   if (scores.healthcare >= 90 && scores.safety >= 90) {
+//     bonus += 5;
+//   }
+//   
+//   // Infrastructure excellence
+//   if (scores.infrastructure >= 85) {
+//     bonus += 3;
+//   }
+//   
+//   // Cultural heritage
+//   if (town.unesco_heritage_sites > 0) {
+//     bonus += 2;
+//   }
+//   
+//   // Perfect climate
+//   if (scores.climate >= 95) {
+//     bonus += 2;
+//   }
+//   
+//   return bonus;
+// };
 
 export default calculatePremiumMatch;

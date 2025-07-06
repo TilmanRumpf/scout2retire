@@ -213,7 +213,7 @@ export default function Signup() {
       const defaultRetirementDate = new Date();
       defaultRetirementDate.setFullYear(defaultRetirementDate.getFullYear() + 5);
       
-      const { success, reason, error, user } = await signUp(
+      const { success, reason, error } = await signUp(
         sanitizedEmail,
         sanitizedPassword,
         sanitizedName,

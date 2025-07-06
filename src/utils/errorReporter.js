@@ -1,13 +1,12 @@
 // Scout2Retire Error Reporter
 // Provides real-time feedback for development issues
 
-import { uiConfig } from '../styles/uiConfig';
 
 class ErrorReporter {
   constructor() {
     this.violations = [];
     this.overlayElement = null;
-    this.isEnabled = process.env.NODE_ENV === 'development';
+    this.isEnabled = import.meta.env.MODE === 'development';
   }
 
   // Report style violations
@@ -242,7 +241,7 @@ class ErrorReporter {
 const errorReporter = new ErrorReporter();
 
 // Development-only DOM observer
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.MODE === 'development') {
   // Observe DOM changes and check for violations
   const observer = new MutationObserver((mutations) => {
     mutations.forEach(mutation => {

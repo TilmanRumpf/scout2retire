@@ -2,6 +2,132 @@
 // This algorithm provides more sophisticated scoring with adaptive weights,
 // fuzzy matching, and lifestyle compatibility scoring
 
+// Helper functions - defined before use
+function calculateSafetyScore(townSafety, userPrefs) {
+  if (!userPrefs.safety_importance || userPrefs.safety_importance === 'not_important') return 100;
+  
+  const safetyMap = {
+    'very_safe': 100,
+    'safe': 85,
+    'moderate': 70,
+    'unsafe': 40
+  };
+  
+  return safetyMap[townSafety] || 70;
+}
+
+function calculateAdminScore(town, userPrefs) {
+  let score = 0;
+  let count = 0;
+  
+  // Healthcare
+  if (userPrefs.healthcare_importance !== 'not_important') {
+    const healthMap = { 'excellent': 100, 'good': 85, 'functional': 70, 'basic': 50 };
+    score += healthMap[town.healthcare_quality] || 70;
+    count++;
+  }
+  
+  // Visa requirements
+  if (userPrefs.visa_importance !== 'not_important' && town.visa_requirements) {
+    score += town.visa_requirements === 'easy' ? 100 : 70;
+    count++;
+  }
+  
+  return count > 0 ? score / count : 100;
+}
+
+function calculateHumidityMatch(townHumidity, userPref) {
+  if (!userPref || userPref === 'any') return 100;
+  
+  const humidityRanges = {
+    'low': [0, 40],
+    'moderate': [30, 70],
+    'high': [60, 100]
+  };
+  
+  const range = humidityRanges[userPref];
+  if (!range) return 100;
+  
+  if (townHumidity >= range[0] && townHumidity <= range[1]) return 100;
+  
+  const distance = Math.min(
+    Math.abs(townHumidity - range[0]),
+    Math.abs(townHumidity - range[1])
+  );
+  
+  return Math.max(0, 100 - (distance * 2));
+}
+
+function calculateSunshineMatch(townSunDays, userPref) {
+  if (!userPref || userPref === 'any') return 100;
+  
+  const sunRanges = {
+    'mostly_sunny': [250, 365],
+    'balanced': [150, 250],
+    'often_cloudy': [0, 150]
+  };
+  
+  const range = sunRanges[userPref];
+  if (!range) return 100;
+  
+  if (townSunDays >= range[0] && townSunDays <= range[1]) return 100;
+  
+  const distance = Math.min(
+    Math.abs(townSunDays - range[0]),
+    Math.abs(townSunDays - range[1])
+  );
+  
+  return Math.max(0, 100 - (distance / 2));
+}
+
+function calculateExpatCommunityMatch(townExpats, userPref) {
+  if (!userPref || userPref === 'any') return 100;
+  
+  const expatMap = {
+    'large': ['large'],
+    'moderate': ['moderate', 'large'],
+    'small': ['small', 'moderate'],
+    'none': ['none', 'small']
+  };
+  
+  const acceptable = expatMap[userPref] || [];
+  return acceptable.includes(townExpats) ? 100 : 60;
+}
+
+function calculatePaceMatch(townPace, userPref) {
+  if (!userPref || userPref === 'any') return 100;
+  
+  const paceMap = {
+    'slow': ['slow', 'moderate'],
+    'moderate': ['moderate', 'slow', 'fast'],
+    'fast': ['fast', 'moderate']
+  };
+  
+  const acceptable = paceMap[userPref] || [];
+  return acceptable.includes(townPace) ? 100 : 60;
+}
+
+function calculateUrbanRuralMatch(townEnvironments, userPrefs) {
+  if (!userPrefs || userPrefs.length === 0) return 100;
+  if (!townEnvironments || townEnvironments.length === 0) return 60;
+  
+  const matches = townEnvironments.filter(env => userPrefs.includes(env));
+  return matches.length > 0 ? 100 : 60;
+}
+
+function calculateMobilityMatch(townMobility, userNeeds) {
+  if (!userNeeds || userNeeds === 'none') return 100;
+  
+  const mobilityScores = {
+    'excellent': 100,
+    'good': 85,
+    'moderate': 70,
+    'limited': 50
+  };
+  
+  return mobilityScores[townMobility] || 70;
+}
+
 export const calculateEnhancedMatch = (town, userPreferences) => {
   // Adaptive weights based on what user emphasized in onboarding
   const weights = calculateAdaptiveWeights(userPreferences);

@@ -39,7 +39,7 @@ const REGION_COUNTRIES = {
 
 export default function Favorites() {
   const [favorites, setFavorites] = useState([]);
-  const [totalFavoriteCount, setTotalFavoriteCount] = useState(0);
+  // Note: totalFavoriteCount was removed as it was unused
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState('match'); // Changed default to 'match'
@@ -350,7 +350,7 @@ export default function Favorites() {
                               townId={town.id}
                               userId={userId}
                               initialState={true}
-                              onToggle={(isLiked, action) => handleFavoriteChange(town.id, isLiked)}
+                              onToggle={(isLiked) => handleFavoriteChange(town.id, isLiked)}
                             />
                           )}
                         </div>

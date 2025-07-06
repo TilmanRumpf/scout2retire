@@ -83,6 +83,8 @@ export default function MasterSchedule() {
         ? new Date(userData.retirement_date)
         : new Date(userData?.retirement_year_estimate || new Date().getFullYear() + 5, 0, 1);
       const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      const retirementYear = retirementDate.getFullYear();
       const monthsToRetirement = Math.floor((retirementDate - currentDate) / (1000 * 60 * 60 * 24 * 30));
       const yearsToRetirement = Math.floor(monthsToRetirement / 12);
       

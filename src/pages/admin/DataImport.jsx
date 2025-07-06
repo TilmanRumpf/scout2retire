@@ -60,7 +60,7 @@ export default function DataImport() {
         selectedTowns.includes(`${town.name}-${town.country}`)
       );
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('towns')
         .upsert(townsToImport, { 
           onConflict: 'name,country',

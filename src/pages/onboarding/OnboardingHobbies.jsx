@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Plane, Activity, ShoppingBag, Sparkles } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
@@ -148,15 +148,7 @@ export default function OnboardingHobbies() {
   };
 
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleImportanceChange = (category, value) => {
+    const handleImportanceChange = (category, value) => {
     setFormData(prev => ({
       ...prev,
       lifestyle_importance: {
@@ -220,14 +212,14 @@ export default function OnboardingHobbies() {
   }
 
   // Simple slider component - matching culture page exactly
-  const ImportanceSlider = ({ category, icon: Icon }) => {
+  const ImportanceSlider = ({ category, icon }) => {
     const value = formData.lifestyle_importance[category.id];
     
     return (
       <div className="mb-2">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center">
-            <Icon size={16} className={`mr-1.5 lg:mr-2 ${uiConfig.colors.body}`} />
+            {React.createElement(icon, { size: 16, className: `mr-1.5 lg:mr-2 ${uiConfig.colors.body}` })}
             <span className={`${uiConfig.font.size.xs} lg:text-sm ${uiConfig.colors.body}`}>
               {category.label}
             </span>
