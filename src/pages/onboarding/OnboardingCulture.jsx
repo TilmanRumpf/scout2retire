@@ -334,7 +334,7 @@ export default function OnboardingCulture() {
         currentStep="culture_preferences" 
         completedSteps={progress.completedSteps} 
       />
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         
         <form onSubmit={handleSubmit} className="py-6">
           {/* Living Environment - moved to first position */}
@@ -541,7 +541,7 @@ export default function OnboardingCulture() {
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
         <div className={`fixed sm:sticky bottom-0 left-0 right-0 sm:relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-6 lg:mt-8`}>
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto">
             <div className="flex items-center">
               <button
                 type="button"
