@@ -66,7 +66,7 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
     <>
       {/* Unified header matching Discover/Favorites design */}
       <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
-        <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto relative">
+        <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto relative overflow-hidden">
           {/* Title Row - 36px */}
           <div className="h-9 flex items-center justify-between px-4">
             <h1 className="text-base font-semibold text-gray-900 dark:text-white flex items-baseline">
@@ -89,10 +89,10 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
           </div>
           
           {/* Steps Row - Horizontal scrolling */}
-          <div className="h-10 flex items-center overflow-hidden px-4 -mt-1">
+          <div className="h-10 flex items-center overflow-hidden -mt-1">
             {/* Scrollable steps container */}
-            <div ref={scrollContainerRef} className="flex-1 overflow-x-auto scrollbar-hide -mx-4">
-              <div className="flex items-center px-4 gap-2">
+            <div ref={scrollContainerRef} className="overflow-x-auto scrollbar-hide px-4">
+              <div className="flex items-center gap-2">
                 {/* Extra padding at start for better scroll experience */}
                 <div className="w-4 shrink-0" />
                 {allSteps.map((step) => {
