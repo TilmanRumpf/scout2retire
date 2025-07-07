@@ -73,7 +73,7 @@ export default function OnboardingCosts() {
   const localMobilityOptions = [
     { id: 'walk_bike', label: 'Walk/bike' },
     { id: 'public_transit', label: 'Public transit' },
-    { id: 'need_car', label: 'Car' },
+    { id: 'need_car', label: 'Own Vehicle' },
     { id: 'taxi_rideshare', label: 'Taxi/rideshare' }
   ];
 
@@ -81,7 +81,7 @@ export default function OnboardingCosts() {
   const regionalMobilityOptions = [
     { id: 'train_access', label: 'Train access' },
     { id: 'bus_network', label: 'Bus network' },
-    { id: 'need_car', label: 'Car' },
+    { id: 'need_car', label: 'Own Vehicle' },
     { id: 'not_important', label: 'Not important' }
   ];
 
