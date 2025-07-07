@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign } from 'lucide-react';
 import QuickNav from './QuickNav';
@@ -6,6 +6,8 @@ import QuickNav from './QuickNav';
 export default function OnboardingProgressiveNav({ currentStep, completedSteps = {} }) {
   const [isQuickNavOpen, setIsQuickNavOpen] = useState(false);
   const location = useLocation();
+  const scrollContainerRef = useRef(null);
+  const activeStepRef = useRef(null);
   
   // Close menu when route changes
   useEffect(() => {
@@ -25,6 +27,26 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
   
   // Find current step number
   const currentStepNum = currentStep === 'progress' ? 0 : (allSteps.findIndex(s => s.key === currentStep) + 1 || 1);
+
+  // Scroll to center the active step
+  useEffect(() => {
+    if (activeStepRef.current && scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const activeElement = activeStepRef.current;
+      
+      // Calculate scroll position to center the active element
+      const containerWidth = container.offsetWidth;
+      const elementLeft = activeElement.offsetLeft;
+      const elementWidth = activeElement.offsetWidth;
+      const scrollPosition = elementLeft - (containerWidth / 2) + (elementWidth / 2);
+      
+      // Smooth scroll to center
+      container.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth'
+      });
+    }
+  }, [currentStep]);
 
   const handleMenuClick = (e) => {
     e.preventDefault();
@@ -61,7 +83,7 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
           {/* Steps Row - 32px - Horizontal scrolling */}
           <div className="h-8 flex items-center overflow-hidden">
             {/* Scrollable steps container */}
-            <div className="flex-1 overflow-x-auto scrollbar-hide">
+            <div ref={scrollContainerRef} className="flex-1 overflow-x-auto scrollbar-hide">
               <div className="flex items-center px-4 gap-3 sm:gap-4">
                 {allSteps.map((step) => {
                   const Icon = step.icon;
@@ -71,16 +93,23 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
                   return (
                     <Link
                       key={step.key}
+                      ref={isActive ? activeStepRef : null}
                       to={step.path}
-                      className={`flex items-center gap-1 text-sm whitespace-nowrap transition-colors ${
+                      className={`flex items-center gap-1 text-sm whitespace-nowrap transition-all duration-200 ${
                         isActive 
-                          ? 'font-medium text-gray-900 dark:text-gray-100' 
+                          ? 'font-medium text-scout-accent-600 dark:text-scout-accent-400' 
                           : isCompleted
                           ? 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
                           : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                       }`}
                     >
-                      <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-scout-accent-600 dark:text-scout-accent-400' : ''}`} />
+                      <Icon className={`w-3.5 h-3.5 transition-colors duration-200 ${
+                        isActive 
+                          ? 'text-scout-accent-600 dark:text-scout-accent-400' 
+                          : isCompleted
+                          ? 'text-gray-600 dark:text-gray-400'
+                          : 'text-gray-400 dark:text-gray-500'
+                      }`} />
                       <span>{step.label}</span>
                     </Link>
                   );
