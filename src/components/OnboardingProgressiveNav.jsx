@@ -88,11 +88,11 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
             </button>
           </div>
           
-          {/* Steps Row - 32px - Horizontal scrolling */}
-          <div className="h-8 flex items-center overflow-hidden px-4">
+          {/* Steps Row - Horizontal scrolling */}
+          <div className="h-10 flex items-center overflow-hidden px-4 -mt-1">
             {/* Scrollable steps container */}
             <div ref={scrollContainerRef} className="flex-1 overflow-x-auto scrollbar-hide -mx-4">
-              <div className="flex items-center px-4 gap-3 sm:gap-4">
+              <div className="flex items-center px-4 gap-2">
                 {/* Extra padding at start for better scroll experience */}
                 <div className="w-4 shrink-0" />
                 {allSteps.map((step) => {
@@ -105,15 +105,15 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
                       key={step.key}
                       ref={isActive ? activeStepRef : null}
                       to={step.path}
-                      className={`flex items-center gap-1 text-sm whitespace-nowrap transition-all duration-200 ${
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm whitespace-nowrap transition-all duration-200 ${
                         isActive 
-                          ? 'font-medium text-scout-accent-600 dark:text-scout-accent-400' 
+                          ? 'bg-scout-accent-100 dark:bg-scout-accent-900/30 font-medium text-scout-accent-700 dark:text-scout-accent-300' 
                           : isCompleted
-                          ? 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
-                          : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                          ? 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400'
                       }`}
                     >
-                      <Icon className={`w-3.5 h-3.5 transition-colors duration-200 ${
+                      <Icon className={`w-4 h-4 transition-colors duration-200 ${
                         isActive 
                           ? 'text-scout-accent-600 dark:text-scout-accent-400' 
                           : isCompleted
