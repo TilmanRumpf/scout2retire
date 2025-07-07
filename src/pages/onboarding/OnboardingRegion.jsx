@@ -7,6 +7,7 @@ import OnboardingProgressiveNav from '../../components/OnboardingProgressiveNav'
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
+import { getLoadingBackgroundClass, getLoadingTextClass } from '../../utils/themeUtils';
 
 // Option Button Component - Responsive for mobile and desktop
 const OptionButton = ({ label, description, isSelected, onClick }) => (
@@ -404,8 +405,8 @@ const OnboardingRegion = () => {
 
   if (initialLoading) {
     return (
-      <div className={`min-h-[100svh] ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
-        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.success} ${uiConfig.font.weight.semibold} ${uiConfig.font.size.base}`}>Loading...</div>
+      <div className={`min-h-[100svh] ${getLoadingBackgroundClass()} p-4 flex items-center justify-center`}>
+        <div className={`${uiConfig.animation.pulse} ${getLoadingTextClass()} ${uiConfig.font.weight.semibold} ${uiConfig.font.size.base}`}>Loading...</div>
       </div>
     );
   }

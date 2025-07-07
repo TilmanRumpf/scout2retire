@@ -4,6 +4,15 @@ import App from './App.jsx'
 import './index.css'
 import './styles/fonts.css'
 
+// Enable transitions after initial load to prevent white flash
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', () => {
+    requestAnimationFrame(() => {
+      document.documentElement.classList.add('transitions-ready');
+    });
+  });
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />

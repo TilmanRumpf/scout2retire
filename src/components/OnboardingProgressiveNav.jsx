@@ -30,8 +30,8 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
 
   // Scroll to center the active step with a delay for mobile
   useEffect(() => {
-    // Small delay to ensure DOM is ready, especially on mobile
-    const timer = setTimeout(() => {
+    // Use requestAnimationFrame for smoother DOM updates
+    const animationFrame = requestAnimationFrame(() => {
       if (activeStepRef.current && scrollContainerRef.current) {
         const container = scrollContainerRef.current;
         const activeElement = activeStepRef.current;
@@ -51,9 +51,9 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
           behavior: 'smooth'
         });
       }
-    }, 100);
+    });
     
-    return () => clearTimeout(timer);
+    return () => cancelAnimationFrame(animationFrame);
   }, [currentStep]);
 
   const handleMenuClick = (e) => {
@@ -65,7 +65,7 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
   return (
     <>
       {/* Unified header matching Discover/Favorites design */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
+      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50 transition-colors duration-300">
         <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto relative overflow-hidden">
           {/* Title Row - 36px */}
           <div className="h-9 flex items-center justify-between px-4">

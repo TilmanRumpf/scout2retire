@@ -36,32 +36,8 @@ import OnboardingReview from "./pages/onboarding/OnboardingReview";
 import OnboardingAdministration from "./pages/onboarding/OnboardingAdministration";
 import OnboardingComplete from "./pages/onboarding/OnboardingComplete";
 
-// Onboarding wrapper components with navigation
-const OnboardingWrapper = ({ children, nextPath, prevPath }) => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({});
-
-  const handleNext = () => {
-    console.log('Navigation to:', nextPath);
-    if (nextPath) {
-      navigate(nextPath);
-    }
-  };
-
-  const handlePrevious = () => {
-    console.log('Navigation to:', prevPath);
-    if (prevPath) {
-      navigate(prevPath);
-    }
-  };
-
-  return React.cloneElement(children, {
-    onNext: handleNext,
-    onPrevious: handlePrevious,
-    formData,
-    setFormData
-  });
-};
+// Import the new OnboardingLayout
+import OnboardingLayout from './components/OnboardingLayout';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -79,8 +55,8 @@ const ProtectedRoute = ({ children }) => {
         
         // If no session, check if we're still loading from storage
         if (!session) {
-          // Give it a moment for session to restore from storage
-          await new Promise(resolve => setTimeout(resolve, 100));
+          // Use a shorter delay to minimize flash while still allowing session restoration
+          await new Promise(resolve => setTimeout(resolve, 50));
           
           // Check again
           const { data: { session: retrySession } } = await supabase.auth.getSession();
@@ -147,75 +123,24 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Onboarding flow with navigation */}
-          <Route path="/onboarding/progress" element={
+          {/* Onboarding flow with persistent layout */}
+          <Route path="/onboarding" element={
             <ProtectedRoute>
-              <OnboardingWrapper nextPath="/onboarding/current-status" prevPath="/welcome">
-                <OnboardingProgress />
-              </OnboardingWrapper>
+              <OnboardingLayout />
             </ProtectedRoute>
-          } />
-          <Route path="/onboarding/current-status" element={
-            <ProtectedRoute>
-              <OnboardingWrapper nextPath="/onboarding/region" prevPath="/onboarding/progress">
-                <OnboardingCurrentStatus />
-              </OnboardingWrapper>
-            </ProtectedRoute>
-          } />
-          <Route path="/onboarding/region" element={
-            <ProtectedRoute>
-              <OnboardingWrapper nextPath="/onboarding/climate" prevPath="/onboarding/current-status">
-                <OnboardingRegion />
-              </OnboardingWrapper>
-            </ProtectedRoute>
-          } />
-          <Route path="/onboarding/climate" element={
-            <ProtectedRoute>
-              <OnboardingWrapper nextPath="/onboarding/culture" prevPath="/onboarding/region">
-                <OnboardingClimate />
-              </OnboardingWrapper>
-            </ProtectedRoute>
-          } />
-          <Route path="/onboarding/culture" element={
-            <ProtectedRoute>
-              <OnboardingWrapper nextPath="/onboarding/hobbies" prevPath="/onboarding/climate">
-                <OnboardingCulture />
-              </OnboardingWrapper>
-            </ProtectedRoute>
-          } />
-          <Route path="/onboarding/hobbies" element={
-            <ProtectedRoute>
-              <OnboardingWrapper nextPath="/onboarding/administration" prevPath="/onboarding/culture">
-                <OnboardingHobbies />
-              </OnboardingWrapper>
-            </ProtectedRoute>
-          } />
-          <Route path="/onboarding/administration" element={
-            <ProtectedRoute>
-              <OnboardingWrapper nextPath="/onboarding/costs" prevPath="/onboarding/hobbies">
-                <OnboardingAdministration />
-              </OnboardingWrapper>
-            </ProtectedRoute>
-          } />
-          <Route path="/onboarding/costs" element={
-            <ProtectedRoute>
-              <OnboardingWrapper nextPath="/onboarding/review" prevPath="/onboarding/administration">
-                <OnboardingCosts />
-              </OnboardingWrapper>
-            </ProtectedRoute>
-          } />
-          <Route path="/onboarding/review" element={
-            <ProtectedRoute>
-              <OnboardingWrapper nextPath="/onboarding/complete" prevPath="/onboarding/costs">
-                <OnboardingReview />
-              </OnboardingWrapper>
-            </ProtectedRoute>
-          } />
-          <Route path="/onboarding/complete" element={
-            <ProtectedRoute>
-              <OnboardingComplete />
-            </ProtectedRoute>
-          } />
+          }>
+            <Route path="progress" element={<OnboardingProgress />} />
+            <Route path="current-status" element={<OnboardingCurrentStatus />} />
+            <Route path="region" element={<OnboardingRegion />} />
+            <Route path="climate" element={<OnboardingClimate />} />
+            <Route path="culture" element={<OnboardingCulture />} />
+            <Route path="hobbies" element={<OnboardingHobbies />} />
+            <Route path="administration" element={<OnboardingAdministration />} />
+            <Route path="costs" element={<OnboardingCosts />} />
+            <Route path="review" element={<OnboardingReview />} />
+            <Route path="complete" element={<OnboardingComplete />} />
+            <Route index element={<Navigate to="progress" replace />} />
+          </Route>
 
           {/* Protected routes (require login AND completed onboarding) */}
           <Route path="/daily" element={
