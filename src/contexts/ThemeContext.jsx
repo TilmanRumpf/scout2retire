@@ -29,6 +29,11 @@ export function ThemeProvider({ children }) {
     
     // Save to local storage
     localStorage.setItem('s2r-theme', theme);
+    
+    // Enable transitions after initial setup using requestAnimationFrame for better performance
+    requestAnimationFrame(() => {
+      document.documentElement.classList.add('transitions-ready');
+    });
   }, [theme]);
 
   const toggleTheme = () => {

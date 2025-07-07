@@ -24,6 +24,8 @@
 /* Prevent white flash during navigation */
 html {
   background-color: #f9fafb; /* gray-50 */
+  /* Disable transitions during initial load to prevent flash */
+  transition: none !important;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -35,6 +37,17 @@ html {
 /* Dark mode class override */
 html.dark {
   background-color: #030712; /* gray-950 */
+}
+
+/* Disable all transitions during initial load */
+html:not(.transitions-ready) * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Re-enable transitions after load */
+html.transitions-ready {
+  transition: background-color 200ms ease-in-out;
 }
 
 :root {

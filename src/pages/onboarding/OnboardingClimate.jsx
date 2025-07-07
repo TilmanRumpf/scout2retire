@@ -168,7 +168,7 @@ export default function OnboardingClimate() {
   if (initialLoading) {
     return (
       <div className={`min-h-[100svh] ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
-        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.success} ${uiConfig.font.weight.semibold}`}>Loading...</div>
+        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.success} ${uiConfig.font.weight.semibold} ${uiConfig.font.size.base}`}>Loading...</div>
       </div>
     );
   }

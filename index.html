@@ -26,6 +26,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400&family=Montserrat:wght@800&family=Dancing+Script:wght@400;700&family=Pacifico&family=Satisfy&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Immediate dark mode initialization to prevent flash -->
+    <script src="/dark-mode-init.js"></script>
+    
+    <!-- Prevent white flash during navigation -->
+    <style>
+      html {
+        background-color: #f9fafb;
+      }
+      @media (prefers-color-scheme: dark) {
+        html { background-color: #030712; }
+      }
+      html.dark {
+        background-color: #030712;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
