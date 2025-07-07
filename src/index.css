@@ -39,6 +39,11 @@ html.dark {
   background-color: #030712; /* gray-950 */
 }
 
+/* Prevent flashing during onboarding navigation */
+#root > div > div {
+  background-color: inherit;
+}
+
 /* Disable all transitions during initial load */
 html:not(.transitions-ready) * {
   transition: none !important;

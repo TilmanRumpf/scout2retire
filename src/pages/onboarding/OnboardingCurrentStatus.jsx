@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, Users, Globe, PawPrint } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
-import OnboardingProgressiveNav from '../../components/OnboardingProgressiveNav';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
@@ -52,7 +51,7 @@ export default function OnboardingCurrentStatus() {
   
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [progress, setProgress] = useState({ completedSteps: {} });
+  
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
 
@@ -293,11 +292,8 @@ export default function OnboardingCurrentStatus() {
   const isCouple = formData.family_situation === 'couple';
 
   return (
-    <div className={`min-h-[100svh] ${uiConfig.colors.page}`}>
-      <OnboardingProgressiveNav 
-        currentStep="current_status" 
-        completedSteps={progress.completedSteps} 
-      />
+    <>
+      
       <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         
         <form onSubmit={handleSubmit} className="py-6">
@@ -745,6 +741,6 @@ export default function OnboardingCurrentStatus() {
           </div>
         </div>
       </main>
-    </div>
+    </>
   );
 }

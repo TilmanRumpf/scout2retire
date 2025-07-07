@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Globe, MapPin, Trees } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
-import OnboardingProgressiveNav from '../../components/OnboardingProgressiveNav';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
@@ -29,7 +28,7 @@ const OnboardingRegion = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [progress, setProgress] = useState({ completedSteps: {} });
+  
   
   // Updated state arrays to only have 2 elements instead of 3
   const [selectedRegions, setSelectedRegions] = useState(['', '']);
@@ -405,18 +404,15 @@ const OnboardingRegion = () => {
 
   if (initialLoading) {
     return (
-      <div className={`min-h-[100svh] ${getLoadingBackgroundClass()} p-4 flex items-center justify-center`}>
+      <div className={`h-96 ${getLoadingBackgroundClass()} p-4 flex items-center justify-center`}>
         <div className={`${uiConfig.animation.pulse} ${getLoadingTextClass()} ${uiConfig.font.weight.semibold} ${uiConfig.font.size.base}`}>Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-[100svh] ${uiConfig.colors.page}`}>
-      <OnboardingProgressiveNav 
-        currentStep="region_preferences" 
-        completedSteps={progress.completedSteps} 
-      />
+    <>
+      
       <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         
         <form onSubmit={handleSubmit} className="py-6">
@@ -663,7 +659,7 @@ const OnboardingRegion = () => {
           </div>
         </div>
       </main>
-    </div>
+    </>
   );
 };
 
