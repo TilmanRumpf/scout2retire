@@ -8,16 +8,25 @@ Scout2Retire empowers people aged 55+ to discover their ideal retirement destina
 
 ---
 
-## 🚨 CRITICAL: NEVER MODIFY WORKING CODE WITHOUT VERIFICATION
+## 🚨 CRITICAL: USE ULTRATHINK BEFORE HIGH-IMPACT CHANGES
+
+### When to Use Ultrathink
+**ALWAYS use ultrathink** before making changes that could have cascading effects:
+- Modifying authentication or user data flow (like getCurrentUser)
+- Changing data structures used across multiple files
+- Refactoring patterns that appear in many components
+- Updating core utilities or hooks
+- Modifying database queries or API calls
+- Changing navigation or routing logic
 
 ### The getCurrentUser Disaster (2 Hours Lost)
-**NEVER AGAIN**: Do not "fix" code patterns without understanding them first. If code is working, DO NOT change it based on assumptions.
+**What happened**: Changed a working destructuring pattern without understanding the API, breaking data loading across the entire application.
 
-**Before changing ANY existing pattern:**
-1. **TEST FIRST** - Run the code to see if it actually has a problem
-2. **UNDERSTAND THE API** - Check what the function actually returns
-3. **VERIFY YOUR ASSUMPTION** - Don't assume destructuring is wrong without checking
-4. **ISOLATE CHANGES** - Fix one thing at a time, not everywhere at once
+**The Lesson**: Think deeply before acting. Ask yourself:
+1. **Why does this code exist?** - There's usually a good reason
+2. **What will break if I change this?** - Trace the dependencies
+3. **Is this actually broken?** - Test before "fixing"
+4. **What's the blast radius?** - How many files will be affected?
 
 **Example of catastrophic mistake:**
 ```javascript
@@ -30,6 +39,12 @@ const userResult = await getCurrentUser();
 ```
 
 **GOLDEN RULE**: If the UI is working and displaying data, the code is correct. Do not refactor working code based on assumptions about "better patterns".
+
+**ULTRATHINK TRIGGERS**:
+- "This pattern looks wrong everywhere" → STOP, ultrathink first
+- "I should fix this across all files" → STOP, ultrathink first
+- "This seems like bad practice" → STOP, verify it's actually broken
+- "I'll just quickly refactor this" → STOP, consider consequences
 
 ---
 
