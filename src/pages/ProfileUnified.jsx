@@ -286,7 +286,7 @@ export default function ProfileUnified() {
     <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
       <UnifiedHeader 
         title="Profile & Settings"
-        maxWidth="max-w-4xl"
+        maxWidth="max-w-2xl lg:max-w-4xl xl:max-w-6xl 2xl:max-w-7xl"
         tabs={tabs.map(tab => ({
           id: tab.id,
           label: tab.label,
