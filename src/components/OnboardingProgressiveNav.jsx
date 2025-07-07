@@ -36,11 +36,14 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
     <>
       {/* Unified header matching Discover/Favorites design */}
       <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto">
           {/* Title Row - 36px */}
           <div className="h-9 flex items-center justify-between px-4">
-            <h1 className="text-base font-semibold text-gray-900 dark:text-white">
-              Onboarding
+            <h1 className="text-base font-semibold text-gray-900 dark:text-white flex items-baseline">
+              <span className="text-lg s2r-logo">
+                S<span style={{ color: '#f66527' }}>2</span>R
+              </span>
+              <span className="ml-2">Onboarding</span>
               <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
                 {currentStep === 'progress' ? 'Progress Overview' : currentStep === 'review' ? 'Summary' : `${currentStepNum} of 7`}
               </span>
