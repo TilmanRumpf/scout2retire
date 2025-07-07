@@ -89,13 +89,16 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
           </div>
           
           {/* Steps Row - Horizontal scrolling */}
-          <div className="h-10 flex items-center overflow-hidden -mt-1">
-            {/* Scrollable steps container */}
-            <div ref={scrollContainerRef} className="overflow-x-auto scrollbar-hide px-4">
-              <div className="flex items-center gap-2">
-                {/* Extra padding at start for better scroll experience */}
-                <div className="w-4 shrink-0" />
-                {allSteps.map((step) => {
+          <div className="h-10 flex items-center -mt-1 px-4">
+            {/* Scrollable steps container with mask */}
+            <div className="relative flex-1 overflow-hidden">
+              {/* Gradient masks for scroll indication */}
+              <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-gray-800 to-transparent z-10 pointer-events-none" />
+              <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-gray-800 to-transparent z-10 pointer-events-none" />
+              
+              <div ref={scrollContainerRef} className="overflow-x-auto scrollbar-hide">
+                <div className="flex items-center gap-2 py-1 px-4">
+                  {allSteps.map((step) => {
                   const Icon = step.icon;
                   const isActive = step.key === currentStep && currentStep !== 'progress';
                   const isCompleted = completedSteps[step.key];
@@ -124,8 +127,7 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
                     </Link>
                   );
                 })}
-                {/* Extra padding at end to ensure last item is visible */}
-                <div className="w-12 shrink-0" />
+                </div>
               </div>
             </div>
           </div>
