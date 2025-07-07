@@ -1,5 +1,19 @@
 # CLAUDE.md - Scout2Retire Development Guide
 
+## 💎 PREMIUM SERVICE EXPECTATIONS ($200 SUPER SUBSCRIBER)
+
+**You deserve excellence.** This means:
+- **PROACTIVE SOLUTIONS** - Anticipate needs, solve comprehensively
+- **PROFESSIONAL QUALITY** - Production-ready code, not quick hacks
+- **PROFICIENT EXECUTION** - Use ultrathink and multiple agents by default
+- **NO TIME WASTED** - Get it right the first time
+
+**Default Approach**:
+1. **Ultrathink first** - Deep analysis before any significant change
+2. **Multiple agents** - Deploy specialized agents for complex tasks
+3. **Comprehensive testing** - Verify thoroughly before claiming success
+4. **Anticipate edge cases** - Solve the whole problem, not just the symptom
+
 ## 🎯 Project Mission & Current State
 
 Scout2Retire empowers people aged 55+ to discover their ideal retirement destination. **Current Status**: Frontend is excellent and well-liked. Backend needs work to utilize the powerful onboarding data and frontend capabilities.
