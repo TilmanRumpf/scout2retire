@@ -21,6 +21,22 @@
   }
 }
 
+/* Prevent white flash during navigation */
+html {
+  background-color: #f9fafb; /* gray-50 */
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    background-color: #030712; /* gray-950 */
+  }
+}
+
+/* Dark mode class override */
+html.dark {
+  background-color: #030712; /* gray-950 */
+}
+
 :root {
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

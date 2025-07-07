@@ -113,8 +113,8 @@ const ProtectedRoute = ({ children }) => {
   }, [navigate]);
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-pulse text-green-600 font-semibold">Loading...</div>
+    return <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="animate-pulse text-scout-accent-600 dark:text-scout-accent-400 font-semibold">Loading...</div>
     </div>;
   }
 
