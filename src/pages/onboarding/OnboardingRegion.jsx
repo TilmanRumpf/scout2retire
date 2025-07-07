@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Globe, MapPin, Trees } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
+import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
@@ -40,6 +41,18 @@ const OnboardingRegion = () => {
   // Added state to control visibility of dependent dropdowns
   const [showDependentDropdowns, setShowDependentDropdowns] = useState([false, false]);
   const [showCountryDropdowns, setShowCountryDropdowns] = useState([false, false]);
+  
+  // Create formData object for auto-save
+  const formData = {
+    regions: selectedRegions.filter(region => region && region !== ''),
+    countries: selectedCountries.filter(country => country && country !== ''),
+    provinces: selectedProvinces.filter(province => province && province !== ''),
+    geographic_features: selectedFeatures,
+    vegetation_types: selectedVegetation
+  };
+  
+  // Enable auto-save for this page
+  const autoSave = useOnboardingAutoSave(formData, 'region_preferences');
 
   // Preserved all original data arrays
   const regions = [
@@ -133,20 +146,20 @@ const OnboardingRegion = () => {
   useEffect(() => {
     const loadExistingData = async () => {
       try {
-        const { user } = await getCurrentUser();
-        if (!user) {
+        const userResult = await getCurrentUser();
+        if (!userResult.user) {
           navigate('/welcome');
           return;
         }
         
-        const { success, data, progress: userProgress, error } = await getOnboardingProgress(user.id);
+        const { success, data, progress: userProgress, error } = await getOnboardingProgress(userResult.user.id);
         if (!success) {
           console.error("Error loading existing data:", error);
           setInitialLoading(false);
           return;
         }
         
-        setProgress(userProgress);
+        // Progress is now managed by OnboardingLayout
         
         // If region data exists, load it
         if (data && data.region_preferences) {
@@ -324,7 +337,10 @@ const OnboardingRegion = () => {
     );
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    setLoading(true);
+    await autoSave();
+    setLoading(false);
     navigate('/onboarding/climate');
   };
 
@@ -365,8 +381,8 @@ const OnboardingRegion = () => {
     setLoading(true);
     
     try {
-      const { user } = await getCurrentUser();
-      if (!user) {
+      const userResult = await getCurrentUser();
+      if (!userResult.user) {
         navigate('/welcome');
         return;
       }
@@ -381,7 +397,7 @@ const OnboardingRegion = () => {
       };
       
       const { success, error } = await saveOnboardingStep(
-        user.id,
+        userResult.user.id,
         formData,
         'region_preferences'
       );
@@ -393,7 +409,11 @@ const OnboardingRegion = () => {
       }
       
       toast.success('Regional preferences saved!');
-      navigate('/onboarding/climate');
+      
+      // Add a small delay to ensure data is saved before navigation
+      setTimeout(() => {
+        navigate('/onboarding/climate');
+      }, 100);
     } catch (err) {
       toast.error('An unexpected error occurred');
       console.error(err);
@@ -633,7 +653,13 @@ const OnboardingRegion = () => {
             <div className="flex items-center">
               <button
                 type="button"
-                onClick={() => navigate('/onboarding/current-status')}
+                onClick={async () => {
+                  setLoading(true);
+                  await autoSave();
+                  setLoading(false);
+                  navigate('/onboarding/current-status');
+                }}
+                disabled={loading}
                 className={uiConfig.components.buttonSecondary}
               >
                 ← Back

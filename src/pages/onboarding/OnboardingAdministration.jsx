@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Heart, Building, FileText, Stethoscope } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
+import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
@@ -70,35 +71,38 @@ export default function OnboardingAdministration() {
   const [initialLoading, setInitialLoading] = useState(true);
   
   const navigate = useNavigate();
+  
+  // Enable auto-save for this page
+  const autoSave = useOnboardingAutoSave(formData, 'administration');
 
   // Load existing data if available
   useEffect(() => {
     const loadExistingData = async () => {
       try {
-        const { user } = await getCurrentUser();
-        if (!user) {
+        const userResult = await getCurrentUser();
+        if (!userResult.user) {
           navigate('/welcome');
           return;
         }
         
-        const { success, data, progress: userProgress, error } = await getOnboardingProgress(user.id);
+        const progressResult = await getOnboardingProgress(userResult.user.id);
         
-        console.log('Administration - Loading data:', { success, data, error }); // DEBUG
+        console.log('Administration - Loading data:', { success: progressResult.success, data: progressResult.data, error: progressResult.error }); // DEBUG
         
-        if (!success) {
-          console.error("Error loading existing data:", error);
+        if (!progressResult.success) {
+          console.error("Error loading existing data:", progressResult.error);
           setInitialLoading(false);
           return;
         }
         
-        setProgress(userProgress);
+        // Progress is now managed by OnboardingLayout
         
         // If administration data exists, load it
-        if (data && data.administration) {
-          console.log('Administration data found:', data.administration); // DEBUG
+        if (progressResult.data && progressResult.data.administration) {
+          console.log('Administration data found:', progressResult.data.administration); // DEBUG
           
           // Handle both string and object data
-          let adminData = data.administration;
+          let adminData = progressResult.data.administration;
           if (typeof adminData === 'string') {
             try {
               adminData = JSON.parse(adminData);
@@ -163,7 +167,10 @@ export default function OnboardingAdministration() {
   };
 
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    setLoading(true);
+    await autoSave();
+    setLoading(false);
     navigate('/onboarding/costs');
   };
 
@@ -172,8 +179,8 @@ export default function OnboardingAdministration() {
     setLoading(true);
     
     try {
-      const { user } = await getCurrentUser();
-      if (!user) {
+      const userResult = await getCurrentUser();
+      if (!userResult.user) {
         navigate('/welcome');
         return;
       }
@@ -202,7 +209,7 @@ export default function OnboardingAdministration() {
       
       console.log('SENDING TO SUPABASE:', JSON.stringify(dataToSave, null, 2));
       
-      const { success, error } = await saveOnboardingStep(user.id, dataToSave, 'administration');
+      const { success, error } = await saveOnboardingStep(userResult.user.id, dataToSave, 'administration');
       
       console.log('Administration - Save result:', { success, error }); // DEBUG
       
@@ -212,7 +219,11 @@ export default function OnboardingAdministration() {
       }
       
       toast.success('Administration preferences saved!');
-      navigate('/onboarding/costs');
+      
+      // Add a small delay to ensure data is saved before navigation
+      setTimeout(() => {
+        navigate('/onboarding/costs');
+      }, 100);
     } catch (err) {
       console.error('Administration - Save error:', err); // DEBUG
       toast.error('An unexpected error occurred');
@@ -527,7 +538,13 @@ export default function OnboardingAdministration() {
             <div className="flex items-center">
               <button
                 type="button"
-                onClick={() => navigate('/onboarding/hobbies')}
+                onClick={async () => {
+                  setLoading(true);
+                  await autoSave();
+                  setLoading(false);
+                  navigate('/onboarding/hobbies');
+                }}
+                disabled={loading}
                 className={uiConfig.components.buttonSecondary}
               >
                 ← Back

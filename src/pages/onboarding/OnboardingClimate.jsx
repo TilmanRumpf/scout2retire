@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Sun, Snowflake, Droplets, Cloud, CloudRain } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
+import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
@@ -36,37 +37,41 @@ export default function OnboardingClimate() {
   const [initialLoading, setInitialLoading] = useState(true);
   
   const navigate = useNavigate();
+  
+  // Enable auto-save for this page
+  const autoSave = useOnboardingAutoSave(formData, 'climate_preferences');
 
   // Load existing data if available
   useEffect(() => {
     const loadExistingData = async () => {
       try {
-        const { user } = await getCurrentUser();
-        if (!user) {
+        const userResult = await getCurrentUser();
+        if (!userResult.user) {
           navigate('/welcome');
           return;
         }
         
-        const { success, data, progress: userProgress, error } = await getOnboardingProgress(user.id);
-        if (!success) {
-          console.error("Error loading existing data:", error);
+        const progressResult = await getOnboardingProgress(userResult.user.id);
+        
+        if (!progressResult.success) {
+          console.error("Error loading existing data:", progressResult.error);
           setInitialLoading(false);
           return;
         }
         
-        setProgress(userProgress);
+        // Progress is now managed by OnboardingLayout
         
         // If climate data exists, load it
-        if (data && data.climate_preferences) {
+        if (progressResult.data && progressResult.data.climate_preferences) {
           setFormData(prev => ({
             ...prev,
-            ...data.climate_preferences,
-            summer_climate_preference: data.climate_preferences.summer_climate_preference || [],
-            winter_climate_preference: data.climate_preferences.winter_climate_preference || [],
-            humidity_level: data.climate_preferences.humidity_level || [],
-            sunshine: data.climate_preferences.sunshine || [],
-            precipitation: data.climate_preferences.precipitation || [],
-            seasonal_preference: data.climate_preferences.seasonal_preference || ''
+            ...progressResult.data.climate_preferences,
+            summer_climate_preference: progressResult.data.climate_preferences.summer_climate_preference || [],
+            winter_climate_preference: progressResult.data.climate_preferences.winter_climate_preference || [],
+            humidity_level: progressResult.data.climate_preferences.humidity_level || [],
+            sunshine: progressResult.data.climate_preferences.sunshine || [],
+            precipitation: progressResult.data.climate_preferences.precipitation || [],
+            seasonal_preference: progressResult.data.climate_preferences.seasonal_preference || ''
           }));
         }
       } catch (err) {
@@ -78,6 +83,7 @@ export default function OnboardingClimate() {
     
     loadExistingData();
   }, [navigate]);
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -126,7 +132,10 @@ export default function OnboardingClimate() {
     });
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    setLoading(true);
+    await autoSave();
+    setLoading(false);
     navigate('/onboarding/culture');
   };
 
@@ -136,14 +145,14 @@ export default function OnboardingClimate() {
     setLoading(true);
     
     try {
-      const { user } = await getCurrentUser();
-      if (!user) {
+      const userResult = await getCurrentUser();
+      if (!userResult.user) {
         navigate('/welcome');
         return;
       }
       
       const { success, error } = await saveOnboardingStep(
-        user.id,
+        userResult.user.id,
         formData,
         'climate_preferences'
       );
@@ -155,7 +164,11 @@ export default function OnboardingClimate() {
       }
       
       toast.success('Climate preferences saved!');
-      navigate('/onboarding/culture');
+      
+      // Add a small delay to ensure data is saved before navigation
+      setTimeout(() => {
+        navigate('/onboarding/culture');
+      }, 100);
     } catch (err) {
       toast.error('An unexpected error occurred');
       console.error(err);
@@ -362,7 +375,13 @@ export default function OnboardingClimate() {
             <div className="flex items-center">
               <button
                 type="button"
-                onClick={() => navigate('/onboarding/region')}
+                onClick={async () => {
+                  setLoading(true);
+                  await autoSave();
+                  setLoading(false);
+                  navigate('/onboarding/region');
+                }}
+                disabled={loading}
                 className={uiConfig.components.buttonSecondary}
               >
                 ← Back
