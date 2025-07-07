@@ -28,24 +28,32 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
   // Find current step number
   const currentStepNum = currentStep === 'progress' ? 0 : (allSteps.findIndex(s => s.key === currentStep) + 1 || 1);
 
-  // Scroll to center the active step
+  // Scroll to center the active step with a delay for mobile
   useEffect(() => {
-    if (activeStepRef.current && scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const activeElement = activeStepRef.current;
-      
-      // Calculate scroll position to center the active element
-      const containerWidth = container.offsetWidth;
-      const elementLeft = activeElement.offsetLeft;
-      const elementWidth = activeElement.offsetWidth;
-      const scrollPosition = elementLeft - (containerWidth / 2) + (elementWidth / 2);
-      
-      // Smooth scroll to center
-      container.scrollTo({
-        left: scrollPosition,
-        behavior: 'smooth'
-      });
-    }
+    // Small delay to ensure DOM is ready, especially on mobile
+    const timer = setTimeout(() => {
+      if (activeStepRef.current && scrollContainerRef.current) {
+        const container = scrollContainerRef.current;
+        const activeElement = activeStepRef.current;
+        
+        // Get element position relative to container
+        const elementRect = activeElement.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const elementCenter = elementRect.left - containerRect.left + (elementRect.width / 2);
+        const containerCenter = containerRect.width / 2;
+        
+        // Calculate scroll position
+        const scrollPosition = container.scrollLeft + elementCenter - containerCenter;
+        
+        // Smooth scroll to center
+        container.scrollTo({
+          left: Math.max(0, scrollPosition),
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, [currentStep]);
 
   const handleMenuClick = (e) => {
@@ -84,7 +92,7 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
           <div className="h-8 flex items-center overflow-hidden">
             {/* Scrollable steps container */}
             <div ref={scrollContainerRef} className="flex-1 overflow-x-auto scrollbar-hide">
-              <div className="flex items-center px-4 gap-3 sm:gap-4">
+              <div className="flex items-center px-4 gap-3 sm:gap-4 pr-12">
                 {allSteps.map((step) => {
                   const Icon = step.icon;
                   const isActive = step.key === currentStep && currentStep !== 'progress';
