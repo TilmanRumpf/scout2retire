@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Sun, Snowflake, Droplets, Cloud, CloudRain } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
-import OnboardingProgressiveNav from '../../components/OnboardingProgressiveNav';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
@@ -35,7 +34,7 @@ export default function OnboardingClimate() {
   
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [progress, setProgress] = useState({ completedSteps: {} });
+  
   const navigate = useNavigate();
 
   // Load existing data if available
@@ -204,11 +203,8 @@ export default function OnboardingClimate() {
   ];
 
   return (
-    <div className={`min-h-[100svh] ${uiConfig.colors.page}`}>
-      <OnboardingProgressiveNav 
-        currentStep="climate_preferences" 
-        completedSteps={progress.completedSteps} 
-      />
+    <>
+      
       
       <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         <form onSubmit={handleSubmit} className="py-6">
@@ -392,6 +388,6 @@ export default function OnboardingClimate() {
           </div>
         </div>
       </main>
-    </div>
+    </>
   );
 }

@@ -8,6 +8,17 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
   const location = useLocation();
   const scrollContainerRef = useRef(null);
   const activeStepRef = useRef(null);
+  const mountedRef = useRef(false);
+  
+  // Prevent double mounting in development (React StrictMode)
+  useEffect(() => {
+    if (mountedRef.current) return;
+    mountedRef.current = true;
+    
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
   
   // Close menu when route changes
   useEffect(() => {
@@ -28,7 +39,7 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
   // Find current step number
   const currentStepNum = currentStep === 'progress' ? 0 : (allSteps.findIndex(s => s.key === currentStep) + 1 || 1);
 
-  // Scroll to center the active step with a delay for mobile
+  // Scroll to show active step with proper boundaries
   useEffect(() => {
     // Use requestAnimationFrame for smoother DOM updates
     const animationFrame = requestAnimationFrame(() => {
@@ -36,20 +47,38 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
         const container = scrollContainerRef.current;
         const activeElement = activeStepRef.current;
         
+        // Get the inner content width
+        const innerContent = container.querySelector('.flex');
+        if (!innerContent) return;
+        
         // Get element position relative to container
         const elementRect = activeElement.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect();
-        const elementCenter = elementRect.left - containerRect.left + (elementRect.width / 2);
-        const containerCenter = containerRect.width / 2;
+        const innerRect = innerContent.getBoundingClientRect();
         
-        // Calculate scroll position
-        const scrollPosition = container.scrollLeft + elementCenter - containerCenter;
+        // Calculate current element position
+        const elementLeft = elementRect.left - innerRect.left;
+        const elementRight = elementRect.right - innerRect.left;
         
-        // Smooth scroll to center
-        container.scrollTo({
-          left: Math.max(0, scrollPosition),
-          behavior: 'smooth'
-        });
+        // Calculate visible area (accounting for gradients)
+        const visibleLeft = container.scrollLeft + 32; // 2rem gradient
+        const visibleRight = container.scrollLeft + containerRect.width - 32; // 2rem gradient
+        
+        // Only scroll if element is not fully visible
+        if (elementLeft < visibleLeft) {
+          // Scroll left to show element with padding
+          container.scrollTo({
+            left: Math.max(0, elementLeft - 32),
+            behavior: 'smooth'
+          });
+        } else if (elementRight > visibleRight) {
+          // Scroll right to show element with padding
+          container.scrollTo({
+            left: elementRight - containerRect.width + 32,
+            behavior: 'smooth'
+          });
+        }
+        // If element is already visible, don't scroll
       }
     });
     
@@ -65,7 +94,7 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
   return (
     <>
       {/* Unified header matching Discover/Favorites design */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50 transition-colors duration-300">
+      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
         <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto relative overflow-hidden">
           {/* Title Row - 36px */}
           <div className="h-9 flex items-center justify-between px-4">
@@ -92,12 +121,12 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
           <div className="h-10 flex items-center -mt-1 px-4">
             {/* Scrollable steps container with mask */}
             <div className="relative flex-1 overflow-hidden">
-              {/* Gradient masks for scroll indication */}
-              <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-gray-800 to-transparent z-10 pointer-events-none" />
-              <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-gray-800 to-transparent z-10 pointer-events-none" />
+              {/* Subtle gradient masks - only 1rem wide */}
+              <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white dark:from-gray-800 to-transparent z-10 pointer-events-none opacity-90" />
+              <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-white dark:from-gray-800 to-transparent z-10 pointer-events-none opacity-90" />
               
               <div ref={scrollContainerRef} className="overflow-x-auto scrollbar-hide">
-                <div className="flex items-center gap-2 py-1 px-4">
+                <div className="flex items-center gap-2 py-1 px-1">
                   {allSteps.map((step) => {
                   const Icon = step.icon;
                   const isActive = step.key === currentStep && currentStep !== 'progress';

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useTransition, Suspense } from 'react';
+import React, { useState, useEffect, useTransition, Suspense, useRef } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import OnboardingProgressiveNav from './OnboardingProgressiveNav';
 import { getOnboardingProgress } from '../utils/onboardingUtils';
@@ -9,7 +9,9 @@ export default function OnboardingLayout() {
   const navigate = useNavigate();
   const [progress, setProgress] = useState({ completedSteps: {} });
   const [loading, setLoading] = useState(true);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const outletRef = useRef(null);
   
   // Extract current step from pathname
   const pathSegments = location.pathname.split('/');
@@ -65,32 +67,58 @@ export default function OnboardingLayout() {
   
   const handleNext = () => {
     const nextPath = navigationPaths[currentStep]?.next;
-    if (nextPath) {
-      startTransition(() => {
-        navigate(nextPath);
-      });
+    if (nextPath && !isTransitioning) {
+      setIsTransitioning(true);
+      // Add fade-out class
+      if (outletRef.current) {
+        outletRef.current.classList.add('opacity-0');
+      }
+      
+      setTimeout(() => {
+        startTransition(() => {
+          navigate(nextPath);
+          // Reset transition state after navigation
+          setTimeout(() => {
+            setIsTransitioning(false);
+            if (outletRef.current) {
+              outletRef.current.classList.remove('opacity-0');
+            }
+          }, 50);
+        });
+      }, 150); // Wait for fade-out
     }
   };
   
   const handlePrevious = () => {
     const prevPath = navigationPaths[currentStep]?.prev;
-    if (prevPath) {
-      startTransition(() => {
-        navigate(prevPath);
-      });
+    if (prevPath && !isTransitioning) {
+      setIsTransitioning(true);
+      // Add fade-out class
+      if (outletRef.current) {
+        outletRef.current.classList.add('opacity-0');
+      }
+      
+      setTimeout(() => {
+        startTransition(() => {
+          navigate(prevPath);
+          // Reset transition state after navigation
+          setTimeout(() => {
+            setIsTransitioning(false);
+            if (outletRef.current) {
+              outletRef.current.classList.remove('opacity-0');
+            }
+          }, 50);
+        });
+      }, 150); // Wait for fade-out
     }
   };
   
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
-        <div className="animate-pulse text-scout-accent-600 dark:text-scout-accent-400 font-semibold">Loading...</div>
-      </div>
-    );
+    return null; // Return nothing during initial load to prevent flash
   }
   
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Persistent Navigation - Never unmounts */}
       <OnboardingProgressiveNav 
         currentStep={currentStep} 
@@ -99,15 +127,8 @@ export default function OnboardingLayout() {
       
       {/* Content Area with smooth transitions */}
       <main className="relative">
-        <div 
-          className={`transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`}
-          style={{ minHeight: 'calc(100vh - 76px)' }} // Header height
-        >
-          <Suspense fallback={
-            <div className="flex items-center justify-center py-20">
-              <div className="animate-pulse text-scout-accent-600 dark:text-scout-accent-400">Loading...</div>
-            </div>
-          }>
+        <div ref={outletRef} className="transition-opacity duration-150 ease-in-out">
+          <Suspense fallback={null}>
             <Outlet context={{ 
               onNext: handleNext, 
               onPrevious: handlePrevious,
