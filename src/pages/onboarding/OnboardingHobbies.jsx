@@ -71,9 +71,9 @@ export default function OnboardingHobbies() {
 
   // Travel frequency options
   const travelOptions = [
-    { id: 'frequent', label: 'Frequent' },
+    { id: 'rare', label: 'Rare' },
     { id: 'occasional', label: 'Occasional' },
-    { id: 'rare', label: 'Rare' }
+    { id: 'frequent', label: 'Frequent' }
   ];
 
   // Updated lifestyle categories to match database
