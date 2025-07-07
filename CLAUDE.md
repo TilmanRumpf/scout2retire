@@ -14,6 +14,14 @@
 3. **Comprehensive testing** - Verify thoroughly before claiming success
 4. **Anticipate edge cases** - Solve the whole problem, not just the symptom
 
+## 🔔 CONTEXT MANAGEMENT WARNING
+
+**When context remaining drops below 20%**:
+1. **IMMEDIATELY WARN** the user about low context
+2. **ASK EXPLICITLY**: "Context is running low (less than 20% remaining). Should I auto-compact now to preserve our work?"
+3. **WAIT FOR RESPONSE** before proceeding
+4. **DON'T AUTO-COMPACT** without permission - user may want to save state first
+
 ## 🎯 Project Mission & Current State
 
 Scout2Retire empowers people aged 55+ to discover their ideal retirement destination. **Current Status**: Frontend is excellent and well-liked. Backend needs work to utilize the powerful onboarding data and frontend capabilities.
