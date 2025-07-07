@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Heart, Plane, Activity, ShoppingBag, Sparkles } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
+import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
@@ -40,6 +41,9 @@ export default function OnboardingHobbies() {
   const [initialLoading, setInitialLoading] = useState(true);
   
   const navigate = useNavigate();
+  
+  // Enable auto-save for this page
+  const autoSave = useOnboardingAutoSave(formData, 'hobbies');
 
   // Activity options - removed fitness, yoga, dancing
   const activityOptions = [
@@ -88,33 +92,33 @@ export default function OnboardingHobbies() {
   useEffect(() => {
     const loadExistingData = async () => {
       try {
-        const { user } = await getCurrentUser();
-        if (!user) {
+        const userResult = await getCurrentUser();
+        if (!userResult.user) {
           navigate('/welcome');
           return;
         }
         
-        const { success, data, progress: userProgress, error } = await getOnboardingProgress(user.id);
-        if (!success) {
-          console.error("Error loading existing data:", error);
+        const progressResult = await getOnboardingProgress(userResult.user.id);
+        if (!progressResult.success) {
+          console.error("Error loading existing data:", progressResult.error);
           setInitialLoading(false);
           return;
         }
         
-        setProgress(userProgress);
+        // Progress is now managed by OnboardingLayout
         
         // If hobbies data exists, load it
-        if (data && data.hobbies) {
+        if (progressResult.data && progressResult.data.hobbies) {
           setFormData(prev => ({
             ...prev,
-            ...data.hobbies,
+            ...progressResult.data.hobbies,
             // Ensure all fields have default values if not present
             lifestyle_importance: {
               outdoor_activities: 1,
               cultural_events: 1,
               shopping: 1,
               wellness: 1,
-              ...data.hobbies.lifestyle_importance
+              ...progressResult.data.hobbies.lifestyle_importance
             }
           }));
         }
@@ -157,7 +161,10 @@ export default function OnboardingHobbies() {
     }));
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    setLoading(true);
+    await autoSave();
+    setLoading(false);
     navigate('/onboarding/administration');
   };
 
@@ -166,8 +173,8 @@ export default function OnboardingHobbies() {
     setLoading(true);
     
     try {
-      const { user } = await getCurrentUser();
-      if (!user) {
+      const userResult = await getCurrentUser();
+      if (!userResult.user) {
         navigate('/welcome');
         return;
       }
@@ -181,7 +188,7 @@ export default function OnboardingHobbies() {
       };
       
       const { success, error } = await saveOnboardingStep(
-        user.id,
+        userResult.user.id,
         dataToSave,
         'hobbies'
       );
@@ -193,7 +200,11 @@ export default function OnboardingHobbies() {
       }
       
       toast.success('Hobbies, health & interests saved!');
-      navigate('/onboarding/administration');
+      
+      // Add a small delay to ensure data is saved before navigation
+      setTimeout(() => {
+        navigate('/onboarding/administration');
+      }, 100);
     } catch (err) {
       toast.error('An unexpected error occurred');
       console.error(err);
@@ -356,7 +367,13 @@ export default function OnboardingHobbies() {
             <div className="flex items-center">
               <button
                 type="button"
-                onClick={() => navigate('/onboarding/culture')}
+                onClick={async () => {
+                  setLoading(true);
+                  await autoSave();
+                  setLoading(false);
+                  navigate('/onboarding/culture');
+                }}
+                disabled={loading}
                 className={uiConfig.components.buttonSecondary}
               >
                 ← Back

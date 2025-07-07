@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Users, Globe2, Languages, Utensils, Building, Music, Calendar, Gauge, Home } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
+import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
@@ -70,6 +71,9 @@ export default function OnboardingCulture() {
   const [initialLoading, setInitialLoading] = useState(true);
   
   const navigate = useNavigate();
+  
+  // Enable auto-save for this page
+  const autoSave = useOnboardingAutoSave(formData, 'culture_preferences');
 
   // Common languages options
   const languages = [
@@ -94,52 +98,52 @@ export default function OnboardingCulture() {
   useEffect(() => {
     const loadExistingData = async () => {
       try {
-        const { user } = await getCurrentUser();
-        if (!user) {
+        const userResult = await getCurrentUser();
+        if (!userResult.user) {
           navigate('/welcome');
           return;
         }
         
-        const { success, data, progress: userProgress, error } = await getOnboardingProgress(user.id);
-        if (!success) {
-          console.error("Error loading existing data:", error);
+        const progressResult = await getOnboardingProgress(userResult.user.id);
+        if (!progressResult.success) {
+          console.error("Error loading existing data:", progressResult.error);
           setInitialLoading(false);
           return;
         }
         
-        setProgress(userProgress);
+        // Progress is now managed by OnboardingLayout
         
         // If culture data exists, load it
-        if (data && data.culture_preferences) {
+        if (progressResult.data && progressResult.data.culture_preferences) {
           const loadedData = {
-            ...data.culture_preferences,
-            expat_community_preference: Array.isArray(data.culture_preferences.expat_community_preference) 
-              ? data.culture_preferences.expat_community_preference 
-              : (data.culture_preferences.expat_community_preference ? [data.culture_preferences.expat_community_preference] : []),
+            ...progressResult.data.culture_preferences,
+            expat_community_preference: Array.isArray(progressResult.data.culture_preferences.expat_community_preference) 
+              ? progressResult.data.culture_preferences.expat_community_preference 
+              : (progressResult.data.culture_preferences.expat_community_preference ? [progressResult.data.culture_preferences.expat_community_preference] : []),
             language_comfort: {
-              ...data.culture_preferences.language_comfort,
-              preferences: data.culture_preferences.language_comfort?.preferences || [],
-              already_speak: data.culture_preferences.language_comfort?.already_speak || []
+              ...progressResult.data.culture_preferences.language_comfort,
+              preferences: progressResult.data.culture_preferences.language_comfort?.preferences || [],
+              already_speak: progressResult.data.culture_preferences.language_comfort?.already_speak || []
             },
             lifestyle_preferences: {
-              ...data.culture_preferences.lifestyle_preferences,
-              pace_of_life: Array.isArray(data.culture_preferences.lifestyle_preferences?.pace_of_life)
-                ? data.culture_preferences.lifestyle_preferences.pace_of_life
-                : (data.culture_preferences.lifestyle_preferences?.pace_of_life ? [data.culture_preferences.lifestyle_preferences.pace_of_life] : []),
-              urban_rural: Array.isArray(data.culture_preferences.lifestyle_preferences?.urban_rural)
-                ? data.culture_preferences.lifestyle_preferences.urban_rural
-                : (data.culture_preferences.lifestyle_preferences?.urban_rural ? [data.culture_preferences.lifestyle_preferences.urban_rural] : []),
-              social_preference: data.culture_preferences.lifestyle_preferences?.social_preference || ''
+              ...progressResult.data.culture_preferences.lifestyle_preferences,
+              pace_of_life: Array.isArray(progressResult.data.culture_preferences.lifestyle_preferences?.pace_of_life)
+                ? progressResult.data.culture_preferences.lifestyle_preferences.pace_of_life
+                : (progressResult.data.culture_preferences.lifestyle_preferences?.pace_of_life ? [progressResult.data.culture_preferences.lifestyle_preferences.pace_of_life] : []),
+              urban_rural: Array.isArray(progressResult.data.culture_preferences.lifestyle_preferences?.urban_rural)
+                ? progressResult.data.culture_preferences.lifestyle_preferences.urban_rural
+                : (progressResult.data.culture_preferences.lifestyle_preferences?.urban_rural ? [progressResult.data.culture_preferences.lifestyle_preferences.urban_rural] : []),
+              social_preference: progressResult.data.culture_preferences.lifestyle_preferences?.social_preference || ''
             },
             cultural_importance: {
               // Handle legacy data: combine restaurants and nightlife if they exist separately
-              dining_nightlife: data.culture_preferences.cultural_importance?.dining_nightlife || 
-                                (data.culture_preferences.cultural_importance?.restaurants && data.culture_preferences.cultural_importance?.nightlife 
-                                  ? Math.round((data.culture_preferences.cultural_importance.restaurants + 
-                                               data.culture_preferences.cultural_importance.nightlife) / 2)
+              dining_nightlife: progressResult.data.culture_preferences.cultural_importance?.dining_nightlife || 
+                                (progressResult.data.culture_preferences.cultural_importance?.restaurants && progressResult.data.culture_preferences.cultural_importance?.nightlife 
+                                  ? Math.round((progressResult.data.culture_preferences.cultural_importance.restaurants + 
+                                               progressResult.data.culture_preferences.cultural_importance.nightlife) / 2)
                                   : 1),
-              museums: data.culture_preferences.cultural_importance?.museums || 1,
-              cultural_events: data.culture_preferences.cultural_importance?.cultural_events || 1
+              museums: progressResult.data.culture_preferences.cultural_importance?.museums || 1,
+              cultural_events: progressResult.data.culture_preferences.cultural_importance?.cultural_events || 1
             }
           };
           setFormData(loadedData);
@@ -206,7 +210,10 @@ export default function OnboardingCulture() {
     }));
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    setLoading(true);
+    await autoSave();
+    setLoading(false);
     navigate('/onboarding/hobbies');
   };
 
@@ -216,14 +223,14 @@ export default function OnboardingCulture() {
     setLoading(true);
     
     try {
-      const { user } = await getCurrentUser();
-      if (!user) {
+      const userResult = await getCurrentUser();
+      if (!userResult.user) {
         navigate('/welcome');
         return;
       }
       
       const { success, error } = await saveOnboardingStep(
-        user.id,
+        userResult.user.id,
         formData,
         'culture_preferences'
       );
@@ -235,7 +242,11 @@ export default function OnboardingCulture() {
       }
       
       toast.success('Culture preferences saved!');
-      navigate('/onboarding/hobbies');
+      
+      // Add a small delay to ensure data is saved before navigation
+      setTimeout(() => {
+        navigate('/onboarding/hobbies');
+      }, 100);
     } catch (err) {
       toast.error('An unexpected error occurred');
       console.error(err);
@@ -541,7 +552,13 @@ export default function OnboardingCulture() {
             <div className="flex items-center">
               <button
                 type="button"
-                onClick={() => navigate('/onboarding/climate')}
+                onClick={async () => {
+                  setLoading(true);
+                  await autoSave();
+                  setLoading(false);
+                  navigate('/onboarding/climate');
+                }}
+                disabled={loading}
                 className={uiConfig.components.buttonSecondary}
               >
                 ← Back

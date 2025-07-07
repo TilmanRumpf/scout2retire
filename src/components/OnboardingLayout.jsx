@@ -12,6 +12,7 @@ export default function OnboardingLayout() {
   const [, startTransition] = useTransition();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const outletRef = useRef(null);
+  const saveCallbackRef = useRef(null);
   
   // Extract current step from pathname
   const pathSegments = location.pathname.split('/');
@@ -33,14 +34,16 @@ export default function OnboardingLayout() {
   
   const currentStep = stepMapping[currentStepPath] || 'progress';
   
-  // Load onboarding progress once
+  // Load onboarding progress on location change
   useEffect(() => {
     const loadProgress = async () => {
       try {
         const user = await getCurrentUser();
         if (user) {
           const progressData = await getOnboardingProgress(user.id);
-          setProgress(progressData);
+          if (progressData.success) {
+            setProgress(progressData.progress || { completedSteps: {} });
+          }
         }
       } catch (error) {
         console.error('Error loading onboarding progress:', error);
@@ -49,7 +52,7 @@ export default function OnboardingLayout() {
       }
     };
     loadProgress();
-  }, []);
+  }, [location.pathname]); // Reload progress when location changes
   
   // Navigation functions for child components
   const navigationPaths = {
@@ -122,7 +125,14 @@ export default function OnboardingLayout() {
       {/* Persistent Navigation - Never unmounts */}
       <OnboardingProgressiveNav 
         currentStep={currentStep} 
-        completedSteps={progress.completedSteps} 
+        completedSteps={progress.completedSteps}
+        onNavigate={async (path) => {
+          // Call the save function if available
+          if (saveCallbackRef.current) {
+            await saveCallbackRef.current();
+          }
+          navigate(path);
+        }}
       />
       
       {/* Content Area with smooth transitions */}
@@ -133,7 +143,19 @@ export default function OnboardingLayout() {
               onNext: handleNext, 
               onPrevious: handlePrevious,
               progress,
-              setProgress
+              setProgress,
+              refreshProgress: async () => {
+                const user = await getCurrentUser();
+                if (user) {
+                  const progressData = await getOnboardingProgress(user.id);
+                  if (progressData.success) {
+                    setProgress(progressData.progress || { completedSteps: {} });
+                  }
+                }
+              },
+              setSaveCallback: (callback) => {
+                saveCallbackRef.current = callback;
+              }
             }} />
           </Suspense>
         </div>

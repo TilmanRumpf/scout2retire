@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, Users, Globe, PawPrint } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
+import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
@@ -53,6 +54,9 @@ export default function OnboardingCurrentStatus() {
   const [initialLoading, setInitialLoading] = useState(true);
   
   const navigate = useNavigate();
+  
+  // Enable auto-save for this page
+  const autoSave = useOnboardingAutoSave(formData, 'current_status');
   const currentYear = new Date().getFullYear();
 
   const countries = [
@@ -79,20 +83,20 @@ export default function OnboardingCurrentStatus() {
   useEffect(() => {
     const loadExistingData = async () => {
       try {
-        const { user } = await getCurrentUser();
-        if (!user) {
+        const userResult = await getCurrentUser();
+        if (!userResult.user) {
           navigate('/welcome');
           return;
         }
         
-        const { success, data, progress: userProgress, error } = await getOnboardingProgress(user.id);
+        const { success, data, progress: userProgress, error } = await getOnboardingProgress(userResult.user.id);
         if (!success) {
           console.error("Error loading existing data:", error);
           setInitialLoading(false);
           return;
         }
         
-        setProgress(userProgress);
+        // Progress is now managed by OnboardingLayout
         
         if (data && data.current_status) {
           setHasLoadedData(true);
@@ -206,7 +210,10 @@ export default function OnboardingCurrentStatus() {
     }));
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    setLoading(true);
+    await autoSave();
+    setLoading(false);
     navigate('/onboarding/region');
   };
 
@@ -229,8 +236,8 @@ export default function OnboardingCurrentStatus() {
     setLoading(true);
     
     try {
-      const { user } = await getCurrentUser();
-      if (!user) {
+      const userResult = await getCurrentUser();
+      if (!userResult.user) {
         navigate('/welcome');
         return;
       }
@@ -255,7 +262,7 @@ export default function OnboardingCurrentStatus() {
       };
       
       const { success, error } = await saveOnboardingStep(
-        user.id,
+        userResult.user.id,
         cleanedFormData,
         'current_status'
       );
@@ -267,7 +274,11 @@ export default function OnboardingCurrentStatus() {
       }
       
       toast.success('Current status saved!');
-      navigate('/onboarding/region');
+      
+      // Add a small delay to ensure data is saved before navigation
+      setTimeout(() => {
+        navigate('/onboarding/region');
+      }, 100);
     } catch (err) {
       toast.error('An unexpected error occurred');
       console.error(err);
@@ -711,11 +722,17 @@ export default function OnboardingCurrentStatus() {
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
         <div className={`fixed sm:sticky bottom-0 left-0 right-0 sm:relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-6 lg:mt-8`}>
-          <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+          <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto">
             <div className="flex items-center">
               <button
                 type="button"
-                onClick={() => navigate('/welcome')}
+                onClick={async () => {
+                  setLoading(true);
+                  await autoSave();
+                  setLoading(false);
+                  navigate('/welcome');
+                }}
+                disabled={loading}
                 className={uiConfig.components.buttonSecondary}
               >
                 ← Back

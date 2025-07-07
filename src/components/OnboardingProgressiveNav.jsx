@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign } from 'lucide-react';
 import QuickNav from './QuickNav';
 
-export default function OnboardingProgressiveNav({ currentStep, completedSteps = {} }) {
+export default function OnboardingProgressiveNav({ currentStep, completedSteps = {}, onNavigate }) {
   const [isQuickNavOpen, setIsQuickNavOpen] = useState(false);
   const location = useLocation();
   const scrollContainerRef = useRef(null);
@@ -133,10 +133,15 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
                   const isCompleted = completedSteps[step.key];
                   
                   return (
-                    <Link
+                    <button
                       key={step.key}
                       ref={isActive ? activeStepRef : null}
-                      to={step.path}
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        if (onNavigate) {
+                          await onNavigate(step.path);
+                        }
+                      }}
                       className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm whitespace-nowrap transition-all duration-200 ${
                         isActive 
                           ? 'bg-scout-accent-100 dark:bg-scout-accent-900/30 font-medium text-scout-accent-700 dark:text-scout-accent-300' 
@@ -153,7 +158,7 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
                           : 'text-gray-400 dark:text-gray-500'
                       }`} />
                       <span>{step.label}</span>
-                    </Link>
+                    </button>
                   );
                 })}
                 </div>

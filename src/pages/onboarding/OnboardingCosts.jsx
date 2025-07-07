@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { DollarSign, Home, Heart, Car } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
+import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
@@ -52,7 +53,6 @@ export default function OnboardingCosts() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   
-  
   const [formData, setFormData] = useState({
     total_monthly_budget: 1500,
     max_monthly_rent: 500,
@@ -67,6 +67,9 @@ export default function OnboardingCosts() {
     sales_tax_sensitive: false,
     income_tax_sensitive: false
   });
+  
+  // Enable auto-save for this page
+  const autoSave = useOnboardingAutoSave(formData, 'costs');
 
   // Local Mobility options
   const localMobilityOptions = [
@@ -95,18 +98,18 @@ export default function OnboardingCosts() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const { user } = await getCurrentUser();
-        if (!user) {
+        const userResult = await getCurrentUser();
+        if (!userResult.user) {
           navigate('/welcome');
           return;
         }
         
-        const { success, data, progress: userProgress } = await getOnboardingProgress(user.id);
-        if (success) {
-          setProgress(userProgress || { completedSteps: {} });
+        const progressResult = await getOnboardingProgress(userResult.user.id);
+        if (progressResult.success) {
+          // Progress is now managed by OnboardingLayout
           // FIXED: Check for both 'costs' and 'budget' for backward compatibility
-          if (data && (data.costs || data.budget)) {
-            const budgetData = data.costs || data.budget;
+          if (progressResult.data && (progressResult.data.costs || progressResult.data.budget)) {
+            const budgetData = progressResult.data.costs || progressResult.data.budget;
             setFormData(prev => ({ 
               ...prev, 
               ...budgetData,
@@ -155,7 +158,10 @@ export default function OnboardingCosts() {
     }));
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    setLoading(true);
+    await autoSave();
+    setLoading(false);
     navigate('/onboarding/review');
   };
 
@@ -164,14 +170,14 @@ export default function OnboardingCosts() {
     setLoading(true);
     
     try {
-      const { user } = await getCurrentUser();
-      if (!user) {
+      const userResult = await getCurrentUser();
+      if (!userResult.user) {
         navigate('/welcome');
         return;
       }
       
       // FIXED: Changed from 'budget' to 'costs' to match database expectation
-      const { success, error } = await saveOnboardingStep(user.id, formData, 'costs');
+      const { success, error } = await saveOnboardingStep(userResult.user.id, formData, 'costs');
       
       if (!success) {
         toast.error(`Failed to save: ${error?.message || 'Unknown error'}`);
@@ -179,7 +185,11 @@ export default function OnboardingCosts() {
       }
       
       toast.success('Budget information saved!');
-      navigate('/onboarding/review');
+      
+      // Add a small delay to ensure data is saved before navigation
+      setTimeout(() => {
+        navigate('/onboarding/review');
+      }, 100);
     } catch (err) {
       toast.error('An unexpected error occurred');
       console.error(err);
@@ -509,7 +519,13 @@ export default function OnboardingCosts() {
             <div className="flex items-center">
               <button
                 type="button"
-                onClick={() => navigate('/onboarding/administration')}
+                onClick={async () => {
+                  setLoading(true);
+                  await autoSave();
+                  setLoading(false);
+                  navigate('/onboarding/administration');
+                }}
+                disabled={loading}
                 className={uiConfig.components.buttonSecondary}
               >
                 ← Back
