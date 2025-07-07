@@ -8,6 +8,31 @@ Scout2Retire empowers people aged 55+ to discover their ideal retirement destina
 
 ---
 
+## 🚨 CRITICAL: NEVER MODIFY WORKING CODE WITHOUT VERIFICATION
+
+### The getCurrentUser Disaster (2 Hours Lost)
+**NEVER AGAIN**: Do not "fix" code patterns without understanding them first. If code is working, DO NOT change it based on assumptions.
+
+**Before changing ANY existing pattern:**
+1. **TEST FIRST** - Run the code to see if it actually has a problem
+2. **UNDERSTAND THE API** - Check what the function actually returns
+3. **VERIFY YOUR ASSUMPTION** - Don't assume destructuring is wrong without checking
+4. **ISOLATE CHANGES** - Fix one thing at a time, not everywhere at once
+
+**Example of catastrophic mistake:**
+```javascript
+// WORKING CODE - DO NOT "FIX" THIS
+const { user } = await getCurrentUser();  // Returns {user, profile}
+
+// BROKEN "FIX" THAT DESTROYED EVERYTHING
+const userResult = await getCurrentUser();
+// ... userResult.user.id  // This broke data loading across entire app
+```
+
+**GOLDEN RULE**: If the UI is working and displaying data, the code is correct. Do not refactor working code based on assumptions about "better patterns".
+
+---
+
 ## 🔧 SESSION STARTUP (Quick Check)
 
 ```bash
