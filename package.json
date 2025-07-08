@@ -12,7 +12,14 @@
     "verify:navigation": "node scripts/verify-navigation.js",
     "verify:all": "npm run lint && npm run verify:styles && npm run verify:navigation",
     "precommit": "bash scripts/pre-commit-check.sh",
-    "fix:retirement-month": "node scripts/fix-missing-retirement-month.js"
+    "fix:retirement-month": "node scripts/fix-missing-retirement-month.js",
+    "towns:populate": "node scripts/master-town-data-system.js execute",
+    "towns:status": "node scripts/master-town-data-system.js status",
+    "towns:monitor": "node scripts/master-town-data-system.js monitor",
+    "towns:backup": "node scripts/master-town-data-system.js backup",
+    "towns:validate": "node scripts/town-data-validator.js",
+    "towns:enhance": "node scripts/enhanced-town-data-filler.js",
+    "towns:insert": "node scripts/robust-town-data-inserter.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.8",

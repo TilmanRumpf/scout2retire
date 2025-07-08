@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, Globe, MapPin, Trees } from 'lucide-react';
+import { ChevronDown, Globe, MapPin, Trees, Lightbulb } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
@@ -436,6 +436,14 @@ const OnboardingRegion = () => {
       <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         
         <form onSubmit={handleSubmit} className="py-6">
+          {/* Pro Tip at top */}
+          <div className={`bg-scout-accent/10 p-3 lg:p-4 ${uiConfig.layout.radius.lg} mb-4 lg:mb-6 flex items-start`}>
+            <Lightbulb size={16} className="mr-2 text-orange-500 flex-shrink-0 mt-0.5" strokeWidth={3} />
+            <p className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.colors.body}`}>
+              <span className={`${uiConfig.font.weight.medium}`}>Pro Tip:</span> Keep your options open by selecting "Recommended" for regions. You can drill down to specific countries or provinces if you have strong preferences.
+            </p>
+          </div>
+          
           {/* Geographical Preferences section */}
           <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 sm:mb-3 flex items-center`}>
@@ -640,11 +648,6 @@ const OnboardingRegion = () => {
               </div>
             </div>
           </div>
-
-          {/* Pro Tip */}
-          <ProTip>
-            Keep your options open by selecting "Recommended" for regions. You can drill down to specific countries or provinces if you have strong preferences.
-          </ProTip>
         </form>
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}

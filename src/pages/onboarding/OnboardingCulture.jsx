@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Globe2, Languages, Utensils, Building, Music, Calendar, Gauge, Home } from 'lucide-react';
+import { Users, Globe2, Languages, Utensils, Building, Music, Calendar, Gauge, Home, Lightbulb } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
@@ -344,6 +344,14 @@ export default function OnboardingCulture() {
       <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         
         <form onSubmit={handleSubmit} className="py-6">
+          {/* Pro Tip at top */}
+          <div className={`bg-scout-accent/10 p-3 lg:p-4 ${uiConfig.layout.radius.lg} mb-4 lg:mb-6 flex items-start`}>
+            <Lightbulb size={16} className="mr-2 text-orange-500 flex-shrink-0 mt-0.5" strokeWidth={3} />
+            <p className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.colors.body}`}>
+              <span className={`${uiConfig.font.weight.medium}`}>Pro Tip:</span> Your cultural preferences help us find communities where you'll feel at home. Consider both practical needs and lifestyle desires.
+            </p>
+          </div>
+          
           {/* Living Environment - moved to first position */}
           <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
@@ -540,10 +548,6 @@ export default function OnboardingCulture() {
             </div>
           )}
 
-          {/* Pro Tip */}
-          <ProTip>
-            Your cultural preferences help us find communities where you'll feel at home. Consider both practical needs and lifestyle desires.
-          </ProTip>
         </form>
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
