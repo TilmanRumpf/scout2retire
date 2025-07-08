@@ -93,6 +93,45 @@ cat .env | head -2  # Check environment
 - Git force pushes or destructive git operations (`git reset --hard`, `git push --force`)
 - Removing entire code sections or components
 
+## 🔴 CRITICAL: ONBOARDING QUESTIONS ARE SACRED - DO NOT TOUCH
+
+### ⛔ ABSOLUTELY FORBIDDEN - NO EXCEPTIONS
+
+**The onboarding questions and logic are the result of HUNDREDS OF HOURS of user research, testing, and refinement. They are UNTOUCHABLE.**
+
+**YOU MUST NEVER:**
+- ❌ Modify any onboarding question text or wording
+- ❌ Change the order of onboarding steps
+- ❌ Alter the logic flow between questions
+- ❌ Add or remove questions from the onboarding flow
+- ❌ Change answer options or their values
+- ❌ Modify how onboarding data is collected or stored
+- ❌ "Improve" or "optimize" the onboarding experience
+- ❌ Refactor onboarding components beyond basic styling
+
+**WHY THIS MATTERS:**
+- Each question has been meticulously crafted through extensive research
+- The flow has been optimized through countless user tests
+- The wording has been refined for maximum clarity for 55+ users
+- The data collection supports a complex matching algorithm
+- Any change could break years of careful optimization
+
+**THE ONLY ACCEPTABLE CHANGES:**
+- ✅ Fixing genuine bugs that prevent functionality
+- ✅ Updating styling to match design system (WITHOUT changing layout)
+- ✅ Ensuring mobile responsiveness (WITHOUT changing content)
+- ✅ Dark mode compatibility (WITHOUT changing structure)
+
+**IF YOU THINK SOMETHING NEEDS CHANGING:**
+1. **STOP** - It probably doesn't
+2. **ASK EXPLICITLY** - "The onboarding has X issue. Since this is protected content, should I proceed?"
+3. **WAIT FOR EXPLICIT PERMISSION** - Never assume you can modify onboarding
+4. **DOCUMENT WHY** - Any approved change must have clear justification
+
+**REMEMBER:** The onboarding is the crown jewel of Scout2Retire. It captures rich, nuanced data that powers the entire matching system. Treat it as READ-ONLY unless explicitly told otherwise.
+
+---
+
 ## ✅ NORMAL WORK - NEVER ASK FOR APPROVAL
 
 **These are ROUTINE development tasks - just do them:**
@@ -176,20 +215,16 @@ head -10 file.jsx               # Reading file content
 ## 🗄️ DATABASE WORK
 
 ### Development Environment
-- **User works**: Local code + Local Supabase
+- **User works**: Local code → Online Supabase (NEVER LOCAL SUPABASE DATA!)
 - **Production**: GitHub → Vercel → Online Supabase  
-- **Claude monitors**: Local database, keeps synchronized
+- **Claude monitors**: Online Supabase only
+- **CRITICAL**: NEVER use local Supabase instance for data. Always connect to online Supabase!
 
 ### Safe Commands (Use Freely)
 ```bash
-# Database analysis (no approval needed)
-docker exec supabase_db_scout2retire psql -U postgres -d postgres -c "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';"
-
-# Check data patterns
-docker exec supabase_db_scout2retire psql -U postgres -d postgres -c "SELECT COUNT(*) FROM users;"
-
-# Analyze schema
-npx supabase db diff
+# NEVER USE THESE LOCAL DATABASE COMMANDS!
+# Always check data through the app UI or Supabase online dashboard
+# The app connects to ONLINE Supabase, not local!
 ```
 
 ### Dangerous Commands (Ask First)

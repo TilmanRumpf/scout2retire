@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sun, Snowflake, Droplets, Cloud, CloudRain } from 'lucide-react';
+import { Sun, Snowflake, Droplets, Cloud, CloudRain, Lightbulb } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
@@ -221,6 +221,14 @@ export default function OnboardingClimate() {
       
       <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         <form onSubmit={handleSubmit} className="py-6">
+          {/* Pro Tip at top */}
+          <div className={`bg-scout-accent/10 p-3 lg:p-4 ${uiConfig.layout.radius.lg} mb-4 lg:mb-6 flex items-start`}>
+            <Lightbulb size={16} className="mr-2 text-orange-500 flex-shrink-0 mt-0.5" strokeWidth={3} />
+            <p className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.colors.body}`}>
+              <span className={`${uiConfig.font.weight.medium}`}>Pro Tip:</span> Select multiple options to keep your choices flexible. We'll find locations that match your preferred climate conditions throughout the year.
+            </p>
+          </div>
+          
           {/* Summer Climate */}
           <div className="mb-4">
             <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
@@ -363,10 +371,6 @@ export default function OnboardingClimate() {
             </div>
           )}
 
-          {/* Pro Tip */}
-          <ProTip>
-            Select multiple options to keep your choices flexible. We'll find locations that match your preferred climate conditions throughout the year.
-          </ProTip>
         </form>
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
