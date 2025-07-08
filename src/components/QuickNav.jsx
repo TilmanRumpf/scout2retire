@@ -165,7 +165,8 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
     { path: '/schedule', label: 'Schedule' },
     { path: '/chat', label: 'Chat' },
     { path: '/journal', label: 'Journal' },
-    { path: '/profile', label: 'Profile' }
+    { path: '/profile', label: 'Profile' },
+    { path: '/onboarding/current-status', label: 'Preferences', special: true }
   ];
 
   return (
@@ -216,11 +217,13 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
                   className={`flex items-center justify-between p-3 rounded-md transition-colors ${
                     isActive
                       ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20'
+                      : item.special
+                      ? 'hover:bg-gray-100 dark:hover:bg-gray-700'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
                   {/* FIXED 09JUN25: REMOVED span with mr-3 and item.icon - NO MORE ICONS! */}
-                  <span className="font-medium">{item.label}</span>
+                  <span className={`font-medium ${item.special ? 'text-[#f66527]' : ''}`}>{item.label}</span>
                   {/* Show badge for pending invitations on Chat */}
                   {item.path === '/chat' && pendingInvitesCount > 0 && (
                     <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold text-white bg-red-500 rounded-full">

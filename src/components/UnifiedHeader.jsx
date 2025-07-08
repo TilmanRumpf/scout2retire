@@ -126,10 +126,10 @@ export default function UnifiedHeader({
                         <button
                           key={tab.id}
                           onClick={tab.onClick}
-                          className={`flex items-center gap-1 text-sm whitespace-nowrap transition-colors ${
+                          className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm whitespace-nowrap transition-all duration-200 ${
                             isActive 
-                              ? 'font-medium text-gray-900 dark:text-gray-100' 
-                              : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                              ? 'bg-scout-accent-100 dark:bg-scout-accent-900/30 font-medium text-scout-accent-700 dark:text-scout-accent-300' 
+                              : 'text-gray-500 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}
                         >
                           {Icon && <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-scout-accent-600 dark:text-scout-accent-400' : ''}`} />}

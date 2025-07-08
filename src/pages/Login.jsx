@@ -120,10 +120,10 @@ export default function Login() {
           localStorage.removeItem('scout2retire_last_email');
         }
         
-        // Fetch user profile to check onboarding status
+        // Fetch user profile to check onboarding status and username
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('onboarding_completed')
+          .select('onboarding_completed, username')
           .eq('id', user.id)
           .single();
         
@@ -131,6 +131,12 @@ export default function Login() {
           console.error("Error fetching user data:", userError);
           // Fixed 10JUN25: Changed from /onboarding/status to /onboarding/progress
           navigate('/onboarding/progress'); // Default to onboarding if profile can't be fetched
+          return;
+        }
+        
+        // Check if user needs to select a username
+        if (!userData.username && userData.onboarding_completed) {
+          navigate('/profile?tab=account&selectUsername=true');
           return;
         }
         
