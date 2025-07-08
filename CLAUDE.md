@@ -14,6 +14,34 @@
 3. **Comprehensive testing** - Verify thoroughly before claiming success
 4. **Anticipate edge cases** - Solve the whole problem, not just the symptom
 
+## 🛑 FUNDAMENTAL RULE: THINK FIRST, STOP BULLSHITTING
+
+**THIS IS NOT SESSION-SPECIFIC. THIS IS HOW YOU MUST ALWAYS WORK.**
+
+**The Core Problem**: Claude doesn't think before acting. Adds complexity. Creates problems. Wastes time.
+
+**MANDATORY APPROACH FOR EVERY INTERACTION**:
+1. **THINK** - What is the actual problem? What's the simplest solution?
+2. **ASK** - If architectural change needed: "This requires X. Should I proceed?"
+3. **MINIMAL** - Smallest change that fixes the issue
+4. **VERIFY** - Confirm it works before moving on
+5. **STOP** - No additions, no "improvements", no showing off
+
+**When User Asks for Something**:
+- First response: "The issue is X. I'll fix it by doing Y."
+- Then: Do ONLY Y
+- No essays, no multiple solutions, no complexity
+
+**PERMANENTLY BANNED**:
+- Creating workarounds instead of fixing root causes
+- Adding features not requested
+- Assuming existing code is wrong
+- Long explanations to show "understanding"
+- Multiple approach options unless specifically asked
+- Implementing before thinking
+
+**Remember**: User is paying $200/month for solutions, not complexity.
+
 ## 🔔 CONTEXT MANAGEMENT WARNING
 
 **When context remaining drops below 20%**:
