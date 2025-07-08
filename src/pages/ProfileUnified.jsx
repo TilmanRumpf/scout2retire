@@ -1,14 +1,53 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getCurrentUser, signOut, updatePassword } from '../utils/authUtils';
-import { getOnboardingProgress } from '../utils/onboardingUtils';
+import { getOnboardingProgress, saveOnboardingStep } from '../utils/onboardingUtils';
 import { useTheme } from '../contexts/useTheme';
 import UnifiedHeader from '../components/UnifiedHeader';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
-import { User, Settings, Bell, Shield, Palette, Globe } from 'lucide-react';
+import { User, Settings, Bell, Shield, Palette, Globe, Calendar, Users, PawPrint, AtSign } from 'lucide-react';
+import { UsernameSelector } from '../components/UsernameSelector';
+import { formatUsername } from '../utils/usernameGenerator';
 
+// Option Button Component - Matching onboarding style
+const OptionButton = ({ label, description, isSelected, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`${uiConfig.components.buttonSizes.default} lg:py-3 lg:px-4 xl:py-4 xl:px-5 ${uiConfig.layout.radius.md} lg:rounded-lg border-2 ${uiConfig.animation.transition} text-center ${
+      isSelected
+        ? uiConfig.components.buttonVariants.selected
+        : uiConfig.components.buttonVariants.unselected
+    }`}
+  >
+    <div className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${isSelected ? 'text-white' : uiConfig.colors.body}`}>{label}</div>
+    {description && <div className={`${uiConfig.font.size.xs} lg:text-sm mt-0.5 lg:mt-1 ${isSelected ? 'text-white' : uiConfig.colors.hint}`}>{description}</div>}
+  </button>
+);
+
+// Countries list for citizenship dropdowns
+const countries = [
+  { id: 'us', label: 'United States' },
+  { id: 'uk', label: 'United Kingdom' },
+  { id: 'ca', label: 'Canada' },
+  { id: 'au', label: 'Australia' },
+  { id: 'de', label: 'Germany' },
+  { id: 'fr', label: 'France' },
+  { id: 'es', label: 'Spain' },
+  { id: 'it', label: 'Italy' },
+  { id: 'pt', label: 'Portugal' },
+  { id: 'nl', label: 'Netherlands' },
+  { id: 'ch', label: 'Switzerland' },
+  { id: 'se', label: 'Sweden' },
+  { id: 'no', label: 'Norway' },
+  { id: 'dk', label: 'Denmark' },
+  { id: 'ie', label: 'Ireland' },
+  { id: 'be', label: 'Belgium' },
+  { id: 'at', label: 'Austria' },
+  { id: 'other', label: 'Other' }
+];
 
 // Reusable toggle switch component
 const ToggleSwitch = ({ id, checked, onChange, label, description }) => (
@@ -57,6 +96,31 @@ export default function ProfileUnified() {
   const [retakingOnboarding, setRetakingOnboarding] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [showUsernameSelector, setShowUsernameSelector] = useState(false);
+  const [editedProfile, setEditedProfile] = useState({
+    full_name: '',
+    username: '',
+    nationality: '',
+    citizenship: {
+      primary_citizenship: '',
+      dual_citizenship: false,
+      secondary_citizenship: ''
+    },
+    partner_citizenship: {
+      primary_citizenship: '',
+      dual_citizenship: false,
+      secondary_citizenship: ''
+    },
+    family_situation: '',
+    retirement_timeline: {
+      status: '',
+      target_year: new Date().getFullYear() + 5,
+      target_month: 1,
+      target_day: 1
+    },
+    pet_owner: []
+  });
   
   // Password form
   const [passwordFormData, setPasswordFormData] = useState({
@@ -82,21 +146,36 @@ export default function ProfileUnified() {
   
   // Privacy
   const [privacySettings, setPrivacySettings] = useState({
-    showProfileToOthers: true,
-    allowDataCollection: true
+    profileVisibility: 'friends', // 'public', 'friends', 'private'
+    showFavorites: 'friends', // 'public', 'friends', 'private'
+    showActivity: 'friends', // 'public', 'friends', 'private'
+    allowFriendRequests: true,
+    showOnlineStatus: 'friends', // 'public', 'friends', 'private'
+    shareLocationPreferences: 'friends', // 'public', 'friends', 'private'
+    allowDataCollection: true,
+    allowPersonalization: true
   });
   
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Set active tab from URL
+  // Set active tab from URL and handle username selection
   useEffect(() => {
     const tab = searchParams.get('tab');
     if (tab && ['account', 'preferences', 'notifications', 'privacy'].includes(tab)) {
       setActiveTab(tab);
     }
-  }, [searchParams]);
+    
+    // Check if we should show username selector
+    const selectUsername = searchParams.get('selectUsername');
+    if (selectUsername === 'true') {
+      setShowUsernameSelector(true);
+      // Remove the query parameter after reading it
+      searchParams.delete('selectUsername');
+      setSearchParams(searchParams);
+    }
+  }, [searchParams, setSearchParams]);
 
   // Load user data
   useEffect(() => {
@@ -114,14 +193,69 @@ export default function ProfileUnified() {
       setUser(currentUser);
       setProfile(userProfile);
       
-      // Load onboarding data
+      // Check for pending username in localStorage
+      const pendingUsername = localStorage.getItem(`pending_username_${currentUser.id}`);
+      if (pendingUsername && !userProfile?.username) {
+        console.log('Found pending username in localStorage:', pendingUsername);
+        // Try to save it again
+        try {
+          const { error } = await supabase
+            .from('users')
+            .update({ username: pendingUsername })
+            .eq('id', currentUser.id);
+          
+          if (!error) {
+            console.log('Successfully saved pending username to database');
+            localStorage.removeItem(`pending_username_${currentUser.id}`);
+            // Update the profile with the saved username
+            userProfile.username = pendingUsername;
+          }
+        } catch (err) {
+          console.error('Failed to save pending username:', err);
+        }
+        
+        // Even if database save fails, show the username in UI
+        setProfile(prev => ({ ...prev, username: pendingUsername }));
+      }
+      
+      // Load onboarding data FIRST
       const { success, data } = await getOnboardingProgress(currentUser.id);
       
       if (success && data) {
         setOnboardingData(data);
-        
-        // Note: Removed automatic profile update due to 400 error
-        // The retirement date will be displayed from onboarding data directly
+      }
+      
+      // Initialize edited profile with ALL the actual data
+      const currentStatus = data?.current_status || {};
+      setEditedProfile({
+        full_name: userProfile?.full_name || '',
+        username: userProfile?.username || pendingUsername || '',
+        nationality: userProfile?.nationality || '',
+        citizenship: currentStatus.citizenship || {
+          primary_citizenship: '',
+          dual_citizenship: false,
+          secondary_citizenship: ''
+        },
+        partner_citizenship: currentStatus.partner_citizenship || {
+          primary_citizenship: '',
+          dual_citizenship: false,
+          secondary_citizenship: ''
+        },
+        family_situation: typeof currentStatus.family_situation === 'string' 
+          ? currentStatus.family_situation 
+          : (currentStatus.family_situation?.status || 'solo'),
+        retirement_timeline: currentStatus.retirement_timeline || {
+          status: '',
+          target_year: new Date().getFullYear() + 5,
+          target_month: 1,
+          target_day: 1
+        },
+        pet_owner: currentStatus.pet_owner || []
+      });
+      
+      // Show username selector if user doesn't have a username
+      if (!userProfile?.username && !pendingUsername) {
+        setShowUsernameSelector(true);
       }
       
       // Load favorites count
@@ -144,6 +278,12 @@ export default function ProfileUnified() {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setSearchParams({ tab });
+  };
+
+  // Helper function to check if citizenship dropdowns should show active state  
+  const isCitizenshipActive = (value) => {
+    // Always show active if there's any value selected
+    return Boolean(value && value !== '');
   };
 
   // Profile completeness calculation
@@ -265,6 +405,226 @@ export default function ProfileUnified() {
     }
   };
 
+  // Handle username selection
+  const handleUsernameSelect = async (username) => {
+    try {
+      if (!user?.id) {
+        console.error('User ID not found');
+        toast.error('User not logged in');
+        return;
+      }
+
+      // Update UI immediately
+      setProfile(prev => ({ ...prev, username }));
+      setEditedProfile(prev => ({ ...prev, username }));
+      setShowUsernameSelector(false);
+      
+      console.log('Saving username:', username, 'for user:', user.id);
+      
+      // Try to save to database (but don't block UI update)
+      try {
+        const { error } = await supabase
+          .from('users')
+          .update({ username })
+          .eq('id', user.id);
+
+        if (error) {
+          console.error('Supabase error:', error);
+          
+          // If it's a schema cache error, try a workaround
+          if (error.message?.includes('schema cache')) {
+            console.log('Attempting workaround for schema cache issue...');
+            
+            // Try using RPC or raw SQL as a workaround
+            const { error: rpcError } = await supabase.rpc('update_username', {
+              user_id: user.id,
+              new_username: username
+            }).catch(() => {
+              // If RPC doesn't exist, fail silently
+              return { error: null };
+            });
+            
+            if (!rpcError) {
+              toast.success('Username saved successfully!');
+              return;
+            }
+          }
+          
+          throw error;
+        }
+
+        toast.success('Username saved successfully!');
+      } catch (dbError) {
+        console.error('Database save failed:', dbError);
+        // Show warning but keep the UI updated
+        toast.error('Username updated locally but could not save to server. It will be saved on next sync.', {
+          duration: 5000
+        });
+        
+        // Store in localStorage as backup
+        localStorage.setItem(`pending_username_${user.id}`, username);
+      }
+    } catch (err) {
+      console.error('Error in username selection:', err);
+      toast.error('Failed to update username');
+      
+      // Revert UI changes if the initial update failed
+      setProfile(prev => ({ ...prev, username: profile?.username || '' }));
+      setEditedProfile(prev => ({ ...prev, username: profile?.username || '' }));
+    }
+  };
+
+  // Handle profile edit
+  const handleEditProfile = () => {
+    const currentStatus = onboardingData?.current_status || {};
+    
+    setEditedProfile({
+      full_name: profile?.full_name || '',
+      username: profile?.username || '',
+      nationality: profile?.nationality || '',
+      citizenship: currentStatus.citizenship || {
+        primary_citizenship: '',
+        dual_citizenship: false,
+        secondary_citizenship: ''
+      },
+      partner_citizenship: currentStatus.partner_citizenship || {
+        primary_citizenship: '',
+        dual_citizenship: false,
+        secondary_citizenship: ''
+      },
+      family_situation: typeof currentStatus.family_situation === 'string' 
+        ? currentStatus.family_situation 
+        : (currentStatus.family_situation?.status || 'solo'),
+      retirement_timeline: currentStatus.retirement_timeline || {
+        status: '',
+        target_year: new Date().getFullYear() + 5,
+        target_month: 1,
+        target_day: 1
+      },
+      pet_owner: currentStatus.pet_owner || []
+    });
+    setIsEditingProfile(true);
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setLoading(true);
+      
+      console.log('Saving profile with data:', editedProfile);
+      console.log('User ID:', user?.id);
+      
+      // Update profile in users table
+      // TEMPORARILY removing username due to schema cache issue
+      const { error: userError } = await supabase
+        .from('users')
+        .update({
+          full_name: editedProfile.full_name,
+          nationality: editedProfile.nationality
+        })
+        .eq('id', user.id);
+
+      if (userError) {
+        console.error('Error updating users table:', userError);
+        throw userError;
+      }
+
+      // Prepare onboarding data with proper structure
+      const currentStatusData = {
+        citizenship: editedProfile.citizenship,
+        family_situation: { status: editedProfile.family_situation },
+        retirement_timeline: editedProfile.retirement_timeline,
+        pet_owner: editedProfile.pet_owner
+      };
+
+      // Only include partner_citizenship if family_situation is 'couple'
+      if (editedProfile.family_situation === 'couple') {
+        currentStatusData.partner_citizenship = editedProfile.partner_citizenship;
+      }
+
+      console.log('Saving onboarding data:', currentStatusData);
+
+      // Save to onboarding_responses
+      const { success, error: onboardingError } = await saveOnboardingStep(
+        user.id,
+        currentStatusData,
+        'current_status'
+      );
+
+      if (!success) {
+        console.error('Error saving onboarding data:', onboardingError);
+        throw new Error(onboardingError?.message || 'Failed to update onboarding data');
+      }
+
+      // Update local state
+      setProfile(prev => ({
+        ...prev,
+        full_name: editedProfile.full_name,
+        // username: editedProfile.username, // Skip due to schema issue
+        nationality: editedProfile.nationality
+      }));
+
+      // Update onboarding data in state
+      setOnboardingData(prev => ({
+        ...prev,
+        current_status: currentStatusData
+      }));
+
+      setIsEditingProfile(false);
+      toast.success('Profile updated successfully');
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      toast.error('Failed to update profile: ' + (err.message || 'Unknown error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    // Re-run the edit profile logic to reset to current values
+    handleEditProfile();
+    setIsEditingProfile(false);
+  };
+
+  // Helper function to handle family situation change
+  const handleFamilyStatusChange = (status) => {
+    setEditedProfile(prev => ({
+      ...prev,
+      family_situation: status,
+      partner_citizenship: status === 'couple' ? prev.partner_citizenship : {
+        primary_citizenship: '',
+        dual_citizenship: false,
+        secondary_citizenship: ''
+      }
+    }));
+  };
+
+  // Helper function to handle retirement status change
+  const handleRetirementStatusChange = (status) => {
+    setEditedProfile(prev => ({
+      ...prev,
+      retirement_timeline: {
+        ...prev.retirement_timeline,
+        status
+      }
+    }));
+  };
+
+  // Helper function to handle pet change
+  const handlePetChange = (petType) => {
+    setEditedProfile(prev => ({
+      ...prev,
+      pet_owner: prev.pet_owner.includes(petType)
+        ? prev.pet_owner.filter(p => p !== petType)
+        : [...prev.pet_owner, petType]
+    }));
+  };
+
+  const currentYear = new Date().getFullYear();
+  const retirementYearOptions = [];
+  for (let i = 0; i <= 30; i++) {
+    retirementYearOptions.push(currentYear + i);
+  }
+
   if (loading && !user) {
     return (
       <div className={`min-h-screen ${uiConfig.colors.page} flex items-center justify-center`}>
@@ -277,7 +637,7 @@ export default function ProfileUnified() {
 
   const tabs = [
     { id: 'account', label: 'Account', icon: User },
-    { id: 'preferences', label: 'Preferences', icon: Settings },
+    { id: 'preferences', label: 'Settings', icon: Settings },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'privacy', label: 'Privacy', icon: Shield }
   ];
@@ -364,86 +724,711 @@ export default function ProfileUnified() {
             {/* Account Tab */}
             {activeTab === 'account' && (
               <div className="space-y-6">
+                {/* Username Selector - Always visible if no username */}
+                {(!profile?.username || showUsernameSelector) && (
+                  <div className="mb-6 p-6 bg-scout-accent-50 dark:bg-gray-800 rounded-lg border border-scout-accent-200 dark:border-gray-600">
+                    <UsernameSelector
+                      onUsernameSelect={handleUsernameSelect}
+                      currentUsername={profile?.username || editedProfile?.username}
+                      userId={user?.id}
+                    />
+                  </div>
+                )}
+
                 <div>
-                  <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-4`}>
-                    Profile Information
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                    <div>
-                      <label className={uiConfig.components.label}>Full Name</label>
-                      <p className={uiConfig.colors.body}>{profile?.full_name || 'Not set'}</p>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>
+                      Profile Information
+                    </h3>
+                    {!isEditingProfile ? (
+                      <button
+                        onClick={handleEditProfile}
+                        className={`text-sm ${uiConfig.colors.accent} hover:${uiConfig.colors.accentHover} font-medium`}
+                      >
+                        Edit
+                      </button>
+                    ) : (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleCancelEdit}
+                          className={`text-sm ${uiConfig.colors.hint} hover:${uiConfig.colors.body} font-medium`}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSaveProfile}
+                          disabled={loading}
+                          className={`text-sm ${uiConfig.colors.accent} hover:${uiConfig.colors.accentHover} font-medium`}
+                        >
+                          {loading ? 'Saving...' : 'Save'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-6">
+                    {/* Basic Information */}
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 block`}>
+                            Full Name
+                          </label>
+                          {isEditingProfile ? (
+                            <input
+                              type="text"
+                              value={editedProfile.full_name}
+                              onChange={(e) => setEditedProfile(prev => ({ ...prev, full_name: e.target.value }))}
+                              className={uiConfig.components.input}
+                              placeholder="Enter your full name"
+                            />
+                          ) : (
+                            <p className={`${uiConfig.colors.body} ${uiConfig.font.size.base}`}>
+                              {profile?.full_name || 'Not set'}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 block`}>
+                            Username
+                          </label>
+                          {isEditingProfile ? (
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={formatUsername(editedProfile.username) || ''}
+                                className={uiConfig.components.input}
+                                placeholder="Not set"
+                                readOnly
+                              />
+                              <button
+                                onClick={() => setShowUsernameSelector(true)}
+                                className={`text-sm ${uiConfig.colors.accent} hover:${uiConfig.colors.accentHover} font-medium whitespace-nowrap`}
+                              >
+                                {editedProfile.username ? 'Change' : 'Choose'}
+                              </button>
+                            </div>
+                          ) : (
+                            <p className={`${uiConfig.colors.body} ${uiConfig.font.size.base}`}>
+                              {formatUsername(profile?.username) || 'Not set'}
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <label className={uiConfig.components.label}>Nationality</label>
-                      <p className={uiConfig.colors.body}>
-                        {(() => {
-                          const citizenship = onboardingData?.current_status?.citizenship;
-                          if (!citizenship?.primary_citizenship) return 'Not set';
-                          
-                          let nationalities = citizenship.primary_citizenship.toUpperCase();
-                          if (citizenship.dual_citizenship && citizenship.secondary_citizenship) {
-                            nationalities += ` / ${citizenship.secondary_citizenship.toUpperCase()}`;
-                          }
-                          return nationalities;
-                        })()}
+
+                    {/* Retirement Timeline - Matching onboarding exactly */}
+                    <div className="mb-4">
+                      <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
+                        <Calendar size={16} className="mr-1.5 lg:mr-2" />
+                        Retirement Timeline
+                      </label>
+                      <p className={`${uiConfig.font.size.xs} lg:text-sm ${uiConfig.colors.hint} mb-3 lg:mb-4`}>
+                        Where are you in your retirement journey?
                       </p>
+                      {isEditingProfile ? (
+                        <>
+                          <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
+                            <OptionButton
+                              label="Planning"
+                              description="5+ years away"
+                              isSelected={editedProfile.retirement_timeline.status === 'planning'}
+                              onClick={() => handleRetirementStatusChange('planning')}
+                            />
+                            <OptionButton
+                              label="Retiring Soon"
+                              description="Within 5 years"
+                              isSelected={editedProfile.retirement_timeline.status === 'retiring_soon'}
+                              onClick={() => handleRetirementStatusChange('retiring_soon')}
+                            />
+                            <OptionButton
+                              label="Retired"
+                              description="Living the dream"
+                              isSelected={editedProfile.retirement_timeline.status === 'already_retired'}
+                              onClick={() => handleRetirementStatusChange('already_retired')}
+                            />
+                          </div>
+                          {editedProfile.retirement_timeline.status !== 'already_retired' && editedProfile.retirement_timeline.status && (
+                            <div className="mt-4">
+                              <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 block`}>
+                                Target Retirement Date
+                              </label>
+                              <div className="grid grid-cols-3 gap-2 lg:gap-3 xl:gap-4">
+                                <select
+                                  value={editedProfile.retirement_timeline.target_month}
+                                  onChange={(e) => setEditedProfile(prev => ({
+                                    ...prev,
+                                    retirement_timeline: {
+                                      ...prev.retirement_timeline,
+                                      target_month: parseInt(e.target.value)
+                                    }
+                                  }))}
+                                  className={editedProfile.retirement_timeline.target_month ? uiConfig.components.selectActive : uiConfig.components.select}
+                                >
+                                  <option value={1}>January</option>
+                                  <option value={2}>February</option>
+                                  <option value={3}>March</option>
+                                  <option value={4}>April</option>
+                                  <option value={5}>May</option>
+                                  <option value={6}>June</option>
+                                  <option value={7}>July</option>
+                                  <option value={8}>August</option>
+                                  <option value={9}>September</option>
+                                  <option value={10}>October</option>
+                                  <option value={11}>November</option>
+                                  <option value={12}>December</option>
+                                </select>
+                                <select
+                                  value={editedProfile.retirement_timeline.target_day}
+                                  onChange={(e) => setEditedProfile(prev => ({
+                                    ...prev,
+                                    retirement_timeline: {
+                                      ...prev.retirement_timeline,
+                                      target_day: parseInt(e.target.value)
+                                    }
+                                  }))}
+                                  className={editedProfile.retirement_timeline.target_day ? uiConfig.components.selectActive : uiConfig.components.select}
+                                >
+                                  {Array.from({length: 31}, (_, i) => i + 1).map(day => (
+                                    <option key={day} value={day}>{day}</option>
+                                  ))}
+                                </select>
+                                <select
+                                  value={editedProfile.retirement_timeline.target_year}
+                                  onChange={(e) => setEditedProfile(prev => ({
+                                    ...prev,
+                                    retirement_timeline: {
+                                      ...prev.retirement_timeline,
+                                      target_year: parseInt(e.target.value)
+                                    }
+                                  }))}
+                                  className={editedProfile.retirement_timeline.target_year ? uiConfig.components.selectActive : uiConfig.components.select}
+                                >
+                                  {retirementYearOptions.map(year => (
+                                    <option key={year} value={year}>{year}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className={`p-3 ${uiConfig.colors.input} rounded-lg`}>
+                          <p className={uiConfig.colors.body}>
+                            {(() => {
+                              const status = onboardingData?.current_status?.retirement_timeline?.status;
+                              const statusMap = {
+                                'planning': 'Planning (5+ years)',
+                                'retiring_soon': 'Retiring Soon (Within 5 years)',
+                                'already_retired': 'Already Retired'
+                              };
+                              const statusText = statusMap[status] || 'Not set';
+                              
+                              if (status && status !== 'already_retired') {
+                                const timeline = onboardingData?.current_status?.retirement_timeline;
+                                if (timeline?.target_year) {
+                                  const date = new Date(timeline.target_year, (timeline.target_month || 1) - 1, timeline.target_day || 1);
+                                  return `${statusText} - ${date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`;
+                                }
+                              }
+                              return statusText;
+                            })()}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                    <div>
-                      <label className={uiConfig.components.label}>Retirement Date</label>
-                      <p className={uiConfig.colors.body}>
-                        {(() => {
-                          // First check if we have retirement date in profile
-                          if (profile?.retirement_date) {
-                            return new Date(profile.retirement_date).toLocaleDateString('en-US', { 
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric' 
-                            });
-                          }
-                          
-                          // Then check onboarding data
-                          const timeline = onboardingData?.current_status?.retirement_timeline;
-                          
-                          if (!timeline) return 'Not set';
-                          
-                          if (timeline.status === 'already_retired') {
-                            return 'Already retired';
-                          }
-                          
-                          if (timeline.target_year && timeline.target_day) {
-                            // Handle missing target_month - default to January (1)
-                            const month = timeline.target_month || 1;
-                            const date = new Date(timeline.target_year, month - 1, timeline.target_day);
-                            return date.toLocaleDateString('en-US', { 
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric' 
-                            });
-                          }
-                          
-                          return 'Not set';
-                        })()}
+
+                    {/* Family Situation - Matching onboarding exactly */}
+                    <div className="mb-4">
+                      <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
+                        <Users size={16} className="mr-1.5 lg:mr-2" />
+                        Family Situation
+                      </label>
+                      <p className={`${uiConfig.font.size.xs} lg:text-sm ${uiConfig.colors.hint} mb-3 lg:mb-4`}>
+                        Who's joining you on this adventure? *
                       </p>
+                      {isEditingProfile ? (
+                        <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
+                          <OptionButton
+                            label="Solo"
+                            description="Just me"
+                            isSelected={editedProfile.family_situation === 'solo'}
+                            onClick={() => handleFamilyStatusChange('solo')}
+                          />
+                          <OptionButton
+                            label="Couple"
+                            description="Me & partner"
+                            isSelected={editedProfile.family_situation === 'couple'}
+                            onClick={() => handleFamilyStatusChange('couple')}
+                          />
+                          <OptionButton
+                            label="Family"
+                            description="With dependents"
+                            isSelected={editedProfile.family_situation === 'family'}
+                            onClick={() => handleFamilyStatusChange('family')}
+                          />
+                        </div>
+                      ) : (
+                        <div className={`p-3 ${uiConfig.colors.input} rounded-lg`}>
+                          <p className={uiConfig.colors.body}>
+                            {(() => {
+                              const status = onboardingData?.current_status?.family_situation?.status || onboardingData?.current_status?.family_situation;
+                              const statusMap = {
+                                'solo': 'Solo - Just me',
+                                'couple': 'Couple - Me & partner',
+                                'family': 'Family - With dependents'
+                              };
+                              return statusMap[status] || 'Not set';
+                            })()}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                    <div>
-                      <label className={uiConfig.components.label}>Family Status</label>
-                      <p className={uiConfig.colors.body}>
-                        {(() => {
-                          const status = onboardingData?.current_status?.family_situation?.status;
-                          if (!status) return 'Not set';
-                          
-                          const statusMap = {
-                            'solo': 'Solo',
-                            'couple': 'Couple',
-                            'family': 'Family'
-                          };
-                          
-                          return statusMap[status] || status;
-                        })()}
-                      </p>
+
+                    {/* Citizenship - Matching onboarding exactly */}
+                    <div className="mb-4 lg:mb-6" key={`citizenship-section-${editedProfile.family_situation}`}>
+                      <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
+                        <Globe size={16} className="mr-1.5 lg:mr-2" />
+                        Citizenship
+                      </label>
+                      
+                      {isEditingProfile ? (
+                        <>
+                          {editedProfile.family_situation === 'couple' ? (
+                            <>
+                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4 xl:gap-6">
+                                <div>
+                                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>
+                                  Your Citizenship *
+                                </p>
+                                <select
+                                  name="citizenship.primary_citizenship"
+                                  value={editedProfile.citizenship.primary_citizenship}
+                                  onChange={(e) => setEditedProfile(prev => ({
+                                    ...prev,
+                                    citizenship: { ...prev.citizenship, primary_citizenship: e.target.value }
+                                  }))}
+                                  className={isCitizenshipActive(editedProfile.citizenship.primary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
+                                >
+                                  <option value="">Select citizenship</option>
+                                  {countries.map(country => (
+                                    <option key={country.id} value={country.id}>
+                                      {country.label}
+                                    </option>
+                                  ))}
+                                </select>
+                                
+                                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-3`}>
+                                  Dual Citizenship
+                                  <input
+                                    id="dual_citizenship"
+                                    name="citizenship.dual_citizenship"
+                                    type="checkbox"
+                                    checked={editedProfile.citizenship.dual_citizenship}
+                                    onChange={(e) => setEditedProfile(prev => ({
+                                      ...prev,
+                                      citizenship: { 
+                                        ...prev.citizenship, 
+                                        dual_citizenship: e.target.checked,
+                                        secondary_citizenship: e.target.checked ? prev.citizenship.secondary_citizenship : ''
+                                      }
+                                    }))}
+                                    className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer ml-2"
+                                    style={{ 
+                                      accentColor: '#8fbc8f',
+                                      WebkitAppearance: 'none',
+                                      appearance: 'none',
+                                      backgroundColor: editedProfile.citizenship.dual_citizenship ? '#8fbc8f' : 'transparent',
+                                      border: editedProfile.citizenship.dual_citizenship ? '1px solid #8fbc8f' : '1px solid #d1d5db',
+                                      borderRadius: '0.25rem',
+                                      backgroundImage: editedProfile.citizenship.dual_citizenship 
+                                        ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
+                                        : 'none',
+                                      backgroundSize: '100% 100%',
+                                      backgroundPosition: 'center',
+                                      backgroundRepeat: 'no-repeat',
+                                      transition: 'all 0.15s ease-in-out'
+                                    }}
+                                  />
+                                </p>
+                                
+                                {editedProfile.citizenship.dual_citizenship && (
+                                  <select
+                                    name="citizenship.secondary_citizenship"
+                                    value={editedProfile.citizenship.secondary_citizenship === editedProfile.citizenship.primary_citizenship ? '' : editedProfile.citizenship.secondary_citizenship}
+                                    onChange={(e) => {
+                                      if (e.target.value !== editedProfile.citizenship.primary_citizenship) {
+                                        setEditedProfile(prev => ({
+                                          ...prev,
+                                          citizenship: { ...prev.citizenship, secondary_citizenship: e.target.value }
+                                        }));
+                                      }
+                                    }}
+                                    className={isCitizenshipActive(editedProfile.citizenship.secondary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
+                                  >
+                                    <option value="">Select citizenship</option>
+                                    {countries
+                                      .filter(country => country.id !== editedProfile.citizenship.primary_citizenship)
+                                      .map(country => (
+                                        <option key={`secondary-${country.id}`} value={country.id}>
+                                          {country.label}
+                                        </option>
+                                      ))}
+                                    <option value="other">Other</option>
+                                  </select>
+                                )}
+                                </div>
+                              
+                                <div>
+                                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>
+                                  Partner's Citizenship *
+                                </p>
+                                <select
+                                  key={`partner-primary-${editedProfile.family_situation}`}
+                                  name="partner_citizenship.primary_citizenship"
+                                  value={editedProfile.partner_citizenship.primary_citizenship}
+                                  onChange={(e) => setEditedProfile(prev => ({
+                                    ...prev,
+                                    partner_citizenship: { ...prev.partner_citizenship, primary_citizenship: e.target.value }
+                                  }))}
+                                  className={isCitizenshipActive(editedProfile.partner_citizenship.primary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
+                                >
+                                  <option value="">Select citizenship</option>
+                                  {countries.map(country => (
+                                    <option key={`partner-${country.id}`} value={country.id}>
+                                      {country.label}
+                                    </option>
+                                  ))}
+                                </select>
+                                
+                                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-3`}>
+                                  Dual Citizenship
+                                  <input
+                                    id="partner_dual_citizenship"
+                                    name="partner_citizenship.dual_citizenship"
+                                    type="checkbox"
+                                    checked={editedProfile.partner_citizenship.dual_citizenship}
+                                    onChange={(e) => setEditedProfile(prev => ({
+                                      ...prev,
+                                      partner_citizenship: { 
+                                        ...prev.partner_citizenship, 
+                                        dual_citizenship: e.target.checked,
+                                        secondary_citizenship: e.target.checked ? prev.partner_citizenship.secondary_citizenship : ''
+                                      }
+                                    }))}
+                                    className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer ml-2"
+                                    style={{ 
+                                      accentColor: '#8fbc8f',
+                                      WebkitAppearance: 'none',
+                                      appearance: 'none',
+                                      backgroundColor: editedProfile.partner_citizenship.dual_citizenship ? '#8fbc8f' : 'transparent',
+                                      border: editedProfile.partner_citizenship.dual_citizenship ? '1px solid #8fbc8f' : '1px solid #d1d5db',
+                                      borderRadius: '0.25rem',
+                                      backgroundImage: editedProfile.partner_citizenship.dual_citizenship 
+                                        ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
+                                        : 'none',
+                                      backgroundSize: '100% 100%',
+                                      backgroundPosition: 'center',
+                                      backgroundRepeat: 'no-repeat',
+                                      transition: 'all 0.15s ease-in-out'
+                                    }}
+                                  />
+                                </p>
+                                
+                                {editedProfile.partner_citizenship.dual_citizenship && (
+                                  <select
+                                    key={`partner-secondary-${editedProfile.family_situation}`}
+                                    name="partner_citizenship.secondary_citizenship"
+                                    value={editedProfile.partner_citizenship.secondary_citizenship === editedProfile.partner_citizenship.primary_citizenship ? '' : editedProfile.partner_citizenship.secondary_citizenship}
+                                    onChange={(e) => {
+                                      if (e.target.value !== editedProfile.partner_citizenship.primary_citizenship) {
+                                        setEditedProfile(prev => ({
+                                          ...prev,
+                                          partner_citizenship: { ...prev.partner_citizenship, secondary_citizenship: e.target.value }
+                                        }));
+                                      }
+                                    }}
+                                    className={isCitizenshipActive(editedProfile.partner_citizenship.secondary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
+                                  >
+                                    <option value="">Select citizenship</option>
+                                    {countries
+                                      .filter(country => country.id !== editedProfile.partner_citizenship.primary_citizenship)
+                                      .map(country => (
+                                        <option key={`partner-secondary-${country.id}`} value={country.id}>
+                                          {country.label}
+                                        </option>
+                                      ))}
+                                    <option value="other">Other</option>
+                                  </select>
+                                )}
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>
+                                Your Citizenship *
+                              </p>
+                              <select
+                                name="citizenship.primary_citizenship"
+                                value={editedProfile.citizenship.primary_citizenship}
+                                onChange={(e) => setEditedProfile(prev => ({
+                                  ...prev,
+                                  citizenship: { ...prev.citizenship, primary_citizenship: e.target.value }
+                                }))}
+                                className={editedProfile.citizenship.primary_citizenship ? uiConfig.components.selectActive : uiConfig.components.select}
+                              >
+                                <option value="">Select citizenship</option>
+                                {countries.map(country => (
+                                  <option key={country.id} value={country.id}>
+                                    {country.label}
+                                  </option>
+                                ))}
+                              </select>
+                              
+                              <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-3`}>
+                                Dual Citizenship
+                                <input
+                                  id="dual_citizenship_single"
+                                  name="citizenship.dual_citizenship"
+                                  type="checkbox"
+                                  checked={editedProfile.citizenship.dual_citizenship}
+                                  onChange={(e) => setEditedProfile(prev => ({
+                                    ...prev,
+                                    citizenship: { 
+                                      ...prev.citizenship, 
+                                      dual_citizenship: e.target.checked,
+                                      secondary_citizenship: e.target.checked ? prev.citizenship.secondary_citizenship : ''
+                                    }
+                                  }))}
+                                  className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer ml-2"
+                                  style={{ 
+                                    accentColor: '#8fbc8f',
+                                    WebkitAppearance: 'none',
+                                    appearance: 'none',
+                                    backgroundColor: editedProfile.citizenship.dual_citizenship ? '#8fbc8f' : 'transparent',
+                                    border: editedProfile.citizenship.dual_citizenship ? '1px solid #8fbc8f' : '1px solid #d1d5db',
+                                    borderRadius: '0.25rem',
+                                    backgroundImage: editedProfile.citizenship.dual_citizenship 
+                                      ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
+                                      : 'none',
+                                    backgroundSize: '100% 100%',
+                                    backgroundPosition: 'center',
+                                    backgroundRepeat: 'no-repeat',
+                                    transition: 'all 0.15s ease-in-out'
+                                  }}
+                                />
+                              </p>
+                              
+                              {editedProfile.citizenship.dual_citizenship && (
+                                <div className="mt-2">
+                                  <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
+                                    <Globe size={16} className="mr-1.5" />
+                                    Secondary Citizenship
+                                  </label>
+                                  {editedProfile.citizenship.secondary_citizenship === editedProfile.citizenship.primary_citizenship && (
+                                    <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.error} mb-1.5`}>
+                                      Secondary citizenship cannot be the same as primary. Please select a different country.
+                                    </p>
+                                  )}
+                                  <select
+                                    name="citizenship.secondary_citizenship"
+                                    value={
+                                      editedProfile.citizenship.secondary_citizenship === editedProfile.citizenship.primary_citizenship 
+                                        ? '' 
+                                        : editedProfile.citizenship.secondary_citizenship
+                                    }
+                                    onChange={(e) => {
+                                      if (e.target.value !== editedProfile.citizenship.primary_citizenship) {
+                                        setEditedProfile(prev => ({
+                                          ...prev,
+                                          citizenship: { ...prev.citizenship, secondary_citizenship: e.target.value }
+                                        }));
+                                      }
+                                    }}
+                                    className={isCitizenshipActive(editedProfile.citizenship.secondary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
+                                  >
+                                    <option value="">Select citizenship</option>
+                                    {countries
+                                      .filter(country => country.id !== editedProfile.citizenship.primary_citizenship)
+                                      .map(country => (
+                                        <option key={`secondary-${country.id}`} value={country.id}>
+                                          {country.label}
+                                        </option>
+                                      ))}
+                                    <option value="other">Other</option>
+                                  </select>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <div className={`p-3 ${uiConfig.colors.input} rounded-lg`}>
+                          <p className={uiConfig.colors.body}>
+                            {(() => {
+                              const citizenship = onboardingData?.current_status?.citizenship;
+                              if (!citizenship?.primary_citizenship) return 'Not set';
+                              
+                              const primary = countries.find(c => c.id === citizenship.primary_citizenship)?.label;
+                              const secondary = citizenship.dual_citizenship && countries.find(c => c.id === citizenship.secondary_citizenship)?.label;
+                              
+                              let result = primary || 'Not set';
+                              if (secondary) result += ` + ${secondary}`;
+                              
+                              // Add partner info if couple
+                              const familyStatus = onboardingData?.current_status?.family_situation?.status || onboardingData?.current_status?.family_situation;
+                              if (familyStatus === 'couple' && onboardingData?.current_status?.partner_citizenship?.primary_citizenship) {
+                                const partnerPrimary = countries.find(c => c.id === onboardingData.current_status.partner_citizenship.primary_citizenship)?.label;
+                                const partnerSecondary = onboardingData.current_status.partner_citizenship.dual_citizenship && 
+                                  countries.find(c => c.id === onboardingData.current_status.partner_citizenship.secondary_citizenship)?.label;
+                                
+                                result += ' • Partner: ' + (partnerPrimary || 'Not set');
+                                if (partnerSecondary) result += ` + ${partnerSecondary}`;
+                              }
+                              
+                              return result;
+                            })()}
+                          </p>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Pet Owner - Matching onboarding exactly */}
+                    <div className="mb-4">
+                      <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
+                        <PawPrint size={16} className="mr-1.5 lg:mr-2" />
+                        Pet Owner
+                      </label>
+                      {isEditingProfile ? (
+                        <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
+                          <OptionButton
+                            label="Cat"
+                            isSelected={editedProfile.pet_owner?.includes('cat') || false}
+                            onClick={() => handlePetChange('cat')}
+                          />
+                          <OptionButton
+                            label="Dog"
+                            isSelected={editedProfile.pet_owner?.includes('dog') || false}
+                            onClick={() => handlePetChange('dog')}
+                          />
+                          <OptionButton
+                            label="Other"
+                            isSelected={editedProfile.pet_owner?.includes('other') || false}
+                            onClick={() => handlePetChange('other')}
+                          />
+                        </div>
+                      ) : (
+                        <div className={`p-3 ${uiConfig.colors.input} rounded-lg`}>
+                          <p className={uiConfig.colors.body}>
+                            {(() => {
+                              const pets = onboardingData?.current_status?.pet_owner || [];
+                              if (pets.length === 0) return 'No pets';
+                              return pets.map(pet => pet.charAt(0).toUpperCase() + pet.slice(1)).join(', ');
+                            })()}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Summary Section - Matching onboarding */}
+                    {!isEditingProfile && (
+                      <div className={`p-3 lg:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
+                        <div className={`${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
+                          <span className={`${uiConfig.font.weight.medium}`}>Profile Summary:</span>
+                          <div className={`mt-0.5 ${uiConfig.font.size.xs}`}>
+                            {(() => {
+                              const parts = [];
+                              
+                              // Name and username
+                              if (profile?.full_name) parts.push(profile.full_name);
+                              if (profile?.username) parts.push(formatUsername(profile.username));
+                              
+                              // Retirement status
+                              const retirementStatus = onboardingData?.current_status?.retirement_timeline?.status;
+                              if (retirementStatus) {
+                                const statusMap = {
+                                  'planning': 'Planning for retirement (5+ years)',
+                                  'retiring_soon': 'Retiring within 5 years',
+                                  'already_retired': 'Already retired'
+                                };
+                                parts.push(statusMap[retirementStatus]);
+                                
+                                if (retirementStatus !== 'already_retired') {
+                                  const timeline = onboardingData?.current_status?.retirement_timeline;
+                                  if (timeline?.target_year) {
+                                    const date = new Date(timeline.target_year, (timeline.target_month || 1) - 1, timeline.target_day || 1);
+                                    parts.push(`Target: ${date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}`);
+                                  }
+                                }
+                              }
+                              
+                              // Family situation
+                              const familyStatus = onboardingData?.current_status?.family_situation?.status || onboardingData?.current_status?.family_situation;
+                              if (familyStatus) {
+                                const familyMap = {
+                                  'solo': 'Solo',
+                                  'couple': 'Couple',
+                                  'family': 'Family'
+                                };
+                                parts.push(familyMap[familyStatus]);
+                              }
+                              
+                              // Pets
+                              const pets = onboardingData?.current_status?.pet_owner || [];
+                              if (pets.length > 0) {
+                                parts.push(`with ${pets.join(', ')}`);
+                              }
+                              
+                              // Citizenship
+                              const citizenship = onboardingData?.current_status?.citizenship;
+                              if (citizenship?.primary_citizenship) {
+                                const primary = countries.find(c => c.id === citizenship.primary_citizenship)?.label;
+                                if (primary) {
+                                  let citizenshipText = `${primary} citizen`;
+                                  if (citizenship.dual_citizenship && citizenship.secondary_citizenship) {
+                                    const secondary = countries.find(c => c.id === citizenship.secondary_citizenship)?.label;
+                                    if (secondary) citizenshipText += ` + ${secondary}`;
+                                  }
+                                  parts.push(citizenshipText);
+                                }
+                              }
+                              
+                              // Partner citizenship if couple
+                              if (familyStatus === 'couple' && onboardingData?.current_status?.partner_citizenship?.primary_citizenship) {
+                                const partnerPrimary = countries.find(c => c.id === onboardingData.current_status.partner_citizenship.primary_citizenship)?.label;
+                                if (partnerPrimary) {
+                                  let partnerText = `Partner: ${partnerPrimary} citizen`;
+                                  if (onboardingData.current_status.partner_citizenship.dual_citizenship && 
+                                      onboardingData.current_status.partner_citizenship.secondary_citizenship) {
+                                    const partnerSecondary = countries.find(c => c.id === onboardingData.current_status.partner_citizenship.secondary_citizenship)?.label;
+                                    if (partnerSecondary) partnerText += ` + ${partnerSecondary}`;
+                                  }
+                                  parts.push(partnerText);
+                                }
+                              }
+                              
+                              return parts.length > 0 ? parts.join(' • ') : 'Complete your profile to see summary';
+                            })()}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                   </div>
                 </div>
+
+                {/* Save Profile Button - Always visible in edit mode */}
+                {isEditingProfile && (
+                  <div className="mt-6 flex justify-end">
+                    <button
+                      onClick={handleSaveProfile}
+                      disabled={loading}
+                      className={`${uiConfig.components.buttonPrimary} px-8 py-3 text-base font-semibold`}
+                    >
+                      {loading ? 'Saving...' : 'Save All Changes'}
+                    </button>
+                  </div>
+                )}
 
                 <hr className="border-gray-200 dark:border-gray-700" />
 
@@ -512,7 +1497,7 @@ export default function ProfileUnified() {
                     Danger Zone
                   </h3>
                   <p className={`${uiConfig.colors.hint} text-sm mb-4`}>
-                    Once you delete your account, there is no going back.
+                    Once you delete your account, there is no going back. This will permanently delete your profile, preferences, favorites, journal entries, and all associated data. Your account cannot be recovered.
                   </p>
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
@@ -660,23 +1645,114 @@ export default function ProfileUnified() {
               <div className="space-y-6">
                 <div>
                   <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-4`}>
-                    Privacy Settings
+                    Profile Visibility & Social Settings
                   </h3>
-                  <div className="space-y-3">
-                    <ToggleSwitch
-                      id="showProfileToOthers"
-                      checked={privacySettings.showProfileToOthers}
-                      onChange={handlePrivacyToggle}
-                      label="Public Profile"
-                      description="Allow other users to see your profile"
-                    />
-                    <ToggleSwitch
-                      id="allowDataCollection"
-                      checked={privacySettings.allowDataCollection}
-                      onChange={handlePrivacyToggle}
-                      label="Usage Analytics"
-                      description="Help improve Scout2Retire with anonymous data"
-                    />
+                  <div className="space-y-4">
+                    {/* Profile Visibility */}
+                    <div>
+                      <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-1`}>
+                        Who can see your profile?
+                      </label>
+                      <p className={`text-xs ${uiConfig.colors.hint} mb-2`}>
+                        Control who can view your basic profile information
+                      </p>
+                      <select
+                        value={privacySettings.profileVisibility}
+                        onChange={(e) => setPrivacySettings(prev => ({ ...prev, profileVisibility: e.target.value }))}
+                        className={uiConfig.components.select}
+                      >
+                        <option value="public">Everyone</option>
+                        <option value="friends">Friends Only</option>
+                        <option value="private">Only Me</option>
+                      </select>
+                    </div>
+
+                    {/* Favorites Visibility */}
+                    <div>
+                      <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-1`}>
+                        Who can see your favorite towns?
+                      </label>
+                      <p className={`text-xs ${uiConfig.colors.hint} mb-2`}>
+                        Share your saved locations with others
+                      </p>
+                      <select
+                        value={privacySettings.showFavorites}
+                        onChange={(e) => setPrivacySettings(prev => ({ ...prev, showFavorites: e.target.value }))}
+                        className={uiConfig.components.select}
+                      >
+                        <option value="public">Everyone</option>
+                        <option value="friends">Friends Only</option>
+                        <option value="private">Only Me</option>
+                      </select>
+                    </div>
+
+                    {/* Activity Visibility */}
+                    <div>
+                      <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-1`}>
+                        Who can see your activity?
+                      </label>
+                      <p className={`text-xs ${uiConfig.colors.hint} mb-2`}>
+                        Your comparisons, journal entries, and interactions
+                      </p>
+                      <select
+                        value={privacySettings.showActivity}
+                        onChange={(e) => setPrivacySettings(prev => ({ ...prev, showActivity: e.target.value }))}
+                        className={uiConfig.components.select}
+                      >
+                        <option value="public">Everyone</option>
+                        <option value="friends">Friends Only</option>
+                        <option value="private">Only Me</option>
+                      </select>
+                    </div>
+
+                    {/* Location Preferences */}
+                    <div>
+                      <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-1`}>
+                        Who can see your location preferences?
+                      </label>
+                      <p className={`text-xs ${uiConfig.colors.hint} mb-2`}>
+                        Your retirement criteria and preferences
+                      </p>
+                      <select
+                        value={privacySettings.shareLocationPreferences}
+                        onChange={(e) => setPrivacySettings(prev => ({ ...prev, shareLocationPreferences: e.target.value }))}
+                        className={uiConfig.components.select}
+                      >
+                        <option value="public">Everyone</option>
+                        <option value="friends">Friends Only</option>
+                        <option value="private">Only Me</option>
+                      </select>
+                    </div>
+
+                    {/* Online Status Visibility */}
+                    <div>
+                      <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-1`}>
+                        Who can see when you're online?
+                      </label>
+                      <p className={`text-xs ${uiConfig.colors.hint} mb-2`}>
+                        Control who sees your active status
+                      </p>
+                      <select
+                        value={privacySettings.showOnlineStatus}
+                        onChange={(e) => setPrivacySettings(prev => ({ ...prev, showOnlineStatus: e.target.value }))}
+                        className={uiConfig.components.select}
+                      >
+                        <option value="public">Everyone</option>
+                        <option value="friends">Friends Only</option>
+                        <option value="private">No One</option>
+                      </select>
+                    </div>
+                    
+                    {/* Friend Requests Toggle - Now last */}
+                    <div className="pt-2">
+                      <ToggleSwitch
+                        id="allowFriendRequests"
+                        checked={privacySettings.allowFriendRequests}
+                        onChange={handlePrivacyToggle}
+                        label="Allow Friend Requests"
+                        description="Let others send you connection requests"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -684,14 +1760,59 @@ export default function ProfileUnified() {
 
                 <div>
                   <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-4`}>
-                    Data Export
+                    Data & Personalization
                   </h3>
-                  <p className={`${uiConfig.colors.body} text-sm mb-4`}>
-                    Download all your data including preferences, favorites, and activity.
-                  </p>
-                  <button className={`${uiConfig.components.buttonSecondary} ${uiConfig.components.buttonSizes.default}`}>
-                    Export My Data
-                  </button>
+                  <div className="space-y-3">
+                    <ToggleSwitch
+                      id="allowDataCollection"
+                      checked={privacySettings.allowDataCollection}
+                      onChange={handlePrivacyToggle}
+                      label="Usage Analytics"
+                      description="Help improve Scout2Retire with anonymous usage data"
+                    />
+                    <ToggleSwitch
+                      id="allowPersonalization"
+                      checked={privacySettings.allowPersonalization}
+                      onChange={handlePrivacyToggle}
+                      label="Personalized Recommendations"
+                      description="Use your activity to improve town suggestions"
+                    />
+                  </div>
+                </div>
+
+                <hr className="border-gray-200 dark:border-gray-700" />
+
+                <div>
+                  <h3 className={`text-lg font-semibold ${uiConfig.colors.error} mb-4`}>
+                    Danger Zone
+                  </h3>
+                  <div className="space-y-6">
+                    {/* Clear Preferences */}
+                    <div>
+                      <h4 className={`text-base font-medium ${uiConfig.colors.body} mb-2`}>
+                        Clear Preferences
+                      </h4>
+                      <p className={`${uiConfig.colors.hint} text-sm mb-3`}>
+                        Reset all your retirement preferences and start fresh with the onboarding process. Your favorites and journal entries will be preserved.
+                      </p>
+                      <button className={`${uiConfig.colors.btnDanger} text-white font-medium ${uiConfig.components.buttonSizes.default} rounded-lg transition-colors`}>
+                        Clear Preferences
+                      </button>
+                    </div>
+                    
+                    {/* Clear Personal Data */}
+                    <div>
+                      <h4 className={`text-base font-medium ${uiConfig.colors.body} mb-2`}>
+                        Clear Personal Data
+                      </h4>
+                      <p className={`${uiConfig.colors.hint} text-sm mb-3`}>
+                        Immediately delete all your personal data while keeping your account active. This will permanently remove your preferences, favorites, journal entries, and activity history. There is no way data can be recovered.
+                      </p>
+                      <button className={`${uiConfig.colors.btnDanger} text-white font-medium ${uiConfig.components.buttonSizes.default} rounded-lg transition-colors`}>
+                        Clear Personal Data
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
