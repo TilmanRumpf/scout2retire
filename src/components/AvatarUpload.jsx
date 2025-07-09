@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 import InitialsAvatar from './InitialsAvatar';
 import IconAvatarSelector from './IconAvatarSelector';
+import IconAvatar from './IconAvatar';
 
 export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAvatarUpdate }) {
   const [uploading, setUploading] = useState(false);
@@ -13,8 +14,8 @@ export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAva
   const fileInputRef = useRef(null);
   
   // Check avatar type
-  const isUsingPhoto = currentAvatarUrl?.includes('supabase') || (currentAvatarUrl?.includes('http') && !currentAvatarUrl?.includes('data:'));
-  const isUsingIcon = currentAvatarUrl?.includes('data:image/svg');
+  const isUsingPhoto = currentAvatarUrl?.includes('supabase') || (currentAvatarUrl?.includes('http') && !currentAvatarUrl?.includes('data:') && !currentAvatarUrl?.includes('icon:'));
+  const isUsingIcon = currentAvatarUrl?.startsWith('icon:');
   
   // Handle file upload
   const handleFileUpload = async (event) => {
@@ -163,12 +164,16 @@ export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAva
       {/* Avatar Display */}
       <div className="relative group">
         <div className={`w-32 h-32 rounded-full overflow-hidden ${uiConfig.colors.card} border-4 border-gray-200 dark:border-gray-700 transition-all group-hover:border-scout-accent`}>
-          {isUsingPhoto || isUsingIcon ? (
+          {isUsingPhoto ? (
             <img
               src={currentAvatarUrl}
               alt="Profile"
               className="w-full h-full object-cover"
             />
+          ) : isUsingIcon ? (
+            <div className="w-full h-full">
+              <IconAvatar iconData={currentAvatarUrl} size={128} />
+            </div>
           ) : (
             <div className="w-full h-full">
               <InitialsAvatar 

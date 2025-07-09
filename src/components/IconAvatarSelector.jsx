@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X, Shuffle, Heart, Star } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
 import { LUCIDE_RETIREMENT_ICONS, AVATAR_COLORS, ICON_PRESETS, getRandomPreset } from '../utils/lucideRetirementIcons';
-import * as ReactDOMServer from 'react-dom/server';
+import IconAvatar from './IconAvatar';
 import useAvatarFavorites from '../hooks/useAvatarFavorites';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -50,37 +50,20 @@ export default function IconAvatarSelector({ isOpen, onClose, onSelect }) {
     setShowPresets(false);
   };
 
-  const generateSvgDataUrl = (iconName, IconComponent, color = selectedColor, bg = selectedBg) => {
-    // Render the Lucide icon to string
-    const iconString = ReactDOMServer.renderToString(
-      <IconComponent size={64} color={color} strokeWidth={1.5} />
-    );
-    
-    // Create the full SVG with background
-    const svg = `<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="64" cy="64" r="64" fill="${bg}"/>
-      <g transform="translate(32, 32)">
-        ${iconString}
-      </g>
-    </svg>`;
-    
-    // Convert to data URL
-    return `data:image/svg+xml;base64,${btoa(svg)}`;
-  };
-
   const handleSelect = () => {
     if (selectedIcon && categoryIcons[selectedIcon]) {
-      const dataUrl = generateSvgDataUrl(selectedIcon, categoryIcons[selectedIcon]);
-      onSelect(dataUrl);
+      // Instead of generating a data URL, we'll store the icon reference
+      const iconRef = `icon:${selectedCategory}:${selectedIcon}:${selectedColor}:${selectedBg}`;
+      onSelect(iconRef);
       onClose();
     }
   };
 
   const handleAddToFavorites = () => {
     if (selectedIcon && categoryIcons[selectedIcon]) {
-      const dataUrl = generateSvgDataUrl(selectedIcon, categoryIcons[selectedIcon]);
+      const iconRef = `icon:${selectedCategory}:${selectedIcon}:${selectedColor}:${selectedBg}`;
       addFavorite({
-        dataUrl,
+        dataUrl: iconRef,
         category: selectedCategory,
         icon: selectedIcon,
         color: selectedColor,
@@ -152,11 +135,9 @@ export default function IconAvatarSelector({ isOpen, onClose, onSelect }) {
                       }}
                       className="relative flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-scout-accent transition-all"
                     >
-                      <img
-                        src={fav.dataUrl}
-                        alt={fav.name}
-                        className="w-16 h-16 rounded-full"
-                      />
+                      <div className="w-16 h-16">
+                        <IconAvatar iconData={fav.dataUrl} size={64} />
+                      </div>
                       <span className="text-xs text-gray-600 dark:text-gray-400 text-center">
                         {fav.name}
                       </span>
