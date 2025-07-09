@@ -85,13 +85,13 @@ export default function OnboardingProgress() {
   useEffect(() => {
     const fetchProgress = async () => {
       try {
-        const { user } = await getCurrentUser();
-        if (!user) {
+        const userResult = await getCurrentUser();
+        if (!userResult || !userResult.user) {
           navigate('/welcome');
           return;
         }
         
-        const { success, progress: userProgress, error: progressError } = await getOnboardingProgress(user.id);
+        const { success, progress: userProgress, error: progressError } = await getOnboardingProgress(userResult.user.id);
         if (!success) {
           setError(progressError?.message || "Failed to fetch onboarding progress");
           setLoading(false);

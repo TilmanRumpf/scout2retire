@@ -37,6 +37,13 @@ export const saveOnboardingStep = async (userId, stepData, step) => {
       console.log('Transformed administration data:', dataToSave);
     }
     
+    // First check if user is authenticated
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      console.error('No active session when trying to save onboarding step');
+      return { success: false, error: 'Not authenticated' };
+    }
+    
     // First check if user already has onboarding data - without using .single()
     const { data, error: fetchError } = await supabase
       .from('onboarding_responses')
@@ -45,6 +52,12 @@ export const saveOnboardingStep = async (userId, stepData, step) => {
     
     if (fetchError) {
       console.error("Error checking existing onboarding data:", fetchError);
+      console.error("Error details:", {
+        message: fetchError.message,
+        details: fetchError.details,
+        hint: fetchError.hint,
+        code: fetchError.code
+      });
       return { success: false, error: fetchError };
     }
     
@@ -110,6 +123,15 @@ export const completeOnboarding = async (userId) => {
 
 export const getOnboardingProgress = async (userId) => {
   try {
+    // First check if user is authenticated
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      console.error('No active session when trying to get onboarding progress');
+      return { success: false, error: 'Not authenticated' };
+    }
+    
+    console.log('Getting onboarding progress for user:', userId);
+    
     // Remove .single() to avoid 406 error
     const { data, error } = await supabase
       .from('onboarding_responses')
@@ -149,6 +171,20 @@ export const getOnboardingProgress = async (userId) => {
     // If there was an error
     if (error) {
       console.error("Error fetching onboarding progress:", error);
+      console.error("Error details:", {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
+      
+      // If it's a 400 error, it might be a table or column issue
+      if (error.code === '42P01') {
+        console.error('Table onboarding_responses does not exist');
+      } else if (error.code === '42703') {
+        console.error('Column user_id does not exist');
+      }
+      
       return { success: false, error };
     }
     

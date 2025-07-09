@@ -148,10 +148,22 @@ export const updatePassword = async (newPassword) => {
 
 export const getCurrentUser = async () => {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    let { data: { session } } = await supabase.auth.getSession();
+    
+    // If no session, try once more after a brief delay (session might still be loading)
     if (!session) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const retryResult = await supabase.auth.getSession();
+      session = retryResult.data.session;
+    }
+    
+    if (!session) {
+      console.log('No session found in getCurrentUser');
       return { user: null };
     }
+
+    console.log('Session user:', session.user);
+    console.log('Session user ID:', session.user?.id);
 
     const { data: userData, error } = await supabase
       .from('users')
