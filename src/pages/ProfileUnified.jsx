@@ -6,9 +6,8 @@ import UnifiedHeader from '../components/UnifiedHeader';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
-import { User, Settings, Bell, Shield, Palette, AtSign, MapPin } from 'lucide-react';
+import { User, Settings, Bell, Shield, Palette, MapPin } from 'lucide-react';
 import { UsernameSelector } from '../components/UsernameSelector';
-import { formatUsername } from '../utils/usernameGenerator';
 import AvatarUpload from '../components/AvatarUpload';
 
 // Reusable toggle switch component
@@ -112,7 +111,7 @@ export default function ProfileUnified() {
         // Load favorites count
         const { count } = await supabase
           .from('favorites')
-          .select('id', { count: 'exact', head: true })
+          .select('*', { count: 'exact', head: true })
           .eq('user_id', result.user.id);
         
         setFavoritesCount(count || 0);
@@ -198,6 +197,18 @@ export default function ProfileUnified() {
 
   const handleAvatarUpdate = (newAvatarUrl) => {
     setProfile(prev => ({ ...prev, avatar_url: newAvatarUrl }));
+  };
+
+  // Extract just the town/city name from a full address
+  const getHometownDisplay = (hometown) => {
+    if (!hometown) return 'Not set';
+    
+    // Split by comma and take the first part (usually the city)
+    const parts = hometown.split(',');
+    if (parts.length > 0) {
+      return parts[0].trim();
+    }
+    return hometown;
   };
 
   const handlePasswordChange = async (e) => {
@@ -338,9 +349,9 @@ export default function ProfileUnified() {
                 )}
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex flex-col md:flex-row gap-6">
                 {/* Left Column - Avatar */}
-                <div className="md:col-span-1">
+                <div className="flex-shrink-0">
                   <AvatarUpload
                     userId={user?.id}
                     currentAvatarUrl={profile?.avatar_url}
@@ -349,8 +360,8 @@ export default function ProfileUnified() {
                   />
                 </div>
 
-                {/* Middle Column */}
-                <div className="space-y-4">
+                {/* Right side - Info Grid */}
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Full Name */}
                   <div>
                     <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} block mb-1`}>
@@ -381,30 +392,6 @@ export default function ProfileUnified() {
                     </p>
                   </div>
 
-                  {/* Hometown */}
-                  <div>
-                    <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} block mb-1`}>
-                      <MapPin size={14} className="inline mr-1" />
-                      Hometown
-                    </label>
-                    {isEditingProfile ? (
-                      <input
-                        type="text"
-                        value={editFormData.hometown}
-                        onChange={(e) => setEditFormData(prev => ({ ...prev, hometown: e.target.value }))}
-                        className={uiConfig.components.input}
-                        placeholder="City, State/Country (optional)"
-                      />
-                    ) : (
-                      <p className={`${uiConfig.font.size.base} ${uiConfig.colors.body}`}>
-                        {profile?.hometown || 'Not set'}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right Column */}
-                <div>
                   {/* Username */}
                   <div>
                     <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} block mb-1`}>
@@ -421,6 +408,27 @@ export default function ProfileUnified() {
                         {profile?.username ? 'Change' : 'Set Username'}
                       </button>
                     </div>
+                  </div>
+
+                  {/* Hometown */}
+                  <div>
+                    <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} block mb-1`}>
+                      <MapPin size={14} className="inline mr-1" />
+                      Hometown
+                    </label>
+                    {isEditingProfile ? (
+                      <input
+                        type="text"
+                        value={editFormData.hometown}
+                        onChange={(e) => setEditFormData(prev => ({ ...prev, hometown: e.target.value }))}
+                        className={uiConfig.components.input}
+                        placeholder="City, State/Country (optional)"
+                      />
+                    ) : (
+                      <p className={`${uiConfig.font.size.base} ${uiConfig.colors.body}`}>
+                        {getHometownDisplay(profile?.hometown)}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

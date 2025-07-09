@@ -1,35 +1,20 @@
 import { useState, useRef } from 'react';
-import { Camera, Upload, RefreshCw, Trash2, User } from 'lucide-react';
+import { Camera, Upload, Trash2, Palette } from 'lucide-react';
 import supabase from '../utils/supabaseClient';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
-
-const DICEBEAR_STYLES = [
-  'initials',
-  'avataaars',
-  'bottts',
-  'identicon',
-  'shapes'
-];
+import InitialsAvatar from './InitialsAvatar';
+import IconAvatarSelector from './IconAvatarSelector';
 
 export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAvatarUpdate }) {
   const [uploading, setUploading] = useState(false);
-  const [avatarStyle, setAvatarStyle] = useState('initials');
+  const [colorIndex, setColorIndex] = useState(0);
+  const [showIconSelector, setShowIconSelector] = useState(false);
   const fileInputRef = useRef(null);
   
-  // Generate DiceBear avatar URL
-  const generateAvatarUrl = (style = avatarStyle) => {
-    const seed = fullName || userId || 'user';
-    return `https://api.dicebear.com/7.x/${style}/svg?seed=${encodeURIComponent(seed)}&backgroundColor=8fbc8f,a8d5a8,c3e9c3&size=200`;
-  };
-  
-  // Get display avatar URL
-  const getAvatarUrl = () => {
-    if (currentAvatarUrl?.startsWith('http')) {
-      return currentAvatarUrl;
-    }
-    return generateAvatarUrl();
-  };
+  // Check avatar type
+  const isUsingPhoto = currentAvatarUrl?.includes('supabase') || (currentAvatarUrl?.includes('http') && !currentAvatarUrl?.includes('data:'));
+  const isUsingIcon = currentAvatarUrl?.includes('data:image/svg');
   
   // Handle file upload
   const handleFileUpload = async (event) => {
@@ -99,39 +84,7 @@ export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAva
     input.click();
   };
   
-  // Use random avatar
-  const handleRandomAvatar = async () => {
-    try {
-      setUploading(true);
-      
-      // Cycle through avatar styles
-      const currentIndex = DICEBEAR_STYLES.indexOf(avatarStyle);
-      const nextIndex = (currentIndex + 1) % DICEBEAR_STYLES.length;
-      const nextStyle = DICEBEAR_STYLES[nextIndex];
-      setAvatarStyle(nextStyle);
-      
-      const newAvatarUrl = generateAvatarUrl(nextStyle);
-      
-      // Update user profile
-      const { error } = await supabase
-        .from('users')
-        .update({ avatar_url: newAvatarUrl })
-        .eq('id', userId);
-      
-      if (error) throw error;
-      
-      onAvatarUpdate(newAvatarUrl);
-      toast.success('Avatar style updated!');
-      
-    } catch (error) {
-      console.error('Error updating avatar:', error);
-      toast.error('Failed to update avatar');
-    } finally {
-      setUploading(false);
-    }
-  };
-  
-  // Remove avatar
+  // Remove avatar (go back to initials)
   const handleRemoveAvatar = async () => {
     try {
       setUploading(true);
@@ -144,20 +97,62 @@ export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAva
           .remove([fileName]);
       }
       
-      // Update to use generated avatar
+      // Update to use color index for initials
       const { error } = await supabase
         .from('users')
-        .update({ avatar_url: null })
+        .update({ avatar_url: `initials:${colorIndex}` })
         .eq('id', userId);
       
       if (error) throw error;
       
-      onAvatarUpdate(null);
-      toast.success('Profile picture removed');
+      onAvatarUpdate(`initials:${colorIndex}`);
+      toast.success('Using initials avatar');
       
     } catch (error) {
       console.error('Error removing avatar:', error);
       toast.error('Failed to remove avatar');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Get next color for initials
+  const handleNextColor = async () => {
+    const nextIndex = (colorIndex + 1) % 10;
+    setColorIndex(nextIndex);
+    
+    if (!isUsingPhoto && !isUsingIcon) {
+      try {
+        const { error } = await supabase
+          .from('users')
+          .update({ avatar_url: `initials:${nextIndex}` })
+          .eq('id', userId);
+        
+        if (error) throw error;
+        onAvatarUpdate(`initials:${nextIndex}`);
+      } catch (error) {
+        console.error('Error updating color:', error);
+      }
+    }
+  };
+
+  // Handle icon selection
+  const handleIconSelect = async (iconDataUrl) => {
+    try {
+      setUploading(true);
+      
+      const { error } = await supabase
+        .from('users')
+        .update({ avatar_url: iconDataUrl })
+        .eq('id', userId);
+      
+      if (error) throw error;
+      
+      onAvatarUpdate(iconDataUrl);
+      toast.success('Icon avatar selected!');
+    } catch (error) {
+      console.error('Error updating icon:', error);
+      toast.error('Failed to update icon');
     } finally {
       setUploading(false);
     }
@@ -168,18 +163,22 @@ export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAva
       {/* Avatar Display */}
       <div className="relative group">
         <div className={`w-32 h-32 rounded-full overflow-hidden ${uiConfig.colors.card} border-4 border-gray-200 dark:border-gray-700 transition-all group-hover:border-scout-accent`}>
-          {getAvatarUrl() ? (
+          {isUsingPhoto || isUsingIcon ? (
             <img
-              src={getAvatarUrl()}
+              src={currentAvatarUrl}
               alt="Profile"
               className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.src = generateAvatarUrl();
-              }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700">
-              <User size={48} className="text-gray-400 dark:text-gray-500" />
+            <div className="w-full h-full">
+              <InitialsAvatar 
+                fullName={fullName} 
+                size={128} 
+                colorIndex={currentAvatarUrl?.includes('initials:') 
+                  ? parseInt(currentAvatarUrl.split(':')[1]) || colorIndex 
+                  : colorIndex
+                } 
+              />
             </div>
           )}
         </div>
@@ -219,23 +218,35 @@ export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAva
           <Camera size={20} className="text-gray-600 dark:text-gray-400" />
         </button>
         
-        {/* Random Avatar Button */}
+        {/* Icon Button */}
         <button
-          onClick={handleRandomAvatar}
+          onClick={() => setShowIconSelector(true)}
           disabled={uploading}
-          className={`p-2 rounded-lg ${uiConfig.colors.card} border ${uiConfig.colors.borderLight} hover:border-scout-accent transition-colors ${uploading ? 'opacity-50' : ''}`}
-          title="Generate random avatar"
+          className={`p-2 rounded-lg ${uiConfig.colors.card} border ${uiConfig.colors.borderLight} hover:border-scout-accent transition-colors`}
+          title="Choose icon avatar"
         >
-          <RefreshCw size={20} className={`text-gray-600 dark:text-gray-400 ${uploading ? 'animate-spin' : ''}`} />
+          <Palette size={20} className="text-gray-600 dark:text-gray-400" />
         </button>
         
-        {/* Remove Button */}
-        {currentAvatarUrl && (
+        {/* Color Button (for initials) */}
+        {!isUsingPhoto && !isUsingIcon && (
+          <button
+            onClick={handleNextColor}
+            disabled={uploading}
+            className={`px-4 py-2 rounded-lg ${uiConfig.colors.card} border ${uiConfig.colors.borderLight} hover:border-scout-accent transition-colors text-sm font-medium`}
+            title="Change color"
+          >
+            Change Color
+          </button>
+        )}
+        
+        {/* Remove Button (only if using photo or icon) */}
+        {(isUsingPhoto || isUsingIcon) && (
           <button
             onClick={handleRemoveAvatar}
             disabled={uploading}
             className={`p-2 rounded-lg ${uiConfig.colors.card} border ${uiConfig.colors.borderLight} hover:border-red-500 transition-colors`}
-            title="Remove avatar"
+            title="Use initials instead"
           >
             <Trash2 size={20} className="text-gray-600 dark:text-gray-400 hover:text-red-500" />
           </button>
@@ -243,8 +254,15 @@ export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAva
       </div>
       
       <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} text-center`}>
-        Click avatar to upload • Max 5MB
+        {isUsingPhoto ? 'Click avatar to change photo' : isUsingIcon ? 'Using retirement icon' : 'Upload photo, choose icon, or change color'}
       </p>
+      
+      {/* Icon Selector Modal */}
+      <IconAvatarSelector
+        isOpen={showIconSelector}
+        onClose={() => setShowIconSelector(false)}
+        onSelect={handleIconSelect}
+      />
     </div>
   );
 }
