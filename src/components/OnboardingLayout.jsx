@@ -38,9 +38,9 @@ export default function OnboardingLayout() {
   useEffect(() => {
     const loadProgress = async () => {
       try {
-        const user = await getCurrentUser();
-        if (user) {
-          const progressData = await getOnboardingProgress(user.id);
+        const userResult = await getCurrentUser();
+        if (userResult && userResult.user) {
+          const progressData = await getOnboardingProgress(userResult.user.id);
           if (progressData.success) {
             setProgress(progressData.progress || { completedSteps: {} });
           }

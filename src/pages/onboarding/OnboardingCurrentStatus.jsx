@@ -84,11 +84,15 @@ export default function OnboardingCurrentStatus() {
     const loadExistingData = async () => {
       try {
         const userResult = await getCurrentUser();
-        if (!userResult.user) {
+        console.log('getCurrentUser result:', userResult);
+        
+        if (!userResult || !userResult.user || !userResult.user.id) {
+          console.error('User or user ID not found:', userResult);
           navigate('/welcome');
           return;
         }
         
+        console.log('User ID being passed to getOnboardingProgress:', userResult.user.id);
         const { success, data, progress: userProgress, error } = await getOnboardingProgress(userResult.user.id);
         if (!success) {
           console.error("Error loading existing data:", error);
