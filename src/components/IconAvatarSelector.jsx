@@ -28,7 +28,7 @@ export default function IconAvatarSelector({ isOpen, onClose, onSelect }) {
   const [showFavorites, setShowFavorites] = useState(false);
   
   const { user } = useAuth();
-  const { favorites, addFavorite, removeFavorite, isFavorite } = useAvatarFavorites(user?.id);
+  const { favorites = [], addFavorite, removeFavorite, isFavorite } = useAvatarFavorites(user?.id);
 
   if (!isOpen) return null;
 
@@ -185,7 +185,10 @@ export default function IconAvatarSelector({ isOpen, onClose, onSelect }) {
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                 {ICON_PRESETS.map((preset, index) => {
                   const IconComponent = LUCIDE_RETIREMENT_ICONS[preset.category]?.[preset.icon];
-                  if (!IconComponent) return null;
+                  if (!IconComponent || typeof IconComponent !== 'function') {
+                    console.warn(`Missing icon: ${preset.category}.${preset.icon}`);
+                    return null;
+                  }
                   
                   return (
                     <button
@@ -242,6 +245,10 @@ export default function IconAvatarSelector({ isOpen, onClose, onSelect }) {
             </h3>
             <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-3">
               {Object.entries(categoryIcons).map(([iconName, IconComponent]) => {
+                if (!IconComponent || typeof IconComponent !== 'function') {
+                  console.warn(`Missing icon in ${selectedCategory}: ${iconName}`);
+                  return null;
+                }
                 const isSelected = selectedIcon === iconName;
                 return (
                   <button
