@@ -99,9 +99,13 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
           {/* Title Row - 36px */}
           <div className="h-9 flex items-center justify-between px-4">
             <h1 className="text-base font-semibold text-gray-900 dark:text-white flex items-baseline">
-              <span className="text-lg s2r-logo">
+              <Link 
+                to="/welcome" 
+                className="text-lg s2r-logo hover:opacity-80 transition-opacity"
+                title="Go to Welcome page"
+              >
                 S<span style={{ color: '#f66527' }}>2</span>R
-              </span>
+              </Link>
               <span className="ml-2">Onboarding</span>
               <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
                 {currentStep === 'progress' ? 'Progress Overview' : currentStep === 'review' ? 'Summary' : `${currentStepNum} of 7`}

@@ -4,7 +4,6 @@ import { uiConfig } from '../styles/uiConfig';
 import { LUCIDE_RETIREMENT_ICONS, AVATAR_COLORS, ICON_PRESETS, getRandomPreset } from '../utils/lucideRetirementIcons';
 import IconAvatar from './IconAvatar';
 import useAvatarFavorites from '../hooks/useAvatarFavorites';
-import { useAuth } from '../contexts/AuthContext';
 
 const CATEGORIES = [
   { id: 'beach', label: 'Beach & Coast', emoji: '🏖️' },
@@ -19,7 +18,7 @@ const CATEGORIES = [
   { id: 'lifestyle', label: 'Home', emoji: '🏡' }
 ];
 
-export default function IconAvatarSelector({ isOpen, onClose, onSelect }) {
+export default function IconAvatarSelector({ isOpen, onClose, onSelect, userId }) {
   const [selectedCategory, setSelectedCategory] = useState('beach');
   const [selectedIcon, setSelectedIcon] = useState(null);
   const [selectedColor, setSelectedColor] = useState(AVATAR_COLORS.iconColors[0]);
@@ -27,8 +26,7 @@ export default function IconAvatarSelector({ isOpen, onClose, onSelect }) {
   const [showPresets, setShowPresets] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
   
-  const { user } = useAuth();
-  const { favorites = [], addFavorite, removeFavorite, isFavorite } = useAvatarFavorites(user?.id);
+  const { favorites = [], addFavorite, removeFavorite, isFavorite } = useAvatarFavorites(userId);
 
   if (!isOpen) return null;
 
