@@ -2,7 +2,7 @@ import supabase from './supabaseClient';
 import toast from 'react-hot-toast';
 
 // Auth helpers
-export const signUp = async (email, password, fullName, nationality, retirementDate) => {
+export const signUp = async (email, password, fullName, nationality, retirementDate, hometown = null) => {
   try {
     // First try signing up
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -33,7 +33,8 @@ export const signUp = async (email, password, fullName, nationality, retirementD
             nationality,
             retirement_date: retirementDate,
             retirement_year_estimate: new Date(retirementDate).getFullYear(),
-            onboarding_completed: false
+            onboarding_completed: false,
+            hometown: hometown || null
           }
         ]);
 

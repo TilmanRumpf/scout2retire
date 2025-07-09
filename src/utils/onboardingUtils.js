@@ -104,9 +104,40 @@ export const saveOnboardingStep = async (userId, stepData, step) => {
 
 export const completeOnboarding = async (userId) => {
   try {
+    // First get the onboarding data to extract retirement info
+    const { data: onboardingData } = await supabase
+      .from('onboarding_responses')
+      .select('current_status')
+      .eq('user_id', userId)
+      .single();
+    
+    // Prepare update data
+    const updateData = { onboarding_completed: true };
+    
+    // If retirement timeline exists, convert to retirement_date
+    if (onboardingData?.current_status?.retirement_timeline) {
+      const timeline = onboardingData.current_status.retirement_timeline;
+      
+      // Only create retirement_date if we have year data
+      if (timeline.target_year) {
+        // Use provided values or defaults
+        const year = timeline.target_year;
+        const month = timeline.target_month || 1;
+        const day = timeline.target_day || 1;
+        
+        // Create proper date string
+        const retirementDate = new Date(year, month - 1, day).toISOString();
+        updateData.retirement_date = retirementDate;
+        updateData.retirement_year_estimate = year;
+        
+        console.log('Setting retirement date:', retirementDate);
+      }
+    }
+    
+    // Update user profile with completion status and retirement date
     const { error } = await supabase
       .from('users')
-      .update({ onboarding_completed: true })
+      .update(updateData)
       .eq('id', userId);
     
     if (error) {
@@ -114,6 +145,7 @@ export const completeOnboarding = async (userId) => {
       return { success: false, error };
     }
     
+    console.log('Successfully completed onboarding and updated profile');
     return { success: true };
   } catch (error) {
     console.error("Unexpected error completing onboarding:", error);

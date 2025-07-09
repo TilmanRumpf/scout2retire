@@ -169,12 +169,10 @@ export default function OnboardingProgressiveNav({ currentStep, completedSteps =
       </header>
 
       {/* Quick Navigation Overlay */}
-      {isQuickNavOpen && (
-        <QuickNav 
-          isOpen={isQuickNavOpen} 
-          onClose={() => setIsQuickNavOpen(false)} 
-        />
-      )}
+      <QuickNav 
+        isOpen={isQuickNavOpen} 
+        onClose={() => setIsQuickNavOpen(false)} 
+      />
     </>
   );
 }

@@ -9,6 +9,7 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [hometown, setHometown] = useState('');
   const [loading, setLoading] = useState(false);
   
   // Error states
@@ -218,7 +219,8 @@ export default function Signup() {
         sanitizedPassword,
         sanitizedName,
         'usa', // Default nationality
-        defaultRetirementDate.toISOString().split('T')[0] // Format as YYYY-MM-DD
+        defaultRetirementDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
+        hometown.trim() || null // Optional hometown
       );
       
       if (success) {
@@ -349,6 +351,26 @@ export default function Signup() {
                     </p>
                   </div>
                 )}
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="hometown" className={uiConfig.components.label}>
+                Hometown <span className={`text-sm ${uiConfig.colors.hint} font-normal`}>(optional)</span>
+              </label>
+              <div className="mt-1">
+                <input
+                  id="hometown"
+                  name="hometown"
+                  type="text"
+                  value={hometown}
+                  onChange={(e) => setHometown(e.target.value)}
+                  placeholder="City, State/Country"
+                  className={uiConfig.components.input}
+                />
+                <p className={`mt-1 text-xs ${uiConfig.colors.hint}`}>
+                  Help us provide better recommendations based on your current location
+                </p>
               </div>
             </div>
 
