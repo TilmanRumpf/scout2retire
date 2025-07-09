@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
-import { SIMPLE_RETIREMENT_ICONS } from '../utils/simpleRetirementIcons';
+import { LUCIDE_RETIREMENT_ICONS, AVATAR_COLORS } from '../utils/lucideRetirementIcons';
+import * as ReactDOMServer from 'react-dom/server';
 
 const CATEGORIES = [
   { id: 'beach', label: 'Beach & Coast', emoji: '🏖️' },
@@ -16,46 +17,37 @@ const CATEGORIES = [
   { id: 'lifestyle', label: 'Home', emoji: '🏡' }
 ];
 
-const COLORS = [
-  '#8fbc8f', // Scout green
-  '#4682B4', // Steel blue
-  '#20B2AA', // Light sea green
-  '#DAA520', // Goldenrod
-  '#CD853F', // Peru
-  '#BC8F8F', // Rosy brown
-  '#9370DB', // Medium purple
-  '#FF6347', // Tomato
-  '#48D1CC', // Medium turquoise
-  '#F4A460', // Sandy brown
-  '#DDA0DD', // Plum
-  '#87CEEB', // Sky blue
-  '#98FB98', // Pale green
-  '#FFB6C1', // Light pink
-  '#F0E68C', // Khaki
-  '#B0C4DE', // Light steel blue
-];
-
 export default function IconAvatarSelector({ isOpen, onClose, onSelect }) {
   const [selectedCategory, setSelectedCategory] = useState('beach');
   const [selectedIcon, setSelectedIcon] = useState(null);
-  const [selectedColor, setSelectedColor] = useState(COLORS[0]);
-  const [selectedBg, setSelectedBg] = useState('#F5F5F5');
+  const [selectedColor, setSelectedColor] = useState(AVATAR_COLORS.iconColors[0]);
+  const [selectedBg, setSelectedBg] = useState(AVATAR_COLORS.backgroundColors[1]);
 
   if (!isOpen) return null;
 
-  const icons = SIMPLE_RETIREMENT_ICONS[selectedCategory] || {};
+  const categoryIcons = LUCIDE_RETIREMENT_ICONS[selectedCategory] || {};
+
+  const generateSvgDataUrl = (iconName, IconComponent) => {
+    // Render the Lucide icon to string
+    const iconString = ReactDOMServer.renderToString(
+      <IconComponent size={64} color={selectedColor} strokeWidth={1.5} />
+    );
+    
+    // Create the full SVG with background
+    const svg = `<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="64" cy="64" r="64" fill="${selectedBg}"/>
+      <g transform="translate(32, 32)">
+        ${iconString}
+      </g>
+    </svg>`;
+    
+    // Convert to data URL
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+  };
 
   const handleSelect = () => {
-    if (selectedIcon) {
-      const svg = `<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="64" cy="64" r="64" fill="${selectedBg}"/>
-        <g transform="translate(32, 32) scale(2.67)" fill="${selectedColor}" stroke="none">
-          <path d="${icons[selectedIcon]}"/>
-        </g>
-      </svg>`;
-      
-      // Convert SVG to data URL
-      const dataUrl = `data:image/svg+xml;base64,${btoa(svg)}`;
+    if (selectedIcon && categoryIcons[selectedIcon]) {
+      const dataUrl = generateSvgDataUrl(selectedIcon, categoryIcons[selectedIcon]);
       onSelect(dataUrl);
       onClose();
     }
@@ -109,23 +101,28 @@ export default function IconAvatarSelector({ isOpen, onClose, onSelect }) {
             <h3 className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
               Select Icon
             </h3>
-            <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2">
-              {Object.keys(icons).map(iconName => (
-                <button
-                  key={iconName}
-                  onClick={() => setSelectedIcon(iconName)}
-                  className={`p-3 rounded-lg border-2 transition-all ${
-                    selectedIcon === iconName
-                      ? 'border-scout-accent bg-scout-accent/10'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                  }`}
-                  title={iconName.replace(/_/g, ' ')}
-                >
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill={selectedColor} xmlns="http://www.w3.org/2000/svg">
-                    <path d={icons[iconName]} />
-                  </svg>
-                </button>
-              ))}
+            <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-3">
+              {Object.entries(categoryIcons).map(([iconName, IconComponent]) => {
+                const isSelected = selectedIcon === iconName;
+                return (
+                  <button
+                    key={iconName}
+                    onClick={() => setSelectedIcon(iconName)}
+                    className={`p-3 rounded-lg border-2 transition-all ${
+                      isSelected
+                        ? 'border-scout-accent bg-scout-accent/10'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    }`}
+                    title={iconName.replace(/([A-Z])/g, ' $1').trim()}
+                  >
+                    <IconComponent 
+                      size={32} 
+                      color={isSelected ? selectedColor : '#6b7280'} 
+                      strokeWidth={1.5}
+                    />
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -135,7 +132,7 @@ export default function IconAvatarSelector({ isOpen, onClose, onSelect }) {
               Icon Color
             </h3>
             <div className="flex flex-wrap gap-2">
-              {COLORS.map(color => (
+              {AVATAR_COLORS.iconColors.map(color => (
                 <button
                   key={color}
                   onClick={() => setSelectedColor(color)}
@@ -156,7 +153,7 @@ export default function IconAvatarSelector({ isOpen, onClose, onSelect }) {
               Background Color
             </h3>
             <div className="flex flex-wrap gap-2">
-              {['#FFFFFF', '#F5F5F5', '#E8F5E9', '#E3F2FD', '#FFF3E0', '#FCE4EC', '#F3E5F5', '#E0F2F1'].map(bg => (
+              {AVATAR_COLORS.backgroundColors.map(bg => (
                 <button
                   key={bg}
                   onClick={() => setSelectedBg(bg)}
@@ -172,18 +169,21 @@ export default function IconAvatarSelector({ isOpen, onClose, onSelect }) {
           </div>
 
           {/* Preview */}
-          {selectedIcon && (
+          {selectedIcon && categoryIcons[selectedIcon] && (
             <div className="mb-4 text-center">
               <h3 className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
                 Preview
               </h3>
               <div className="inline-block">
-                <svg width="128" height="128" viewBox="0 0 128 128" className="border-4 border-gray-200 dark:border-gray-700 rounded-full">
-                  <circle cx="64" cy="64" r="64" fill={selectedBg}/>
-                  <g transform="translate(32, 32) scale(2.67)" fill={selectedColor} stroke="none">
-                    <path d={icons[selectedIcon]} />
-                  </g>
-                </svg>
+                <div 
+                  className="w-32 h-32 rounded-full border-4 border-gray-200 dark:border-gray-700 flex items-center justify-center"
+                  style={{ backgroundColor: selectedBg }}
+                >
+                  {(() => {
+                    const IconComponent = categoryIcons[selectedIcon];
+                    return <IconComponent size={64} color={selectedColor} strokeWidth={1.5} />;
+                  })()}
+                </div>
               </div>
             </div>
           )}
