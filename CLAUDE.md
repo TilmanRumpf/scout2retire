@@ -424,6 +424,20 @@ className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 
 
 ---
 
+## 🔍 TROUBLESHOOTING WISDOM
+
+**When debugging issues, ALWAYS:**
+1. **Compare working code with broken code** - Find a similar feature that works correctly
+2. **Spot the differences** - What's different between the working and broken implementations?
+3. **Apply the working pattern** - Use the proven solution instead of inventing complex theories
+4. **Start simple** - Check basic issues before diving into complex debugging (z-index, race conditions, etc.)
+
+**Example**: QuickNav worked fine in UnifiedHeader but broke in OnboardingProgressiveNav. The difference? Conditional rendering. The fix? Make them consistent. Simple.
+
+**Remember**: "Simply troubleshooting and simple logic is often the key to success. Always look at other references, and compare differences." - Tilman Rumpf
+
+---
+
 ## ⚠️ CRITICAL: STOP OVER-ASKING FOR APPROVAL
 
 **Claude Code: You are asking for approval for ROUTINE CODING TASKS. This must stop.**

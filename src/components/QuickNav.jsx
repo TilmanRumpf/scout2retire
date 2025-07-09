@@ -1,8 +1,8 @@
 // Updated QuickNav.jsx - FIXED 09JUN25: REMOVED ALL FUCKING ICONS
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import supabase from '../utils/supabaseClient';
-import { getCurrentUser } from '../utils/authUtils';
+import { getCurrentUser, signOut } from '../utils/authUtils';
 import toast from 'react-hot-toast';
 import '../styles/fonts.css';
 
@@ -11,6 +11,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const isOpen = propIsOpen !== undefined ? propIsOpen : internalIsOpen;
   const location = useLocation();
+  const navigate = useNavigate();
   const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
 
   // Note: Removed location change effect as it was causing immediate closes
@@ -166,7 +167,8 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
     { path: '/chat', label: 'Chat' },
     { path: '/journal', label: 'Journal' },
     { path: '/profile', label: 'Profile' },
-    { path: '/onboarding/current-status', label: 'Preferences', special: true }
+    { path: '/onboarding/current-status', label: 'Preferences', special: true },
+    { path: 'logout', label: 'Logout', special: true }
   ];
 
   return (
@@ -209,7 +211,26 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
           </div>
           <nav className="space-y-1 mt-6">
             {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
+              const isActive = location.pathname === item.path && item.label !== 'Preferences';
+              
+              // Handle logout as a button instead of Link
+              if (item.path === 'logout') {
+                return (
+                  <button
+                    key={item.path}
+                    onClick={async () => {
+                      const result = await signOut();
+                      if (result.success) {
+                        navigate('/welcome');
+                      }
+                    }}
+                    className="w-full flex items-center justify-between p-3 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-left"
+                  >
+                    <span className={`font-medium ${item.special ? 'text-[#f66527]' : ''}`}>{item.label}</span>
+                  </button>
+                );
+              }
+              
               return (
                 <Link
                   key={item.path}
@@ -244,21 +265,6 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
         </div>
       </div>
 
-      {/* Overlay for clicking outside to close with increased z-index */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/30"
-          style={{ zIndex: 80 }}
-          onClick={() => {
-            if (onClose) {
-              onClose();
-            } else {
-              setInternalIsOpen(false);
-            }
-          }}
-          aria-hidden="true"
-        ></div>
-      )}
     </>
   );
 }
