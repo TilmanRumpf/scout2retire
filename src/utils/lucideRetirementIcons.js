@@ -13,7 +13,7 @@ export const LUCIDE_RETIREMENT_ICONS = {
     umbrella: Icons.Umbrella,
     shell: Icons.Shell,
     cocktail: Icons.Wine,
-    sunglasses: Icons.Sunglasses,
+    sunglasses: Icons.Glasses,
     lifebuoy: Icons.LifeBuoy,
     wind: Icons.Wind,
     cloud: Icons.Cloud,
