@@ -267,6 +267,7 @@ export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAva
         isOpen={showIconSelector}
         onClose={() => setShowIconSelector(false)}
         onSelect={handleIconSelect}
+        userId={userId}
       />
     </div>
   );
