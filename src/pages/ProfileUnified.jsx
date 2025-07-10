@@ -144,8 +144,7 @@ export default function ProfileUnified() {
         .from('users')
         .update({
           full_name: editFormData.full_name,
-          hometown: editFormData.hometown || null,
-          updated_at: new Date().toISOString()
+          hometown: editFormData.hometown || null
         })
         .eq('id', user.id);
 
