@@ -1,10 +1,10 @@
 // pages/Favorites.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { fetchFavorites } from '../utils/townUtils';
+import { fetchFavorites, toggleFavorite } from '../utils/townUtils';
 import { getCurrentUser } from '../utils/authUtils';
-import LikeButton from '../components/LikeButton';
 import SimpleImage from '../components/SimpleImage';
+import TownImageOverlay from '../components/TownImageOverlay';
 import { MapPin } from 'lucide-react';
 import UnifiedHeader from '../components/UnifiedHeader';
 import toast from 'react-hot-toast';
@@ -331,29 +331,29 @@ export default function Favorites() {
                           fallbackIconSize={48}
                         />
                         
-                        {/* Match Score with Value Rating */}
-                        {town.matchScore && (
-                          <div className="absolute top-2 left-2">
-                            <div className={`px-2 py-1 ${uiConfig.layout.radius.full} bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm text-xs font-medium ${
-                              town.matchScore >= 80 ? 'text-scout-accent-700 dark:text-scout-accent-400' :
-                              town.matchScore >= 60 ? 'text-gray-700 dark:text-gray-300' :
-                              'text-gray-600 dark:text-gray-400'
-                            }`}>
-                              {town.matchScore}%
-                            </div>
-                          </div>
+                        {userId && (
+                          <TownImageOverlay
+                            town={town}
+                            matchScore={town.matchScore}
+                            isFavorited={true}
+                            isUpdating={false}
+                            onFavoriteClick={async () => {
+                              const { success, action, error } = await toggleFavorite(userId, town.id);
+                              if (success) {
+                                handleFavoriteChange(town.id, action === 'added');
+                                toast.success(action === 'added' ? 'Added to favorites' : 'Removed from favorites');
+                              } else {
+                                toast.error(`Failed to update favorite: ${error?.message}`);
+                              }
+                            }}
+                            appealStatement={
+                              town.cost_index <= 1500 ? "Budget-friendly" :
+                              town.matchScore >= 80 ? "Strong match" :
+                              town.healthcare_score >= 8 ? "Great healthcare" :
+                              "Saved favorite"
+                            }
+                          />
                         )}
-                        
-                        <div className="absolute top-2 right-2">
-                          {userId && (
-                            <LikeButton
-                              townId={town.id}
-                              userId={userId}
-                              initialState={true}
-                              onToggle={(isLiked) => handleFavoriteChange(town.id, isLiked)}
-                            />
-                          )}
-                        </div>
                       </div>
                       
                       <div className="p-4">
