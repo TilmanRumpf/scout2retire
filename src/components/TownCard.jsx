@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toggleFavorite } from '../utils/townUtils';
 import toast from 'react-hot-toast';
-import { Heart, MapPin, DollarSign, Activity, Shield } from 'lucide-react';
+import { MapPin, DollarSign, Activity, Shield } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
 import SimpleImage from './SimpleImage';
+import TownImageOverlay from './TownImageOverlay';
 
 export default function TownCard({ 
   town, 
@@ -50,21 +51,6 @@ export default function TownCard({
     }
   };
 
-  // Custom Like Button with Lucide icons
-  const LikeButtonSimple = () => (
-    <button
-      onClick={handleFavoriteToggle}
-      disabled={isUpdating}
-      className={`p-2 rounded-full ${isFavorited ? 'text-red-500' : uiConfig.colors.hint} transition-colors ${isUpdating ? 'opacity-50' : 'hover:text-red-500'}`}
-      aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
-    >
-      <Heart
-        size={20}
-        fill={isFavorited ? "currentColor" : "none"}
-        strokeWidth={2}
-      />
-    </button>
-  );
 
   // Render compact variant (for lists)
   if (variant === 'compact') {
@@ -90,11 +76,6 @@ export default function TownCard({
             )}
           </div>
         </Link>
-        {showActions && userId && (
-          <div className="p-3">
-            <LikeButtonSimple />
-          </div>
-        )}
       </div>
     );
   }
@@ -110,17 +91,14 @@ export default function TownCard({
           fallbackIconSize={24}
         />
         {showActions && userId && (
-          <div className="absolute top-2 right-2">
-            <LikeButtonSimple />
-          </div>
-        )}
-        {/* Match percentage badge - subtle and professional */}
-        {town.matchScore && (
-          <div className="absolute top-2 left-2">
-            <div className={`px-2 py-1 ${uiConfig.layout.radius.md} text-xs font-medium ${uiConfig.colors.card} bg-opacity-90 backdrop-blur-sm shadow-sm`}>
-              {town.matchScore}%
-            </div>
-          </div>
+          <TownImageOverlay
+            town={town}
+            matchScore={town.matchScore}
+            isFavorited={isFavorited}
+            isUpdating={isUpdating}
+            onFavoriteClick={handleFavoriteToggle}
+            appealStatement={town.appealStatement}
+          />
         )}
       </div>
       
@@ -133,16 +111,6 @@ export default function TownCard({
               {town.country}
             </p>
           </div>
-          
-          <a
-            href={town.google_maps_link || `https://www.google.com/maps/search/${encodeURIComponent(town.name + ', ' + town.country)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`${uiConfig.colors.accent} text-sm hover:underline`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            Map
-          </a>
         </div>
         <div className="flex flex-wrap gap-2 mb-3">
           {town.cost_index && (
