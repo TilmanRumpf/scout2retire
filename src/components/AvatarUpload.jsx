@@ -1,21 +1,17 @@
 import { useState, useRef } from 'react';
-import { Camera, Upload, Trash2, Palette } from 'lucide-react';
+import { Camera, Upload, Trash2 } from 'lucide-react';
 import supabase from '../utils/supabaseClient';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 import InitialsAvatar from './InitialsAvatar';
-import IconAvatarSelector from './IconAvatarSelector';
-import IconAvatar from './IconAvatar';
 
 export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAvatarUpdate }) {
   const [uploading, setUploading] = useState(false);
   const [colorIndex, setColorIndex] = useState(0);
-  const [showIconSelector, setShowIconSelector] = useState(false);
   const fileInputRef = useRef(null);
   
   // Check avatar type
-  const isUsingPhoto = currentAvatarUrl?.includes('supabase') || (currentAvatarUrl?.includes('http') && !currentAvatarUrl?.includes('data:') && !currentAvatarUrl?.includes('icon:'));
-  const isUsingIcon = currentAvatarUrl?.startsWith('icon:');
+  const isUsingPhoto = currentAvatarUrl?.includes('supabase') || (currentAvatarUrl?.includes('http') && !currentAvatarUrl?.includes('data:'));
   
   // Handle file upload
   const handleFileUpload = async (event) => {
@@ -122,7 +118,7 @@ export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAva
     const nextIndex = (colorIndex + 1) % 10;
     setColorIndex(nextIndex);
     
-    if (!isUsingPhoto && !isUsingIcon) {
+    if (!isUsingPhoto) {
       try {
         const { error } = await supabase
           .from('users')
@@ -137,27 +133,6 @@ export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAva
     }
   };
 
-  // Handle icon selection
-  const handleIconSelect = async (iconDataUrl) => {
-    try {
-      setUploading(true);
-      
-      const { error } = await supabase
-        .from('users')
-        .update({ avatar_url: iconDataUrl })
-        .eq('id', userId);
-      
-      if (error) throw error;
-      
-      onAvatarUpdate(iconDataUrl);
-      toast.success('Icon avatar selected!');
-    } catch (error) {
-      console.error('Error updating icon:', error);
-      toast.error('Failed to update icon');
-    } finally {
-      setUploading(false);
-    }
-  };
   
   return (
     <div className="flex flex-col items-center space-y-4">
@@ -170,10 +145,6 @@ export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAva
               alt="Profile"
               className="w-full h-full object-cover"
             />
-          ) : isUsingIcon ? (
-            <div className="w-full h-full">
-              <IconAvatar iconData={currentAvatarUrl} size={128} />
-            </div>
           ) : (
             <div className="w-full h-full">
               <InitialsAvatar 
@@ -223,18 +194,8 @@ export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAva
           <Camera size={20} className="text-gray-600 dark:text-gray-400" />
         </button>
         
-        {/* Icon Button */}
-        <button
-          onClick={() => setShowIconSelector(true)}
-          disabled={uploading}
-          className={`p-2 rounded-lg ${uiConfig.colors.card} border ${uiConfig.colors.borderLight} hover:border-scout-accent transition-colors`}
-          title="Choose icon avatar"
-        >
-          <Palette size={20} className="text-gray-600 dark:text-gray-400" />
-        </button>
-        
         {/* Color Button (for initials) */}
-        {!isUsingPhoto && !isUsingIcon && (
+        {!isUsingPhoto && (
           <button
             onClick={handleNextColor}
             disabled={uploading}
@@ -245,8 +206,8 @@ export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAva
           </button>
         )}
         
-        {/* Remove Button (only if using photo or icon) */}
-        {(isUsingPhoto || isUsingIcon) && (
+        {/* Remove Button (only if using photo) */}
+        {isUsingPhoto && (
           <button
             onClick={handleRemoveAvatar}
             disabled={uploading}
@@ -259,16 +220,8 @@ export default function AvatarUpload({ userId, currentAvatarUrl, fullName, onAva
       </div>
       
       <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} text-center`}>
-        {isUsingPhoto ? 'Click avatar to change photo' : isUsingIcon ? 'Using retirement icon' : 'Upload photo, choose icon, or change color'}
+        {isUsingPhoto ? 'Click avatar to change photo' : 'Upload photo or change color'}
       </p>
-      
-      {/* Icon Selector Modal */}
-      <IconAvatarSelector
-        isOpen={showIconSelector}
-        onClose={() => setShowIconSelector(false)}
-        onSelect={handleIconSelect}
-        userId={userId}
-      />
     </div>
   );
 }
