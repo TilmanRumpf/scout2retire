@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LikeButton from './LikeButton';
 import SimpleImage from './SimpleImage';
-import { getTownOfTheDay, fetchFavorites } from '../utils/townUtils';
+import TownImageOverlay from './TownImageOverlay';
+import { getTownOfTheDay, fetchFavorites, toggleFavorite } from '../utils/townUtils';
 import { getCurrentUser } from '../utils/authUtils';
 import { MapPin } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
+import toast from 'react-hot-toast';
 
 export default function DailyTownCard() {
   const [town, setTown] = useState(null);
@@ -13,6 +14,7 @@ export default function DailyTownCard() {
   const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,9 +71,26 @@ export default function DailyTownCard() {
     fetchData();
   }, []);
 
-  const handleFavoriteToggle = (newState) => {
-    setIsFavorited(newState);
-    console.log(`Favorite toggled for ${town?.name}: ${newState ? 'Added' : 'Removed'}`);
+  const handleFavoriteToggle = async () => {
+    if (!userId || isUpdating || !town) return;
+    
+    setIsUpdating(true);
+    try {
+      const { success, action, error } = await toggleFavorite(userId, town.id);
+      
+      if (success) {
+        const newFavoriteState = action === 'added';
+        setIsFavorited(newFavoriteState);
+        toast.success(action === 'added' ? 'Added to favorites' : 'Removed from favorites');
+      } else {
+        toast.error(`Failed to update favorite: ${error?.message}`);
+      }
+    } catch (err) {
+      console.error("Error toggling favorite:", err);
+      toast.error("Failed to update favorite");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleExploreClick = () => {
@@ -125,31 +144,28 @@ export default function DailyTownCard() {
           fallbackIconSize={64}
         />
         
-        {/* Match Score */}
-        {town.matchScore && (
-          <div className="absolute top-3 left-3">
-            <div className={`px-3 py-1.5 ${uiConfig.layout.radius.full} bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm text-sm font-medium ${
-              town.matchScore >= 80 ? 'text-scout-accent-600 dark:text-scout-accent-400' :
-              town.matchScore >= 60 ? 'text-gray-700 dark:text-gray-300' :
-              'text-gray-600 dark:text-gray-400'
-            }`}>
-              {town.matchScore}% Match
-            </div>
-          </div>
+        {userId && town && (
+          <TownImageOverlay
+            town={town}
+            matchScore={town.matchScore}
+            isFavorited={isFavorited}
+            isUpdating={isUpdating}
+            onFavoriteClick={handleFavoriteToggle}
+            appealStatement={(() => {
+              // Generate appeal statement based on category scores
+              if (town.categoryScores?.culture >= 80 || town.categoryScores?.region >= 80) {
+                return "Strong cultural fit";
+              }
+              if (town.cost_index && 2500 - town.cost_index > 500) {
+                return "Great value";
+              }
+              if (town.categoryScores?.climate >= 80) {
+                return "Perfect climate";
+              }
+              return "Worth exploring";
+            })()}
+          />
         )}
-        
-        <div className="absolute top-3 right-3">
-          {userId && town && (
-            <LikeButton 
-              townId={town.id} 
-              userId={userId} 
-              townName={town.name}
-              townCountry={town.country}
-              initialState={isFavorited}
-              onToggle={handleFavoriteToggle}
-            />
-          )}
-        </div>
       </div>
       
       <div className="p-5">
@@ -233,22 +249,12 @@ export default function DailyTownCard() {
           })()}
         </div>
         
-        <div className="flex justify-between items-center">
-          <button
-            onClick={handleExploreClick}
-            className={`px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.md}`}
-          >
-            Explore Town
-          </button>
-          <a
-            href={town.google_maps_link || `https://www.google.com/maps/search/${encodeURIComponent(town.name + ', ' + town.country)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`${uiConfig.colors.success} text-sm hover:underline`}
-          >
-            View on Map
-          </a>
-        </div>
+        <button
+          onClick={handleExploreClick}
+          className={`w-full px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.md}`}
+        >
+          Explore Town
+        </button>
       </div>
     </div>
   );
