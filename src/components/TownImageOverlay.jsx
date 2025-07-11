@@ -34,11 +34,11 @@ export default function TownImageOverlay({
     <>
       {/* Upper left: Match percentage */}
       {matchScore !== undefined && matchScore !== null && (
-        <div className="absolute top-3 left-3">
-          <div className={`px-2.5 py-1 ${uiConfig.layout.radius.md} bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-sm text-sm font-medium ${
-            matchScore >= 80 ? 'text-scout-accent-600 dark:text-scout-accent-400' :
-            matchScore >= 60 ? 'text-gray-700 dark:text-gray-300' :
-            'text-gray-600 dark:text-gray-400'
+        <div className={`absolute ${uiConfig.townCardOverlay.position.topLeft}`}>
+          <div className={`px-2.5 py-1 ${uiConfig.townCardOverlay.radius} ${uiConfig.townCardOverlay.backdrop} ${uiConfig.townCardOverlay.fontSize.matchScore} ${uiConfig.townCardOverlay.fontWeight.matchScore} ${
+            matchScore >= 80 ? uiConfig.townCardOverlay.matchColors.high :
+            matchScore >= 60 ? uiConfig.townCardOverlay.matchColors.medium :
+            uiConfig.townCardOverlay.matchColors.low
           }`}>
             {matchScore}%
           </div>
@@ -46,13 +46,13 @@ export default function TownImageOverlay({
       )}
 
       {/* Upper right: Heart/like button */}
-      <div className="absolute top-3 right-3">
+      <div className={`absolute ${uiConfig.townCardOverlay.position.topRight}`}>
         <button
           onClick={onFavoriteClick}
           disabled={isUpdating}
-          className={`p-2 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-sm ${
-            isFavorited ? 'text-red-500' : 'text-gray-600 dark:text-gray-400'
-          } transition-colors ${isUpdating ? 'opacity-50' : 'hover:text-red-500'}`}
+          className={`${uiConfig.townCardOverlay.iconButton.base} ${uiConfig.townCardOverlay.backdrop} ${
+            isFavorited ? uiConfig.townCardOverlay.iconButton.heart.active : uiConfig.townCardOverlay.iconButton.heart.inactive
+          } ${isUpdating ? 'opacity-50' : uiConfig.townCardOverlay.iconButton.heart.hover}`}
           aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
         >
           <Heart
@@ -64,19 +64,19 @@ export default function TownImageOverlay({
       </div>
 
       {/* Lower left: Appeal statement */}
-      <div className="absolute bottom-3 left-3">
-        <div className={`px-2.5 py-1 ${uiConfig.layout.radius.md} bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-sm text-xs font-medium text-gray-700 dark:text-gray-300 max-w-[150px]`}>
+      <div className={`absolute ${uiConfig.townCardOverlay.position.bottomLeft}`}>
+        <div className={`px-2.5 py-1 ${uiConfig.townCardOverlay.radius} ${uiConfig.townCardOverlay.backdrop} ${uiConfig.townCardOverlay.fontSize.appealStatement} ${uiConfig.townCardOverlay.fontWeight.appealStatement} ${uiConfig.townCardOverlay.appealColor} max-w-[150px]`}>
           {finalAppealStatement}
         </div>
       </div>
 
       {/* Lower right: Location icon with Google Maps link */}
-      <div className="absolute bottom-3 right-3">
+      <div className={`absolute ${uiConfig.townCardOverlay.position.bottomRight}`}>
         <a
           href={town.google_maps_link || `https://www.google.com/maps/search/${encodeURIComponent(town.name + ', ' + town.country)}`}
           target="_blank"
           rel="noopener noreferrer"
-          className={`inline-flex p-2 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-sm text-gray-600 dark:text-gray-400 transition-colors hover:text-scout-accent-600 dark:hover:text-scout-accent-400`}
+          className={`inline-flex ${uiConfig.townCardOverlay.iconButton.base} ${uiConfig.townCardOverlay.backdrop} ${uiConfig.townCardOverlay.iconButton.location.base} ${uiConfig.townCardOverlay.iconButton.location.hover}`}
           aria-label={`View ${town.name} on Google Maps`}
           onClick={(e) => e.stopPropagation()}
         >

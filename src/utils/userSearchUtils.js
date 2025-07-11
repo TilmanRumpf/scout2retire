@@ -46,6 +46,50 @@ export const findUserByEmail = async (email) => {
 };
 
 /**
+ * Check if a username is available
+ * @param {string} username - The username to check
+ * @returns {Promise<boolean>} - True if available, false if taken
+ */
+export const checkUsernameAvailability = async (username) => {
+  try {
+    // Use the RPC function to check username availability
+    const { data, error } = await supabase
+      .rpc('check_username_available', { 
+        check_username: username.toLowerCase() 
+      });
+    
+    if (error) {
+      console.error("Error checking username availability:", error);
+      // Fall back to direct query if RPC fails
+      try {
+        const { data: userData, error: queryError } = await supabase
+          .from('users')
+          .select('username')
+          .eq('username', username.toLowerCase())
+          .maybeSingle();
+        
+        if (queryError) {
+          console.error("Fallback query error:", queryError);
+          return true; // Assume available on error
+        }
+        
+        return !userData; // Available if no user found
+      } catch (fallbackErr) {
+        console.error("Fallback error:", fallbackErr);
+        return true; // Assume available on error
+      }
+    }
+    
+    // The function returns true if available, false if taken
+    return data;
+  } catch (err) {
+    console.error("Error checking username availability:", err);
+    // On error, assume username is available to not block signup
+    return true;
+  }
+};
+
+/**
  * Create a friend connection by email
  * Since we can't look up user IDs due to RLS, we'll use a different approach
  */

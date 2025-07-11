@@ -114,39 +114,48 @@ export const completeOnboarding = async (userId) => {
     // Prepare update data
     const updateData = { onboarding_completed: true };
     
-    // If retirement timeline exists, convert to retirement_date
+    // If retirement timeline exists, update retirement_year_estimate
     if (onboardingData?.current_status?.retirement_timeline) {
       const timeline = onboardingData.current_status.retirement_timeline;
       
-      // Only create retirement_date if we have year data
+      // Only update retirement_year_estimate if we have year data
       if (timeline.target_year) {
-        // Use provided values or defaults
-        const year = timeline.target_year;
-        const month = timeline.target_month || 1;
-        const day = timeline.target_day || 1;
-        
-        // Create proper date string
-        const retirementDate = new Date(year, month - 1, day).toISOString();
-        updateData.retirement_date = retirementDate;
-        updateData.retirement_year_estimate = year;
-        
-        console.log('Setting retirement date:', retirementDate);
+        updateData.retirement_year_estimate = timeline.target_year;
+        console.log('Setting retirement year estimate:', timeline.target_year);
       }
     }
     
     // Update user profile with completion status and retirement date
-    const { error } = await supabase
+    console.log('Attempting to update user with data:', updateData);
+    console.log('User ID:', userId);
+    
+    const { data: updatedUser, error } = await supabase
       .from('users')
       .update(updateData)
-      .eq('id', userId);
+      .eq('id', userId)
+      .select()
+      .single();
     
     if (error) {
       console.error("Error completing onboarding:", error);
+      console.error("Error details:", {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
       return { success: false, error };
     }
     
-    console.log('Successfully completed onboarding and updated profile');
-    return { success: true };
+    console.log('Update response:', updatedUser);
+    
+    if (updatedUser && updatedUser.onboarding_completed === true) {
+      console.log('✅ Successfully completed onboarding and updated profile');
+      return { success: true };
+    } else {
+      console.error('❌ Update appeared to succeed but onboarding_completed is still false');
+      return { success: false, error: { message: 'Update did not set onboarding_completed to true' } };
+    }
   } catch (error) {
     console.error("Unexpected error completing onboarding:", error);
     return { success: false, error };

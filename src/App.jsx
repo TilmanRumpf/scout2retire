@@ -12,7 +12,7 @@ import Home from "./pages/Home";
 import DailyRedesignV2 from "./pages/DailyRedesignV2";
 import Welcome from "./pages/Welcome";
 import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import SignupEnhanced from "./pages/SignupEnhanced";
 import ResetPassword from "./pages/ResetPassword";
 import Favorites from "./pages/Favorites";
 import ProfileUnified from "./pages/ProfileUnified";
@@ -23,6 +23,7 @@ import Chat from "./pages/Chat";
 import Journal from "./pages/Journal";
 import DataImport from "./pages/admin/DataImport";
 import HeaderMockup from "./pages/HeaderMockup";
+import TestOnboardingUpdate from "./pages/TestOnboardingUpdate";
 
 // Onboarding Flow
 import OnboardingProgress from "./pages/onboarding/OnboardingProgress";
@@ -55,8 +56,8 @@ const ProtectedRoute = ({ children }) => {
         
         // If no session, check if we're still loading from storage
         if (!session) {
-          // Use a shorter delay to minimize flash while still allowing session restoration
-          await new Promise(resolve => setTimeout(resolve, 50));
+          // Wait a bit longer for session to potentially be restored from storage
+          await new Promise(resolve => setTimeout(resolve, 200));
           
           // Check again
           const { data: { session: retrySession } } = await supabase.auth.getSession();
@@ -87,7 +88,21 @@ const ProtectedRoute = ({ children }) => {
         setLoading(false);
       }
     };
+    
     checkAuth();
+    
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        setUser(session.user);
+        setLoading(false);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        navigate('/welcome');
+      }
+    });
+    
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   if (loading) {
@@ -128,7 +143,7 @@ const router = createBrowserRouter([
       // Public routes
       { path: "welcome", element: <Welcome /> },
       { path: "login", element: <Login /> },
-      { path: "signup", element: <Signup /> },
+      { path: "signup", element: <SignupEnhanced /> },
       { path: "reset-password", element: <ResetPassword /> },
       
       // Onboarding flow with persistent layout
@@ -201,6 +216,10 @@ const router = createBrowserRouter([
       {
         path: "admin/data-import",
         element: <ProtectedRoute><AuthenticatedLayout><DataImport /></AuthenticatedLayout></ProtectedRoute>
+      },
+      {
+        path: "test-onboarding",
+        element: <ProtectedRoute><AuthenticatedLayout><TestOnboardingUpdate /></AuthenticatedLayout></ProtectedRoute>
       },
       
       // Default redirect
