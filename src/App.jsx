@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { RouterProvider, createBrowserRouter, Routes, Route, Navigate, useNavigate, Outlet } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { ThemeProvider } from './contexts/ThemeContext';
 import supabase from './utils/supabaseClient';
 import AuthenticatedLayout from './components/AuthenticatedLayout';
@@ -78,6 +79,11 @@ const ProtectedRoute = ({ children }) => {
             .single();
           if (error) {
             console.error("Error fetching user data:", error);
+            // CRITICAL FIX: If user has auth but no profile, redirect to signup
+            // This prevents the Tobias bug where users can access the app without a profile
+            toast.error('Profile not found. Please complete your registration.');
+            navigate('/signup');
+            return;
           } else {
             setOnboardingCompleted(userData.onboarding_completed);
           }
@@ -116,11 +122,7 @@ const ProtectedRoute = ({ children }) => {
   // Note: Users can abandon onboarding at any time and navigate to other pages
   // This respects user choice to not share personal data
   // Only suggest onboarding, don't force it
-
-  // Redirect to daily dashboard if onboarding is completed but user tries to access onboarding
-  if (onboardingCompleted === true && window.location.pathname.startsWith('/onboarding')) {
-    return <Navigate to="/daily" replace />;
-  }
+  // Users who completed onboarding can still access their preferences to edit them
 
   return children;
 };

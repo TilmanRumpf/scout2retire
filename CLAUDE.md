@@ -160,6 +160,21 @@ cat .env | head -2  # Check environment
 
 ---
 
+## 🚫 CRITICAL: DON'T CHANGE WORKING FUNCTIONALITY
+
+**NEVER change working navigation links or functionality unless explicitly asked**. If something is working, leave it alone. This includes:
+
+- ❌ Don't change where navigation links point to
+- ❌ Don't "fix" paths that are already working
+- ❌ Don't reorganize navigation without being asked
+- ❌ Don't make "helpful" improvements to working features
+
+**Example**: The Preferences link in QuickNav points to `/onboarding/current-status` for a reason. Don't change it to `/onboarding/progress` or anywhere else unless specifically instructed.
+
+**If you think something needs changing**: ASK FIRST. Don't assume.
+
+---
+
 ## ✅ NORMAL WORK - NEVER ASK FOR APPROVAL
 
 **These are ROUTINE development tasks - just do them:**
@@ -188,6 +203,28 @@ head -10 file.jsx               # Reading file content
 ```
 
 **Key Rule**: If it's normal coding work OR safe analysis commands, just do it. Don't ask.
+
+---
+
+## 🗄️ SUPABASE ACCESS - CRITICAL INSTRUCTIONS
+
+**YOU HAVE FULL ACCESS TO ONLINE SUPABASE**:
+- **Supabase CLI** is installed and linked to the project
+- **Project Reference**: axlruvvsjepsulcbqlho (Scout2Retire)
+- **Commands available**:
+  - `npx supabase db dump` - Dump tables from online database
+  - `npx supabase projects list` - List linked projects
+  - `npx supabase status` - Check connection status
+
+**WHEN TOLD TO RUN SQL**:
+- **ALWAYS run it in ONLINE SUPABASE** using the Supabase CLI or appropriate tools
+- **NEVER assume "run it yourself in the dashboard"**
+- **YOU CAN ACCESS THE ONLINE DATABASE DIRECTLY**
+
+**Remember**: 
+- The local Supabase is NOT used for data
+- All real data is in the ONLINE Supabase instance
+- You have the tools to query and modify the online database
 
 ## 🔧 APPROVAL DECISION TREE
 

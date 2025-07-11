@@ -50,7 +50,7 @@ export const signUp = async (email, password, fullName, nationality, retirementD
               id: signInData.user.id,
               email,
               full_name: fullName,
-              nationality,
+              nationality: nationality || 'pending', // Will be set in onboarding
               retirement_year_estimate: new Date(retirementDate).getFullYear(),
               onboarding_completed: false,
               hometown: hometown || null,
@@ -78,7 +78,7 @@ export const signUp = async (email, password, fullName, nationality, retirementD
           user_id: authData.user.id,
           user_email: email,
           user_full_name: fullName,
-          user_nationality: nationality,
+          user_nationality: nationality || 'pending', // Will be set in onboarding
           user_retirement_year: new Date(retirementDate).getFullYear(),
           user_hometown: hometown || null,
           user_username: username ? username.toLowerCase() : null,
@@ -94,7 +94,7 @@ export const signUp = async (email, password, fullName, nationality, retirementD
               id: authData.user.id,
               email,
               full_name: fullName,
-              nationality,
+              nationality: nationality || 'pending', // Will be set in onboarding
               retirement_year_estimate: new Date(retirementDate).getFullYear(),
               onboarding_completed: false,
               hometown: hometown || null,
@@ -256,12 +256,46 @@ export const getCurrentUser = async () => {
 
     if (error) {
       console.error("Error fetching user data:", error);
-      return { user: session.user, profile: null, error };
+      
+      // Check if it's a missing profile (406 error) vs other database errors
+      if (error.code === 'PGRST116' || error.message?.includes('Row not found')) {
+        // Profile doesn't exist - this is the Tobias bug scenario
+        console.error("Auth user exists but profile missing - blocking access");
+        
+        // In development, give a helpful error
+        if (window.location.hostname === 'localhost') {
+          toast.error('Profile missing! Run: node scripts/fix-missing-user-profiles.js');
+        }
+      }
+      
+      // SECURITY FIX: No profile = No access
+      return { user: null, profile: null, error };
     }
 
     return { user: session.user, profile: userData };
   } catch (error) {
     console.error("Error getting current user:", error);
     return { user: null, error };
+  }
+};
+
+// Helper function to ensure user has a valid profile in the users table
+export const ensureUserProfile = async (userId) => {
+  try {
+    const { data: profile, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', userId)
+      .single();
+    
+    if (error || !profile) {
+      console.error("User profile not found in users table:", error);
+      return { hasProfile: false, error };
+    }
+    
+    return { hasProfile: true, profile };
+  } catch (error) {
+    console.error("Error checking user profile:", error);
+    return { hasProfile: false, error };
   }
 };
