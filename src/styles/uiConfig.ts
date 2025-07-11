@@ -554,6 +554,61 @@ export const i18n = {
   }
 };
 
+// Town Card Overlay Configuration - Added 10JAN25
+export const townCardOverlay = {
+  // Backdrop styling - more transparent as requested
+  backdrop: 'bg-white/75 dark:bg-gray-800/75 backdrop-blur-sm shadow-sm',
+  
+  // Font sizes - unified for consistency
+  fontSize: {
+    matchScore: 'text-xs',      // Same as appeal statement
+    appealStatement: 'text-xs',
+    confidence: 'text-xs'
+  },
+  
+  // Font weights
+  fontWeight: {
+    matchScore: 'font-medium',
+    appealStatement: 'font-medium',
+    confidence: 'font-normal'
+  },
+  
+  // Colors for match scores
+  matchColors: {
+    high: 'text-scout-accent-600 dark:text-scout-accent-400',    // 80%+
+    medium: 'text-gray-700 dark:text-gray-300',                  // 60-79%
+    low: 'text-gray-600 dark:text-gray-400'                      // <60%
+  },
+  
+  // Appeal statement color
+  appealColor: 'text-gray-700 dark:text-gray-300',
+  
+  // Icon button styling
+  iconButton: {
+    base: 'p-2 rounded-full transition-colors',
+    heart: {
+      active: 'text-red-500',
+      inactive: 'text-gray-600 dark:text-gray-400',
+      hover: 'hover:text-red-500'
+    },
+    location: {
+      base: 'text-gray-600 dark:text-gray-400',
+      hover: 'hover:text-scout-accent-600 dark:hover:text-scout-accent-400'
+    }
+  },
+  
+  // Positioning
+  position: {
+    topLeft: 'top-3 left-3',
+    topRight: 'top-3 right-3',
+    bottomLeft: 'bottom-3 left-3',
+    bottomRight: 'bottom-3 right-3'
+  },
+  
+  // Border radius
+  radius: layout.radius.md
+};
+
 export const uiConfig = {
   colors,
   font,
@@ -567,6 +622,7 @@ export const uiConfig = {
   progress,
   validation,
   notifications,
+  townCardOverlay, // Added 10JAN25: Centralized town card overlay styling
   states,
   responsive,
   i18n,

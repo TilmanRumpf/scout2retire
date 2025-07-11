@@ -30,7 +30,7 @@ export default function OnboardingReview() {
         }
         
         setOnboardingData(data);
-        setProgress(userProgress);
+        // Note: setProgress was removed as progress state is not defined in this component
       } catch (err) {
         console.error("Unexpected error loading data:", err);
       } finally {
@@ -43,27 +43,37 @@ export default function OnboardingReview() {
 
   const handleComplete = async () => {
     setLoading(true);
+    console.log('Starting onboarding completion process...');
     
     try {
       const { user } = await getCurrentUser();
       if (!user) {
+        console.error('No user found, redirecting to welcome');
         navigate('/welcome');
         return;
       }
       
+      console.log('User found:', user.id, user.email);
+      console.log('Calling completeOnboarding...');
+      
       const { success, error } = await completeOnboarding(user.id);
       
+      console.log('completeOnboarding result:', { success, error });
+      
       if (!success) {
-        toast.error(`Failed to complete onboarding: ${error.message}`);
+        const errorMessage = error?.message || 'Unknown error';
+        console.error('Failed to complete onboarding:', error);
+        toast.error(`Failed to complete onboarding: ${errorMessage}`);
         setLoading(false);
         return;
       }
       
+      console.log('Onboarding completed successfully! Navigating to complete page...');
       toast.success('Onboarding completed! Let\'s find your perfect matches...');
       navigate('/onboarding/complete');
     } catch (err) {
+      console.error('Unexpected error in handleComplete:', err);
       toast.error('An unexpected error occurred');
-      console.error(err);
       setLoading(false);
     }
   };
