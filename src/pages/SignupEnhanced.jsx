@@ -14,8 +14,9 @@ export default function SignupEnhanced() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [hometownCity, setHometownCity] = useState('');
-  const [hometownCountry, setHometownCountry] = useState('');
+  const [country, setCountry] = useState('');
+  const [city, setCity] = useState('');
+  const [postalCode, setPostalCode] = useState('');
   
   // New fields
   const [username, setUsername] = useState('');
@@ -260,21 +261,34 @@ export default function SignupEnhanced() {
         avatarUrl = `initials:${initialsColorIndex}`;
       }
       
-      const defaultRetirementDate = new Date();
-      defaultRetirementDate.setFullYear(defaultRetirementDate.getFullYear() + 5);
+      // Placeholder retirement date - actual date will be collected in onboarding
+      const placeholderRetirementDate = new Date();
+      placeholderRetirementDate.setFullYear(placeholderRetirementDate.getFullYear() + 5);
       
       // Enhanced signup with username and avatar
-      // Format hometown as "City, Country" if both are provided
-      const formattedHometown = hometownCity.trim() && hometownCountry.trim() 
-        ? `${hometownCity.trim()}, ${hometownCountry.trim()}`
-        : hometownCity.trim() || hometownCountry.trim() || null;
+      // Format location from country, city, and postal code
+      let formattedHometown = null;
+      const trimmedCountry = country.trim();
+      const trimmedCity = city.trim();
+      const trimmedPostalCode = postalCode.trim();
+      
+      if (trimmedCity && trimmedPostalCode && trimmedCountry) {
+        // City, postal code, and country provided
+        formattedHometown = `${trimmedCity}, ${trimmedPostalCode}, ${trimmedCountry}`;
+      } else if (trimmedCity && trimmedCountry) {
+        // City and country provided (no postal code)
+        formattedHometown = `${trimmedCity}, ${trimmedCountry}`;
+      } else if (trimmedCountry) {
+        // Only country provided
+        formattedHometown = trimmedCountry;
+      }
       
       const { success, reason, error, user, session } = await signUp(
         emailValidation.sanitized,
         passwordValidation.sanitized,
         nameValidation.sanitized,
-        'usa', // Default nationality - will be properly collected in onboarding
-        defaultRetirementDate.toISOString().split('T')[0],
+        null, // Nationality will be properly collected in onboarding step 1
+        placeholderRetirementDate.toISOString().split('T')[0], // Placeholder - real date collected in onboarding
         formattedHometown,
         username || null,
         avatarUrl
@@ -512,66 +526,98 @@ export default function SignupEnhanced() {
               </div>
             </div>
 
-            {/* Current Location - Two fields */}
+            {/* Current Location - Country/Region dropdown + City field */}
             <div>
-              <label className={uiConfig.components.label}>
-                Current Location <span className={`text-sm ${uiConfig.colors.hint} font-normal`}>(optional)</span>
+              <label htmlFor="country" className={uiConfig.components.label}>
+                Country/Region
               </label>
-              <div className="mt-1 grid grid-cols-2 gap-3">
-                <div>
+              <div className="mt-1">
+                <select
+                  id="country"
+                  name="country"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  required
+                  autoComplete="country-name"
+                  className={uiConfig.components.input}
+                >
+                  <option value="">Select your country</option>
+                  <option value="United States">United States</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Mexico">Mexico</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="France">France</option>
+                  <option value="Germany">Germany</option>
+                  <option value="Spain">Spain</option>
+                  <option value="Italy">Italy</option>
+                  <option value="Portugal">Portugal</option>
+                  <option value="Australia">Australia</option>
+                  <option value="New Zealand">New Zealand</option>
+                  <option value="Japan">Japan</option>
+                  <option value="South Korea">South Korea</option>
+                  <option value="Singapore">Singapore</option>
+                  <option value="Thailand">Thailand</option>
+                  <option value="Malaysia">Malaysia</option>
+                  <option value="Philippines">Philippines</option>
+                  <option value="India">India</option>
+                  <option value="Brazil">Brazil</option>
+                  <option value="Argentina">Argentina</option>
+                  <option value="Chile">Chile</option>
+                  <option value="Costa Rica">Costa Rica</option>
+                  <option value="Panama">Panama</option>
+                  <option value="Netherlands">Netherlands</option>
+                  <option value="Belgium">Belgium</option>
+                  <option value="Switzerland">Switzerland</option>
+                  <option value="Austria">Austria</option>
+                  <option value="Sweden">Sweden</option>
+                  <option value="Norway">Norway</option>
+                  <option value="Denmark">Denmark</option>
+                  <option value="Finland">Finland</option>
+                  <option value="Ireland">Ireland</option>
+                  <option value="Israel">Israel</option>
+                  <option value="South Africa">South Africa</option>
+                  <option value="United Arab Emirates">United Arab Emirates</option>
+                </select>
+              </div>
+            </div>
+
+            {/* City and Postal Code fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="city" className={uiConfig.components.label}>
+                  City/Town <span className={`text-sm ${uiConfig.colors.hint} font-normal`}>(optional)</span>
+                </label>
+                <div className="mt-1">
                   <input
-                    id="hometownCity"
-                    name="hometownCity"
+                    id="city"
+                    name="city"
                     type="text"
-                    value={hometownCity}
-                    onChange={(e) => setHometownCity(e.target.value)}
-                    placeholder="City/State"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder={country === 'United States' ? 'e.g., Gainesville' : 'e.g., London'}
+                    autoComplete="address-level2"
                     className={uiConfig.components.input}
                   />
                 </div>
-                <div>
-                  <select
-                    id="hometownCountry"
-                    name="hometownCountry"
-                    value={hometownCountry}
-                    onChange={(e) => setHometownCountry(e.target.value)}
+              </div>
+              
+              <div>
+                <label htmlFor="postalCode" className={uiConfig.components.label}>
+                  Postal Code <span className={`text-sm ${uiConfig.colors.hint} font-normal`}>(optional)</span>
+                </label>
+                <div className="mt-1">
+                  <input
+                    id="postalCode"
+                    name="postalCode"
+                    type="text"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    placeholder={country === 'United States' ? 'e.g., 32607' : 'e.g., EC1A 1BB'}
+                    autoComplete="postal-code"
                     className={uiConfig.components.input}
-                  >
-                    <option value="">Select Country</option>
-                    <option value="United States">United States</option>
-                    <option value="United Kingdom">United Kingdom</option>
-                    <option value="Canada">Canada</option>
-                    <option value="Australia">Australia</option>
-                    <option value="Germany">Germany</option>
-                    <option value="France">France</option>
-                    <option value="Spain">Spain</option>
-                    <option value="Italy">Italy</option>
-                    <option value="Portugal">Portugal</option>
-                    <option value="Netherlands">Netherlands</option>
-                    <option value="Switzerland">Switzerland</option>
-                    <option value="Sweden">Sweden</option>
-                    <option value="Norway">Norway</option>
-                    <option value="Denmark">Denmark</option>
-                    <option value="Ireland">Ireland</option>
-                    <option value="Belgium">Belgium</option>
-                    <option value="Austria">Austria</option>
-                    <option value="Mexico">Mexico</option>
-                    <option value="Brazil">Brazil</option>
-                    <option value="Argentina">Argentina</option>
-                    <option value="Japan">Japan</option>
-                    <option value="China">China</option>
-                    <option value="India">India</option>
-                    <option value="South Korea">South Korea</option>
-                    <option value="Singapore">Singapore</option>
-                    <option value="New Zealand">New Zealand</option>
-                    <option value="South Africa">South Africa</option>
-                    <option value="Other">Other</option>
-                  </select>
+                  />
                 </div>
               </div>
-              <p className={`mt-1 text-xs ${uiConfig.colors.hint}`}>
-                Where do you currently live? (e.g., "Gainesville, FL" and "United States")
-              </p>
             </div>
 
             {/* Password */}
