@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Globe, MapPin, Trees, Lightbulb } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
+import { saveUserPreferences } from '../../utils/userPreferences';
 import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
@@ -409,6 +410,22 @@ const OnboardingRegion = () => {
       }
       
       toast.success('Regional preferences saved!');
+      
+      // Also save to new user_preferences table
+      try {
+        const { success: prefSuccess, error: prefError } = await saveUserPreferences(
+          userResult.user.id,
+          'region_preferences',
+          formData
+        );
+        if (prefSuccess) {
+          console.log('✅ Saved region to user_preferences table');
+        } else {
+          console.error('❌ Failed to save region to user_preferences:', prefError);
+        }
+      } catch (err) {
+        console.error('Error saving region to user_preferences:', err);
+      }
       
       // Add a small delay to ensure data is saved before navigation
       setTimeout(() => {
