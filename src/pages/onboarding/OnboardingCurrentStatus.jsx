@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, Users, Globe, PawPrint, Lightbulb } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
+import { saveUserPreferences } from '../../utils/userPreferences';
 import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
@@ -278,6 +279,36 @@ export default function OnboardingCurrentStatus() {
       }
       
       toast.success('Current status saved!');
+      
+      // Also save to new user_preferences table
+      try {
+        const { success: prefSuccess, error: prefError } = await saveUserPreferences(
+          userResult.user.id,
+          'current_status',
+          {
+            retirement_status: formData.retirement_timeline.status,
+            target_retirement_year: formData.retirement_timeline.target_year,
+            timeline_flexibility: formData.retirement_timeline.flexibility,
+            primary_citizenship: formData.citizenship.primary_citizenship,
+            secondary_citizenship: formData.citizenship.secondary_citizenship || null,
+            visa_concerns: formData.citizenship.visa_concerns || false,
+            family_status: formData.family_situation.status,
+            partner_agreement: formData.family_situation.partner_agreement || null,
+            bringing_children: formData.family_situation.bringing_children || false,
+            bringing_pets: formData.family_situation.bringing_pets || false,
+            current_location: formData.current_location || null,
+            moving_motivation: formData.moving_motivation || null
+          }
+        );
+
+        if (prefSuccess) {
+          console.log('✅ Saved to user_preferences table');
+        } else {
+          console.error('❌ Failed to save to user_preferences:', prefError);
+        }
+      } catch (err) {
+        console.error('Error saving to user_preferences:', err);
+      }
       
       // Add a small delay to ensure data is saved before navigation
       setTimeout(() => {

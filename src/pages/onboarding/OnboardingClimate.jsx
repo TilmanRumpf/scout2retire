@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Sun, Snowflake, Droplets, Cloud, CloudRain, Lightbulb } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
+import { saveUserPreferences } from '../../utils/userPreferences';
 import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
@@ -164,6 +165,22 @@ export default function OnboardingClimate() {
       }
       
       toast.success('Climate preferences saved!');
+      
+      // Also save to new user_preferences table
+      try {
+        const { success: prefSuccess, error: prefError } = await saveUserPreferences(
+          userResult.user.id,
+          'climate_preferences',
+          formData
+        );
+        if (prefSuccess) {
+          console.log('✅ Saved climate to user_preferences table');
+        } else {
+          console.error('❌ Failed to save climate to user_preferences:', prefError);
+        }
+      } catch (err) {
+        console.error('Error saving climate to user_preferences:', err);
+      }
       
       // Add a small delay to ensure data is saved before navigation
       setTimeout(() => {
