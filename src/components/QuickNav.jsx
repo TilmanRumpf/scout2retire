@@ -165,6 +165,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
     { path: '/compare', label: 'Compare' },
     { path: '/schedule', label: 'Schedule' },
     { path: '/chat', label: 'Chat' },
+    { path: '/scotty', label: 'Scotty AI', special: true },
     { path: '/journal', label: 'Journal' },
     { path: '/profile', label: 'Profile' },
     { path: '/onboarding/current-status', label: 'Preferences', special: true },

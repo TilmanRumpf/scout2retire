@@ -109,12 +109,8 @@ export default function Chat() {
         
         setThreads(threadData || []);
         
-        // Check if scout chat is requested via URL param
-        if (searchParams.get('scout') === 'true') {
-          switchToScoutChat();
-        }
         // If townId is provided, load that town and its thread
-        else if (townId) {
+        if (townId) {
           // Get town data
           const { success, towns } = await fetchTowns({ townIds: [townId] });
           
@@ -192,7 +188,7 @@ export default function Chat() {
     
     loadData();
   }, [navigate, townId, searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
-  // invitationId, pendingInvitations.received, and switchToScoutChat are handled within loadData
+  // invitationId and pendingInvitations.received are handled within loadData
   
   // Load user's friends
   const loadFriends = async (userId) => {
@@ -559,27 +555,9 @@ export default function Chat() {
     }
   };
   
-  // Switch to scout chat (AI assistant)
-  const switchToScoutChat = () => {
-    setActiveTown(null);
-    setActiveThread(null);
-    setMessages([
-      {
-        id: 'welcome',
-        message: "Hi there! I'm Scotti, your retirement town scout. I can help answer questions about:\n\n• Retirement locations and recommendations\n• Visa requirements and residency permits\n• Cost of living comparisons\n• Healthcare systems by country\n• Climate and weather patterns\n• Tax implications for expats\n• And much more!\n\nWhat would you like to know?",
-        user_id: 'scout',
-        user_name: 'Scotti (AI Assistant)',
-        created_at: new Date().toISOString()
-      }
-    ]);
-    setChatType('scout');
-    
-    // Update URL
-    navigate('/chat?scout=true', { replace: true });
-  };
   
-  // Enhanced AI responses for Scotti
-  const getScottiResponse = (userMessage) => {
+  // Simple AI responses for lounge chat
+  const getAIResponse = (userMessage) => {
     const message = userMessage.toLowerCase();
     
     // Cost of living queries
@@ -970,17 +948,17 @@ export default function Chat() {
       
       // Simulate AI response with typing delay
       setTimeout(() => {
-        const aiResponse = getScottiResponse(messageText);
+        const aiResponse = getAIResponse(messageText);
         
-        const scoutResponse = {
-          id: `scout-${Date.now()}`,
+        const loungeResponse = {
+          id: `lounge-${Date.now()}`,
           message: aiResponse,
-          user_id: 'scout',
-          user_name: 'Scotti (AI Assistant)',
+          user_id: 'community',
+          user_name: 'Community Assistant',
           created_at: new Date().toISOString()
         };
         
-        setMessages(prev => [...prev, scoutResponse]);
+        setMessages(prev => [...prev, loungeResponse]);
         setIsTyping(false);
       }, 1000 + Math.random() * 1000); // 1-2 second delay
       
@@ -1070,7 +1048,7 @@ export default function Chat() {
             ? 'Retirement Lounge'
             : chatType === 'friends' && activeFriend 
             ? `Chat with ${activeFriend.friend.full_name || activeFriend.friend.email.split('@')[0]}`
-            : 'Chat with Scotti'
+            : 'Retirement Lounge'
         }
         maxWidth="max-w-6xl"
       />
@@ -1106,25 +1084,6 @@ export default function Chat() {
                     <div>
                       <div className={`${uiConfig.font.weight.medium}`}>Retirement Lounge</div>
                       <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>General discussion</div>
-                    </div>
-                  </div>
-                </button>
-                
-                <button
-                  onClick={switchToScoutChat}
-                  className={`w-full text-left px-4 py-3 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
-                    chatType === 'scout' 
-                      ? uiConfig.colors.badge
-                      : `${uiConfig.states.hover} ${uiConfig.colors.body}`
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                    <div>
-                      <div className={`${uiConfig.font.weight.medium}`}>Chat with Scotti</div>
-                      <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>AI retirement advisor</div>
                     </div>
                   </div>
                 </button>
@@ -1291,7 +1250,7 @@ export default function Chat() {
                         ? 'the retirement lounge' 
                         : chatType === 'friends' && activeFriend
                         ? activeFriend.friend.full_name || activeFriend.friend.email.split('@')[0]
-                        : 'Scotti'
+                        : 'the community'
                     }...`}
                     className={`flex-1 ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} py-2 px-4 ${uiConfig.colors.input} ${uiConfig.colors.body} ${uiConfig.colors.focusRing} focus:border-transparent`}
                   />
