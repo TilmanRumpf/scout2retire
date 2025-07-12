@@ -1,6 +1,7 @@
 // src/utils/onboardingUtils.js
 // Updated to ensure data structure matches exactly what Supabase expects
 import supabase from './supabaseClient';
+import { clearPersonalizedCache } from './matchingAlgorithm';
 
 // Transformation function to ensure data matches Supabase format
 const transformAdministrationData = (data) => {
@@ -95,6 +96,10 @@ export const saveOnboardingStep = async (userId, stepData, step) => {
     }
     
     console.log(`Successfully saved ${step} data`);
+    
+    // Clear personalized cache when preferences change
+    clearPersonalizedCache(userId);
+    
     return { success: true };
   } catch (error) {
     console.error(`Unexpected error saving ${step} data:`, error);

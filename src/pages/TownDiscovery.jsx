@@ -106,8 +106,9 @@ export default function TownDiscovery() {
           isPersonalized: isPersonalizedResult,
           userPreferences: userPrefs
         } = await fetchTowns({ 
-          limit: 20, 
-          userId: user.id 
+          limit: 50, 
+          userId: user.id,
+          usePersonalization: false  // Temporarily disable to show all towns
         });
 
         if (townSuccess) {

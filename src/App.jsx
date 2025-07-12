@@ -23,7 +23,10 @@ import TownDiscovery from "./pages/TownDiscovery";
 import Chat from "./pages/Chat";
 import Journal from "./pages/Journal";
 import DataImport from "./pages/admin/DataImport";
+import TownManager from "./pages/admin/TownManager";
 import HeaderMockup from "./pages/HeaderMockup";
+import TestClaude from "./components/TestClaude";
+import ScottyGuide from "./components/ScottyGuide";
 import TestOnboardingUpdate from "./pages/TestOnboardingUpdate";
 
 // Onboarding Flow
@@ -53,7 +56,7 @@ const ProtectedRoute = ({ children }) => {
     const checkAuth = async () => {
       try {
         // First check if there's a stored session
-        const { data: { session } } = await supabase.auth.getSession();
+        let { data: { session } } = await supabase.auth.getSession();
         
         // If no session, check if we're still loading from storage
         if (!session) {
@@ -197,6 +200,14 @@ const router = createBrowserRouter([
         element: <ProtectedRoute><AuthenticatedLayout><Journal /></AuthenticatedLayout></ProtectedRoute>
       },
       {
+        path: "test-claude",
+        element: <ProtectedRoute><AuthenticatedLayout><TestClaude /></AuthenticatedLayout></ProtectedRoute>
+      },
+      {
+        path: "scotty",
+        element: <ProtectedRoute><AuthenticatedLayout><ScottyGuide /></AuthenticatedLayout></ProtectedRoute>
+      },
+      {
         path: "mockup",
         element: <ProtectedRoute><HeaderMockup /></ProtectedRoute>
       },
@@ -218,6 +229,10 @@ const router = createBrowserRouter([
       {
         path: "admin/data-import",
         element: <ProtectedRoute><AuthenticatedLayout><DataImport /></AuthenticatedLayout></ProtectedRoute>
+      },
+      {
+        path: "admin/towns",
+        element: <ProtectedRoute><AuthenticatedLayout><TownManager /></AuthenticatedLayout></ProtectedRoute>
       },
       {
         path: "test-onboarding",
