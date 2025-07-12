@@ -455,4 +455,45 @@ className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 
 - Only modify frontend if solving actual user problems
 - Analyze before redesigning: "Is this broken or just different?"
 
-**Success Measure**: Users get better town recommendations that truly reflect their detailed onboarding preferences, while keeping the UX t
+**Success Measure**: Users get better town recommendations that truly reflect their detailed onboarding preferences, while keeping the UX they already like.
+
+**Anti-Pattern**: Fixing theoretical problems that don't affect real users.
+
+---
+
+**PRINCIPLE**: Work efficiently, think first, ask only for dangerous actions, focus on backend improvement. **Simple analysis before complex solutions. Don't fix what users already like.**
+
+---
+
+## 🔍 TROUBLESHOOTING WISDOM
+
+**When debugging issues, ALWAYS:**
+1. **Compare working code with broken code** - Find a similar feature that works correctly
+2. **Spot the differences** - What's different between the working and broken implementations?
+3. **Apply the working pattern** - Use the proven solution instead of inventing complex theories
+4. **Start simple** - Check basic issues before diving into complex debugging (z-index, race conditions, etc.)
+
+**Example**: QuickNav worked fine in UnifiedHeader but broke in OnboardingProgressiveNav. The difference? Conditional rendering. The fix? Make them consistent. Simple.
+
+**Remember**: "Simply troubleshooting and simple logic is often the key to success. Always look at other references, and compare differences." - Tilman Rumpf
+
+---
+
+## ⚠️ CRITICAL: STOP OVER-ASKING FOR APPROVAL
+
+**Claude Code: You are asking for approval for ROUTINE CODING TASKS. This must stop.**
+
+**Examples of what NOT to ask approval for:**
+- "Do you want me to update the CSS classes?"
+- "Should I add responsive breakpoints?"
+- "Can I modify this component?"
+- "Do you want me to edit App.jsx?"
+
+**These are NORMAL development tasks. Just do them.**
+
+**ONLY ask for approval if you're about to:**
+- Delete files or data
+- Modify production systems
+- Make destructive changes
+
+**Everything else = just code normally without asking.**
