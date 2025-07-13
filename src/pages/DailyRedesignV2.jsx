@@ -96,7 +96,7 @@ export default function DailyRedesignV2() {
       const { data } = await supabase
         .from('towns')
         .select('*')
-        .not('image_url_1', 'is', null)  // CRITICAL: Only towns with photos
+        .not('image_url_1', 'is', null).not('image_url_1', 'eq', '')  // CRITICAL: Only towns with photos
         .order('created_at', { ascending: false })
         .limit(4);
       
@@ -149,7 +149,7 @@ export default function DailyRedesignV2() {
       let query = supabase.from('towns').select('*');
       
       // Filter for towns with photos (quality control) - CRITICAL SAFETY FEATURE
-      query = query.not('image_url_1', 'is', null);
+      query = query.not('image_url_1', 'is', null).not('image_url_1', 'eq', '');
       
       // Define regions and their countries
       const regionDefinitions = {

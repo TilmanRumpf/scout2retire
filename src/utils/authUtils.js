@@ -145,4 +145,157 @@ export const signUp = async (email, password, fullName, nationality, retirementD
       }
 
       return { 
+        success: true, 
+        user: authData.user,
+        session: authData.session 
+      };
+    }
     
+    return { success: false, error: new Error("User creation failed with no error") };
+  } catch (error) {
+    toast.error(`An unexpected error occurred: ${error.message}`);
+    return { success: false, error };
+  }
+};
+
+export const signIn = async (email, password) => {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      toast.error(`Login failed: ${error.message}`);
+      return { success: false, error };
+    }
+
+    return { success: true, user: data.user, session: data.session };
+  } catch (error) {
+    toast.error(`An unexpected error occurred: ${error.message}`);
+    return { success: false, error };
+  }
+};
+
+export const signOut = async () => {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error(`Logout failed: ${error.message}`);
+      return { success: false, error };
+    }
+    return { success: true };
+  } catch (error) {
+    toast.error(`An unexpected error occurred: ${error.message}`);
+    return { success: false, error };
+  }
+};
+
+export const resetPassword = async (email) => {
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) {
+      toast.error(`Password reset failed: ${error.message}`);
+      return { success: false, error };
+    }
+
+    toast.success('Password reset email sent! Check your inbox.');
+    return { success: true };
+  } catch (error) {
+    toast.error(`An unexpected error occurred: ${error.message}`);
+    return { success: false, error };
+  }
+};
+
+export const updatePassword = async (newPassword) => {
+  try {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) {
+      toast.error(`Password update failed: ${error.message}`);
+      return { success: false, error };
+    }
+
+    toast.success('Password updated successfully!');
+    return { success: true };
+  } catch (error) {
+    toast.error(`An unexpected error occurred: ${error.message}`);
+    return { success: false, error };
+  }
+};
+
+export const getCurrentUser = async () => {
+  try {
+    let { data: { session } } = await supabase.auth.getSession();
+    
+    // If no session, try once more after a brief delay (session might still be loading)
+    if (!session) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const retryResult = await supabase.auth.getSession();
+      session = retryResult.data.session;
+    }
+    
+    if (!session) {
+      console.log('No session found in getCurrentUser');
+      return { user: null };
+    }
+
+    console.log('Session user:', session.user);
+    console.log('Session user ID:', session.user?.id);
+
+    const { data: userData, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
+
+    if (error) {
+      console.error("Error fetching user data:", error);
+      
+      // Check if it's a missing profile (406 error) vs other database errors
+      if (error.code === 'PGRST116' || error.message?.includes('Row not found')) {
+        // Profile doesn't exist - this is the Tobias bug scenario
+        console.error("Auth user exists but profile missing - blocking access");
+        
+        // In development, give a helpful error
+        if (window.location.hostname === 'localhost') {
+          toast.error('Profile missing! Run: node scripts/fix-missing-user-profiles.js');
+        }
+      }
+      
+      // SECURITY FIX: No profile = No access
+      return { user: null, profile: null, error };
+    }
+
+    return { user: session.user, profile: userData };
+  } catch (error) {
+    console.error("Error getting current user:", error);
+    return { user: null, error };
+  }
+};
+
+// Helper function to ensure user has a valid profile in the users table
+export const ensureUserProfile = async (userId) => {
+  try {
+    const { data: profile, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', userId)
+      .single();
+    
+    if (error || !profile) {
+      console.error("User profile not found in users table:", error);
+      return { hasProfile: false, error };
+    }
+    
+    return { hasProfile: true, profile };
+  } catch (error) {
+    console.error("Error checking user profile:", error);
+    return { hasProfile: false, error };
+  }
+};
