@@ -269,7 +269,7 @@ export default function OnboardingProgress() {
             onClick={handleContinue}
             className={`${uiConfig.components.buttonPrimary} ${uiConfig.bottomNavigation.styles.nextButton}`}
           >
-            {progress.percentage === 100 ? 'Detailed Summary' : `Continue: ${getNextStep().label}`}
+            {progress.percentage === 100 ? 'Detailed Summary' : `Continue: ${getNextStep()?.label || 'Continue'}`}
           </button>
         </div>
       </main>

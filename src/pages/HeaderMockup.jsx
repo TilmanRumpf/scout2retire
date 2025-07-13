@@ -29,7 +29,8 @@ export default function HeaderMockup() {
     const fetchTownCount = async () => {
       const { count, error } = await supabase
         .from('towns')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .not('image_url_1', 'is', null);  // CRITICAL: Only count towns with photos
       
       if (!error && count !== null) {
         setActualTownCount(count);

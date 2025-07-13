@@ -251,11 +251,4 @@ export default function DailyTownCard() {
         
         <button
           onClick={handleExploreClick}
-          className={`w-full px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.md}`}
-        >
-          Explore Town
-        </button>
-      </div>
-    </div>
-  );
-}
+          className={`w-full px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.

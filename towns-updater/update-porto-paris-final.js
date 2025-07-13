@@ -163,33 +163,9 @@ const parisDataFinal = {
 async function updatePortoAndParisFinal() {
   console.log('🏙️ Updating Porto and Paris with comprehensive data...\n')
   
-  // First, get existing image URLs to preserve them
-  const { data: existingPorto } = await supabase
-    .from('towns')
-    .select('image_url_1, image_url_2, image_url_3')
-    .eq('name', 'Porto')
-    .eq('country', 'Portugal')
-    .single()
-  
-  const { data: existingParis } = await supabase
-    .from('towns')
-    .select('image_url_1, image_url_2, image_url_3')
-    .eq('name', 'Paris')
-    .eq('country', 'France')
-    .single()
-  
-  // Preserve existing images
-  if (existingPorto) {
-    if (existingPorto.image_url_1) portoDataFinal.image_url_1 = existingPorto.image_url_1
-    if (existingPorto.image_url_2) portoDataFinal.image_url_2 = existingPorto.image_url_2
-    if (existingPorto.image_url_3) portoDataFinal.image_url_3 = existingPorto.image_url_3
-  }
-  
-  if (existingParis) {
-    if (existingParis.image_url_1) parisDataFinal.image_url_1 = existingParis.image_url_1
-    if (existingParis.image_url_2) parisDataFinal.image_url_2 = existingParis.image_url_2
-    if (existingParis.image_url_3) parisDataFinal.image_url_3 = existingParis.image_url_3
-  }
+  // PHOTOS: MANUAL PROCESS ONLY - NEVER UPDATE VIA SCRIPTS
+  // Photo fields (image_url_1, image_url_2, image_url_3) are excluded from all updates
+  // Even if photos don't exist, they must be added manually through Supabase dashboard
   
   // Update Porto
   console.log('📍 Updating Porto...')
@@ -267,7 +243,7 @@ async function updatePortoAndParisFinal() {
   console.log('   - Visa on arrival countries for easier matching')
   console.log('   - Pet-friendly ratings')
   console.log('   - Geographic features')
-  console.log('📸 Existing photo URLs were preserved.')
+  console.log('📸 Note: Photos are NEVER updated by scripts - manual process only!')
 }
 
 updatePortoAndParisFinal()
