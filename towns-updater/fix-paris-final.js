@@ -43,9 +43,10 @@ async function fixParisFinal() {
     cultural_landmark_2: null,
     cultural_landmark_3: null,
     google_maps_link: null,
-    image_url_1: currentParis?.image_url_1, // Keep existing image
-    image_url_2: null,
-    image_url_3: null,
+    // PHOTOS: MANUAL PROCESS ONLY - NEVER UPDATE VIA SCRIPTS
+    // image_url_1: EXCLUDED FROM UPDATE
+    // image_url_2: EXCLUDED FROM UPDATE
+    // image_url_3: EXCLUDED FROM UPDATE
     climate_description: null,
     avg_temp_summer: null,
     avg_temp_winter: null,

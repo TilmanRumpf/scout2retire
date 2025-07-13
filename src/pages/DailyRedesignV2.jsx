@@ -96,6 +96,7 @@ export default function DailyRedesignV2() {
       const { data } = await supabase
         .from('towns')
         .select('*')
+        .not('image_url_1', 'is', null)  // CRITICAL: Only towns with photos
         .order('created_at', { ascending: false })
         .limit(4);
       
@@ -146,6 +147,9 @@ export default function DailyRedesignV2() {
   const fetchInspirationTowns = async (regionName) => {
     try {
       let query = supabase.from('towns').select('*');
+      
+      // Filter for towns with photos (quality control) - CRITICAL SAFETY FEATURE
+      query = query.not('image_url_1', 'is', null);
       
       // Define regions and their countries
       const regionDefinitions = {

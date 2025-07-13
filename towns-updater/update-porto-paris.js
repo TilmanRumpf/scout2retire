@@ -101,10 +101,10 @@ const portoData = {
   airport_distance: 11,
   walkability: 9,
   
-  // Images (you can add real URLs here)
-  image_url_1: "https://example.com/porto1.jpg", // Replace with real URL
-  image_url_2: "https://example.com/porto2.jpg", // Replace with real URL
-  image_url_3: "https://example.com/porto3.jpg", // Replace with real URL
+  // PHOTOS: MANUAL PROCESS ONLY - DO NOT UPDATE VIA SCRIPTS
+  // image_url_1: PRESERVED - Photos are managed manually
+  // image_url_2: PRESERVED - Photos are managed manually  
+  // image_url_3: PRESERVED - Photos are managed manually
   
   // Completeness
   data_completeness_score: 95,
@@ -203,10 +203,10 @@ const parisData = {
   airport_distance: 25,
   walkability: 10,
   
-  // Images (you can add real URLs here)
-  image_url_1: "https://example.com/paris1.jpg", // Replace with real URL
-  image_url_2: "https://example.com/paris2.jpg", // Replace with real URL
-  image_url_3: "https://example.com/paris3.jpg", // Replace with real URL
+  // PHOTOS: MANUAL PROCESS ONLY - DO NOT UPDATE VIA SCRIPTS
+  // image_url_1: PRESERVED - Photos are managed manually
+  // image_url_2: PRESERVED - Photos are managed manually
+  // image_url_3: PRESERVED - Photos are managed manually
   
   // Completeness
   data_completeness_score: 95,
@@ -281,7 +281,7 @@ async function updatePortoAndParis() {
     console.log('Match factors:', parisMatch.match_factors)
   }
   
-  console.log('\n💡 Note: Add real image URLs to make these towns visible in your app!')
+  console.log('\n📸 Note: Photos must be added manually through Supabase dashboard - they are NOT updated via scripts!')
 }
 
 updatePortoAndParis()

@@ -427,24 +427,4 @@ export default function OnboardingReview() {
             </button>
             {!allSectionsComplete && (
               <p className={`mt-2 ${uiConfig.font.size.xs} text-center text-yellow-600 dark:text-yellow-400`}>
-                Please complete all sections before proceeding.
-              </p>
-            )}
-          </div>
-
-          {/* Bottom Navigation */}
-          <div className={`flex justify-between items-center pt-4 mt-4 border-t ${uiConfig.colors.borderLight}`}>
-            <button
-              type="button"
-              onClick={() => navigate('/onboarding/costs')}
-              className={`px-4 py-2 ${uiConfig.font.size.sm} ${uiConfig.colors.body} hover:${uiConfig.colors.heading}`}
-            >
-              Back
-            </button>
-            <div></div>
-          </div>
-        </div>
-      </main>
-    </>
-  );
-}
+      

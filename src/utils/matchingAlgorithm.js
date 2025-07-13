@@ -12,7 +12,27 @@
 
 import supabase from './supabaseClient';
 import { getOnboardingProgress } from './onboardingUtils';
-import { calculatePremiumMatch } from './premiumMatchingAlgorithm';
+import { calculateEnhancedMatch } from './enhancedMatchingAlgorithm';
+import { 
+  generateEnhancedInsights, 
+  generateEnhancedWarnings, 
+  generateEnhancedHighlights 
+} from './enhancedMatchingHelpers';
+
+/**
+ * Convert user preferences to enhanced algorithm format
+ */
+const convertPreferencesForEnhancedAlgorithm = (userPreferences) => {
+  return {
+    region_preferences: userPreferences.region || userPreferences.region_preferences || {},
+    climate_preferences: userPreferences.climate || userPreferences.climate_preferences || {},
+    culture_preferences: userPreferences.culture || userPreferences.culture_preferences || {},
+    hobbies_preferences: userPreferences.hobbies || userPreferences.hobbies_preferences || {},
+    admin_preferences: userPreferences.administration || userPreferences.admin_preferences || {},
+    budget_preferences: userPreferences.costs || userPreferences.budget_preferences || {},
+    current_status: userPreferences.current_status || {}
+  };
+};
 
 /**
  * Clear cached personalized results for a user
@@ -62,6 +82,9 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     // 2. Build query with smart pre-filtering for performance
     let query = supabase.from('towns').select('*');
     
+    // Filter for towns with photos (quality control) - CRITICAL SAFETY FEATURE
+    query = query.not('image_url_1', 'is', null);
+    
     // Pre-filter by budget range (only get towns within reasonable range)
     if (userPreferences.costs?.total_monthly_budget) {
       const budget = userPreferences.costs.total_monthly_budget;
@@ -105,6 +128,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       const { data: moreTowns, error: retryError } = await supabase
         .from('towns')
         .select('*')
+        .not('image_url_1', 'is', null)  // CRITICAL: Only towns with photos
         .gte('cost_index', budget * 0.3)
         .lte('cost_index', budget * 3.0)
         .order('name');
@@ -115,22 +139,47 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       }
     }
 
-    // 3. Score each town based on user preferences using premium algorithm
-    const scoredTowns = allTowns.map(town => {
-      const premiumResult = calculatePremiumMatch(town, userPreferences);
+    // 3. Score each town based on user preferences using enhanced algorithm
+    const scoredTowns = await Promise.all(allTowns.map(async (town) => {
+      // Convert preferences to enhanced algorithm format
+      const convertedPreferences = convertPreferencesForEnhancedAlgorithm(userPreferences);
+      
+      // Call enhanced matching with correct parameter order
+      const enhancedResult = await calculateEnhancedMatch(convertedPreferences, town);
+      
+      // Generate additional insights using helper functions
+      const insights = generateEnhancedInsights(town, convertedPreferences, enhancedResult.category_scores);
+      const warnings = generateEnhancedWarnings(town, convertedPreferences);
+      const highlights = generateEnhancedHighlights(town, enhancedResult.category_scores);
+      
+      // Convert match factors to match reasons
+      const matchReasons = enhancedResult.top_factors
+        .filter(f => f.score > 0)
+        .map(f => f.factor);
+      
+      // Determine confidence based on score
+      let confidence = 'Low';
+      if (enhancedResult.match_score >= 85) confidence = 'Very High';
+      else if (enhancedResult.match_score >= 70) confidence = 'High';
+      else if (enhancedResult.match_score >= 55) confidence = 'Medium';
+      
+      // Calculate value rating (budget score as percentage of match score)
+      const valueRating = enhancedResult.category_scores.budget >= 80 ? 5 : 
+                         enhancedResult.category_scores.budget >= 60 ? 4 :
+                         enhancedResult.category_scores.budget >= 40 ? 3 : 2;
       
       return {
         ...town,
-        matchScore: premiumResult.score,
-        matchReasons: premiumResult.matchReasons,
-        categoryScores: premiumResult.breakdown, // Now using correct category names
-        warnings: premiumResult.warnings,
-        insights: premiumResult.insights,
-        highlights: premiumResult.highlights,
-        confidence: premiumResult.confidence,
-        valueRating: premiumResult.value_rating
+        matchScore: enhancedResult.match_score,
+        matchReasons: matchReasons,
+        categoryScores: enhancedResult.category_scores,
+        warnings: warnings,
+        insights: insights,
+        highlights: highlights,
+        confidence: confidence,
+        valueRating: valueRating
       };
-    });
+    }));
 
     // 4. Sort by match score (highest first) and paginate
     const sortedTowns = scoredTowns
@@ -740,6 +789,7 @@ async function getFallbackTowns(limit, offset) {
     const { data: towns, error } = await supabase
       .from('towns')
       .select('*')
+      .not('image_url_1', 'is', null)  // CRITICAL: Only towns with photos
       .order('healthcare_score', { ascending: false })
       .order('safety_score', { ascending: false })
       .limit(limit)

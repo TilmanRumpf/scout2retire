@@ -383,32 +383,4 @@ export default function Signup() {
                   id="confirmPassword"
                   name="confirmPassword"
                   type="password"
-                  autoComplete="new-password"
-                  required
-                  value={confirmPassword}
-                  onChange={handleConfirmPasswordChange}
-                  className={`${uiConfig.components.input} ${
-                    confirmPasswordError ? uiConfig.colors.borderDanger : ''
-                  }`}
-                />
-                {confirmPasswordError && (
-                  <p className={`mt-2 text-sm ${uiConfig.colors.error}`}>{confirmPasswordError}</p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className={`w-full ${uiConfig.components.buttonPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {loading ? 'Creating account...' : 'Create account'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-}
+                  autoComplete="new-passw

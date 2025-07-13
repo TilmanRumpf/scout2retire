@@ -108,7 +108,7 @@ export default function TownDiscovery() {
         } = await fetchTowns({ 
           limit: 50, 
           userId: user.id,
-          usePersonalization: false  // Temporarily disable to show all towns
+          usePersonalization: true  // Enable personalization with enhanced algorithm
         });
 
         if (townSuccess) {
@@ -159,7 +159,8 @@ export default function TownDiscovery() {
     const fetchTotalCount = async () => {
       const { count } = await supabase
         .from('towns')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .not('image_url_1', 'is', null);  // CRITICAL: Only count towns with photos
       
       if (count !== null) {
         setTotalTownCount(count);
