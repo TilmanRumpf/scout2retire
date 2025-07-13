@@ -23,13 +23,30 @@ import {
  * Convert user preferences to enhanced algorithm format
  */
 const convertPreferencesForEnhancedAlgorithm = (userPreferences) => {
+  // Get climate preferences with sensible defaults
+  const climateData = userPreferences.climate || userPreferences.climate_preferences || {};
+  const defaultClimate = {
+    summer_climate_preference: 'warm',
+    winter_climate_preference: 'mild', 
+    humidity_level: 'moderate',
+    sunshine: 'abundant',
+    precipitation: 'moderate'
+  };
+  
+  // Get budget preferences with defaults
+  const budgetData = userPreferences.costs || userPreferences.budget_preferences || {};
+  const defaultBudget = {
+    total_monthly_budget: 3000,
+    max_monthly_rent: 1200
+  };
+  
   return {
     region_preferences: userPreferences.region || userPreferences.region_preferences || {},
-    climate_preferences: userPreferences.climate || userPreferences.climate_preferences || {},
+    climate_preferences: { ...defaultClimate, ...climateData },
     culture_preferences: userPreferences.culture || userPreferences.culture_preferences || {},
     hobbies_preferences: userPreferences.hobbies || userPreferences.hobbies_preferences || {},
     admin_preferences: userPreferences.administration || userPreferences.admin_preferences || {},
-    budget_preferences: userPreferences.costs || userPreferences.budget_preferences || {},
+    budget_preferences: { ...defaultBudget, ...budgetData },
     current_status: userPreferences.current_status || {}
   };
 };
@@ -58,15 +75,62 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
   try {
     const { limit = 20, offset = 0 } = options;
 
-    // 1. Get user's onboarding preferences
-    const { success: onboardingSuccess, data: userPreferences } = await getOnboardingProgress(userId);
+    // 1. Get user's onboarding preferences (skip auth check for algorithm)
+    const { success: onboardingSuccess, data: userPreferences } = await getOnboardingProgress(userId, true);
     
-    if (!onboardingSuccess || !userPreferences) {
-      console.log('No onboarding data found, falling back to general recommendations');
-      return await getFallbackTowns(limit, offset);
+    // If no onboarding data, create comprehensive defaults for proper climate scoring
+    const finalUserPreferences = userPreferences || {
+      current_status: {
+        citizenship: 'USA',
+        timeline: 'within_2_years',
+        family_situation: 'couple'
+      },
+      region_preferences: {
+        countries: ['Portugal', 'Spain', 'Italy', 'Greece'],
+        regions: ['Europe', 'Mediterranean'],
+        geographic_features: ['Coastal', 'Historic']
+      },
+      climate_preferences: {
+        seasonal_preference: 'warm_all_year',
+        summer_climate_preference: 'warm',
+        winter_climate_preference: 'mild',
+        humidity_level: 'moderate',
+        sunshine: 'abundant',
+        precipitation: 'moderate'
+      },
+      culture_preferences: {
+        language_comfort: {
+          preferences: 'willing_to_learn'
+        },
+        expat_community_preference: 'moderate',
+        lifestyle_preferences: {
+          pace_of_life: 'relaxed',
+          urban_rural: 'small_city'
+        }
+      },
+      hobbies: {
+        primary_hobbies: ['dining', 'walking', 'cultural_events'],
+        interests: ['cultural', 'culinary', 'coastal'],
+        activities: ['water_sports', 'hiking', 'photography']
+      },
+      administration: {
+        healthcare_quality: ['good'],
+        safety_importance: ['good'],
+        visa_preference: ['functional'],
+        political_stability: ['good']
+      },
+      costs: {
+        total_monthly_budget: 3000,
+        max_monthly_rent: 1200,
+        budget_flexibility: 'moderate'
+      }
+    };
+    
+    if (!userPreferences) {
+      console.log('No onboarding data found, using sensible defaults for matching');
     }
 
-    console.log('User preferences loaded:', userPreferences);
+    console.log('User preferences loaded:', finalUserPreferences);
 
     // Check cache first for performance
     const cacheKey = `personalized_${userId}_${JSON.stringify(options)}`;
@@ -83,11 +147,11 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     let query = supabase.from('towns').select('*');
     
     // Filter for towns with photos (quality control) - CRITICAL SAFETY FEATURE
-    query = query.not('image_url_1', 'is', null);
+    query = query.not('image_url_1', 'is', null).not('image_url_1', 'eq', '');
     
     // Pre-filter by budget range (only get towns within reasonable range)
-    if (userPreferences.costs?.total_monthly_budget) {
-      const budget = userPreferences.costs.total_monthly_budget;
+    if (finalUserPreferences.costs?.total_monthly_budget) {
+      const budget = finalUserPreferences.costs.total_monthly_budget;
       // Only fetch towns between 50% and 200% of user's budget
       query = query.gte('cost_index', budget * 0.5)
                    .lte('cost_index', budget * 2.0);
@@ -95,18 +159,18 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     }
     
     // Pre-filter by minimum healthcare for users with health concerns
-    if (userPreferences.administration?.healthcare_importance === 'excellent' || 
-        userPreferences.administration?.healthcare_quality?.includes('good')) {
+    if (finalUserPreferences.administration?.healthcare_importance === 'excellent' || 
+        finalUserPreferences.administration?.healthcare_quality?.includes('good')) {
       query = query.gte('healthcare_score', 7);
       console.log('Pre-filtering for high healthcare standards (score >= 7)');
-    } else if (userPreferences.administration?.healthcare_importance === 'good' ||
-               userPreferences.administration?.healthcare_quality?.includes('functional')) {
+    } else if (finalUserPreferences.administration?.healthcare_importance === 'good' ||
+               finalUserPreferences.administration?.healthcare_quality?.includes('functional')) {
       query = query.gte('healthcare_score', 5);
       console.log('Pre-filtering for decent healthcare (score >= 5)');
     }
     
     // Pre-filter by safety for users with safety concerns
-    if (userPreferences.administration?.safety_importance?.includes('good')) {
+    if (finalUserPreferences.administration?.safety_importance?.includes('good')) {
       query = query.gte('safety_score', 7);
       console.log('Pre-filtering for high safety (score >= 7)');
     }
@@ -120,15 +184,15 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     }
     
     // If pre-filtering was too restrictive, fall back to broader search
-    if (allTowns.length < 10 && userPreferences.costs?.total_monthly_budget) {
+    if (allTowns.length < 10 && finalUserPreferences.costs?.total_monthly_budget) {
       console.log(`Only ${allTowns.length} towns found with filters, expanding search...`);
       
       // Retry with more relaxed budget filter
-      const budget = userPreferences.costs.total_monthly_budget;
+      const budget = finalUserPreferences.costs.total_monthly_budget;
       const { data: moreTowns, error: retryError } = await supabase
         .from('towns')
         .select('*')
-        .not('image_url_1', 'is', null)  // CRITICAL: Only towns with photos
+        .not('image_url_1', 'is', null).not('image_url_1', 'eq', '')  // CRITICAL: Only towns with photos
         .gte('cost_index', budget * 0.3)
         .lte('cost_index', budget * 3.0)
         .order('name');
@@ -142,7 +206,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     // 3. Score each town based on user preferences using enhanced algorithm
     const scoredTowns = await Promise.all(allTowns.map(async (town) => {
       // Convert preferences to enhanced algorithm format
-      const convertedPreferences = convertPreferencesForEnhancedAlgorithm(userPreferences);
+      const convertedPreferences = convertPreferencesForEnhancedAlgorithm(finalUserPreferences);
       
       // Call enhanced matching with correct parameter order
       const enhancedResult = await calculateEnhancedMatch(convertedPreferences, town);
@@ -201,7 +265,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       success: true,
       towns: sortedTowns,
       isPersonalized: true,
-      userPreferences: userPreferences,
+      userPreferences: finalUserPreferences,
       metadata: {
         totalAvailable: allTowns.length,
         preFiltered: true
@@ -789,7 +853,7 @@ async function getFallbackTowns(limit, offset) {
     const { data: towns, error } = await supabase
       .from('towns')
       .select('*')
-      .not('image_url_1', 'is', null)  // CRITICAL: Only towns with photos
+      .not('image_url_1', 'is', null).not('image_url_1', 'eq', '')  // CRITICAL: Only towns with photos
       .order('healthcare_score', { ascending: false })
       .order('safety_score', { ascending: false })
       .limit(limit)

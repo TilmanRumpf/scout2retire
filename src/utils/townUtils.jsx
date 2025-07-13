@@ -36,7 +36,7 @@ export const fetchTowns = async (filters = {}) => {
       .select('*');
 
     // Filter for towns with photos (quality control)
-    query = query.not('image_url_1', 'is', null);
+    query = query.not('image_url_1', 'is', null).not('image_url_1', 'eq', '');
 
     // Apply filters if provided
     if (filters.country) {

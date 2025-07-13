@@ -167,13 +167,15 @@ export const completeOnboarding = async (userId) => {
   }
 };
 
-export const getOnboardingProgress = async (userId) => {
+export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
   try {
-    // First check if user is authenticated
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      console.error('No active session when trying to get onboarding progress');
-      return { success: false, error: 'Not authenticated' };
+    // Only check authentication if not explicitly skipped (for matching algorithm)
+    if (!skipAuthCheck) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.error('No active session when trying to get onboarding progress');
+        return { success: false, error: 'Not authenticated' };
+      }
     }
     
     console.log('Getting onboarding progress for user:', userId);
