@@ -7,6 +7,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import supabase from './utils/supabaseClient';
 import AuthenticatedLayout from './components/AuthenticatedLayout';
 import ErrorBoundary from './components/ErrorBoundary';
+import { checkAppVersion, setupAutoRefresh } from './utils/versionCheck';
 
 // Core Pages
 import Home from "./pages/Home";
@@ -129,6 +130,10 @@ const ProtectedRoute = ({ children }) => {
 
   return children;
 };
+
+// Initialize version check and auto-refresh
+checkAppVersion();
+setupAutoRefresh();
 
 // Create the router configuration with v7 future flags enabled
 const router = createBrowserRouter([
