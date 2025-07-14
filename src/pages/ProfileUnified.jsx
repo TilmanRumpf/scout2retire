@@ -453,9 +453,14 @@ export default function ProfileUnified() {
 
             {/* Update Preferences Link */}
             <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} p-6`}>
-              <h3 className={`${uiConfig.font.size.base} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-2`}>
-                Retirement Preferences
-              </h3>
+              <div className="flex justify-between items-start mb-2">
+                <h3 className={`${uiConfig.font.size.base} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
+                  Retirement Preferences
+                </h3>
+                <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.success} text-right`}>
+                  {onboardingProgress}% Complete
+                </span>
+              </div>
               <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint} mb-4`}>
                 Update your retirement timeline, location preferences, and other details
               </p>
