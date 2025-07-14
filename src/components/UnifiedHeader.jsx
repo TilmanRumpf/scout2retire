@@ -58,7 +58,7 @@ export default function UnifiedHeader({
 
   return (
     <>
-      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
+      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-[55]">
         <div className={`${maxWidth} mx-auto px-4`}>
           {/* First Row - ALWAYS the same: S2R logo + title + hamburger - 36px */}
           <div className="h-9 flex items-center justify-between">
