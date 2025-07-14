@@ -71,56 +71,57 @@ export const signUp = async (email, password, fullName, retirementDate, hometown
 
     // If signup successful, create user profile
     if (authData.user) {
-      // Try using the atomic profile completion function first
+      console.log('🔄 Creating user profile for:', authData.user.id);
+      console.log('📝 Profile data:', {
+        id: authData.user.id,
+        email,
+        full_name: fullName,
+        retirement_year_estimate: new Date(retirementDate).getFullYear(),
+        hometown: hometown || null,
+        username: username ? username.toLowerCase() : null,
+        avatar_url: avatarUrl || null
+      });
+
+      // Create user profile directly (RPC function doesn't exist)
       const { data: profileData, error: profileError } = await supabase
-        .rpc('complete_user_profile', {
-          user_id: authData.user.id,
-          user_email: email,
-          user_full_name: fullName,
-          user_retirement_year: new Date(retirementDate).getFullYear(),
-          user_hometown: hometown || null,
-          user_username: username ? username.toLowerCase() : null,
-          user_avatar_url: avatarUrl || null
-        });
+        .from('users')
+        .insert([
+          {
+            id: authData.user.id,
+            email,
+            full_name: fullName,
+            retirement_year_estimate: new Date(retirementDate).getFullYear(),
+            onboarding_completed: false,
+            hometown: hometown || null,
+            username: username ? username.toLowerCase() : null,
+            avatar_url: avatarUrl || null
+          }
+        ])
+        .select()
+        .single();
 
       if (profileError) {
-        // If RPC fails, fall back to direct insert
-        const { error: insertError } = await supabase
-          .from('users')
-          .insert([
-            {
-              id: authData.user.id,
-              email,
-              full_name: fullName,
-              retirement_year_estimate: new Date(retirementDate).getFullYear(),
-              onboarding_completed: false,
-              hometown: hometown || null,
-              username: username ? username.toLowerCase() : null,
-              avatar_url: avatarUrl || null
-            }
-          ]);
-
-        const finalError = insertError || profileError;
+        console.error('❌ Profile creation failed:', profileError);
         
-        if (finalError) {
-          // Profile creation failed - check if it's a username conflict
-          if ((finalError.code === '23505' && finalError.message.includes('username')) ||
-              (finalError.message && finalError.message.includes('Username already taken'))) {
-            // Username already taken
-            toast.error('This username is already taken. Please try a different username.');
-            return { 
-              success: false, 
-              error: finalError,
-              reason: 'username_taken',
-              // Include auth user ID so the UI can handle this case
-              authUserId: authData.user.id
-            };
-          }
-          
-          toast.error(`Error creating profile: ${finalError.message}`);
-          return { success: false, error: finalError };
+        // Profile creation failed - check if it's a username conflict
+        if ((profileError.code === '23505' && profileError.message.includes('username')) ||
+            (profileError.message && profileError.message.includes('Username already taken'))) {
+          // Username already taken
+          toast.error('This username is already taken. Please try a different username.');
+          return { 
+            success: false, 
+            error: profileError,
+            reason: 'username_taken',
+            // Include auth user ID so the UI can handle this case
+            authUserId: authData.user.id
+          };
         }
+        
+        toast.error(`Error creating profile: ${profileError.message}`);
+        return { success: false, error: profileError };
       }
+      
+      console.log('✅ Profile created successfully:', profileData);
       
       // If email confirmation is not required, sign the user in manually
       if (!authData.session) {
