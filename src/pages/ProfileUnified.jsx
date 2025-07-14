@@ -119,10 +119,18 @@ export default function ProfileUnified() {
         setFavoritesCount(count || 0);
         
         // Load onboarding progress
+        console.log('🔍 Loading onboarding progress for user:', result.user.id);
         const progressResult = await getOnboardingProgress(result.user.id);
+        console.log('📊 Progress result:', progressResult);
+        
         if (progressResult.success && progressResult.progress) {
           // The progress object already contains the calculated percentage
-          setOnboardingProgress(progressResult.progress.percentage || 0);
+          const percentage = progressResult.progress.percentage || 0;
+          console.log('✅ Setting onboarding progress to:', percentage + '%');
+          setOnboardingProgress(percentage);
+        } else {
+          console.log('❌ Failed to get onboarding progress:', progressResult.error);
+          setOnboardingProgress(0);
         }
         
       } catch (error) {
