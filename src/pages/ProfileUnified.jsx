@@ -276,20 +276,45 @@ export default function ProfileUnified() {
         return;
       }
 
-      // Delete user data
-      const { error: deleteError } = await supabase.rpc('delete_user_account', {
-        user_id: user.id
+      console.log('🗑️ Starting account deletion for user:', user.id);
+
+      // Step 1: Delete user data from database tables
+      console.log('🗑️ Deleting user data from database...');
+      const { data: deleteResult, error: deleteError } = await supabase.rpc('delete_user_account', {
+        user_id_param: user.id
       });
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error('❌ Database deletion failed:', deleteError);
+        throw deleteError;
+      }
 
-      // Sign out
+      console.log('✅ Database deletion result:', deleteResult);
+
+      // Step 2: Delete auth user (this requires admin privileges)
+      console.log('🗑️ Deleting auth user...');
+      const { error: authDeleteError } = await supabase.auth.admin.deleteUser(user.id);
+
+      if (authDeleteError) {
+        console.error('❌ Auth user deletion failed:', authDeleteError);
+        // Don't throw - database is already cleaned, just warn user
+        toast.error('Account data deleted but auth user could not be removed. Please contact support.');
+      } else {
+        console.log('✅ Auth user deleted successfully');
+      }
+
+      // Step 3: Sign out and redirect
       await signOut();
       navigate('/welcome');
       toast.success('Account deleted successfully');
+      
+      console.log('✅ Account deletion completed');
     } catch (error) {
-      console.error('Error deleting account:', error);
-      toast.error('Failed to delete account');
+      console.error('❌ Error deleting account:', error);
+      toast.error(`Failed to delete account: ${error.message}`);
+    } finally {
+      setShowDeleteConfirm(false);
+      setDeletePassword('');
     }
   };
 
