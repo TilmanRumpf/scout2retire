@@ -287,7 +287,6 @@ export default function SignupEnhanced() {
         emailValidation.sanitized,
         passwordValidation.sanitized,
         nameValidation.sanitized,
-        null, // Nationality will be properly collected in onboarding step 1
         placeholderRetirementDate.toISOString().split('T')[0], // Placeholder - real date collected in onboarding
         formattedHometown,
         username || null,
