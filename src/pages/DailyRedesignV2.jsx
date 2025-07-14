@@ -154,7 +154,8 @@ export default function DailyRedesignV2() {
       query = query
         .not('image_url_1', 'is', null)
         .not('image_url_1', 'eq', '')
-        .not('image_url_1', 'ilike', 'NULL');  // Filter out 'NULL' string
+        .not('image_url_1', 'ilike', 'NULL')  // Filter out 'NULL' string
+        .not('image_url_1', 'eq', 'null');   // Filter out lowercase 'null' string
       
       // Define regions and their countries
       const regionDefinitions = {
