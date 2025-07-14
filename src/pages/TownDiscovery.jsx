@@ -162,7 +162,8 @@ export default function TownDiscovery() {
         .select('*', { count: 'exact', head: true })
         .not('image_url_1', 'is', null)
         .not('image_url_1', 'eq', '')
-        .not('image_url_1', 'ilike', 'NULL');  // CRITICAL: Only count towns with photos (exclude 'NULL' string)
+        .not('image_url_1', 'ilike', 'NULL')
+        .not('image_url_1', 'eq', 'null');  // CRITICAL: Only count towns with photos (exclude 'NULL' string)
       
       if (count !== null) {
         setTotalTownCount(count);
