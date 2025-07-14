@@ -466,7 +466,7 @@ export default function ProfileUnified() {
                 <h3 className={`${uiConfig.font.size.base} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
                   Retirement Preferences
                 </h3>
-                <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.success} text-right`}>
+                <span className={`${uiConfig.font.size.base} ${uiConfig.font.weight.semibold} ${uiConfig.colors.success} text-right`}>
                   {onboardingProgress}% Complete
                 </span>
               </div>
