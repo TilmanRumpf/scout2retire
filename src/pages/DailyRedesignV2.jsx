@@ -11,6 +11,7 @@ import SimpleImage from '../components/SimpleImage';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 import supabase from '../utils/supabaseClient';
+import { filterTownsWithImagesDebug } from '../utils/imageValidation';
 import { 
   MapPin, TrendingUp, DollarSign, Cloud, Users, 
   Heart, Compass, Book, MessageSquare, Calendar,
@@ -103,7 +104,9 @@ export default function DailyRedesignV2() {
         .limit(4);
       
       if (data) {
-        setRecentTowns(data);
+        // SAFETY: Double-check filtering on client side
+        const validTowns = filterTownsWithImagesDebug(data, 'Recent Towns');
+        setRecentTowns(validTowns);
       }
     } catch (err) {
       console.error("Error fetching recent towns:", err);
@@ -226,10 +229,14 @@ export default function DailyRedesignV2() {
             countryIndex++;
           }
           
-          setInspirationTowns(selectedTowns);
+          // SAFETY: Filter out any towns without valid images
+          const validTowns = filterTownsWithImagesDebug(selectedTowns, 'Daily Inspiration - Region');
+          setInspirationTowns(validTowns);
         } else {
           // For single countries or small results, just use what we have
-          setInspirationTowns(data);
+          // SAFETY: Filter out any towns without valid images
+          const validTowns = filterTownsWithImagesDebug(data, 'Daily Inspiration - Country');
+          setInspirationTowns(validTowns);
         }
       }
     } catch (err) {
