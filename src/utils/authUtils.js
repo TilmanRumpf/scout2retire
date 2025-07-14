@@ -2,7 +2,7 @@ import supabase from './supabaseClient';
 import toast from 'react-hot-toast';
 
 // Auth helpers
-export const signUp = async (email, password, fullName, nationality, retirementDate, hometown = null, username = null, avatarUrl = null) => {
+export const signUp = async (email, password, fullName, retirementDate, hometown = null, username = null, avatarUrl = null) => {
   try {
     // First check if username is already taken (if username provided)
     if (username) {
@@ -50,7 +50,6 @@ export const signUp = async (email, password, fullName, nationality, retirementD
               id: signInData.user.id,
               email,
               full_name: fullName,
-              nationality: nationality || 'pending', // Will be set in onboarding
               retirement_year_estimate: new Date(retirementDate).getFullYear(),
               onboarding_completed: false,
               hometown: hometown || null,
@@ -78,7 +77,6 @@ export const signUp = async (email, password, fullName, nationality, retirementD
           user_id: authData.user.id,
           user_email: email,
           user_full_name: fullName,
-          user_nationality: nationality || 'pending', // Will be set in onboarding
           user_retirement_year: new Date(retirementDate).getFullYear(),
           user_hometown: hometown || null,
           user_username: username ? username.toLowerCase() : null,
@@ -94,7 +92,6 @@ export const signUp = async (email, password, fullName, nationality, retirementD
               id: authData.user.id,
               email,
               full_name: fullName,
-              nationality: nationality || 'pending', // Will be set in onboarding
               retirement_year_estimate: new Date(retirementDate).getFullYear(),
               onboarding_completed: false,
               hometown: hometown || null,
