@@ -3,14 +3,15 @@
 
 import supabase from './supabaseClient.js'
 
+// Weights optimized for 55+ retirees: equal emphasis on location preference, budget constraints, and healthcare/safety (60% combined), with climate and culture as secondary factors
 // Score weights for each category (total = 100)
 const CATEGORY_WEIGHTS = {
-  region: 15,      // Geographic match
-  climate: 20,     // Climate preferences 
-  culture: 20,     // Cultural fit
-  hobbies: 20,     // Activities & interests
-  admin: 15,       // Healthcare, safety, visa
-  budget: 10       // Financial fit
+  region: 20,      // Geographic match
+  climate: 15,     // Climate preferences 
+  culture: 15,     // Cultural fit
+  hobbies: 10,     // Activities & interests
+  admin: 20,       // Healthcare, safety, visa
+  budget: 20       // Financial fit
 }
 
 // Helper function to calculate array overlap score
@@ -91,51 +92,449 @@ export function calculateRegionScore(preferences, town) {
   }
 }
 
-// 2. CLIMATE MATCHING (20% of total)
+// Temperature ranges for climate preferences (in Celsius)
+const TEMP_RANGES = {
+  summer: {
+    mild: { min: 15, max: 24 },
+    warm: { min: 22, max: 32 },
+    hot: { min: 28, max: Infinity }
+  },
+  winter: {
+    cold: { min: -Infinity, max: 5 },
+    cool: { min: 3, max: 15 },
+    mild: { min: 12, max: Infinity }
+  }
+}
+
+/**
+ * Calculate temperature score based on distance from preferred range
+ * @param {number} actualTemp - Actual temperature in Celsius
+ * @param {Object} preferredRange - { min, max } temperature range
+ * @returns {number} Score from 0-100 based on temperature match
+ */
+function calculateTemperatureScore(actualTemp, preferredRange) {
+  // Check if temperature is within the preferred range
+  if (actualTemp >= preferredRange.min && actualTemp <= preferredRange.max) {
+    return 100 // Perfect match
+  }
+  
+  // Calculate distance from the nearest edge of the range
+  let distance
+  if (actualTemp < preferredRange.min) {
+    distance = preferredRange.min - actualTemp
+  } else {
+    distance = actualTemp - preferredRange.max
+  }
+  
+  // Apply gradual scoring based on distance
+  if (distance <= 2) return 80      // Within 2°C
+  if (distance <= 5) return 50      // Within 5°C
+  if (distance <= 10) return 20     // Within 10°C
+  return 0                           // More than 10°C away
+}
+
+/**
+ * Calculate gradual scoring for climate preferences using adjacency mapping
+ * @param {string} userPref - User's preference
+ * @param {string} townActual - Town's actual value
+ * @param {number} maxPoints - Maximum points for perfect match
+ * @param {Object} adjacencyMap - Map defining adjacent preferences
+ * @returns {Object} Score and description
+ */
+function calculateGradualClimateScore(userPref, townActual, maxPoints, adjacencyMap) {
+  if (!userPref || !townActual) return { score: 0, description: null }
+  
+  // Exact match
+  if (userPref === townActual) {
+    return {
+      score: maxPoints,
+      description: 'Perfect'
+    }
+  }
+  
+  // Check if preferences are adjacent
+  const adjacent = adjacencyMap[userPref]?.includes(townActual)
+  if (adjacent) {
+    return {
+      score: Math.round(maxPoints * 0.7), // 70% of max points
+      description: 'Good compatibility'
+    }
+  }
+  
+  // Opposite or no relationship
+  return {
+    score: 0,
+    description: 'Preference mismatch'
+  }
+}
+
+// 2. CLIMATE MATCHING (15% of total)
 export function calculateClimateScore(preferences, town) {
   let score = 0
   let factors = []
   
-  // Summer climate match (25 points)
-  if (preferences.summer_climate_preference === town.summer_climate_actual) {
-    score += 25
-    factors.push({ factor: 'Perfect summer climate match', score: 25 })
-  } else if (
+  // Note: Points adjusted to accommodate seasonal preference (was 100, now 100 with seasonal)
+  // Summer climate match (21 points, was 25)
+  if (town.avg_temp_summer !== null && town.avg_temp_summer !== undefined) {
+    // Use numeric temperature data when available
+    const summerPref = preferences.summer_climate_preference
+    if (summerPref && TEMP_RANGES.summer[summerPref]) {
+      const tempScore = calculateTemperatureScore(town.avg_temp_summer, TEMP_RANGES.summer[summerPref])
+      const points = Math.round(tempScore * 21 / 100)
+      score += points
+      
+      if (tempScore === 100) {
+        factors.push({ factor: `Perfect summer temperature (${town.avg_temp_summer}°C)`, score: points })
+      } else if (tempScore >= 80) {
+        factors.push({ factor: `Good summer temperature (${town.avg_temp_summer}°C)`, score: points })
+      } else if (tempScore >= 50) {
+        factors.push({ factor: `Acceptable summer temperature (${town.avg_temp_summer}°C)`, score: points })
+      } else if (tempScore > 0) {
+        factors.push({ factor: `Summer temperature outside preference (${town.avg_temp_summer}°C)`, score: points })
+      }
+    }
+  } else if (town.summer_climate_actual && preferences.summer_climate_preference === town.summer_climate_actual) {
+    // Fall back to string matching
+    score += 21
+    factors.push({ factor: 'Perfect summer climate match', score: 21 })
+  } else if (town.summer_climate_actual && (
     (preferences.summer_climate_preference === 'warm' && town.summer_climate_actual === 'hot') ||
     (preferences.summer_climate_preference === 'warm' && town.summer_climate_actual === 'mild')
-  ) {
-    score += 15
-    factors.push({ factor: 'Acceptable summer climate', score: 15 })
+  )) {
+    score += 13
+    factors.push({ factor: 'Acceptable summer climate', score: 13 })
+  } else if (!town.summer_climate_actual && !town.avg_temp_summer && town.climate_description) {
+    // Last fallback: parse climate description
+    const climateDesc = town.climate_description.toLowerCase()
+    if (preferences.summer_climate_preference === 'warm' && (climateDesc.includes('warm') || climateDesc.includes('mediterranean'))) {
+      score += 13
+      factors.push({ factor: 'Climate appears suitable', score: 13 })
+    } else if (preferences.summer_climate_preference === 'hot' && (climateDesc.includes('hot') || climateDesc.includes('tropical'))) {
+      score += 13
+      factors.push({ factor: 'Climate appears suitable', score: 13 })
+    }
   }
   
-  // Winter climate match (25 points)
-  if (preferences.winter_climate_preference === town.winter_climate_actual) {
-    score += 25
-    factors.push({ factor: 'Perfect winter climate match', score: 25 })
-  } else if (
+  // Winter climate match (21 points, was 25)
+  if (town.avg_temp_winter !== null && town.avg_temp_winter !== undefined) {
+    // Use numeric temperature data when available
+    const winterPref = preferences.winter_climate_preference
+    if (winterPref && TEMP_RANGES.winter[winterPref]) {
+      const tempScore = calculateTemperatureScore(town.avg_temp_winter, TEMP_RANGES.winter[winterPref])
+      const points = Math.round(tempScore * 21 / 100)
+      score += points
+      
+      if (tempScore === 100) {
+        factors.push({ factor: `Perfect winter temperature (${town.avg_temp_winter}°C)`, score: points })
+      } else if (tempScore >= 80) {
+        factors.push({ factor: `Good winter temperature (${town.avg_temp_winter}°C)`, score: points })
+      } else if (tempScore >= 50) {
+        factors.push({ factor: `Acceptable winter temperature (${town.avg_temp_winter}°C)`, score: points })
+      } else if (tempScore > 0) {
+        factors.push({ factor: `Winter temperature outside preference (${town.avg_temp_winter}°C)`, score: points })
+      }
+    }
+  } else if (town.winter_climate_actual && preferences.winter_climate_preference === town.winter_climate_actual) {
+    // Fall back to string matching
+    score += 21
+    factors.push({ factor: 'Perfect winter climate match', score: 21 })
+  } else if (town.winter_climate_actual && (
     (preferences.winter_climate_preference === 'mild' && town.winter_climate_actual === 'cool') ||
     (preferences.winter_climate_preference === 'cool' && town.winter_climate_actual === 'mild')
-  ) {
-    score += 15
-    factors.push({ factor: 'Acceptable winter climate', score: 15 })
+  )) {
+    score += 13
+    factors.push({ factor: 'Acceptable winter climate', score: 13 })
+  } else if (!town.winter_climate_actual && !town.avg_temp_winter && town.climate_description) {
+    // Last fallback: parse climate description
+    const climateDesc = town.climate_description.toLowerCase()
+    if (preferences.winter_climate_preference === 'mild' && (climateDesc.includes('mild') || climateDesc.includes('mediterranean'))) {
+      score += 13
+      factors.push({ factor: 'Winter climate appears suitable', score: 13 })
+    }
   }
   
-  // Humidity match (20 points)
-  if (preferences.humidity_level === town.humidity_level_actual) {
-    score += 20
-    factors.push({ factor: 'Humidity preference matched', score: 20 })
+  // Humidity match (17 points, was 20) - now with gradual scoring
+  const humidityAdjacency = {
+    'dry': ['balanced'],
+    'balanced': ['dry', 'humid'],
+    'humid': ['balanced']
   }
   
-  // Sunshine match (20 points)
-  if (preferences.sunshine === town.sunshine_level_actual) {
-    score += 20
-    factors.push({ factor: 'Sunshine preference matched', score: 20 })
+  if (town.humidity_level_actual && preferences.humidity_level) {
+    const humidityResult = calculateGradualClimateScore(
+      preferences.humidity_level, 
+      town.humidity_level_actual, 
+      17, 
+      humidityAdjacency
+    )
+    
+    if (humidityResult.score > 0) {
+      score += humidityResult.score
+      const factorText = humidityResult.description === 'Perfect' ? 
+        'Perfect humidity match' : 
+        `Good humidity compatibility (${preferences.humidity_level} → ${town.humidity_level_actual})`
+      factors.push({ factor: factorText, score: humidityResult.score })
+    }
+  } else if (!town.humidity_level_actual && town.climate_description && preferences.humidity_level) {
+    // Fallback: try to infer from climate description
+    const climateDesc = town.climate_description.toLowerCase()
+    let inferredHumidity = null
+    
+    if (climateDesc.includes('arid') || climateDesc.includes('desert') || climateDesc.includes('dry')) {
+      inferredHumidity = 'dry'
+    } else if (climateDesc.includes('humid') || climateDesc.includes('tropical') || climateDesc.includes('moist')) {
+      inferredHumidity = 'humid'
+    } else if (climateDesc.includes('mediterranean') || climateDesc.includes('temperate')) {
+      inferredHumidity = 'balanced'
+    }
+    
+    if (inferredHumidity) {
+      const humidityResult = calculateGradualClimateScore(
+        preferences.humidity_level, 
+        inferredHumidity, 
+        13, // Reduced points for inferred data
+        humidityAdjacency
+      )
+      
+      if (humidityResult.score > 0) {
+        score += humidityResult.score
+        factors.push({ 
+          factor: `Humidity appears suitable (${inferredHumidity}, inferred)`, 
+          score: humidityResult.score 
+        })
+      }
+    }
   }
   
-  // Precipitation match (10 points)
-  if (preferences.precipitation === town.precipitation_level_actual) {
-    score += 10
-    factors.push({ factor: 'Precipitation preference matched', score: 10 })
+  // Sunshine match (17 points, was 20) - now with gradual scoring
+  const sunshineAdjacency = {
+    'often_sunny': ['balanced'],
+    'mostly_sunny': ['balanced'], // Alternative spelling
+    'abundant': ['balanced'],     // Alternative spelling
+    'balanced': ['often_sunny', 'mostly_sunny', 'abundant', 'less_sunny'],
+    'less_sunny': ['balanced']
+  }
+  
+  if (town.sunshine_level_actual && preferences.sunshine) {
+    const sunshineResult = calculateGradualClimateScore(
+      preferences.sunshine, 
+      town.sunshine_level_actual, 
+      17, 
+      sunshineAdjacency
+    )
+    
+    if (sunshineResult.score > 0) {
+      score += sunshineResult.score
+      const factorText = sunshineResult.description === 'Perfect' ? 
+        'Perfect sunshine match' : 
+        `Good sunshine compatibility (${preferences.sunshine} → ${town.sunshine_level_actual})`
+      factors.push({ factor: factorText, score: sunshineResult.score })
+    }
+  } else if (!town.sunshine_level_actual && town.sunshine_hours && preferences.sunshine) {
+    // Fallback: use sunshine_hours data
+    let inferredSunshine = null
+    
+    if (town.sunshine_hours > 2800) {
+      inferredSunshine = 'often_sunny'
+    } else if (town.sunshine_hours > 2200) {
+      inferredSunshine = 'balanced'
+    } else if (town.sunshine_hours > 0) {
+      inferredSunshine = 'less_sunny'
+    }
+    
+    if (inferredSunshine) {
+      const sunshineResult = calculateGradualClimateScore(
+        preferences.sunshine, 
+        inferredSunshine, 
+        13, // Reduced points for inferred data
+        sunshineAdjacency
+      )
+      
+      if (sunshineResult.score > 0) {
+        score += sunshineResult.score
+        factors.push({ 
+          factor: `Sunshine appears suitable (${town.sunshine_hours}h/year, ${inferredSunshine})`, 
+          score: sunshineResult.score 
+        })
+      }
+    }
+  } else if (!town.sunshine_level_actual && !town.sunshine_hours && town.climate_description && preferences.sunshine) {
+    // Last fallback: infer from climate description
+    const climateDesc = town.climate_description.toLowerCase()
+    let inferredSunshine = null
+    
+    if (climateDesc.includes('sunny') || climateDesc.includes('desert') || climateDesc.includes('arid')) {
+      inferredSunshine = 'often_sunny'
+    } else if (climateDesc.includes('mediterranean') || climateDesc.includes('tropical')) {
+      inferredSunshine = 'balanced'
+    } else if (climateDesc.includes('cloudy') || climateDesc.includes('overcast') || climateDesc.includes('oceanic')) {
+      inferredSunshine = 'less_sunny'
+    }
+    
+    if (inferredSunshine) {
+      const sunshineResult = calculateGradualClimateScore(
+        preferences.sunshine, 
+        inferredSunshine, 
+        10, // Further reduced points for climate description inference
+        sunshineAdjacency
+      )
+      
+      if (sunshineResult.score > 0) {
+        score += sunshineResult.score
+        factors.push({ 
+          factor: `Sunshine appears suitable (${inferredSunshine}, inferred)`, 
+          score: sunshineResult.score 
+        })
+      }
+    }
+  }
+  
+  // Precipitation match (9 points, was 10) - now with gradual scoring
+  const precipitationAdjacency = {
+    'mostly_dry': ['balanced'],
+    'dry': ['balanced'],           // Alternative spelling
+    'balanced': ['mostly_dry', 'dry', 'often_rainy', 'wet'],
+    'often_rainy': ['balanced'],
+    'wet': ['balanced']            // Alternative spelling
+  }
+  
+  if (town.precipitation_level_actual && preferences.precipitation) {
+    const precipitationResult = calculateGradualClimateScore(
+      preferences.precipitation, 
+      town.precipitation_level_actual, 
+      9, 
+      precipitationAdjacency
+    )
+    
+    if (precipitationResult.score > 0) {
+      score += precipitationResult.score
+      const factorText = precipitationResult.description === 'Perfect' ? 
+        'Perfect precipitation match' : 
+        `Good precipitation compatibility (${preferences.precipitation} → ${town.precipitation_level_actual})`
+      factors.push({ factor: factorText, score: precipitationResult.score })
+    }
+  } else if (!town.precipitation_level_actual && town.annual_rainfall && preferences.precipitation) {
+    // Fallback: use annual_rainfall data (in mm)
+    let inferredPrecipitation = null
+    
+    if (town.annual_rainfall < 400) {
+      inferredPrecipitation = 'mostly_dry'
+    } else if (town.annual_rainfall < 1000) {
+      inferredPrecipitation = 'balanced'
+    } else {
+      inferredPrecipitation = 'often_rainy'
+    }
+    
+    const precipitationResult = calculateGradualClimateScore(
+      preferences.precipitation, 
+      inferredPrecipitation, 
+      7, // Reduced points for inferred data
+      precipitationAdjacency
+    )
+    
+    if (precipitationResult.score > 0) {
+      score += precipitationResult.score
+      factors.push({ 
+        factor: `Precipitation appears suitable (${town.annual_rainfall}mm/year, ${inferredPrecipitation})`, 
+        score: precipitationResult.score 
+      })
+    }
+  } else if (!town.precipitation_level_actual && !town.annual_rainfall && town.climate_description && preferences.precipitation) {
+    // Last fallback: infer from climate description
+    const climateDesc = town.climate_description.toLowerCase()
+    let inferredPrecipitation = null
+    
+    if (climateDesc.includes('arid') || climateDesc.includes('desert') || climateDesc.includes('dry')) {
+      inferredPrecipitation = 'mostly_dry'
+    } else if (climateDesc.includes('mediterranean') || climateDesc.includes('temperate')) {
+      inferredPrecipitation = 'balanced'
+    } else if (climateDesc.includes('tropical') || climateDesc.includes('rainforest') || climateDesc.includes('wet')) {
+      inferredPrecipitation = 'often_rainy'
+    }
+    
+    if (inferredPrecipitation) {
+      const precipitationResult = calculateGradualClimateScore(
+        preferences.precipitation, 
+        inferredPrecipitation, 
+        5, // Further reduced points for climate description inference
+        precipitationAdjacency
+      )
+      
+      if (precipitationResult.score > 0) {
+        score += precipitationResult.score
+        factors.push({ 
+          factor: `Precipitation appears suitable (${inferredPrecipitation}, inferred)`, 
+          score: precipitationResult.score 
+        })
+      }
+    }
+  }
+  
+  // Seasonal preference match (15 points)
+  // Only apply if we have both summer and winter temperature data
+  if (preferences.seasonal_preference && 
+      town.avg_temp_summer !== null && town.avg_temp_summer !== undefined &&
+      town.avg_temp_winter !== null && town.avg_temp_winter !== undefined) {
+    
+    const seasonPref = preferences.seasonal_preference
+    
+    if (seasonPref === 'summer_focused') {
+      // User prefers warm seasons - reward mild winters
+      let seasonScore = 0
+      if (town.avg_temp_winter >= 15) {
+        seasonScore = 15  // Perfect - warm winters
+      } else if (town.avg_temp_winter >= 10) {
+        seasonScore = 12  // Good - mild winters
+      } else if (town.avg_temp_winter >= 5) {
+        seasonScore = 8   // Okay - cool winters
+      } else {
+        seasonScore = 0   // Too cold
+      }
+      
+      if (seasonScore > 0) {
+        score += seasonScore
+        factors.push({ factor: 'Mild winters for year-round comfort', score: seasonScore })
+      }
+      
+    } else if (seasonPref === 'winter_focused') {
+      // User prefers cool seasons - reward moderate summers
+      let seasonScore = 0
+      if (town.avg_temp_summer <= 25) {
+        seasonScore = 15  // Perfect - cool summers
+      } else if (town.avg_temp_summer <= 28) {
+        seasonScore = 12  // Good - moderate summers
+      } else if (town.avg_temp_summer <= 32) {
+        seasonScore = 8   // Okay - warm summers
+      } else {
+        seasonScore = 0   // Too hot
+      }
+      
+      if (seasonScore > 0) {
+        score += seasonScore
+        factors.push({ factor: 'Moderate summers with cool seasons', score: seasonScore })
+      }
+      
+    } else if (seasonPref === 'all_seasons') {
+      // User enjoys all seasons - reward seasonal variation
+      const variation = Math.abs(town.avg_temp_summer - town.avg_temp_winter)
+      let seasonScore = 0
+      
+      if (variation >= 15) {
+        seasonScore = 15  // Distinct seasons
+      } else if (variation >= 10) {
+        seasonScore = 12  // Moderate variation
+      } else if (variation >= 5) {
+        seasonScore = 8   // Some variation
+      } else {
+        seasonScore = 0   // Too stable
+      }
+      
+      if (seasonScore > 0) {
+        score += seasonScore
+        factors.push({ factor: 'Four distinct seasons', score: seasonScore })
+      }
+    }
+    // Note: 'Optional' or no preference = skip seasonal scoring entirely (0 points)
   }
   
   return {
@@ -151,28 +550,114 @@ export function calculateCultureScore(preferences, town) {
   let factors = []
   
   // Language compatibility (25 points)
-  if (preferences.language_comfort?.preferences === 'english_only') {
-    if (town.english_proficiency_level === 'native' || town.english_proficiency_level === 'very_high') {
-      score += 25
-      factors.push({ factor: 'English widely spoken', score: 25 })
-    } else if (town.english_proficiency_level === 'high') {
-      score += 15
-      factors.push({ factor: 'Good English proficiency', score: 15 })
+  const languagePrefs = preferences.language_comfort?.preferences
+  const langPref = Array.isArray(languagePrefs) ? languagePrefs[0] : languagePrefs
+  
+  // Get primary language - prioritize real data over assumptions
+  let primaryLanguage = town.primary_language
+  let usingEstimatedLanguage = false
+  
+  // Only use fallback if primary_language is missing AND data completeness is low
+  if (!primaryLanguage && (!town.data_completeness_score || town.data_completeness_score < 60)) {
+    // Country to language mapping fallback (last resort)
+    const countryLanguages = {
+      'Portugal': 'Portuguese', 'Spain': 'Spanish', 'France': 'French',
+      'Italy': 'Italian', 'Germany': 'German', 'Greece': 'Greek',
+      'Mexico': 'Spanish', 'Costa Rica': 'Spanish', 'Panama': 'Spanish',
+      'Ecuador': 'Spanish', 'Colombia': 'Spanish', 'Peru': 'Spanish',
+      'Thailand': 'Thai', 'Vietnam': 'Vietnamese', 'Malaysia': 'Malay',
+      'Cyprus': 'Greek',
+      // Former colonies and multi-language countries  
+      'Malta': 'English', 'Singapore': 'English', 'Ireland': 'English',
+      'South Africa': 'English', 'New Zealand': 'English', 'Australia': 'English',
+      'Canada': 'English', 'Hong Kong': 'English', 'India': 'English',
+      'Philippines': 'English', 'Nigeria': 'English', 'Ghana': 'English',
+      'Switzerland': 'German', 'Belgium': 'Dutch', 'Luxembourg': 'French'
     }
+    primaryLanguage = countryLanguages[town.country] || 'Local'
+    usingEstimatedLanguage = true
+  }
+  
+  if (langPref === 'english_only') {
+    // Check if English is the primary language
+    if (primaryLanguage && primaryLanguage.toLowerCase() === 'english') {
+      score += 25
+      factors.push({ factor: 'English is primary language', score: 25 })
+    } else if (town.english_proficiency_level) {
+      // Use actual English proficiency data with updated scoring
+      const proficiencyScores = {
+        'excellent': 22,    // Near-native level
+        'good': 18,         // Conversational level
+        'moderate': 12,     // Basic communication
+        'basic': 8,         // Limited communication
+        'none': 0,          // No English
+        // Legacy values for backward compatibility
+        'native': 25,
+        'very_high': 22,
+        'high': 18,
+        'medium': 12,
+        'low': 8
+      }
+      
+      const proficiencyScore = proficiencyScores[town.english_proficiency_level] || 0
+      if (proficiencyScore > 0) {
+        score += proficiencyScore
+        const proficiencyText = town.english_proficiency_level === 'excellent' ? 'Excellent English proficiency' :
+                              town.english_proficiency_level === 'good' ? 'Good English proficiency' :
+                              town.english_proficiency_level === 'moderate' ? 'Moderate English proficiency' :
+                              town.english_proficiency_level === 'basic' ? 'Basic English available' :
+                              'English proficiency available'
+        factors.push({ factor: proficiencyText, score: proficiencyScore })
+      }
+    } else if (usingEstimatedLanguage) {
+      // Only use fallback for tourist areas when we're already estimating
+      score += 8
+      factors.push({ factor: 'Some English expected (estimated)', score: 8 })
+    }
+    
+    // Add warning if using estimated language data
+    if (usingEstimatedLanguage && !town.english_proficiency_level) {
+      factors.push({ factor: 'Language data estimated from country', score: -2 })
+    }
+    
   } else if (preferences.language_comfort?.already_speak?.length) {
     // Check if user speaks local language
-    const speaksLocal = preferences.language_comfort.already_speak.some(lang =>
-      town.primary_language?.toLowerCase().includes(lang.toLowerCase()) ||
-      town.languages_spoken?.some(l => l.toLowerCase().includes(lang.toLowerCase()))
-    )
+    const speaksLocal = preferences.language_comfort.already_speak.some(lang => {
+      if (primaryLanguage) {
+        return primaryLanguage.toLowerCase().includes(lang.toLowerCase())
+      }
+      // Also check languages_spoken array if available
+      return town.languages_spoken?.some(l => l.toLowerCase().includes(lang.toLowerCase()))
+    })
+    
     if (speaksLocal) {
       score += 25
-      factors.push({ factor: 'Speaks local language', score: 25 })
+      const languageUsed = usingEstimatedLanguage ? `${primaryLanguage} (estimated)` : primaryLanguage
+      factors.push({ factor: `Speaks local language (${languageUsed})`, score: 25 })
     }
+    
   } else {
-    // User willing to learn - give partial credit
-    score += 15
-    factors.push({ factor: 'Language learning opportunity', score: 15 })
+    // User willing to learn - give partial credit with Romance language bonus
+    let learnScore = 15
+    
+    if (primaryLanguage) {
+      const romanceLanguages = ['spanish', 'portuguese', 'italian', 'french', 'catalan', 'romanian']
+      if (romanceLanguages.includes(primaryLanguage.toLowerCase())) {
+        learnScore += 5  // Bonus for easier learning
+        factors.push({ factor: `Language learning opportunity (${primaryLanguage} - easier for English speakers)`, score: learnScore })
+      } else {
+        factors.push({ factor: `Language learning opportunity (${primaryLanguage})`, score: learnScore })
+      }
+    } else {
+      factors.push({ factor: 'Language learning opportunity', score: learnScore })
+    }
+    
+    score += learnScore
+    
+    // Add warning if using estimated language data
+    if (usingEstimatedLanguage) {
+      factors.push({ factor: 'Language data estimated from country', score: -2 })
+    }
   }
   
   // Expat community match (20 points)
@@ -320,37 +805,284 @@ export function calculateHobbiesScore(preferences, town) {
   }
 }
 
+/**
+ * Calculate gradual healthcare/safety scoring based on user preference level
+ * @param {number} actualScore - Town's actual score (0-10)
+ * @param {string} userPref - User's preference level ('basic', 'functional', 'good')
+ * @param {number} maxPoints - Maximum points for this category
+ * @returns {Object} Score and description
+ */
+function calculateGradualAdminScore(actualScore, userPref, maxPoints) {
+  if (!actualScore || !userPref) return { score: 0, description: null }
+  
+  // Define scoring tiers based on user preference
+  if (userPref === 'good') {
+    // User wants high quality (ideal 9+)
+    if (actualScore >= 9.0) {
+      return { score: maxPoints, description: 'exceeds requirements' }
+    } else if (actualScore >= 8.0) {
+      return { score: Math.round(maxPoints * 0.8), description: 'very good quality' }
+    } else if (actualScore >= 7.0) {
+      return { score: Math.round(maxPoints * 0.6), description: 'acceptable quality' }
+    } else if (actualScore >= 6.0) {
+      return { score: Math.round(maxPoints * 0.4), description: 'below ideal but adequate' }
+    } else if (actualScore >= 5.0) {
+      return { score: Math.round(maxPoints * 0.2), description: 'concerns about quality' }
+    } else {
+      return { score: 0, description: 'inadequate quality' }
+    }
+  } else if (userPref === 'functional') {
+    // User wants adequate quality (ideal 7+)
+    if (actualScore >= 7.0) {
+      return { score: maxPoints, description: 'meets requirements' }
+    } else if (actualScore >= 6.0) {
+      return { score: Math.round(maxPoints * 0.8), description: 'nearly meets requirements' }
+    } else if (actualScore >= 5.0) {
+      return { score: Math.round(maxPoints * 0.6), description: 'basic but functional' }
+    } else {
+      return { score: 0, description: 'below functional level' }
+    }
+  } else if (userPref === 'basic') {
+    // User wants minimal quality (ideal 5+)
+    if (actualScore >= 5.0) {
+      return { score: maxPoints, description: 'meets basic requirements' }
+    } else if (actualScore >= 4.0) {
+      return { score: Math.round(maxPoints * 0.67), description: 'marginal but acceptable' }
+    } else {
+      return { score: 0, description: 'below minimum standards' }
+    }
+  }
+  
+  // Fallback for unknown preference
+  return { score: Math.round(maxPoints * 0.5), description: 'standard quality' }
+}
+
+/**
+ * Calculate comprehensive tax scoring based on user's tax sensitivity
+ * @param {Object} preferences - User's tax sensitivity preferences
+ * @param {Object} town - Town tax data
+ * @param {number} maxPoints - Maximum points for tax scoring (15)
+ * @returns {Object} Score, factors, and descriptions
+ */
+function calculateTaxScore(preferences, town, maxPoints = 15) {
+  let score = 0
+  let factors = []
+  
+  // Get tax data - prioritize JSON field, fall back to individual fields
+  const taxData = {
+    income: town.tax_rates?.income_tax || town.income_tax_rate_pct,
+    property: town.tax_rates?.property_tax || town.property_tax_rate_pct,
+    sales: town.tax_rates?.sales_tax || town.sales_tax_rate_pct
+  }
+  
+  let totalSensitiveTaxes = 0
+  let taxScoreTotal = 0
+  
+  // Income tax scoring (if user is sensitive)
+  if (preferences.income_tax_sensitive && taxData.income !== null && taxData.income !== undefined) {
+    totalSensitiveTaxes++
+    const incomeTaxResult = calculateGradualTaxScore(taxData.income, 'income')
+    taxScoreTotal += incomeTaxResult.score
+    factors.push({
+      factor: `Income tax ${incomeTaxResult.description} (${taxData.income}%)`,
+      score: incomeTaxResult.score
+    })
+  }
+  
+  // Property tax scoring (if user is sensitive)
+  if (preferences.property_tax_sensitive && taxData.property !== null && taxData.property !== undefined) {
+    totalSensitiveTaxes++
+    const propertyTaxResult = calculateGradualTaxScore(taxData.property, 'property')
+    taxScoreTotal += propertyTaxResult.score
+    factors.push({
+      factor: `Property tax ${propertyTaxResult.description} (${taxData.property}%)`,
+      score: propertyTaxResult.score
+    })
+  }
+  
+  // Sales tax scoring (if user is sensitive)
+  if (preferences.sales_tax_sensitive && taxData.sales !== null && taxData.sales !== undefined) {
+    totalSensitiveTaxes++
+    const salesTaxResult = calculateGradualTaxScore(taxData.sales, 'sales')
+    taxScoreTotal += salesTaxResult.score
+    factors.push({
+      factor: `Sales tax ${salesTaxResult.description} (${taxData.sales}%)`,
+      score: salesTaxResult.score
+    })
+  }
+  
+  // Calculate proportional score based on sensitive taxes
+  if (totalSensitiveTaxes > 0) {
+    score = (taxScoreTotal / totalSensitiveTaxes) * (maxPoints * 0.8) / 5 // 80% of points from tax rates
+  }
+  
+  // Bonus scoring for tax benefits (20% of points)
+  let bonusPoints = 0
+  const maxBonus = maxPoints * 0.2
+  
+  // Tax treaty bonus
+  if (town.tax_treaty_us) {
+    bonusPoints += maxBonus * 0.4 // 40% of bonus
+    factors.push({
+      factor: 'US tax treaty available',
+      score: Math.round(maxBonus * 0.4)
+    })
+  }
+  
+  // Tax haven status bonus
+  if (town.tax_haven_status) {
+    bonusPoints += maxBonus * 0.5 // 50% of bonus
+    factors.push({
+      factor: 'Recognized tax haven',
+      score: Math.round(maxBonus * 0.5)
+    })
+  }
+  
+  // Foreign income not taxed bonus
+  if (town.foreign_income_taxed === false) {
+    bonusPoints += maxBonus * 0.3 // 30% of bonus
+    factors.push({
+      factor: 'Foreign income not taxed',
+      score: Math.round(maxBonus * 0.3)
+    })
+  }
+  
+  score += bonusPoints
+  
+  // If user has no tax sensitivities, give neutral score
+  if (totalSensitiveTaxes === 0) {
+    score = maxPoints * 0.5 // 50% neutral score
+    factors.push({
+      factor: 'Tax rates not a priority',
+      score: Math.round(maxPoints * 0.5)
+    })
+  }
+  
+  return {
+    score: Math.min(Math.round(score), maxPoints),
+    factors,
+    hasTaxData: totalSensitiveTaxes > 0 || town.tax_treaty_us || town.tax_haven_status || town.foreign_income_taxed !== null
+  }
+}
+
+/**
+ * Calculate gradual tax scoring for a specific tax type
+ * @param {number} taxRate - Tax rate percentage
+ * @param {string} taxType - Type of tax ('income', 'property', 'sales')
+ * @returns {Object} Score (0-5) and description
+ */
+function calculateGradualTaxScore(taxRate, taxType) {
+  if (taxRate === null || taxRate === undefined) {
+    return { score: 0, description: 'data unavailable' }
+  }
+  
+  // Define tax rate thresholds by type
+  const thresholds = {
+    income: {
+      excellent: 10,   // 0-10%
+      good: 20,        // 10-20%
+      fair: 30,        // 20-30%
+      poor: 40         // 30-40%
+    },
+    property: {
+      excellent: 1,    // 0-1%
+      good: 2,         // 1-2%
+      fair: 3,         // 2-3%
+      poor: 4          // 3-4%
+    },
+    sales: {
+      excellent: 8,    // 0-8%
+      good: 15,        // 8-15%
+      fair: 20,        // 15-20%
+      poor: 25         // 20-25%
+    }
+  }
+  
+  const t = thresholds[taxType]
+  
+  if (taxRate <= t.excellent) {
+    return { score: 5, description: 'excellent rate' }
+  } else if (taxRate <= t.good) {
+    return { score: 4, description: 'good rate' }
+  } else if (taxRate <= t.fair) {
+    return { score: 3, description: 'fair rate' }
+  } else if (taxRate <= t.poor) {
+    return { score: 2, description: 'high rate' }
+  } else {
+    return { score: 1, description: 'very high rate' }
+  }
+}
+
 // 5. ADMINISTRATION MATCHING (15% of total)
 export function calculateAdminScore(preferences, town) {
   let score = 0
   let factors = []
   
-  // Healthcare quality match (30 points)
-  const healthcareMap = { basic: 5, functional: 7, good: 9 }
-  const requiredScore = healthcareMap[preferences.healthcare_quality] || 7
+  // Healthcare quality match (30 points) - now with gradual scoring
+  const healthcareArray = preferences.healthcare_quality || []
+  const healthcarePref = Array.isArray(healthcareArray) ? healthcareArray[0] : healthcareArray
   
-  if (town.healthcare_score >= requiredScore) {
-    score += 30
-    factors.push({ factor: 'Healthcare meets requirements', score: 30 })
-  } else if (town.healthcare_score >= requiredScore - 1) {
-    score += 20
-    factors.push({ factor: 'Healthcare acceptable', score: 20 })
+  if (town.healthcare_score && healthcarePref) {
+    const healthcareResult = calculateGradualAdminScore(
+      town.healthcare_score, 
+      healthcarePref, 
+      30
+    )
+    
+    if (healthcareResult.score > 0) {
+      score += healthcareResult.score
+      factors.push({ 
+        factor: `Healthcare ${healthcareResult.description} (score: ${town.healthcare_score})`, 
+        score: healthcareResult.score 
+      })
+    }
+  } else if (town.healthcare_score && !healthcarePref) {
+    // Fallback if no preference specified - assume functional
+    const healthcareResult = calculateGradualAdminScore(town.healthcare_score, 'functional', 30)
+    score += healthcareResult.score
+    factors.push({ 
+      factor: `Healthcare ${healthcareResult.description} (score: ${town.healthcare_score})`, 
+      score: healthcareResult.score 
+    })
   }
   
-  // Safety match (25 points)
-  const safetyMap = { basic: 6, functional: 7, good: 8 }
-  const requiredSafety = safetyMap[preferences.safety_importance] || 7
+  // Safety match (25 points) - now with gradual scoring
+  const safetyArray = preferences.safety_importance || []
+  const safetyPref = Array.isArray(safetyArray) ? safetyArray[0] : safetyArray
   
-  if (town.safety_score >= requiredSafety) {
-    score += 25
-    factors.push({ factor: 'Safety meets requirements', score: 25 })
+  if (town.safety_score && safetyPref) {
+    const safetyResult = calculateGradualAdminScore(
+      town.safety_score, 
+      safetyPref, 
+      25
+    )
+    
+    if (safetyResult.score > 0) {
+      score += safetyResult.score
+      factors.push({ 
+        factor: `Safety ${safetyResult.description} (score: ${town.safety_score})`, 
+        score: safetyResult.score 
+      })
+    }
+  } else if (town.safety_score && !safetyPref) {
+    // Fallback if no preference specified - assume functional
+    const safetyResult = calculateGradualAdminScore(town.safety_score, 'functional', 25)
+    score += safetyResult.score
+    factors.push({ 
+      factor: `Safety ${safetyResult.description} (score: ${town.safety_score})`, 
+      score: safetyResult.score 
+    })
   }
   
-  // Visa/residency match (20 points)
-  if (preferences.visa_preference === 'good' && preferences.stay_duration) {
+  // Visa/residency match (20 points) - handle array format
+  const visaArray = preferences.visa_preference || []
+  const visaPref = Array.isArray(visaArray) ? visaArray[0] : visaArray
+  
+  if ((visaPref === 'good' || visaPref === 'functional') && preferences.stay_duration) {
     // Check visa requirements based on user citizenship
-    if (town.visa_on_arrival_countries?.includes(preferences.citizenship) ||
-        town.easy_residency_countries?.includes(preferences.citizenship)) {
+    const citizenship = preferences.citizenship || preferences.current_status?.citizenship || 'USA'
+    if (town.visa_on_arrival_countries?.includes(citizenship) ||
+        town.easy_residency_countries?.includes(citizenship)) {
       score += 20
       factors.push({ factor: 'Easy visa/residency access', score: 20 })
     } else if (town.retirement_visa_available) {
@@ -381,7 +1113,7 @@ export function calculateAdminScore(preferences, town) {
   }
 }
 
-// 6. BUDGET MATCHING (10% of total)
+// 6. BUDGET MATCHING (20% of total)
 export function calculateBudgetScore(preferences, town) {
   let score = 0
   let factors = []
@@ -422,25 +1154,15 @@ export function calculateBudgetScore(preferences, town) {
     }
   }
   
-  // Tax sensitivity adjustments (10 points)
-  let taxPenalty = 0
+  // Comprehensive tax scoring (15 points)
+  const taxResult = calculateTaxScore(preferences, town, 15)
+  score += taxResult.score
+  factors.push(...taxResult.factors)
   
-  if (preferences.income_tax_sensitive && town.income_tax_rate_pct > 30) {
-    taxPenalty += 5
-  }
-  if (preferences.property_tax_sensitive && town.property_tax_rate_pct > 2) {
-    taxPenalty += 3
-  }
-  if (preferences.sales_tax_sensitive && town.sales_tax_rate_pct > 15) {
-    taxPenalty += 2
-  }
-  
-  if (taxPenalty === 0) {
-    score += 10
-    factors.push({ factor: 'Tax-friendly', score: 10 })
-  } else {
-    score -= taxPenalty
-    factors.push({ factor: 'Tax considerations', score: -taxPenalty })
+  // Add tax data availability warning if needed
+  if (!taxResult.hasTaxData && (preferences.income_tax_sensitive || preferences.property_tax_sensitive || preferences.sales_tax_sensitive)) {
+    factors.push({ factor: 'Limited tax data available', score: -1 })
+    score -= 1
   }
   
   return {
@@ -450,6 +1172,42 @@ export function calculateBudgetScore(preferences, town) {
   }
 }
 
+// Calculate data completeness score (0-5 bonus points)
+function calculateDataCompleteness(town) {
+  const importantFields = [
+    'cost_index',
+    'healthcare_score',
+    'safety_score',
+    'climate_description',
+    'summer_climate_actual',
+    'winter_climate_actual',
+    'humidity_level_actual',
+    'sunshine_level_actual',
+    'primary_language',
+    'english_proficiency_level',
+    'expat_community_size',
+    'pace_of_life_actual',
+    'activities_available',
+    'interests_supported',
+    'typical_monthly_living_cost',
+    'income_tax_rate_pct',
+    'visa_on_arrival_countries',
+    'geographic_features_actual'
+  ]
+  
+  let completedFields = 0
+  importantFields.forEach(field => {
+    const value = town[field]
+    if (value !== null && value !== undefined && value !== '' && 
+        (!Array.isArray(value) || value.length > 0)) {
+      completedFields++
+    }
+  })
+  
+  const completenessRatio = completedFields / importantFields.length
+  return completenessRatio * 5 // 0-5 points based on completeness
+}
+
 // Main matching function that combines all scores
 export async function calculateEnhancedMatch(userPreferences, town) {
   // Calculate individual category scores
@@ -457,11 +1215,14 @@ export async function calculateEnhancedMatch(userPreferences, town) {
   const climateResult = calculateClimateScore(userPreferences.climate_preferences || {}, town)
   const cultureResult = calculateCultureScore(userPreferences.culture_preferences || {}, town)
   const hobbiesResult = calculateHobbiesScore(userPreferences.hobbies_preferences || {}, town)
-  const adminResult = calculateAdminScore(userPreferences.admin_preferences || {}, town)
+  const adminResult = calculateAdminScore({
+    ...userPreferences.admin_preferences || {},
+    citizenship: userPreferences.current_status?.citizenship
+  }, town)
   const budgetResult = calculateBudgetScore(userPreferences.budget_preferences || {}, town)
   
   // Calculate weighted total score
-  const totalScore = (
+  let totalScore = (
     (regionResult.score * CATEGORY_WEIGHTS.region / 100) +
     (climateResult.score * CATEGORY_WEIGHTS.climate / 100) +
     (cultureResult.score * CATEGORY_WEIGHTS.culture / 100) +
@@ -469,6 +1230,10 @@ export async function calculateEnhancedMatch(userPreferences, town) {
     (adminResult.score * CATEGORY_WEIGHTS.admin / 100) +
     (budgetResult.score * CATEGORY_WEIGHTS.budget / 100)
   )
+  
+  // Add data completeness bonus (0-5 points)
+  const dataBonus = calculateDataCompleteness(town)
+  totalScore += dataBonus
   
   // Compile all factors
   const allFactors = [
@@ -479,6 +1244,13 @@ export async function calculateEnhancedMatch(userPreferences, town) {
     ...adminResult.factors,
     ...budgetResult.factors
   ]
+  
+  // Add data completeness factor if significant
+  if (dataBonus >= 3) {
+    allFactors.push({ factor: 'Comprehensive data available', score: dataBonus })
+  } else if (dataBonus <= 1) {
+    allFactors.push({ factor: 'Limited data available', score: -2 })
+  }
   
   // Determine match quality
   let matchQuality = 'Poor'
@@ -507,7 +1279,8 @@ export async function calculateEnhancedMatch(userPreferences, town) {
       .slice(0, 5),
     warnings: allFactors
       .filter(f => f.score < 0)
-      .map(f => f.factor)
+      .map(f => f.factor),
+    data_completeness: Math.round(dataBonus)
   }
 }
 

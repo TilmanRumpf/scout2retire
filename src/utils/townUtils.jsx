@@ -36,7 +36,10 @@ export const fetchTowns = async (filters = {}) => {
       .select('*');
 
     // Filter for towns with photos (quality control)
-    query = query.not('image_url_1', 'is', null).not('image_url_1', 'eq', '');
+    query = query
+      .not('image_url_1', 'is', null)
+      .not('image_url_1', 'eq', '')
+      .not('image_url_1', 'ilike', 'NULL');  // Filter out 'NULL' string
 
     // Apply filters if provided
     if (filters.country) {
@@ -288,7 +291,10 @@ export const getTownOfTheDay = async (userId) => {
       .select('*');
 
     // Filter for towns with photos (quality control) - CRITICAL SAFETY FEATURE
-    query = query.not('image_url_1', 'is', null);
+    query = query
+      .not('image_url_1', 'is', null)
+      .not('image_url_1', 'eq', '')
+      .not('image_url_1', 'ilike', 'NULL');  // Filter out 'NULL' string
 
     // Exclude favorited towns
     if (favoriteTownIds.length > 0) {

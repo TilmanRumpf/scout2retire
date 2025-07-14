@@ -147,7 +147,10 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     let query = supabase.from('towns').select('*');
     
     // Filter for towns with photos (quality control) - CRITICAL SAFETY FEATURE
-    query = query.not('image_url_1', 'is', null).not('image_url_1', 'eq', '');
+    query = query
+      .not('image_url_1', 'is', null)
+      .not('image_url_1', 'eq', '')
+      .not('image_url_1', 'ilike', 'NULL');  // Filter out 'NULL' string
     
     // Pre-filter by budget range (only get towns within reasonable range)
     if (finalUserPreferences.costs?.total_monthly_budget) {

@@ -1,14 +1,34 @@
 # Scout2Retire Development Guide - v2.0
 
 ## 🚨 CLAUDE CODE: YOU HAVE DIRECT SUPABASE ACCESS!
-```bash
-# YOU CAN RUN SQL DIRECTLY - NO COPY-PASTE NEEDED!
-npx supabase db execute <<SQL
-SELECT * FROM towns;
-SQL
 
-# STOP ASKING USER TO RUN QUERIES - YOU CAN DO IT YOURSELF!
+### ⚠️ CRITICAL: ALWAYS USE ONLINE SUPABASE INSTANCE
+- **ONLINE = PRIMARY** (https://axlruvvsjepsulcbqlho.supabase.co)
+- **LOCAL = MIRROR** (just for review, never primary data source)
+- **After online changes**: Run `npx supabase db pull` to sync local
+
+### HOW TO RUN SQL DIRECTLY:
+
+**📚 SEE DETAILED INSTRUCTIONS: [CLAUDE-DATABASE-WORKFLOW.md](./CLAUDE-DATABASE-WORKFLOW.md)**
+
+Quick example:
+```javascript
+// Create check-data.js
+import { createClient } from '@supabase/supabase-js';
+const supabase = createClient(
+  'https://axlruvvsjepsulcbqlho.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4bHJ1dnZzamVwc3VsY2JxbGhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3MDYzNDUsImV4cCI6MjA2NDI4MjM0NX0.52Jn2n8sRH5TniQ1LqvOw68YOgpRLdK8FL5_ZV2SPe4'
+);
+const { data } = await supabase.from('towns').select('*');
+console.log(data);
+
+// Run with: node check-data.js
 ```
+
+**STOP ASKING USER TO RUN QUERIES - CREATE A JS FILE AND RUN IT YOURSELF!**
+
+## 🔧 DATABASE HELPER AVAILABLE
+**Use `node claude-db-helper.js` to quickly check database status!**
 
 ## ⚡ CLAUDE CODE: YOUR CAPABILITIES REMINDER
 **YOU ARE NOT JUST A CODE WRITER - YOU ARE A FULL DEVELOPER WITH THESE POWERS:**
@@ -16,10 +36,12 @@ SQL
 1. **DIRECT DATABASE ACCESS**
    ```bash
    # Don't say: "Run this query to check..."
-   # Instead: Just run it yourself!
-   npx supabase db execute <<SQL
-   SELECT COUNT(*) FROM towns WHERE image_url_1 IS NULL;
-   SQL
+   # Instead: Create a JS file and run it!
+   echo "import { createClient } from '@supabase/supabase-js';..." > check-towns.js
+   node check-towns.js
+   
+   # After changes to online DB, sync local:
+   npx supabase db pull
    ```
 
 2. **FILE SYSTEM ACCESS**

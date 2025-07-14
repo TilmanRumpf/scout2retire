@@ -160,7 +160,9 @@ export default function TownDiscovery() {
       const { count } = await supabase
         .from('towns')
         .select('*', { count: 'exact', head: true })
-        .not('image_url_1', 'is', null).not('image_url_1', 'eq', '');  // CRITICAL: Only count towns with photos
+        .not('image_url_1', 'is', null)
+        .not('image_url_1', 'eq', '')
+        .not('image_url_1', 'ilike', 'NULL');  // CRITICAL: Only count towns with photos (exclude 'NULL' string)
       
       if (count !== null) {
         setTotalTownCount(count);
