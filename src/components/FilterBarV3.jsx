@@ -1,6 +1,7 @@
 // Option 3: Icon-based Compact Design
 import { ChevronDown, X, Globe, DollarSign, Crosshair, SortDesc } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function FilterBarV3({
   sortBy,
@@ -21,9 +22,39 @@ export default function FilterBarV3({
   variant = 'default' // 'default' or 'integrated'
 }) {
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  
+  // Refs for each button to calculate positions
+  const sortButtonRef = useRef(null);
+  const locationButtonRef = useRef(null);
+  const costButtonRef = useRef(null);
+  const matchButtonRef = useRef(null);
 
   const toggleDropdown = (dropdown) => {
-    setOpenDropdown(openDropdown === dropdown ? null : dropdown);
+    if (openDropdown === dropdown) {
+      setOpenDropdown(null);
+      return;
+    }
+    
+    // Calculate position based on button ref
+    let buttonRef;
+    switch (dropdown) {
+      case 'sort': buttonRef = sortButtonRef; break;
+      case 'location': buttonRef = locationButtonRef; break;
+      case 'cost': buttonRef = costButtonRef; break;
+      case 'match': buttonRef = matchButtonRef; break;
+      default: return;
+    }
+    
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 4, // 4px gap
+        left: rect.left + window.scrollX
+      });
+    }
+    
+    setOpenDropdown(dropdown);
   };
 
   // Helper to determine if a filter is active
@@ -36,6 +67,24 @@ export default function FilterBarV3({
     match: filterMatchRange !== 'all' ? 1 : 0
   };
 
+  // Portal dropdown component
+  const PortalDropdown = ({ children, width = 'w-48' }) => {
+    if (!openDropdown) return null;
+    
+    return createPortal(
+      <div 
+        className={`fixed ${width} bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-[9999]`}
+        style={{
+          top: `${dropdownPosition.top}px`,
+          left: `${dropdownPosition.left}px`
+        }}
+      >
+        {children}
+      </div>,
+      document.body
+    );
+  };
+
   // Integrated variant for CompactPageHeader
   if (variant === 'integrated') {
     return (
@@ -43,63 +92,95 @@ export default function FilterBarV3({
         <div className="flex items-center w-full sm:w-auto sm:gap-4">
         {/* Sort Button */}
         <button
+          ref={sortButtonRef}
           onClick={() => toggleDropdown('sort')}
-          className="flex-1 sm:flex-initial flex items-center justify-start gap-1 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors relative"
+          className="flex-1 sm:flex-initial flex items-center justify-start gap-1 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
         >
           <SortDesc size={14} />
           <span>Sort</span>
           <ChevronDown size={12} className={`transition-transform ${openDropdown === 'sort' ? 'rotate-180' : ''}`} />
-          
-          {openDropdown === 'sort' && (
-            <div className="absolute top-full mt-1 left-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
-              {['match', 'name', 'cost-low', 'cost-high', 'region', 'climate', 'culture', 'hobbies', 'administration', 'budget'].map(option => (
-                <button
-                  key={option}
-                  onClick={() => {
-                    setSortBy(option);
-                    setOpenDropdown(null);
-                  }}
-                  className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                    sortBy === option 
-                      ? 'bg-scout-accent-50 dark:bg-scout-accent-400/20 text-scout-accent-600 dark:text-scout-accent-300' 
-                      : 'text-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  {option === 'match' ? 'Best Match' : 
-                   option === 'name' ? 'Name (A-Z)' :
-                   option === 'cost-low' ? 'Cost (Low to High)' :
-                   option === 'cost-high' ? 'Cost (High to Low)' :
-                   option === 'region' ? 'Region Score' :
-                   option === 'climate' ? 'Climate Score' :
-                   option === 'culture' ? 'Culture Score' :
-                   option === 'hobbies' ? 'Hobbies Score' :
-                   option === 'administration' ? 'Admin Score' :
-                   'Budget Score'}
-                </button>
-              ))}
-            </div>
-          )}
         </button>
         
         {/* Location Filter */}
-        <div className="relative">
-          <button
-            onClick={() => toggleDropdown('location')}
-            className={`flex-1 sm:flex-initial flex items-center justify-start gap-1 text-sm ${
-              activeFilters.location > 0
-                ? 'text-scout-accent-600 dark:text-scout-accent-400 font-medium'
-                : 'text-gray-600 dark:text-gray-400'
-            } hover:text-gray-900 dark:hover:text-gray-100 transition-colors`}
-          >
-            <Globe size={14} />
-            <span>Location</span>
-            {activeFilters.location > 0 && (
-              <span className="text-xs">({activeFilters.location})</span>
-            )}
-          </button>
-          
-          {openDropdown === 'location' && (
-            <div className="absolute top-full mt-1 left-0 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 p-4">
+        <button
+          ref={locationButtonRef}
+          onClick={() => toggleDropdown('location')}
+          className={`flex-1 sm:flex-initial flex items-center justify-start gap-1 text-sm ${
+            activeFilters.location > 0
+              ? 'text-scout-accent-600 dark:text-scout-accent-400 font-medium'
+              : 'text-gray-600 dark:text-gray-400'
+          } hover:text-gray-900 dark:hover:text-gray-100 transition-colors`}
+        >
+          <Globe size={14} />
+          <span>Location</span>
+          {activeFilters.location > 0 && (
+            <span className="text-xs">({activeFilters.location})</span>
+          )}
+        </button>
+        
+        {/* Cost Filter */}
+        <button
+          ref={costButtonRef}
+          onClick={() => toggleDropdown('cost')}
+          className={`flex-1 sm:flex-initial flex items-center justify-start gap-1 text-sm ${
+            isFilterActive(filterCostRange)
+              ? 'text-scout-accent-600 dark:text-scout-accent-400 font-medium'
+              : 'text-gray-600 dark:text-gray-400'
+          } hover:text-gray-900 dark:hover:text-gray-100 transition-colors`}
+        >
+          <DollarSign size={14} />
+          <span>Cost</span>
+        </button>
+        
+        {/* Match Filter */}
+        <button
+          ref={matchButtonRef}
+          onClick={() => toggleDropdown('match')}
+          className={`flex-1 sm:flex-initial flex items-center justify-start gap-1 text-sm ${
+            isFilterActive(filterMatchRange)
+              ? 'text-scout-accent-600 dark:text-scout-accent-400 font-medium'
+              : 'text-gray-600 dark:text-gray-400'
+          } hover:text-gray-900 dark:hover:text-gray-100 transition-colors`}
+        >
+          <Crosshair size={14} />
+          <span>Match</span>
+        </button>
+        </div>
+        
+        {/* Portal Dropdowns */}
+        {openDropdown === 'sort' && (
+          <PortalDropdown>
+            {['match', 'name', 'cost-low', 'cost-high', 'region', 'climate', 'culture', 'hobbies', 'administration', 'budget'].map(option => (
+              <button
+                key={option}
+                onClick={() => {
+                  setSortBy(option);
+                  setOpenDropdown(null);
+                }}
+                className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                  sortBy === option 
+                    ? 'bg-scout-accent-50 dark:bg-scout-accent-400/20 text-scout-accent-600 dark:text-scout-accent-300' 
+                    : 'text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                {option === 'match' ? 'Best Match' : 
+                 option === 'name' ? 'Name (A-Z)' :
+                 option === 'cost-low' ? 'Cost (Low to High)' :
+                 option === 'cost-high' ? 'Cost (High to Low)' :
+                 option === 'region' ? 'Region Score' :
+                 option === 'climate' ? 'Climate Score' :
+                 option === 'culture' ? 'Culture Score' :
+                 option === 'hobbies' ? 'Hobbies Score' :
+                 option === 'administration' ? 'Admin Score' :
+                 'Budget Score'}
+              </button>
+            ))}
+          </PortalDropdown>
+        )}
+
+        {openDropdown === 'location' && (
+          <PortalDropdown width="w-72">
+            <div className="p-4">
               {/* Region Selection */}
               <div className="mb-4">
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Region</label>
@@ -141,114 +222,83 @@ export default function FilterBarV3({
                 Apply Filters
               </button>
             </div>
-          )}
-        </div>
-        
-        {/* Cost Filter */}
-        <div className="relative">
-          <button
-            onClick={() => toggleDropdown('cost')}
-            className={`flex-1 sm:flex-initial flex items-center justify-start gap-1 text-sm ${
-              isFilterActive(filterCostRange)
-                ? 'text-scout-accent-600 dark:text-scout-accent-400 font-medium'
-                : 'text-gray-600 dark:text-gray-400'
-            } hover:text-gray-900 dark:hover:text-gray-100 transition-colors`}
-          >
-            <DollarSign size={14} />
-            <span>Cost</span>
-          </button>
-          
-          {openDropdown === 'cost' && (
-            <div className="absolute top-full mt-1 left-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+          </PortalDropdown>
+        )}
+
+        {openDropdown === 'cost' && (
+          <PortalDropdown>
+            <button
+              onClick={() => {
+                setFilterCostRange('all');
+                setOpenDropdown(null);
+              }}
+              className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                filterCostRange === 'all' ? 'bg-gray-50 dark:bg-gray-700' : ''
+              }`}
+            >
+              Any Cost
+            </button>
+            {[
+              { value: 'under2000', label: 'Under $2,000' },
+              { value: '2000-3000', label: '$2,000 - $3,000' },
+              { value: '3000-4000', label: '$3,000 - $4,000' },
+              { value: 'over4000', label: 'Over $4,000' }
+            ].map(option => (
               <button
+                key={option.value}
                 onClick={() => {
-                  setFilterCostRange('all');
+                  setFilterCostRange(option.value);
                   setOpenDropdown(null);
                 }}
                 className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                  filterCostRange === 'all' ? 'bg-gray-50 dark:bg-gray-700' : ''
+                  filterCostRange === option.value ? 'bg-gray-50 dark:bg-gray-700' : ''
                 }`}
               >
-                Any Cost
+                {option.label}
               </button>
-              {[
-                { value: 'under2000', label: 'Under $2,000' },
-                { value: '2000-3000', label: '$2,000 - $3,000' },
-                { value: '3000-4000', label: '$3,000 - $4,000' },
-                { value: 'over4000', label: 'Over $4,000' }
-              ].map(option => (
-                <button
-                  key={option.value}
-                  onClick={() => {
-                    setFilterCostRange(option.value);
-                    setOpenDropdown(null);
-                  }}
-                  className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                    filterCostRange === option.value ? 'bg-gray-50 dark:bg-gray-700' : ''
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        {/* Match Filter */}
-        <div className="relative">
-          <button
-            onClick={() => toggleDropdown('match')}
-            className={`flex-1 sm:flex-initial flex items-center justify-start gap-1 text-sm ${
-              isFilterActive(filterMatchRange)
-                ? 'text-scout-accent-600 dark:text-scout-accent-400 font-medium'
-                : 'text-gray-600 dark:text-gray-400'
-            } hover:text-gray-900 dark:hover:text-gray-100 transition-colors`}
-          >
-            <Crosshair size={14} />
-            <span>Match</span>
-          </button>
-          
-          {openDropdown === 'match' && (
-            <div className="absolute top-full mt-1 left-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+            ))}
+          </PortalDropdown>
+        )}
+
+        {openDropdown === 'match' && (
+          <PortalDropdown>
+            <button
+              onClick={() => {
+                setFilterMatchRange('all');
+                setOpenDropdown(null);
+              }}
+              className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                filterMatchRange === 'all' ? 'bg-gray-50 dark:bg-gray-700' : ''
+              }`}
+            >
+              Any Match Score
+            </button>
+            {[
+              { value: 'excellent', label: 'Excellent (80%+)' },
+              { value: 'good', label: 'Good (60-79%)' },
+              { value: 'fair', label: 'Fair (40-59%)' },
+              { value: 'low', label: 'Low (<40%)' }
+            ].map(option => (
               <button
+                key={option.value}
                 onClick={() => {
-                  setFilterMatchRange('all');
+                  setFilterMatchRange(option.value);
                   setOpenDropdown(null);
                 }}
                 className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                  filterMatchRange === 'all' ? 'bg-gray-50 dark:bg-gray-700' : ''
+                  filterMatchRange === option.value ? 'bg-gray-50 dark:bg-gray-700' : ''
                 }`}
               >
-                Any Match Score
+                {option.label}
               </button>
-              {[
-                { value: 'excellent', label: 'Excellent (80%+)' },
-                { value: 'good', label: 'Good (60-79%)' },
-                { value: 'fair', label: 'Fair (40-59%)' },
-                { value: 'low', label: 'Low (<40%)' }
-              ].map(option => (
-                <button
-                  key={option.value}
-                  onClick={() => {
-                    setFilterMatchRange(option.value);
-                    setOpenDropdown(null);
-                  }}
-                  className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                    filterMatchRange === option.value ? 'bg-gray-50 dark:bg-gray-700' : ''
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        </div>
+            ))}
+          </PortalDropdown>
+        )}
         
         {/* Click outside to close dropdowns */}
         {openDropdown && (
           <div 
-            className="fixed inset-0 z-40" 
+            className="fixed inset-0 z-[40]" 
             onClick={() => setOpenDropdown(null)}
           />
         )}
@@ -279,7 +329,7 @@ export default function FilterBarV3({
               </button>
               
               {openDropdown === 'sort' && (
-                <div className="absolute top-full mt-1 left-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                <div className="absolute top-full mt-1 left-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-[9999]">
                   {['match', 'name', 'cost-low', 'cost-high', 'region', 'climate', 'culture', 'hobbies', 'administration', 'budget'].map(option => (
                     <button
                       key={option}
@@ -344,7 +394,7 @@ export default function FilterBarV3({
               </button>
               
               {openDropdown === 'location' && (
-                <div className="absolute top-full mt-1 left-0 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 p-4">
+                <div className="absolute top-full mt-1 left-0 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-[9999] p-4">
                   {/* Region Selection */}
                   <div className="mb-4">
                     <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Region</label>
@@ -423,7 +473,7 @@ export default function FilterBarV3({
               </button>
               
               {openDropdown === 'cost' && (
-                <div className="absolute top-full mt-1 left-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                <div className="absolute top-full mt-1 left-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-[9999]">
                   <button
                     onClick={() => {
                       setFilterCostRange('all');
@@ -492,7 +542,7 @@ export default function FilterBarV3({
               </button>
               
               {openDropdown === 'match' && (
-                <div className="absolute top-full mt-1 left-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                <div className="absolute top-full mt-1 left-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-[9999]">
                   <button
                     onClick={() => {
                       setFilterMatchRange('all');
@@ -552,7 +602,7 @@ export default function FilterBarV3({
       {/* Click outside to close dropdowns */}
       {openDropdown && (
         <div 
-          className="fixed inset-0 z-40" 
+          className="fixed inset-0 z-[40]" 
           onClick={() => setOpenDropdown(null)}
         />
       )}
