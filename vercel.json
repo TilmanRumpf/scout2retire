@@ -1,7 +1,7 @@
 {
   "build": {
     "env": {
-      "FORCE_REBUILD": "1"
+      "VERCEL_FORCE_NO_BUILD_CACHE": "1"
     }
   },
   "installCommand": "npm install --force",
