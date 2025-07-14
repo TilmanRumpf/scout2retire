@@ -10,26 +10,49 @@ export const calculateEnhancedCultureScore = (town, preferences) => {
   let totalScore = 0
   let factors = 0
   
-  // Language compatibility with new primary_language field
+  // Language compatibility using actual town data (updated to match main algorithm)
   if (preferences.culture_preferences?.language_comfort?.preferences?.length > 0) {
     let langScore = 70
     const langPrefs = preferences.culture_preferences.language_comfort.preferences
-    const townLanguage = (town.primary_language || '').toLowerCase()
+    
+    // Prioritize actual town data over assumptions
+    const townLanguage = town.primary_language ? town.primary_language.toLowerCase() : ''
+    const usingRealData = !!town.primary_language
     
     if (langPrefs.includes('english_only')) {
       if (townLanguage === 'english') {
         langScore = 100
-      } else if (town.english_proficiency_score >= 80) {
-        langScore = 85
-      } else if (town.english_proficiency_score >= 60) {
-        langScore = 65
-      } else {
+      } else if (town.english_proficiency_level) {
+        // Use the same proficiency scoring as main algorithm
+        const proficiencyScores = {
+          'excellent': 88,    // Scaled for 100-point system (22/25 * 100)
+          'good': 72,         // 18/25 * 100
+          'moderate': 48,     // 12/25 * 100
+          'basic': 32,        // 8/25 * 100
+          'none': 0,
+          // Legacy values
+          'native': 100,
+          'very_high': 88,
+          'high': 72
+        }
+        langScore = proficiencyScores[town.english_proficiency_level] || 40
+      } else if (town.english_proficiency_score) {
+        // Fallback to numeric score if available
+        if (town.english_proficiency_score >= 80) {
+          langScore = 85
+        } else if (town.english_proficiency_score >= 60) {
+          langScore = 65
+        } else {
+          langScore = 40
+        }
+      } else if (!usingRealData) {
+        // Only use country assumption if no real data available
         langScore = 40
       }
     } else if (langPrefs.includes('willing_to_learn')) {
       langScore = 85
       // Bonus for Romance languages (easier for English speakers)
-      if (['spanish', 'portuguese', 'italian', 'french'].includes(townLanguage)) {
+      if (usingRealData && ['spanish', 'portuguese', 'italian', 'french', 'catalan', 'romanian'].includes(townLanguage)) {
         langScore += 10
       }
     } else if (langPrefs.includes('comfortable')) {
