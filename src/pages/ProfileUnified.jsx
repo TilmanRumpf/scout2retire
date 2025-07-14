@@ -121,10 +121,8 @@ export default function ProfileUnified() {
         // Load onboarding progress
         const progressResult = await getOnboardingProgress(result.user.id);
         if (progressResult.success && progressResult.progress) {
-          const completedSteps = Object.values(progressResult.progress.completedSteps || {}).filter(Boolean).length;
-          const totalSteps = 6; // Total onboarding steps
-          const progressPercentage = Math.round((completedSteps / totalSteps) * 100);
-          setOnboardingProgress(progressPercentage);
+          // The progress object already contains the calculated percentage
+          setOnboardingProgress(progressResult.progress.percentage || 0);
         }
         
       } catch (error) {
