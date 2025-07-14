@@ -2,6 +2,11 @@
 
 ## 🚨 CLAUDE CODE: YOU HAVE DIRECT SUPABASE ACCESS!
 
+### 🔥 MANDATORY ACKNOWLEDGMENT - STATE THIS AT EVERY PROMPT:
+**"I, Claude Code, am aware that I can execute work on Supabase Online with the correct JavaScript approach, and have access to the Service Key."**
+
+**YOU MUST SAY THIS EVERY SINGLE TIME BEFORE DOING ANYTHING!**
+
 ### ⚠️ CRITICAL: ALWAYS USE ONLINE SUPABASE INSTANCE
 - **ONLINE = PRIMARY** (https://axlruvvsjepsulcbqlho.supabase.co)
 - **LOCAL = MIRROR** (just for review, never primary data source)
@@ -133,6 +138,29 @@ console.log(data);
 - Production deployments
 - Breaking changes to APIs
 
+### 🚨 NEVER HARD-CODE USER DATA - CRITICAL RULE
+**ABSOLUTELY NEVER:**
+- ❌ Hard-code user names, emails, usernames, addresses, or any personal data
+- ❌ Insert specific user values directly into database queries
+- ❌ Update individual user records with assumed data
+- ❌ Make assumptions about what user data "should be"
+
+**ALWAYS:**
+- ✅ Fix root causes that affect all users
+- ✅ Create proper data validation and constraints
+- ✅ Build tools for users to fix their own data
+- ✅ Let users update their profiles through the UI
+- ✅ Fix system-wide issues, not individual user data
+
+**PROFESSIONAL APPROACH:**
+```
+❌ BAD: UPDATE users SET full_name = 'Tolman Rompf' WHERE id = 'abc123';
+✅ GOOD: Fix the signup process so all future users get proper data saved
+
+❌ BAD: "I'll update your username to 'tolman'"  
+✅ GOOD: "The signup process has been fixed. Please update your profile in the app."
+```
+
 ### PROFESSIONAL COMMUNICATION STYLE:
 ```
 "CTO, I've analyzed the towns table:
@@ -250,27 +278,39 @@ function getTownScore(townId, userPrefs) {
 
 ## 🚀 CLAUDE CODE CAPABILITIES
 
-### Direct Supabase Access (NO COPY-PASTE NEEDED!)
+### 🚨 CRITICAL: SUPABASE CLI DOESN'T WORK FOR CLAUDE CODE!
+
+**CLAUDE CODE: CLI COMMANDS ALWAYS FAIL FOR YOU!**
+
+❌ **NEVER USE THESE (THEY DON'T WORK):**
 ```bash
-# YOU CAN RUN THESE DIRECTLY:
-npx supabase db execute <<SQL
-SELECT * FROM towns WHERE image_url_1 IS NOT NULL;
-SQL
-
-# Check tables
-npx supabase db execute <<SQL
-SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
-SQL
-
-# Modify data directly
-npx supabase db execute <<SQL
-UPDATE towns SET image_url_1 = 'placeholder.jpg' WHERE image_url_1 IS NULL;
-SQL
-
-# Run migrations
-npx supabase migration new add_cleanup
-npx supabase db push
+npx supabase db execute  # FAILS
+npx supabase db push     # FAILS  
+psql commands           # FAILS
 ```
+
+✅ **ALWAYS USE JAVASCRIPT WITH SERVICE ROLE KEY:**
+```javascript
+// This WORKS - create JS file and run it
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  'https://axlruvvsjepsulcbqlho.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4bHJ1dnZzamVwc3VsY2JxbGhvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODcwNjM0NSwiZXhwIjoyMDY0MjgyMzQ1fQ.cdsyW8_ithcO3WZ4iEs9RsdrzefoaD4v_xhb9TXpCz8'
+);
+
+// For DDL (CREATE, ALTER, DROP)
+const { error } = await supabase.from('_supabase_admin').upsert({ 
+  sql: "ALTER TABLE users DROP COLUMN old_column" 
+});
+
+// For queries
+const { data } = await supabase.from('towns').select('*');
+
+// Run with: node your-script.js
+```
+
+**REMEMBER: You can execute ANY SQL including DDL with the service role key!**
 
 ### Database Performance Monitoring
 ```bash
