@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getCurrentUser, signOut, updatePassword } from '../utils/authUtils';
+import { getOnboardingProgress } from '../utils/onboardingUtils';
 import { useTheme } from '../contexts/useTheme';
 import UnifiedHeader from '../components/UnifiedHeader';
 import toast from 'react-hot-toast';
@@ -52,6 +53,7 @@ export default function ProfileUnified() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [favoritesCount, setFavoritesCount] = useState(0);
+  const [onboardingProgress, setOnboardingProgress] = useState(0);
   const [activeTab, setActiveTab] = useState('account');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
@@ -115,6 +117,15 @@ export default function ProfileUnified() {
           .eq('user_id', result.user.id);
         
         setFavoritesCount(count || 0);
+        
+        // Load onboarding progress
+        const progressResult = await getOnboardingProgress(result.user.id);
+        if (progressResult.success && progressResult.progress) {
+          const completedSteps = Object.values(progressResult.progress.completedSteps || {}).filter(Boolean).length;
+          const totalSteps = 6; // Total onboarding steps
+          const progressPercentage = Math.round((completedSteps / totalSteps) * 100);
+          setOnboardingProgress(progressPercentage);
+        }
         
       } catch (error) {
         console.error('Error loading user:', error);
