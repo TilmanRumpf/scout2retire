@@ -1,4 +1,10 @@
 {
+  "build": {
+    "env": {
+      "FORCE_REBUILD": "1"
+    }
+  },
+  "installCommand": "npm install --force",
   "rewrites": [
     {
       "source": "/(.*)",
