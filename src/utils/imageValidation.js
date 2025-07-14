@@ -16,6 +16,25 @@ export function hasValidImage(town) {
   // Check for placeholder or invalid URLs
   if (lowerUrl.includes('placeholder') || lowerUrl.includes('null')) return false;
   
+  // Check for malformed URLs
+  if (url.includes('https://https://') || url.includes('http://http://')) {
+    console.error(`Malformed URL detected (double protocol): ${url}`);
+    return false;
+  }
+  
+  // Check for missing colon after protocol
+  if (url.includes('https//') || url.includes('http//')) {
+    console.error(`Malformed URL detected (missing colon): ${url}`);
+    return false;
+  }
+  
+  // Check for double slashes in path (after protocol)
+  const protocolEnd = url.indexOf('://') + 3;
+  if (protocolEnd > 3 && url.indexOf('//', protocolEnd) !== -1) {
+    console.error(`Malformed URL detected (double slash in path): ${url}`);
+    return false;
+  }
+  
   // Must be a valid URL
   if (!lowerUrl.startsWith('http://') && !lowerUrl.startsWith('https://')) return false;
   
