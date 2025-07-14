@@ -218,7 +218,6 @@ export default function Signup() {
         sanitizedEmail,
         sanitizedPassword,
         sanitizedName,
-        'usa', // Default nationality
         defaultRetirementDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
         hometown.trim() || null // Optional hometown
       );
