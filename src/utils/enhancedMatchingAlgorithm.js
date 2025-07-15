@@ -1,7 +1,7 @@
 // Enhanced Matching Algorithm that fully utilizes new town data fields
 // Maps directly to the 6 onboarding sections: Region, Climate, Culture, Hobbies, Admin, Budget
 
-import supabase from './supabaseClient.js'
+import { supabase } from './supabaseClient.js'
 
 // Weights optimized for 55+ retirees: equal emphasis on location preference, budget constraints, and healthcare/safety (60% combined), with climate and culture as secondary factors
 // Score weights for each category (total = 100)
@@ -41,6 +41,13 @@ export function calculateRegionScore(preferences, town) {
   let score = 0
   let factors = []
   
+  // If user has NO location preferences, they're open to anywhere - give neutral score
+  if (!preferences.countries?.length && !preferences.regions?.length && !preferences.geographic_features?.length) {
+    score += 50
+    factors.push({ factor: 'Open to any location', score: 50 })
+    return { score, factors }
+  }
+  
   // Direct country match (40 points)
   if (preferences.countries?.includes(town.country)) {
     score += 40
@@ -52,18 +59,29 @@ export function calculateRegionScore(preferences, town) {
     score += 30
     factors.push({ factor: 'Region match', score: 30 })
   }
+  // No country/region preference but has other preferences
+  else if (!preferences.countries?.length && !preferences.regions?.length) {
+    score += 20
+    factors.push({ factor: 'Open to any country', score: 20 })
+  }
   
   // Geographic features match (30 points)
-  if (preferences.geographic_features?.length && town.geographic_features_actual?.length) {
-    const geoScore = calculateArrayOverlap(
-      preferences.geographic_features,
-      town.geographic_features_actual,
-      30
-    )
-    score += geoScore
-    if (geoScore > 0) {
-      factors.push({ factor: 'Geographic features match', score: geoScore })
+  if (preferences.geographic_features?.length) {
+    if (town.geographic_features_actual?.length) {
+      const geoScore = calculateArrayOverlap(
+        preferences.geographic_features,
+        town.geographic_features_actual,
+        30
+      )
+      score += geoScore
+      if (geoScore > 0) {
+        factors.push({ factor: 'Geographic features match', score: geoScore })
+      }
     }
+  } else {
+    // No geographic preference = open to any geography
+    score += 15
+    factors.push({ factor: 'Open to any geography', score: 15 })
   }
   
   // Vegetation type match (20 points)
@@ -172,6 +190,16 @@ function calculateGradualClimateScore(userPref, townActual, maxPoints, adjacency
 export function calculateClimateScore(preferences, town) {
   let score = 0
   let factors = []
+  
+  // If user has NO climate preferences at all, they're flexible - give neutral score
+  if (!preferences.summer_climate_preference?.length && 
+      !preferences.winter_climate_preference?.length &&
+      !preferences.humidity_level?.length &&
+      !preferences.sunshine?.length) {
+    score += 50
+    factors.push({ factor: 'Flexible on climate', score: 50 })
+    return { score, factors }
+  }
   
   // Note: Points adjusted to accommodate seasonal preference (was 100, now 100 with seasonal)
   // Summer climate match (21 points, was 25)
@@ -1287,24 +1315,68 @@ export async function calculateEnhancedMatch(userPreferences, town) {
 // Function to get top matches for a user
 export async function getTopMatches(userId, limit = 10) {
   try {
-    // Get user preferences
+    // Get user preferences from user_preferences table
     const { data: userData, error: userError } = await supabase
-      .from('users')
+      .from('user_preferences')
       .select('*')
-      .eq('id', userId)
+      .eq('user_id', userId)
       .single()
     
     if (userError) throw userError
     
-    // Parse user preferences from onboarding data
+    // Transform user_preferences data to match expected format
     const userPreferences = {
-      region_preferences: userData.onboarding_region || {},
-      climate_preferences: userData.onboarding_climate || {},
-      culture_preferences: userData.onboarding_culture || {},
-      hobbies_preferences: userData.onboarding_hobbies || {},
-      admin_preferences: userData.onboarding_admin || {},
-      budget_preferences: userData.onboarding_budget || {},
-      citizenship: userData.citizenship || 'USA'
+      region_preferences: {
+        regions: userData.regions || [],
+        countries: userData.countries || [],
+        provinces: userData.provinces || [],
+        geographic_features: userData.geographic_features || [],
+        vegetation_types: userData.vegetation_types || []
+      },
+      climate_preferences: {
+        summer_climate_preference: userData.summer_climate_preference || [],
+        winter_climate_preference: userData.winter_climate_preference || [],
+        humidity_level: userData.humidity_level || [],
+        sunshine: userData.sunshine || [],
+        precipitation: userData.precipitation || [],
+        seasonal_preference: userData.seasonal_preference || ''
+      },
+      culture_preferences: {
+        expat_community_preference: userData.expat_community_preference || [],
+        language_comfort: userData.language_comfort || {},
+        cultural_importance: userData.cultural_importance || {},
+        lifestyle_preferences: userData.lifestyle_preferences || {}
+      },
+      hobbies_preferences: {
+        activities: userData.activities || [],
+        interests: userData.interests || [],
+        travel_frequency: userData.travel_frequency || '',
+        lifestyle_importance: userData.lifestyle_importance || {}
+      },
+      admin_preferences: {
+        healthcare_quality: userData.healthcare_quality || [],
+        health_considerations: userData.health_considerations || {},
+        insurance_importance: userData.insurance_importance || [],
+        safety_importance: userData.safety_importance || [],
+        emergency_services: userData.emergency_services || [],
+        political_stability: userData.political_stability || [],
+        tax_preference: userData.tax_preference || [],
+        government_efficiency: userData.government_efficiency || [],
+        visa_preference: userData.visa_preference || [],
+        stay_duration: userData.stay_duration || [],
+        residency_path: userData.residency_path || []
+      },
+      budget_preferences: {
+        total_monthly_budget: userData.total_monthly_budget || 0,
+        max_monthly_rent: userData.max_monthly_rent || 0,
+        max_home_price: userData.max_home_price || 0,
+        monthly_healthcare_budget: userData.monthly_healthcare_budget || 0,
+        mobility: userData.mobility || {},
+        property_tax_sensitive: userData.property_tax_sensitive || false,
+        sales_tax_sensitive: userData.sales_tax_sensitive || false,
+        income_tax_sensitive: userData.income_tax_sensitive || false
+      },
+      citizenship: userData.primary_citizenship || 'USA'
     }
     
     // Get all towns with photos (only show towns with photos)

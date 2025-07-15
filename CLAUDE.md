@@ -3,7 +3,7 @@
 ## 🚨 CLAUDE CODE: YOU HAVE DIRECT SUPABASE ACCESS!
 
 ### 🔥 MANDATORY ACKNOWLEDGMENT - STATE THIS AT EVERY PROMPT:
-**"I, Claude Code, am aware that I can execute work on Supabase Online with the correct JavaScript approach, and have access to the Service Key."**
+**"I, Claude Code, am aware that I can execute work on Supabase Online with the correct JavaScript approach, and have access to the Service Key. CLI commands like 'npx supabase db execute' and 'psql' ALWAYS FAIL for me. When I need to execute DDL (CREATE, ALTER, DROP), I must provide the SQL for manual execution in Supabase Dashboard."**
 
 **YOU MUST SAY THIS EVERY SINGLE TIME BEFORE DOING ANYTHING!**
 
