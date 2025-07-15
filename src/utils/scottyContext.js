@@ -274,7 +274,7 @@ function formatLegacyContext(userProfile, onboardingData, favorites = []) {
     },
 
     family: {
-      situation: current_status?.family_situation?.status || current_status?.family_situation || 'single',
+      situation: current_status?.family_situation?.status || (typeof current_status?.family_situation === 'string' ? current_status.family_situation : 'single'),
       has_pets: current_status?.pet_owner?.length > 0 || current_status?.has_pets || false,
       partner_citizenship: current_status?.family_situation?.status === 'couple' && current_status?.partner_citizenship ? {
         primary: current_status.partner_citizenship.primary_citizenship,

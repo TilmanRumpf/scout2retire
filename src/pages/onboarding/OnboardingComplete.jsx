@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getPersonalizedTowns } from '../../utils/matchingAlgorithm';
 import { getCurrentUser } from '../../utils/authUtils';
 import { uiConfig } from '../../styles/uiConfig';
+import { testMatchingInBrowser } from '../../utils/testMatching';
 import TownRadarChart from '../../components/TownRadarChart';
 import LikeButton from '../../components/LikeButton';
 import toast from 'react-hot-toast';
@@ -30,24 +31,44 @@ export default function OnboardingComplete() {
       }
       setUserId(user.id);
 
+      // Debug: Test matching in browser
+      console.log('🧪 Running debug test...');
+      await testMatchingInBrowser(user.id);
+
       // Get personalized recommendations
-      const result = await getPersonalizedTowns(user.id, { limit: 10 });
+      const result = await getPersonalizedTowns(user.id, { limit: 20 });
       
       if (result.success && result.towns) {
-        // Filter for top matches (80%+ score)
-        const excellentMatches = result.towns.filter(town => town.matchScore >= 80);
-        const goodMatches = result.towns.filter(town => town.matchScore >= 70 && town.matchScore < 80);
+        // Debug: Log all scores
+        console.log('🎯 All match scores:');
+        result.towns.forEach((town, i) => {
+          console.log(`${i+1}. ${town.name}: ${town.matchScore}%`);
+        });
         
-        // Take top 5, preferring excellent matches
-        const topTowns = [...excellentMatches, ...goodMatches].slice(0, 5);
+        // Lower thresholds temporarily to see matches
+        const excellentMatches = result.towns.filter(town => town.matchScore >= 60);
+        const goodMatches = result.towns.filter(town => town.matchScore >= 40 && town.matchScore < 60);
+        const fairMatches = result.towns.filter(town => town.matchScore >= 20 && town.matchScore < 40);
+        
+        // Take top 10 matches regardless of score
+        const topTowns = [...excellentMatches, ...goodMatches, ...fairMatches].slice(0, 10);
+        
+        console.log(`Found: ${excellentMatches.length} excellent, ${goodMatches.length} good, ${fairMatches.length} fair matches`);
         
         setTopMatches(topTowns);
         setUserPreferences(result.userPreferences);
         
-        // Show success message
-        toast.success(`We found ${excellentMatches.length} perfect matches for you!`, {
-          duration: 5000
-        });
+        // Show realistic message
+        const totalMatches = excellentMatches.length + goodMatches.length + fairMatches.length;
+        if (totalMatches > 0) {
+          toast.success(`We found ${totalMatches} matches for you!`, {
+            duration: 5000
+          });
+        } else {
+          toast.warning('No matches found with current criteria. Try adjusting your preferences.', {
+            duration: 5000
+          });
+        }
       }
     } catch (error) {
       console.error('Error loading matches:', error);

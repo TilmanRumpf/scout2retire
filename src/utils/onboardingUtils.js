@@ -116,28 +116,17 @@ export const completeOnboarding = async (userId) => {
       .eq('user_id', userId)
       .single();
     
-    // Prepare update data
+    // Prepare update data - only set onboarding completion flag
     const updateData = { onboarding_completed: true };
     
-    // If retirement timeline exists, update retirement_year_estimate
-    if (onboardingData?.current_status?.retirement_timeline) {
-      const timeline = onboardingData.current_status.retirement_timeline;
-      
-      // Only update retirement_year_estimate if we have year data
-      if (timeline.target_year) {
-        updateData.retirement_year_estimate = timeline.target_year;
-        console.log('Setting retirement year estimate:', timeline.target_year);
-      }
-    }
-    
-    // Update user profile with completion status and retirement date
-    console.log('Attempting to update user with data:', updateData);
+    // Update user_preferences with completion status and retirement date
+    console.log('Attempting to update user_preferences with data:', updateData);
     console.log('User ID:', userId);
     
     const { data: updatedUser, error } = await supabase
-      .from('users')
+      .from('user_preferences')
       .update(updateData)
-      .eq('id', userId)
+      .eq('user_id', userId)
       .select()
       .single();
     
@@ -156,6 +145,11 @@ export const completeOnboarding = async (userId) => {
     
     if (updatedUser && updatedUser.onboarding_completed === true) {
       console.log('✅ Successfully completed onboarding and updated profile');
+      
+      // Note: Matching will run on first app load instead of during onboarding completion
+      // This avoids server-side environment issues during onboarding
+      console.log('✅ Onboarding completed - matching will run when user visits app');
+      
       return { success: true };
     } else {
       console.error('❌ Update appeared to succeed but onboarding_completed is still false');
@@ -182,9 +176,10 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
     
     // Remove .single() to avoid 406 error
     const { data, error } = await supabase
-      .from('onboarding_responses')
+      .from('user_preferences')
       .select('*')
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .single();
     
     // Define the expected steps - Updated 19JUN25: Using 'costs' to match database
     const steps = [
@@ -197,8 +192,8 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
       'costs'  // Changed from 'budget' to 'costs'
     ];
     
-    // If no data exists yet or data is empty array
-    if (!data || data.length === 0) {
+    // If no data exists yet
+    if (!data) {
       const completedSteps = {};
       steps.forEach(step => {
         completedSteps[step] = false;
@@ -236,15 +231,87 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
       return { success: false, error };
     }
     
-    // Use first row from the result array
-    const userData = data[0];
+    // Transform user_preferences data into section format for display
+    const userData = {
+      current_status: {
+        retirement_timeline: {
+          status: typeof data.retirement_status === 'object' 
+            ? (data.retirement_status?.value || data.retirement_status?.status || 'Not specified')
+            : (data.retirement_status || 'Not specified'),
+          target_year: data.target_retirement_year,
+          target_month: data.target_retirement_month,
+          target_day: data.target_retirement_day,
+          flexibility: data.timeline_flexibility
+        },
+        family_situation: {
+          status: typeof data.family_status === 'object'
+            ? (data.family_status?.value || data.family_status?.status || 'Not specified')
+            : (data.family_status || 'Not specified')
+        },
+        citizenship: {
+          primary_citizenship: data.primary_citizenship,
+          secondary_citizenship: data.secondary_citizenship,
+          dual_citizenship: !!data.secondary_citizenship
+        },
+        pet_owner: data.bringing_pets ? ['yes'] : ['no']
+      },
+      region_preferences: {
+        regions: data.regions || [],
+        countries: data.countries || [],
+        provinces: data.provinces || [],
+        geographic_features: data.geographic_features || [],
+        vegetation_types: data.vegetation_types || []
+      },
+      climate_preferences: {
+        summer_climate_preference: data.summer_climate_preference || [],
+        winter_climate_preference: data.winter_climate_preference || [],
+        humidity_level: data.humidity_level || [],
+        sunshine: data.sunshine || [],
+        precipitation: data.precipitation || [],
+        seasonal_preference: data.seasonal_preference
+      },
+      culture_preferences: {
+        expat_community_preference: data.expat_community_preference || [],
+        language_comfort: data.language_comfort || {},
+        cultural_importance: data.cultural_importance || {},
+        lifestyle_preferences: data.lifestyle_preferences || {}
+      },
+      hobbies: {
+        activities: data.activities || [],
+        interests: data.interests || [],
+        travel_frequency: data.travel_frequency,
+        social_preference: data.lifestyle_preferences?.social_preference,
+        lifestyle_importance: data.lifestyle_importance || {}
+      },
+      administration: {
+        healthcare_quality: data.healthcare_quality || [],
+        health_considerations: data.health_considerations || {},
+        insurance_importance: data.insurance_importance || [],
+        safety_importance: data.safety_importance || [],
+        emergency_services: data.emergency_services || [],
+        political_stability: data.political_stability || [],
+        tax_preference: data.tax_preference || [],
+        government_efficiency: data.government_efficiency || [],
+        visa_preference: data.visa_preference || [],
+        stay_duration: data.stay_duration || [],
+        residency_path: data.residency_path || [],
+        special_medical_needs: data.health_considerations?.ongoing_treatment
+      },
+      costs: {
+        total_monthly_budget: data.total_monthly_budget,
+        max_monthly_rent: data.max_monthly_rent,
+        max_home_price: data.max_home_price,
+        monthly_healthcare_budget: data.monthly_healthcare_budget,
+        mobility: data.mobility || {}
+      }
+    };
     
     // Check which steps are completed
     const completedSteps = {};
     let completedCount = 0;
     
     steps.forEach(step => {
-      const isCompleted = userData && userData[step] !== null && userData[step] !== undefined;
+      const isCompleted = userData[step] !== null && userData[step] !== undefined;
       completedSteps[step] = isCompleted;
       if (isCompleted) completedCount++;
     });

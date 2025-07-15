@@ -22,7 +22,7 @@ export default function OnboardingReview() {
           return;
         }
         
-        const { success, data, progress: userProgress, error } = await getOnboardingProgress(user.id);
+        const { success, data, error } = await getOnboardingProgress(user.id);
         if (!success) {
           console.error("Error loading onboarding data:", error);
           setInitialLoading(false);
@@ -78,6 +78,13 @@ export default function OnboardingReview() {
     }
   };
 
+  // Helper function to safely render values
+  const safeRender = (value, fallback = 'Not specified') => {
+    if (value === null || value === undefined || value === '') return fallback;
+    if (typeof value === 'object') return fallback;
+    return String(value);
+  };
+
   // Helper function to format section data for display
   const formatSectionData = (section, data) => {
     if (!data) return 'Not provided';
@@ -88,9 +95,10 @@ export default function OnboardingReview() {
           <div className={`space-y-1 ${uiConfig.font.size.xs}`}>
             <p>
               <span className={`${uiConfig.font.weight.medium}`}>Status:</span>{' '}
-              {data.retirement_timeline?.status === 'planning' && 'Planning for retirement'}
-              {data.retirement_timeline?.status === 'retiring_soon' && 'Retiring soon'}
-              {data.retirement_timeline?.status === 'already_retired' && 'Already retired'}
+              {data.retirement_timeline?.status === 'planning' ? 'Planning for retirement' :
+               data.retirement_timeline?.status === 'retiring_soon' ? 'Retiring soon' :
+               data.retirement_timeline?.status === 'already_retired' ? 'Already retired' :
+               'Not specified'}
             </p>
             {data.retirement_timeline?.target_year && (
               <p>
@@ -104,7 +112,7 @@ export default function OnboardingReview() {
             )}
             <p>
               <span className={`${uiConfig.font.weight.medium}`}>Family:</span>{' '}
-              {data.family_situation?.status || data.family_situation || 'Not specified'}
+              {data.family_situation?.status || 'Not specified'}
             </p>
             <p>
               <span className={`${uiConfig.font.weight.medium}`}>Citizenship:</span>{' '}
@@ -194,7 +202,7 @@ export default function OnboardingReview() {
                 {data.lifestyle_preferences.urban_rural.join(', ')}
               </p>
             )}
-            {data.language_comfort?.already_speak && data.language_comfort.already_speak.length > 0 && (
+            {data.language_comfort?.already_speak && Array.isArray(data.language_comfort.already_speak) && data.language_comfort.already_speak.length > 0 && (
               <p>
                 <span className={`${uiConfig.font.weight.medium}`}>Languages:</span>{' '}
                 {data.language_comfort.already_speak.join(', ')}
@@ -220,11 +228,11 @@ export default function OnboardingReview() {
             )}
             <p>
               <span className={`${uiConfig.font.weight.medium}`}>Social:</span>{' '}
-              {data.social_preference || 'Not specified'}
+              {safeRender(data.lifestyle_preferences?.social_preference || data.social_preference)}
             </p>
             <p>
               <span className={`${uiConfig.font.weight.medium}`}>Travel:</span>{' '}
-              {data.travel_frequency || 'Not specified'}
+              {safeRender(data.travel_frequency)}
             </p>
           </div>
         );
