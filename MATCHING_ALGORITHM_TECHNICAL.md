@@ -218,6 +218,37 @@ const convertedPrefs = {
 };
 ```
 
+## Scoring Philosophy: Empty Preferences = 100% Match
+
+### Core Implementation
+When users have NO preferences in a category, they receive a perfect score (100%) for that category across all towns. This is implemented at the beginning of each scoring function:
+
+```javascript
+// Example from calculateRegionScore
+if (!preferences.countries?.length && 
+    !preferences.regions?.length && 
+    !preferences.geographic_features?.length) {
+  score = 100
+  factors.push({ factor: 'Open to any location', score: 100 })
+  return { score, factors }
+}
+```
+
+### Rationale
+- **No preference = Maximum flexibility**: Users who don't specify preferences are open to all options
+- **Encourages exploration**: Users see more destinations when they're undecided
+- **Avoids forced choices**: Users aren't penalized for not having formed opinions yet
+- **Discovery-oriented**: Helps users discover preferences by seeing many options
+
+### Implementation Details
+Each of the 6 scoring functions checks for empty preferences:
+1. **Region**: No countries/regions/features selected → 100%
+2. **Climate**: No climate preferences → 100%
+3. **Culture**: No language/lifestyle preferences → 100%
+4. **Hobbies**: No activities/interests → 100%
+5. **Admin**: No healthcare/safety/visa preferences → 100%
+6. **Budget**: No budget specified → 100%
+
 ## Scoring Weights
 
 ```javascript

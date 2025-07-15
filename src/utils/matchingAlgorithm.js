@@ -23,30 +23,19 @@ import {
  * Convert user preferences to enhanced algorithm format
  */
 const convertPreferencesForEnhancedAlgorithm = (userPreferences) => {
-  // Get climate preferences with sensible defaults
-  const climateData = userPreferences.climate || userPreferences.climate_preferences || {};
-  const defaultClimate = {
-    summer_climate_preference: 'warm',
-    winter_climate_preference: 'mild', 
-    humidity_level: 'moderate',
-    sunshine: 'abundant',
-    precipitation: 'moderate'
-  };
+  // IMPORTANT: NO DEFAULTS! Empty preferences should remain empty
+  // so the algorithm gives 100% scores for categories with no preferences
   
-  // Get budget preferences with defaults
+  const climateData = userPreferences.climate || userPreferences.climate_preferences || {};
   const budgetData = userPreferences.costs || userPreferences.budget_preferences || {};
-  const defaultBudget = {
-    total_monthly_budget: 3000,
-    max_monthly_rent: 1200
-  };
   
   return {
     region_preferences: userPreferences.region || userPreferences.region_preferences || {},
-    climate_preferences: { ...defaultClimate, ...climateData },
+    climate_preferences: climateData,  // NO DEFAULTS!
     culture_preferences: userPreferences.culture || userPreferences.culture_preferences || {},
     hobbies_preferences: userPreferences.hobbies || userPreferences.hobbies_preferences || {},
     admin_preferences: userPreferences.administration || userPreferences.admin_preferences || {},
-    budget_preferences: { ...defaultBudget, ...budgetData },
+    budget_preferences: budgetData,    // NO DEFAULTS!
     current_status: userPreferences.current_status || {}
   };
 };
