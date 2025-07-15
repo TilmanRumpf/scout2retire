@@ -23,6 +23,52 @@ The Scout2Retire matching system is experiencing a critical failure where users 
 
 ---
 
+## 📝 UPDATE: July 15, 2025 - Matching Algorithm Issues
+
+### Current State After Fixes:
+- Fixed: Empty preferences now correctly get 100% scores
+- Fixed: Removed default preferences being added to empty categories
+- Improved: Smart activity matching (fishing → water_sports/coastal)
+- Improved: Climate matching (warm → hot gives full points)
+- **STILL BROKEN**: Real user example gets only 65% match despite perfect alignment
+
+### Test Case: dkd@gmail.com vs Alicante
+**User Preferences:**
+- Coastal location ✅ → Alicante is coastal
+- Warm summers ✅ → Alicante has hot summers (31°C)
+- Fishing activity ✅ → Alicante has beaches, water_sports
+- $3200 budget ✅ → Alicante costs $1600 (2x budget)
+- Functional healthcare ✅ → Alicante score 8/10
+
+**Expected Score: 95-100%**
+**Actual Score: 65%** 🚨
+
+### Root Causes of Low Scoring:
+1. **Algorithm is too literal** - Lacks common sense inference
+2. **Activity matching is broken** - Even with smart matching, still low scores
+3. **Scoring weights may be wrong** - Some categories dominating unfairly
+4. **Data transformation issues** - Preferences may be getting lost in conversion
+5. **Hidden penalties** - Something is reducing scores beyond visible factors
+
+### TODO: Complete Algorithm Redesign Needed
+The current algorithm needs fundamental rethinking:
+- Add "common sense" layer for obvious matches
+- Implement fuzzy matching for all categories
+- Review and fix scoring weights
+- Add debug mode to see exact score calculations
+- Consider ML-based approach instead of rule-based
+
+### Data Sources Without API (TO BE IMPLEMENTED):
+- Government statistics websites (free, public data)
+- Wikipedia data extraction
+- OpenStreetMap for geographic features
+- Public weather station data
+- Cost of living indices from public sources
+- Healthcare rankings from WHO/public health orgs
+- Safety indices from public crime statistics
+
+---
+
 ## 🚨 Critical Issues Identified
 
 ### 1. **PHOTO FILTER ELIMINATES 79% OF TOWNS**

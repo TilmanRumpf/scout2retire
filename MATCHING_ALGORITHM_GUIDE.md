@@ -149,6 +149,50 @@ After onboarding, you can browse personalized town recommendations ranked by mat
 
 ---
 
+## Scoring Philosophy: "No Preference = Open to All"
+
+### Core Principle
+**When you don't specify preferences in a category, you receive 100% match for that category in ALL towns.**
+
+This fundamental design principle ensures that:
+- Not selecting preferences means "I'm flexible" or "I don't mind"
+- You see MORE options when you're open-minded, not fewer
+- Only when you SELECT specific preferences do we filter results
+
+### Examples
+
+**Example 1: Budget-Only User**
+- Selects: Budget of $2000/month
+- Leaves empty: All other preferences
+- Result: 
+  - Budget category: Scored based on town costs vs $2000
+  - All other categories: 100% for every town
+  - Outcome: Sees many affordable towns regardless of climate, location, etc.
+
+**Example 2: Climate-Focused User**
+- Selects: Warm summers, mild winters
+- Leaves empty: Region, culture, hobbies, admin preferences
+- Result:
+  - Climate category: Only warm-climate towns score high
+  - All other categories: 100% for every town
+  - Outcome: Sees all warm-climate towns worldwide
+
+**Example 3: No Preferences User**
+- Selects: Nothing (skips all preferences)
+- Result: All towns get 100% in all categories
+- Outcome: Sees all 71 towns with photos, ranked by data quality
+
+### Why This Matters
+Traditional matching systems often penalize users for not having preferences, showing them nothing or random results. Our approach recognizes that retirement planning is about **discovery** - many users don't know what they want until they see it.
+
+By giving 100% scores to empty preferences, we:
+- Encourage exploration
+- Avoid forcing artificial choices
+- Respect that "no preference" is a valid preference
+- Show the maximum number of viable options
+
+---
+
 ## The Matching Process
 
 ### Step 1: Pre-filtering
@@ -188,7 +232,10 @@ Towns are sorted by total score (highest first) and presented with:
 ### 1. Region Score (20% of total)
 Evaluates geographic alignment:
 
-**What we check:**
+**No Preferences = 100% Score**
+If you don't select any countries, regions, or geographic features, all towns receive 100% for this category.
+
+**What we check (when you have preferences):**
 - **Country match** (40 points) - Is it in your preferred countries?
 - **Region match** (30 points) - Is it in your preferred regions?
 - **Geographic features** (30 points) - Beach? Mountains? Historic?
@@ -203,7 +250,10 @@ Evaluates geographic alignment:
 ### 2. Climate Score (15% of total)
 Matches your weather preferences:
 
-**What we check:**
+**No Preferences = 100% Score**
+If you don't select any climate preferences, all towns receive 100% for this category.
+
+**What we check (when you have preferences):**
 - **Summer climate** (21 points) - Hot, warm, mild, or cool?
 - **Winter climate** (21 points) - How cold is too cold?
 - **Humidity level** (17 points) - Dry, moderate, or humid? *[NEW: Gradual scoring]*
@@ -299,7 +349,10 @@ When towns lack specific climate data, we intelligently infer from:
 ### 3. Culture Score (15% of total)
 Aligns lifestyle and cultural preferences:
 
-**What we check:**
+**No Preferences = 100% Score**
+If you don't select any language, lifestyle, or cultural preferences, all towns receive 100% for this category.
+
+**What we check (when you have preferences):**
 - **Language compatibility** (25 points)
   - **Primary language**: Uses actual town language data when available
   - **English proficiency**: Detailed scoring based on actual proficiency levels
@@ -336,7 +389,10 @@ Updated to handle special cases:
 ### 4. Hobbies Score (10% of total)
 Matches activities and interests:
 
-**What we check:**
+**No Preferences = 100% Score**
+If you don't select any activities or interests, all towns receive 100% for this category.
+
+**What we check (when you have preferences):**
 - **Activity availability** (40 points) - Can you do your favorite activities?
 - **Interest support** (30 points) - Cultural, culinary, outdoor, etc.
 - **Lifestyle priorities** (30 points) - Shopping, wellness, events
@@ -350,7 +406,10 @@ Matches activities and interests:
 ### 5. Administration Score (20% of total)
 Evaluates practical considerations:
 
-**What we check:**
+**No Preferences = 100% Score**
+If you don't select any healthcare, safety, or visa preferences, all towns receive 100% for this category.
+
+**What we check (when you have preferences):**
 - **Healthcare quality** (30 points) *[NEW: Gradual scoring]*
   - **Good preference** (ideal 9+): 100% at 9.0+, 80% at 8.0+, 60% at 7.0+, 40% at 6.0+, 20% at 5.0+
   - **Functional preference** (ideal 7+): 100% at 7.0+, 80% at 6.0+, 60% at 5.0+
@@ -378,7 +437,10 @@ Instead of harsh all-or-nothing thresholds, we now use intelligent gradual scori
 ### 6. Budget Score (20% of total)
 Ensures financial feasibility:
 
-**What we check:**
+**No Preferences = 100% Score**
+If you don't specify any budget, all towns receive 100% for this category.
+
+**What we check (when you have a budget):**
 - **Overall affordability** (40 points)
   - Ratio > 1.5: Comfortable (40 pts)
   - Ratio > 1.2: Good fit (30 pts)

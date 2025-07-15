@@ -41,10 +41,10 @@ export function calculateRegionScore(preferences, town) {
   let score = 0
   let factors = []
   
-  // If user has NO location preferences, they're open to anywhere - give neutral score
+  // If user has NO location preferences, they're open to anywhere - give perfect score
   if (!preferences.countries?.length && !preferences.regions?.length && !preferences.geographic_features?.length) {
-    score += 50
-    factors.push({ factor: 'Open to any location', score: 50 })
+    score = 100
+    factors.push({ factor: 'Open to any location', score: 100 })
     return { score, factors }
   }
   
@@ -61,8 +61,8 @@ export function calculateRegionScore(preferences, town) {
   }
   // No country/region preference but has other preferences
   else if (!preferences.countries?.length && !preferences.regions?.length) {
-    score += 20
-    factors.push({ factor: 'Open to any country', score: 20 })
+    score += 50
+    factors.push({ factor: 'Open to any country', score: 50 })
   }
   
   // Geographic features match (30 points)
@@ -80,8 +80,8 @@ export function calculateRegionScore(preferences, town) {
     }
   } else {
     // No geographic preference = open to any geography
-    score += 15
-    factors.push({ factor: 'Open to any geography', score: 15 })
+    score += 30
+    factors.push({ factor: 'Open to any geography', score: 30 })
   }
   
   // Vegetation type match (20 points)
@@ -191,14 +191,14 @@ export function calculateClimateScore(preferences, town) {
   let score = 0
   let factors = []
   
-  // If user has NO climate preferences at all, they're flexible - give neutral score
+  // If user has NO climate preferences at all, they're flexible - give perfect score
   if (!preferences.summer_climate_preference?.length && 
       !preferences.winter_climate_preference?.length &&
       !preferences.humidity_level?.length &&
       !preferences.sunshine?.length) {
-    score += 50
-    factors.push({ factor: 'Flexible on climate', score: 50 })
-    return { score, factors }
+    score = 100
+    factors.push({ factor: 'Open to any climate', score: 100 })
+    return { score, factors, category: 'Climate' }
   }
   
   // Note: Points adjusted to accommodate seasonal preference (was 100, now 100 with seasonal)
@@ -229,8 +229,14 @@ export function calculateClimateScore(preferences, town) {
     (preferences.summer_climate_preference === 'warm' && town.summer_climate_actual === 'hot') ||
     (preferences.summer_climate_preference === 'warm' && town.summer_climate_actual === 'mild')
   )) {
-    score += 13
-    factors.push({ factor: 'Acceptable summer climate', score: 13 })
+    // Hot is BETTER than warm for someone wanting warm!
+    if (town.summer_climate_actual === 'hot') {
+      score += 21  // Full points - they want warm, got warmer!
+      factors.push({ factor: 'Even warmer than requested', score: 21 })
+    } else {
+      score += 13
+      factors.push({ factor: 'Acceptable summer climate', score: 13 })
+    }
   } else if (!town.summer_climate_actual && !town.avg_temp_summer && town.climate_description) {
     // Last fallback: parse climate description
     const climateDesc = town.climate_description.toLowerCase()
@@ -577,6 +583,17 @@ export function calculateCultureScore(preferences, town) {
   let score = 0
   let factors = []
   
+  // If user has NO culture preferences at all, they're flexible - give perfect score
+  if (!preferences.language_comfort?.preferences && 
+      !preferences.language_comfort?.already_speak?.length &&
+      !preferences.lifestyle_preferences?.pace_of_life?.length &&
+      !preferences.lifestyle_preferences?.social_atmosphere?.length &&
+      !preferences.cultural_diversity?.tolerance) {
+    score = 100
+    factors.push({ factor: 'Open to any culture', score: 100 })
+    return { score, factors, category: 'Culture' }
+  }
+  
   // Language compatibility (25 points)
   const languagePrefs = preferences.language_comfort?.preferences
   const langPref = Array.isArray(languagePrefs) ? languagePrefs[0] : languagePrefs
@@ -752,13 +769,43 @@ export function calculateHobbiesScore(preferences, town) {
   let score = 0
   let factors = []
   
-  // Activity matching (40 points)
+  // If user has NO hobby preferences at all, they're flexible - give perfect score
+  if (!preferences.activities?.length && 
+      !preferences.interests?.length &&
+      !preferences.lifestyle_importance) {
+    score = 100
+    factors.push({ factor: 'Open to any activities', score: 100 })
+    return { score, factors, category: 'Hobbies' }
+  }
+  
+  // Activity matching (40 points) with smart matching
   if (preferences.activities?.length && town.activities_available?.length) {
-    const activityScore = calculateArrayOverlap(
-      preferences.activities,
-      town.activities_available,
-      40
-    )
+    let activityMatches = 0
+    const totalActivities = preferences.activities.length
+    
+    // Smart activity matching - understand related activities
+    preferences.activities.forEach(userActivity => {
+      const activity = userActivity.toLowerCase()
+      const townActivities = town.activities_available.map(a => a.toLowerCase())
+      
+      // Direct match
+      if (townActivities.includes(activity)) {
+        activityMatches++
+      }
+      // Smart matches - common sense relationships
+      else if (activity === 'fishing' && (townActivities.includes('water_sports') || townActivities.includes('boating') || town.beaches_nearby)) {
+        activityMatches++
+        factors.push({ factor: 'Coastal location perfect for fishing', score: 0 })
+      }
+      else if (activity === 'swimming' && (townActivities.includes('beaches') || townActivities.includes('water_sports'))) {
+        activityMatches++
+      }
+      else if (activity === 'walking' && (townActivities.includes('hiking') || townActivities.includes('trails'))) {
+        activityMatches++
+      }
+    })
+    
+    const activityScore = (activityMatches / totalActivities) * 40
     score += activityScore
     if (activityScore > 0) {
       factors.push({ factor: 'Activities available', score: activityScore })
@@ -1046,6 +1093,15 @@ export function calculateAdminScore(preferences, town) {
   let score = 0
   let factors = []
   
+  // If user has NO admin preferences at all, they're flexible - give perfect score
+  if (!preferences.healthcare_quality?.length && 
+      !preferences.safety_priority?.length &&
+      !preferences.visa_requirements) {
+    score = 100
+    factors.push({ factor: 'Open to any administrative situation', score: 100 })
+    return { score, factors, category: 'Admin' }
+  }
+  
   // Healthcare quality match (30 points) - now with gradual scoring
   const healthcareArray = preferences.healthcare_quality || []
   const healthcarePref = Array.isArray(healthcareArray) ? healthcareArray[0] : healthcareArray
@@ -1146,6 +1202,15 @@ export function calculateBudgetScore(preferences, town) {
   let score = 0
   let factors = []
   
+  // If user has NO budget preferences at all, they're flexible - give perfect score
+  if (!preferences.total_monthly_budget && 
+      !preferences.housing_budget &&
+      !preferences.other_expenses) {
+    score = 100
+    factors.push({ factor: 'Open to any budget situation', score: 100 })
+    return { score, factors, category: 'Budget' }
+  }
+  
   // Overall budget fit (40 points)
   const budgetRatio = preferences.total_monthly_budget / (town.typical_monthly_living_cost || town.cost_index)
   
@@ -1236,7 +1301,20 @@ function calculateDataCompleteness(town) {
   return completenessRatio * 5 // 0-5 points based on completeness
 }
 
-// Main matching function that combines all scores
+/**
+ * Main matching function that combines all scores
+ * 
+ * IMPORTANT LOGIC: Empty preferences = 100% match
+ * - When a user has NO preferences in a category, they get 100% for that category
+ * - This means "I don't care" = "I'm happy with anything"
+ * - Only when users SELECT preferences do we filter/score based on matching
+ * 
+ * Example: User with only budget preference gets:
+ * - Budget: Scored based on their budget vs town cost
+ * - All other categories: 100% (open to any option)
+ * 
+ * This ensures users see many options unless they specifically narrow them down
+ */
 export async function calculateEnhancedMatch(userPreferences, town) {
   // Calculate individual category scores
   const regionResult = calculateRegionScore(userPreferences.region_preferences || {}, town)
