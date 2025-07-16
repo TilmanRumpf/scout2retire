@@ -296,7 +296,7 @@ export default function OnboardingComplete() {
                         <div className="space-y-2">
                           {currentMatch.insights.map((insight, index) => (
                             <div key={index} className={`text-sm ${uiConfig.colors.body}`}>
-                              {insight}
+                              {typeof insight === 'string' ? insight : insight.text}
                             </div>
                           ))}
                         </div>

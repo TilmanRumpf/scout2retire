@@ -373,7 +373,7 @@ export default function Favorites() {
                         <div className={`mb-3 h-8 ${uiConfig.colors.body} text-xs leading-4`}>
                           {town.insights && town.insights.length > 0 ? (
                             <div className="line-clamp-2">
-                              {town.insights[0]}
+                              {typeof town.insights[0] === 'string' ? town.insights[0] : town.insights[0].text}
                             </div>
                           ) : town.matchReasons && town.matchReasons.length > 0 ? (
                             <div className="line-clamp-2">
