@@ -62,7 +62,7 @@ export const clearPersonalizedCache = (userId) => {
  */
 export const getPersonalizedTowns = async (userId, options = {}) => {
   try {
-    const { limit = 20, offset = 0 } = options;
+    const { limit = 20, offset = 0, townIds } = options;
 
     // 1. Get user's onboarding preferences (skip auth check for algorithm)
     const { success: onboardingSuccess, data: userPreferences } = await getOnboardingProgress(userId, true);
@@ -135,36 +135,45 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     // 2. Build query with smart pre-filtering for performance
     let query = supabase.from('towns').select('*');
     
-    // Filter for towns with photos (quality control) - CRITICAL SAFETY FEATURE
-    query = query
-      .not('image_url_1', 'is', null)
-      .not('image_url_1', 'eq', '')
-      .not('image_url_1', 'ilike', 'NULL');  // Filter out 'NULL' string
-    
-    // Pre-filter by budget range (only get towns within reasonable range)
-    if (finalUserPreferences.costs?.total_monthly_budget) {
-      const budget = finalUserPreferences.costs.total_monthly_budget;
-      // Only fetch towns between 50% and 200% of user's budget
-      query = query.gte('cost_index', budget * 0.5)
-                   .lte('cost_index', budget * 2.0);
-      console.log(`Pre-filtering towns by budget: $${budget * 0.5} - $${budget * 2.0}`);
+    // If specific town IDs are requested (e.g., from favorites), filter by those first
+    if (townIds && Array.isArray(townIds) && townIds.length > 0) {
+      query = query.in('id', townIds);
+      console.log(`Filtering for specific town IDs: ${townIds.length} towns`);
+    } else {
+      // Filter for towns with photos (quality control) - CRITICAL SAFETY FEATURE
+      query = query
+        .not('image_url_1', 'is', null)
+        .not('image_url_1', 'eq', '')
+        .not('image_url_1', 'ilike', 'NULL');  // Filter out 'NULL' string
     }
     
-    // Pre-filter by minimum healthcare for users with health concerns
-    if (finalUserPreferences.administration?.healthcare_importance === 'excellent' || 
-        finalUserPreferences.administration?.healthcare_quality?.includes('good')) {
-      query = query.gte('healthcare_score', 7);
-      console.log('Pre-filtering for high healthcare standards (score >= 7)');
-    } else if (finalUserPreferences.administration?.healthcare_importance === 'good' ||
-               finalUserPreferences.administration?.healthcare_quality?.includes('functional')) {
-      query = query.gte('healthcare_score', 5);
-      console.log('Pre-filtering for decent healthcare (score >= 5)');
-    }
-    
-    // Pre-filter by safety for users with safety concerns
-    if (finalUserPreferences.administration?.safety_importance?.includes('good')) {
-      query = query.gte('safety_score', 7);
-      console.log('Pre-filtering for high safety (score >= 7)');
+    // Only apply pre-filtering when NOT requesting specific towns
+    if (!townIds || townIds.length === 0) {
+      // Pre-filter by budget range (only get towns within reasonable range)
+      if (finalUserPreferences.costs?.total_monthly_budget) {
+        const budget = finalUserPreferences.costs.total_monthly_budget;
+        // Only fetch towns between 50% and 200% of user's budget
+        query = query.gte('cost_index', budget * 0.5)
+                     .lte('cost_index', budget * 2.0);
+        console.log(`Pre-filtering towns by budget: $${budget * 0.5} - $${budget * 2.0}`);
+      }
+      
+      // Pre-filter by minimum healthcare for users with health concerns
+      if (finalUserPreferences.administration?.healthcare_importance === 'excellent' || 
+          finalUserPreferences.administration?.healthcare_quality?.includes('good')) {
+        query = query.gte('healthcare_score', 7);
+        console.log('Pre-filtering for high healthcare standards (score >= 7)');
+      } else if (finalUserPreferences.administration?.healthcare_importance === 'good' ||
+                 finalUserPreferences.administration?.healthcare_quality?.includes('functional')) {
+        query = query.gte('healthcare_score', 5);
+        console.log('Pre-filtering for decent healthcare (score >= 5)');
+      }
+      
+      // Pre-filter by safety for users with safety concerns
+      if (finalUserPreferences.administration?.safety_importance?.includes('good')) {
+        query = query.gte('safety_score', 7);
+        console.log('Pre-filtering for high safety (score >= 7)');
+      }
     }
     
     // Execute query - gets ALL matching towns, not limited to 200
@@ -237,10 +246,17 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       };
     }));
 
-    // 4. Sort by match score (highest first) and paginate
-    const sortedTowns = scoredTowns
-      .sort((a, b) => b.matchScore - a.matchScore)
-      .slice(offset, offset + limit);
+    // 4. Sort by match score (highest first) and paginate (unless specific townIds requested)
+    let sortedTowns;
+    if (townIds && Array.isArray(townIds) && townIds.length > 0) {
+      // For specific town IDs, return all towns without pagination
+      sortedTowns = scoredTowns.sort((a, b) => b.matchScore - a.matchScore);
+    } else {
+      // For general discovery, use pagination
+      sortedTowns = scoredTowns
+        .sort((a, b) => b.matchScore - a.matchScore)
+        .slice(offset, offset + limit);
+    }
 
     console.log(`Personalized recommendations for user ${userId}:`, {
       totalFetched: allTowns.length,

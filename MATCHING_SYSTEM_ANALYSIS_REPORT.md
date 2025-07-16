@@ -312,3 +312,143 @@ if (!town.summer_climate_actual && town.climate_description) {
 This analysis confirms that the Scout2Retire matching system failure is **fixable with immediate action**. The primary issue is a single restrictive filter that can be removed today to restore functionality, followed by systematic data quality improvements to enhance match accuracy.
 
 **Recommendation: Implement Phase 1 emergency fix immediately to restore service to users.**
+
+---
+
+## 🚨 CRITICAL BUG FIX: July 16, 2025 - "The Great Favorites Percentage Ordeal"
+
+### **The 2.5-Year-Old Bug Finally Solved**
+
+**Duration:** 4+ hours of intensive debugging  
+**Impact:** Match percentages showed in Discover but were `undefined` in Favorites  
+**Root Cause:** Missing `townIds` parameter in personalization algorithm  
+**Status:** ✅ **RESOLVED**
+
+### **The Epic Journey:**
+
+#### **Phase 1: Initial Symptoms (The Mystery)**
+- User reported: "Jurmala shows percentage in /discover but not in /favorites"
+- Console showed: `MATCHSCORE DEBUG: Jurmala = undefined`
+- Same town, different pages, different results - classic edge case
+
+#### **Phase 2: Wrong Hypotheses (The Wild Goose Chase)**
+1. **Server crash investigation** - Fixed syntax error, not the real issue
+2. **React child rendering errors** - Fixed insights/warnings objects, not the real issue  
+3. **Cache corruption theory** - Investigated sessionStorage, not the real issue
+4. **Mock data suspicion** - Searched for hardcoded data, found none
+
+#### **Phase 3: The Revelation (Architecture Analysis)**
+**Key Discovery:** Different data fetching patterns!
+
+**Discover Page (`TownDiscovery.jsx`):**
+```javascript
+const { towns } = await fetchTowns({ 
+  limit: 50, 
+  userId: user.id,
+  usePersonalization: true  // ← Gets match scores
+});
+```
+
+**Favorites Page (`Favorites.jsx`):**
+```javascript
+// Original broken approach:
+const { data } = await supabase
+  .from('favorites')
+  .select('*, towns:town_id(*)')  // ← NO match scores
+
+// Fixed approach:
+const { towns: personalizedTowns } = await fetchTowns({
+  townIds,  // ← Key parameter
+  userId: user.id,
+  usePersonalization: true
+});
+```
+
+#### **Phase 4: The Root Cause (Missing Parameter Hell)**
+
+**The Bug:** `getPersonalizedTowns()` in `matchingAlgorithm.js` ignored the `townIds` parameter!
+
+**Lines 12-15 in `townUtils.jsx`:**
+```javascript
+// BROKEN - townIds parameter missing:
+const personalizedResult = await getPersonalizedTowns(filters.userId, {
+  limit: filters.limit || 20,
+  offset: filters.offset || 0
+  // ❌ townIds: filters.townIds  // MISSING!
+});
+```
+
+**The algorithm always scored ALL towns, then used cached results. When Favorites requested specific town IDs, they weren't in the cache.**
+
+#### **Phase 5: The Fix (Three-Part Surgery)**
+
+**1. Fixed `townUtils.jsx:15`** - Pass `townIds` to personalization:
+```javascript
+const personalizedResult = await getPersonalizedTowns(filters.userId, {
+  limit: filters.limit || 20,
+  offset: filters.offset || 0,
+  townIds: filters.townIds  // ✅ FIXED!
+});
+```
+
+**2. Enhanced `matchingAlgorithm.js:65`** - Accept `townIds` parameter:
+```javascript
+const { limit = 20, offset = 0, townIds } = options;
+```
+
+**3. Implemented specific town filtering** - Skip pre-filters when townIds provided:
+```javascript
+// Lines 139-141: Filter by specific towns
+if (townIds && Array.isArray(townIds) && townIds.length > 0) {
+  query = query.in('id', townIds);
+  console.log(`Filtering for specific town IDs: ${townIds.length} towns`);
+}
+
+// Lines 151-177: Skip budget/healthcare pre-filtering for specific towns
+if (!townIds || townIds.length === 0) {
+  // Apply pre-filtering only for discovery, not favorites
+}
+
+// Lines 251-253: Return all specific towns without pagination
+if (townIds && Array.isArray(townIds) && townIds.length > 0) {
+  sortedTowns = scoredTowns.sort((a, b) => b.matchScore - a.matchScore);
+}
+```
+
+### **Technical Impact Analysis:**
+
+**Before Fix:**
+- Discover: Scored 50 random towns → cached results → showed percentages ✅
+- Favorites: Requested specific 4 towns → not in cache → showed `undefined` ❌
+
+**After Fix:**
+- Discover: Same behavior ✅
+- Favorites: Requests specific town IDs → algorithm scores those exact towns → shows percentages ✅
+
+### **The Moment of Victory:**
+```
+Console: "MATCHSCORE DEBUG: Jurmala = 66"  // Instead of undefined!
+User: "bitch, after 2 1/2 years you fixed it"
+```
+
+### **Lessons Learned:**
+
+1. **Edge cases are brutal** - Same component, different calling patterns
+2. **Parameter passing is critical** - Missing one parameter broke everything
+3. **Cache invalidation is hard** - SessionStorage keys changed based on options
+4. **Architecture matters** - Different pages shouldn't use different data paths
+5. **Documentation saves time** - If this had been documented, would've been 10-minute fix
+
+### **Files Modified:**
+- `/src/utils/townUtils.jsx:15` - Added missing `townIds` parameter
+- `/src/utils/matchingAlgorithm.js:65,139-177,251-253` - Enhanced to handle specific town requests
+
+### **Prevention Strategy:**
+- [ ] Add unit tests for `fetchTowns()` with different parameter combinations
+- [ ] Add integration tests for favorites vs discover data consistency  
+- [ ] Document all parameter requirements in matching algorithm
+- [ ] Consider unified data fetching approach for all pages
+
+**This bug represents the classic "works in one place, fails in another" scenario that can persist for years until someone traces the exact data flow differences.**
+
+---
