@@ -11,7 +11,8 @@ export const fetchTowns = async (filters = {}) => {
       try {
         const personalizedResult = await getPersonalizedTowns(filters.userId, {
           limit: filters.limit || 20,
-          offset: filters.offset || 0
+          offset: filters.offset || 0,
+          townIds: filters.townIds  // FIXED: Pass townIds to personalization
         });
         
         if (personalizedResult.success) {
