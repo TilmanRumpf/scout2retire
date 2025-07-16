@@ -1,7 +1,7 @@
 // pages/Favorites.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { fetchFavorites, toggleFavorite } from '../utils/townUtils';
+import { fetchFavorites, toggleFavorite, fetchTowns } from '../utils/townUtils';
 import { getCurrentUser } from '../utils/authUtils';
 import SimpleImage from '../components/SimpleImage';
 import TownImageOverlay from '../components/TownImageOverlay';
@@ -66,7 +66,38 @@ export default function Favorites() {
       
       const { success, favorites: userFavorites, error } = await fetchFavorites(user.id);
       if (success) {
-        setFavorites(userFavorites);
+        // Get personalized scores for favorited towns
+        const townIds = userFavorites.map(fav => fav.town_id).filter(Boolean);
+        if (townIds.length > 0) {
+          // Fetch towns with personalization to get match scores
+          console.log('Fetching personalized data for towns:', townIds);
+          const { success: townSuccess, towns: personalizedTowns } = await fetchTowns({
+            townIds,
+            userId: user.id,
+            usePersonalization: true
+          });
+          console.log('Personalized fetch result:', { townSuccess, personalizedTowns });
+          
+          if (townSuccess && personalizedTowns) {
+            // Map personalized data back to favorites
+            const favoritesWithScores = userFavorites.map(fav => {
+              const personalizedTown = personalizedTowns.find(t => String(t.id) === String(fav.town_id));
+              if (personalizedTown) {
+                return {
+                  ...fav,
+                  towns: personalizedTown
+                };
+              }
+              return fav;
+            });
+            setFavorites(favoritesWithScores);
+          } else {
+            // Fallback to original favorites without scores
+            setFavorites(userFavorites);
+          }
+        } else {
+          setFavorites(userFavorites);
+        }
       } else {
         console.error("Error loading favorites:", error);
         toast.error("Failed to load favorites");
@@ -317,6 +348,10 @@ export default function Favorites() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {sortedFavorites.map((favorite) => {
                   const town = favorite.towns;
+                  if (!town) {
+                    console.error('No town data for favorite:', favorite);
+                    return null;
+                  }
                   return (
                     <div
                       key={favorite.town_id}
@@ -332,6 +367,8 @@ export default function Favorites() {
                         />
                         
                         {userId && (
+                          <>
+                          {console.log(`MATCHSCORE DEBUG: ${town.name} = ${town.matchScore}`)}
                           <TownImageOverlay
                             town={town}
                             matchScore={town.matchScore}
@@ -353,6 +390,7 @@ export default function Favorites() {
                               "Saved favorite"
                             }
                           />
+                          </>
                         )}
                       </div>
                       
