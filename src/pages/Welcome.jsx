@@ -7,7 +7,6 @@ export default function Welcome() {
   // Handler for login button click
   const handleLoginClick = (e) => {
     e.preventDefault();
-    console.log("Login button clicked");
     navigate('/login');
   };
 
