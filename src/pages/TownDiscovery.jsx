@@ -39,6 +39,7 @@ const REGION_COUNTRIES = {
   'Oceania': ['Fiji', 'Kiribati', 'Marshall Islands', 'Micronesia', 'Nauru', 'Palau', 'Papua New Guinea', 'Samoa', 'Solomon Islands', 'Tonga', 'Tuvalu', 'Vanuatu']
 };
 
+
 export default function TownDiscovery() {
   const [towns, setTowns] = useState([]);
   const [totalTownCount, setTotalTownCount] = useState(0);
@@ -89,6 +90,7 @@ export default function TownDiscovery() {
         }
         setUserId(user.id);
         
+        
         // Check onboarding status from the profile
         setOnboardingCompleted(profile?.onboarding_completed || false);
 
@@ -113,6 +115,7 @@ export default function TownDiscovery() {
 
         if (townSuccess) {
           setTowns(allTowns);
+          
           
           // Log personalization status
           if (isPersonalizedResult) {
@@ -406,7 +409,7 @@ export default function TownDiscovery() {
         <main className="max-w-7xl mx-auto px-4 py-3">
         {error && (
           <div className={`${uiConfig.colors.statusError} border ${uiConfig.colors.borderDanger} p-4 ${uiConfig.layout.radius.lg} mb-6`}>
-            {error}
+            {typeof error === 'string' ? error : (error?.message || error?.text || 'An error occurred')}
           </div>
         )}
 
@@ -490,7 +493,7 @@ export default function TownDiscovery() {
                     <div className="space-y-1">
                       {selectedTownData.insights.map((insight, index) => (
                         <div key={index} className={`text-sm ${uiConfig.colors.body}`}>
-                          {insight}
+                          {typeof insight === 'string' ? insight : insight.text}
                         </div>
                       ))}
                     </div>
@@ -528,7 +531,7 @@ export default function TownDiscovery() {
                         <div className="space-y-1">
                           {selectedTownData.warnings.map((warning, index) => (
                             <div key={index} className={`text-sm ${uiConfig.colors.body}`}>
-                              {warning}
+                              {typeof warning === 'string' ? warning : warning.text}
                             </div>
                           ))}
                         </div>
@@ -711,7 +714,7 @@ export default function TownDiscovery() {
                 <div className={`mb-3 h-8 ${uiConfig.colors.body} text-xs leading-4`}>
                   {town.insights && town.insights.length > 0 ? (
                     <div className="line-clamp-2">
-                      {town.insights[0]}
+                      {typeof town.insights[0] === 'string' ? town.insights[0] : town.insights[0].text}
                     </div>
                   ) : town.matchReasons && town.matchReasons.length > 0 ? (
                     <div className="line-clamp-2">

@@ -1,7 +1,7 @@
 // Enhanced Matching Algorithm that fully utilizes new town data fields
 // Maps directly to the 6 onboarding sections: Region, Climate, Culture, Hobbies, Admin, Budget
 
-import { supabase } from './supabaseClient.js'
+import supabase from './supabaseClient.js'
 
 // Weights optimized for 55+ retirees: equal emphasis on location preference, budget constraints, and healthcare/safety (60% combined), with climate and culture as secondary factors
 // Score weights for each category (total = 100)
