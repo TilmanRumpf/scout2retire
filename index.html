@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Favicons from Supabase Storage -->
+    <link rel="icon" type="image/png" sizes="32x32" href="https://axlruvvsjepsulcbqlho.supabase.co/storage/v1/object/public/logos/S2R-Favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="https://axlruvvsjepsulcbqlho.supabase.co/storage/v1/object/public/logos/S2R-Favicon-192.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="https://axlruvvsjepsulcbqlho.supabase.co/storage/v1/object/public/logos/S2R-Favicon-192.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Scout2Retire</title>
+    
+    <!-- Force browser to check for updates -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
+    <!-- PWA Meta Tags for iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Scout2Retire" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#8fbc8f" />
+    
+    <!-- iOS Safe Area Support -->
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Phosphor Icons -->
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@latest/src/regular/style.css" />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400&family=Montserrat:wght@800&family=Dancing+Script:wght@400;700&family=Pacifico&family=Satisfy&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Immediate dark mode initialization to prevent flash -->
+    <script src="/dark-mode-init.js"></script>
+    
+    <!-- Prevent white flash during navigation -->
+    <style>
+      html {
+        background-color: #f9fafb;
+      }
+      @media (prefers-color-scheme: dark) {
+        html { background-color: #030712; }
+      }
+      html.dark {
+        background-color: #030712;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

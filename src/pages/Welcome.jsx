@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { uiConfig } from '../styles/uiConfig';
+import Logo from '../components/Logo';
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -15,9 +16,7 @@ export default function Welcome() {
       {/* Header */}
       <header className="p-4">
         <div className="max-w-7xl mx-auto flex justify-between">
-          <h1 className={`text-xl font-bold ${uiConfig.colors.heading}`}>
-            Scout<span className={uiConfig.colors.accent}>2</span>Retire
-          </h1>
+          <Logo variant="full" className="h-10" />
         </div>
       </header>
 

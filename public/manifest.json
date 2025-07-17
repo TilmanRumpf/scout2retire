@@ -1,0 +1,25 @@
+{
+  "name": "Scout2Retire",
+  "short_name": "Scout2Retire",
+  "description": "Discover your ideal retirement destination",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8fbc8f",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "https://axlruvvsjepsulcbqlho.supabase.co/storage/v1/object/public/logos/S2R-Favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://axlruvvsjepsulcbqlho.supabase.co/storage/v1/object/public/logos/S2R-Favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
