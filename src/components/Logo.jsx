@@ -70,7 +70,6 @@ export default function Logo({
       src={logoUrl}
       alt={alt}
       className={`${className} ${isClickable ? 'cursor-pointer' : ''}`}
-      fallbackIcon={null}
       onError={(e) => {
         // If image fails to load and fallback text is enabled, hide the broken image
         if (showFallbackText) {
