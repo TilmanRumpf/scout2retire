@@ -108,12 +108,14 @@ export default function OnboardingCurrentStatus() {
           setFormData(prev => ({
             ...prev,
             retirement_timeline: data.current_status.retirement_timeline || prev.retirement_timeline,
-            family_situation: typeof data.current_status.family_situation === 'string'
-              ? data.current_status.family_situation
-              : (data.current_status.family_situation?.status || 'solo'),
+            family_situation: data.current_status.family_situation || 'solo',  // Now it's a direct string
             pet_owner: data.current_status.pet_owner || [],
             citizenship: data.current_status.citizenship || prev.citizenship,
-            partner_citizenship: data.current_status.partner_citizenship || prev.partner_citizenship
+            partner_citizenship: data.current_status.partner_citizenship || prev.partner_citizenship,
+            partner_agreement: data.current_status.partner_agreement,
+            bringing_children: data.current_status.bringing_children || false,
+            current_location: data.current_status.current_location || '',
+            moving_motivation: data.current_status.moving_motivation || ''
           }));
         }
       } catch (err) {
@@ -249,16 +251,14 @@ export default function OnboardingCurrentStatus() {
       
       const cleanedFormData = {
         ...formData,
-        family_situation: {
-          status: formData.family_situation
-        },
+        family_situation: formData.family_situation,  // Keep as string, don't wrap in object
         citizenship: {
           ...formData.citizenship,
           secondary_citizenship: formData.citizenship.secondary_citizenship === formData.citizenship.primary_citizenship 
             ? '' 
             : formData.citizenship.secondary_citizenship
         },
-        partner_citizenship: formData.family_situation === 'couple' ? {
+        partner_citizenship: formData.family_situation === 'couple' || formData.family_situation === 'family' ? {
           ...formData.partner_citizenship,
           secondary_citizenship: formData.partner_citizenship.secondary_citizenship === formData.partner_citizenship.primary_citizenship 
             ? '' 
@@ -292,12 +292,19 @@ export default function OnboardingCurrentStatus() {
             primary_citizenship: formData.citizenship.primary_citizenship,
             secondary_citizenship: formData.citizenship.secondary_citizenship || null,
             visa_concerns: formData.citizenship.visa_concerns || false,
-            family_status: formData.family_situation.status,
-            partner_agreement: formData.family_situation.partner_agreement || null,
-            bringing_children: formData.family_situation.bringing_children || false,
-            bringing_pets: formData.family_situation.bringing_pets || false,
+            family_status: formData.family_situation,  // Use direct string, not .status
+            partner_agreement: formData.partner_agreement || null,
+            bringing_children: formData.bringing_children || false,
+            bringing_pets: formData.pet_owner && formData.pet_owner.length > 0,  // Convert array to boolean
             current_location: formData.current_location || null,
-            moving_motivation: formData.moving_motivation || null
+            moving_motivation: formData.moving_motivation || null,
+            // Add partner citizenship fields when applicable
+            partner_primary_citizenship: (formData.family_situation === 'couple' || formData.family_situation === 'family') && formData.partner_citizenship
+              ? formData.partner_citizenship.primary_citizenship 
+              : null,
+            partner_secondary_citizenship: (formData.family_situation === 'couple' || formData.family_situation === 'family') && formData.partner_citizenship
+              ? formData.partner_citizenship.secondary_citizenship || null
+              : null
           }
         );
 
