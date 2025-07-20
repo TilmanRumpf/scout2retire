@@ -236,17 +236,25 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
           target_day: data.target_retirement_day,
           flexibility: data.timeline_flexibility
         },
-        family_situation: {
-          status: typeof data.family_status === 'object'
-            ? (data.family_status?.value || data.family_status?.status || 'Not specified')
-            : (data.family_status || 'Not specified')
-        },
+        family_situation: typeof data.family_status === 'object'
+          ? (data.family_status?.value || data.family_status?.status || 'solo')
+          : (data.family_status || 'solo'),
         citizenship: {
           primary_citizenship: data.primary_citizenship,
           secondary_citizenship: data.secondary_citizenship,
           dual_citizenship: !!data.secondary_citizenship
         },
-        pet_owner: data.bringing_pets ? ['yes'] : ['no']
+        partner_citizenship: (data.family_status === 'couple' || data.family_status === 'family') ? {
+          primary_citizenship: data.partner_primary_citizenship,
+          secondary_citizenship: data.partner_secondary_citizenship,
+          dual_citizenship: !!data.partner_secondary_citizenship
+        } : undefined,
+        pet_owner: data.bringing_pets ? ['cat', 'dog'] : [],  // Use actual pet types if available
+        partner_agreement: data.partner_agreement,
+        bringing_children: data.bringing_children,
+        bringing_pets: data.bringing_pets,
+        current_location: data.current_location,
+        moving_motivation: data.moving_motivation
       },
       region_preferences: {
         regions: data.regions || [],
