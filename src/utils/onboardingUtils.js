@@ -119,13 +119,16 @@ export const completeOnboarding = async (userId) => {
     // Prepare update data - only set onboarding completion flag
     const updateData = { onboarding_completed: true };
     
-    // Update user_preferences with completion status and retirement date
-    console.log('Attempting to update user_preferences with data:', updateData);
+    // Use upsert to handle cases where user_preferences record doesn't exist yet
+    console.log('Attempting to upsert user_preferences with data:', updateData);
     console.log('User ID:', userId);
     
     const { data: updatedUser, error } = await supabase
       .from('user_preferences')
-      .update(updateData)
+      .upsert({
+        user_id: userId,
+        ...updateData
+      })
       .eq('user_id', userId)
       .select()
       .single();

@@ -123,6 +123,22 @@ export const signUp = async (email, password, fullName, retirementDate, hometown
       
       console.log('✅ Profile created successfully:', profileData);
       
+      // Create user_preferences record
+      console.log('📝 Creating user_preferences record...');
+      const { error: prefsError } = await supabase
+        .from('user_preferences')
+        .insert({
+          user_id: authData.user.id,
+          onboarding_completed: false
+        });
+      
+      if (prefsError) {
+        console.error('❌ Failed to create user_preferences:', prefsError);
+        // Don't fail the signup - user can still proceed
+      } else {
+        console.log('✅ User preferences record created');
+      }
+      
       // If email confirmation is not required, sign the user in manually
       if (!authData.session) {
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
