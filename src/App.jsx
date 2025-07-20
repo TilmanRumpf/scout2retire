@@ -87,9 +87,13 @@ const PublicRoute = ({ children }) => {
     
     checkAuth();
     
+    // Note: We don't redirect on SIGNED_IN event here because the Login component
+    // needs to check onboarding status and decide where to redirect
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        navigate('/daily', { replace: true });
+      // Only re-check auth on SIGNED_OUT to clear the loading state
+      if (event === 'SIGNED_OUT') {
+        setLoading(true);
+        checkAuth();
       }
     });
     
