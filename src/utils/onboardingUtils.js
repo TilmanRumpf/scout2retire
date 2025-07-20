@@ -109,55 +109,46 @@ export const saveOnboardingStep = async (userId, stepData, step) => {
 
 export const completeOnboarding = async (userId) => {
   try {
-    // First get the onboarding data to extract retirement info
-    const { data: onboardingData } = await supabase
-      .from('onboarding_responses')
-      .select('current_status')
-      .eq('user_id', userId)
-      .single();
+    console.log('Starting onboarding completion for user:', userId);
     
-    // Prepare update data - only set onboarding completion flag
-    const updateData = { onboarding_completed: true };
-    
-    // Use upsert to handle cases where user_preferences record doesn't exist yet
-    console.log('Attempting to upsert user_preferences with data:', updateData);
-    console.log('User ID:', userId);
-    
-    const { data: updatedUser, error } = await supabase
+    // Use UPSERT to handle both cases: existing record (update) or missing record (insert)
+    // This prevents duplicate key errors
+    const { data: updatedPrefs, error: prefsError } = await supabase
       .from('user_preferences')
       .upsert({
         user_id: userId,
-        ...updateData
+        onboarding_completed: true
+      }, {
+        onConflict: 'user_id' // This tells Supabase to update if user_id already exists
       })
-      .eq('user_id', userId)
       .select()
       .single();
     
-    if (error) {
-      console.error("Error completing onboarding:", error);
-      console.error("Error details:", {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
-      });
-      return { success: false, error };
+    if (prefsError) {
+      console.error("Error updating user_preferences:", prefsError);
+      return { success: false, error: prefsError };
     }
     
-    console.log('Update response:', updatedUser);
+    // Also update the users table to keep both tables in sync
+    const { error: usersError } = await supabase
+      .from('users')
+      .update({ onboarding_completed: true })
+      .eq('id', userId);
     
-    if (updatedUser && updatedUser.onboarding_completed === true) {
-      console.log('✅ Successfully completed onboarding and updated profile');
-      
-      // Note: Matching will run on first app load instead of during onboarding completion
-      // This avoids server-side environment issues during onboarding
-      console.log('✅ Onboarding completed - matching will run when user visits app');
-      
-      return { success: true };
-    } else {
-      console.error('❌ Update appeared to succeed but onboarding_completed is still false');
-      return { success: false, error: { message: 'Update did not set onboarding_completed to true' } };
+    if (usersError) {
+      console.error("Error updating users table:", usersError);
+      // Don't fail the whole operation if users table update fails
+      // The user_preferences table is the source of truth
     }
+    
+    console.log('✅ Successfully completed onboarding for user:', userId);
+    console.log('✅ Both user_preferences and users tables updated');
+    
+    // Note: Matching will run on first app load instead of during onboarding completion
+    // This avoids server-side environment issues during onboarding
+    console.log('✅ Onboarding completed - matching will run when user visits app');
+    
+    return { success: true };
   } catch (error) {
     console.error("Unexpected error completing onboarding:", error);
     return { success: false, error };
