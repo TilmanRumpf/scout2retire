@@ -111,16 +111,15 @@ export const completeOnboarding = async (userId) => {
   try {
     console.log('Starting onboarding completion for user:', userId);
     
-    // Use UPSERT to handle both cases: existing record (update) or missing record (insert)
-    // This prevents duplicate key errors
+    // Use UPDATE instead of UPSERT because:
+    // 1. The user_preferences record already exists (created during onboarding)
+    // 2. RLS policies block UPSERT operations for anon users
     const { data: updatedPrefs, error: prefsError } = await supabase
       .from('user_preferences')
-      .upsert({
-        user_id: userId,
+      .update({
         onboarding_completed: true
-      }, {
-        onConflict: 'user_id' // This tells Supabase to update if user_id already exists
       })
+      .eq('user_id', userId)
       .select()
       .single();
     
