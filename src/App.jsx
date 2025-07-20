@@ -45,6 +45,64 @@ import OnboardingComplete from "./pages/onboarding/OnboardingComplete";
 // Import the new OnboardingLayout
 import OnboardingLayout from './components/OnboardingLayout';
 
+// Public Route component - redirects authenticated users to /daily
+const PublicRoute = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        let { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+          const { data: { session: retrySession } } = await supabase.auth.getSession();
+          session = retrySession;
+        }
+        
+        if (session?.user) {
+          // Check if user has a profile
+          const { data: userData, error } = await supabase
+            .from('users')
+            .select('id')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (!error && userData) {
+            // User is authenticated with profile - redirect to daily
+            navigate('/daily', { replace: true });
+            return;
+          }
+        }
+        
+        setUser(session?.user || null);
+      } catch (error) {
+        console.error("Auth check error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    checkAuth();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        navigate('/daily', { replace: true });
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  if (loading) {
+    return null;
+  }
+
+  return children;
+};
+
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -150,11 +208,11 @@ const router = createBrowserRouter([
       </ErrorBoundary>
     ),
     children: [
-      // Public routes
-      { path: "welcome", element: <Welcome /> },
-      { path: "login", element: <Login /> },
-      { path: "signup", element: <SignupEnhanced /> },
-      { path: "reset-password", element: <ResetPassword /> },
+      // Public routes - redirect to /daily if authenticated
+      { path: "welcome", element: <PublicRoute><Welcome /></PublicRoute> },
+      { path: "login", element: <PublicRoute><Login /></PublicRoute> },
+      { path: "signup", element: <PublicRoute><SignupEnhanced /></PublicRoute> },
+      { path: "reset-password", element: <PublicRoute><ResetPassword /></PublicRoute> },
       
       // Onboarding flow with persistent layout
       {
@@ -244,8 +302,11 @@ const router = createBrowserRouter([
         element: <ProtectedRoute><AuthenticatedLayout><TestOnboardingUpdate /></AuthenticatedLayout></ProtectedRoute>
       },
       
-      // Default redirect
-      { index: true, element: <Navigate to="/welcome" replace /> },
+      // Default redirect - check auth and redirect accordingly
+      { 
+        index: true, 
+        element: <PublicRoute><Navigate to="/daily" replace /></PublicRoute> 
+      },
       { path: "*", element: <Navigate to="/welcome" replace /> }
     ]
   }
