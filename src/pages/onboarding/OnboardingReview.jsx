@@ -429,7 +429,7 @@ export default function OnboardingReview() {
             <button
               onClick={handleComplete}
               disabled={loading || !allSectionsComplete}
-              className={`w-full px-6 py-2 ${uiConfig.font.size.sm} ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.lg} ${uiConfig.animation.transition} ${uiConfig.states.disabled}`}
+              className={`w-full px-6 py-2 ${uiConfig.font.size.sm} ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.lg} ${uiConfig.animation.transition} disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {loading ? 'Processing...' : 'Complete & View Recommendations'}
             </button>
