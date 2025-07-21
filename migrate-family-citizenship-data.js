@@ -8,25 +8,8 @@ const supabase = createClient(
 async function migrateFamilyCitizenshipData() {
   console.log('🚀 MIGRATING FAMILY AND CITIZENSHIP DATA FROM ONBOARDING_RESPONSES TO USER_PREFERENCES\n');
   
-  // First, let's check if partner columns exist
-  console.log('1️⃣ Checking if partner columns exist...');
-  const { data: columns } = await supabase.rpc('get_table_columns', {
-    table_name: 'user_preferences'
-  });
-  
-  const hasPartnerColumns = columns?.some(col => 
-    col.column_name === 'partner_primary_citizenship' || 
-    col.column_name === 'partner_secondary_citizenship'
-  );
-  
-  if (!hasPartnerColumns) {
-    console.log('❌ Partner columns not found. Please run the SQL migration first:');
-    console.log('   Execute the contents of add-partner-columns.sql in Supabase Dashboard');
-    return;
-  }
-  
   // Get all users with onboarding_responses data
-  console.log('\n2️⃣ Fetching users with onboarding data...');
+  console.log('Fetching users with onboarding data...');
   const { data: responses, error: respError } = await supabase
     .from('onboarding_responses')
     .select('*');
@@ -114,7 +97,7 @@ async function migrateFamilyCitizenshipData() {
   console.log(`✅ Successfully migrated: ${successCount} users`);
   console.log(`❌ Errors encountered: ${errorCount} users`);
   
-  // Verify the migration
+  // Verify the migration for ctorres
   console.log('\n3️⃣ Verifying migration for ctorres@asshole.com...');
   const { data: user } = await supabase
     .from('users')
@@ -138,8 +121,6 @@ async function migrateFamilyCitizenshipData() {
   }
   
   console.log('\n✅ Migration complete!');
-  console.log('\nNOTE: New data will be saved directly to user_preferences.');
-  console.log('The onboarding_responses table is now legacy and can be removed later.');
 }
 
 migrateFamilyCitizenshipData().catch(console.error);
