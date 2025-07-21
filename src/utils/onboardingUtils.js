@@ -249,7 +249,7 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
           secondary_citizenship: data.partner_secondary_citizenship,
           dual_citizenship: !!data.partner_secondary_citizenship
         } : undefined,
-        pet_owner: data.bringing_pets ? ['cat', 'dog'] : [],  // Use actual pet types if available
+        pet_owner: data.pet_types || [],  // Use actual saved pet types
         partner_agreement: data.partner_agreement,
         bringing_children: data.bringing_children,
         bringing_pets: data.bringing_pets,

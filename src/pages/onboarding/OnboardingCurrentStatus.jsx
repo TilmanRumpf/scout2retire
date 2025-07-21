@@ -296,6 +296,7 @@ export default function OnboardingCurrentStatus() {
             partner_agreement: formData.partner_agreement || null,
             bringing_children: formData.bringing_children || false,
             bringing_pets: formData.pet_owner && formData.pet_owner.length > 0,  // Convert array to boolean
+            pet_types: formData.pet_owner || [],  // Save actual pet types
             current_location: formData.current_location || null,
             moving_motivation: formData.moving_motivation || null,
             // Add partner citizenship fields when applicable
