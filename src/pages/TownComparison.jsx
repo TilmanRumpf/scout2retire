@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils';
+import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
 import { getCurrentUser } from '../utils/authUtils';
 import TownRadarChart from '../components/TownRadarChart';
 import LikeButton from '../components/LikeButton';

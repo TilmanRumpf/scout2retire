@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { askConsultant } from '../../anthropic-api/anthropic-client.js';
 import { getUserContext, formatContextForPrompt } from '../utils/scottyContext';
 import { getCurrentUser } from '../utils/authUtils';
-import { fetchFavorites } from '../utils/townUtils';
+import { fetchFavorites } from '../utils/townUtils.jsx';
 import UnifiedHeader from './UnifiedHeader';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';

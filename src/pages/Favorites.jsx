@@ -1,7 +1,7 @@
 // pages/Favorites.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { fetchFavorites, toggleFavorite, fetchTowns } from '../utils/townUtils';
+import { fetchFavorites, toggleFavorite, fetchTowns } from '../utils/townUtils.jsx';
 import { getCurrentUser } from '../utils/authUtils';
 import SimpleImage from '../components/SimpleImage';
 import TownImageOverlay from '../components/TownImageOverlay';
@@ -400,9 +400,9 @@ export default function Favorites() {
                           <div className={`text-sm ${uiConfig.colors.heading}`}>
                             {town.name}, {town.country}
                           </div>
-                          {town.cost_index && (
+                          {(town.cost_of_living_usd || town.typical_monthly_living_cost) && (
                             <span className={`text-sm ${uiConfig.colors.body}`}>
-                              ${town.cost_index}/mo
+                              ${town.cost_of_living_usd || town.typical_monthly_living_cost}/mo
                             </span>
                           )}
                         </div>

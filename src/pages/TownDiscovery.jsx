@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils';
+import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
 import { getCurrentUser } from '../utils/authUtils';
 import SimpleImage from '../components/SimpleImage';
 import TownImageOverlay from '../components/TownImageOverlay';
@@ -577,9 +577,9 @@ export default function TownDiscovery() {
                 )}
                 
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {selectedTownData.cost_index && (
+                  {(selectedTownData.cost_of_living_usd || selectedTownData.typical_monthly_living_cost) && (
                     <span className={`px-3 py-1 ${uiConfig.colors.statusSuccess} text-sm ${uiConfig.layout.radius.full}`}>
-                      ${selectedTownData.cost_index}/mo
+                      ${selectedTownData.cost_of_living_usd || selectedTownData.typical_monthly_living_cost}/mo
                     </span>
                   )}
                   {selectedTownData.healthcare_score && (
@@ -703,9 +703,9 @@ export default function TownDiscovery() {
                   <div className={`text-sm ${uiConfig.colors.heading}`}>
                     {town.name}, {town.country}
                   </div>
-                  {town.cost_index && (
+                  {(town.cost_of_living_usd || town.typical_monthly_living_cost) && (
                     <span className={`text-sm ${uiConfig.colors.body}`}>
-                      ${town.cost_index}/mo
+                      ${town.cost_of_living_usd || town.typical_monthly_living_cost}/mo
                     </span>
                   )}
                 </div>
