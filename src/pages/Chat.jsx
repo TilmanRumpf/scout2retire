@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
-import { fetchTowns, fetchFavorites } from '../utils/townUtils';
+import { fetchTowns, fetchFavorites } from '../utils/townUtils.jsx';
 import { sanitizeChatMessage, MAX_LENGTHS } from '../utils/sanitizeUtils';
 import { cancelInvitation } from '../utils/companionUtils';
 import { sendInvitationEmailViaAuth } from '../utils/emailUtils';
@@ -1363,7 +1363,7 @@ export default function Chat() {
                   </button>
                   <button
                     type="submit"
-                    className={`px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md} ${inviteLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md} disabled:opacity-50 disabled:cursor-not-allowed`}
                     disabled={inviteLoading || !inviteEmail}
                   >
                     {inviteLoading ? 'Sending...' : 'Send Invitation'}

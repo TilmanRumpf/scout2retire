@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
 import DailyTownCard from '../components/DailyTownCard';
-import { fetchFavorites } from '../utils/townUtils';
+import { fetchFavorites } from '../utils/townUtils.jsx';
 import { saveJournalEntry } from '../utils/journalUtils';
 import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
 import PageErrorBoundary from '../components/PageErrorBoundary';

@@ -1,7 +1,7 @@
 // components/TownCard.jsx
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { toggleFavorite } from '../utils/townUtils';
+import { toggleFavorite } from '../utils/townUtils.jsx';
 import toast from 'react-hot-toast';
 import { MapPin, DollarSign, Activity, Shield } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
@@ -68,10 +68,10 @@ export default function TownCard({
           <div className="p-3 flex-1">
             <h4 className={`font-medium ${uiConfig.colors.heading}`}>{town.name}</h4>
             <p className={`text-sm ${uiConfig.colors.hint}`}>{town.country}</p>
-            {town.cost_index && (
+            {(town.cost_of_living_usd || town.typical_monthly_living_cost) && (
               <span className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.full}`}>
                 <DollarSign size={12} />
-                {town.cost_index}/mo
+                ${town.cost_of_living_usd || town.typical_monthly_living_cost}/mo
               </span>
             )}
           </div>
@@ -113,10 +113,10 @@ export default function TownCard({
           </div>
         </div>
         <div className="flex flex-wrap gap-2 mb-3">
-          {town.cost_index && (
+          {(town.cost_of_living_usd || town.typical_monthly_living_cost) && (
             <span className={`inline-flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.full}`}>
               <DollarSign size={12} />
-              {town.cost_index}/mo
+              ${town.cost_of_living_usd || town.typical_monthly_living_cost}/mo
             </span>
           )}
           {town.healthcare_score && (

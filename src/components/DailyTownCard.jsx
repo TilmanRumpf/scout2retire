@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SimpleImage from './SimpleImage';
 import TownImageOverlay from './TownImageOverlay';
-import { getTownOfTheDay, fetchFavorites, toggleFavorite } from '../utils/townUtils';
+import { getTownOfTheDay, fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
 import { getCurrentUser } from '../utils/authUtils';
 import { MapPin } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';

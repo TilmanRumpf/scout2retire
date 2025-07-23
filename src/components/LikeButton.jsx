@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { toggleFavorite } from '../utils/townUtils';
+import { toggleFavorite } from '../utils/townUtils.jsx';
 import toast from 'react-hot-toast';
 
 export default function LikeButton({ 

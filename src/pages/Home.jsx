@@ -7,7 +7,7 @@ import DailyTownCard from '../components/DailyTownCard';
 import TownCard from '../components/TownCard';
 import PageErrorBoundary from '../components/PageErrorBoundary';
 import UnifiedHeader from '../components/UnifiedHeader';
-import { fetchFavorites } from '../utils/townUtils';
+import { fetchFavorites } from '../utils/townUtils.jsx';
 import { saveJournalEntry } from '../utils/journalUtils';
 import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
 import toast from 'react-hot-toast';
