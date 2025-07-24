@@ -50,6 +50,12 @@ export default function TownDiscovery() {
   const [selectedTown, setSelectedTown] = useState(null);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const TOWNS_PER_PAGE = 20;
+  
   // Filter and sort states
   const [sortBy, setSortBy] = useState('match');
   const [filterCountry, setFilterCountry] = useState('all');
@@ -108,14 +114,16 @@ export default function TownDiscovery() {
           isPersonalized: isPersonalizedResult,
           userPreferences: userPrefs
         } = await fetchTowns({ 
-          limit: 20,  // Reduced for better performance
+          limit: TOWNS_PER_PAGE,
+          offset: 0,
           userId: user.id,
           usePersonalization: true  // Enable personalization with enhanced algorithm
         });
 
         if (townSuccess) {
           setTowns(allTowns);
-          
+          // Check if there are more towns to load
+          setHasMore(allTowns.length === TOWNS_PER_PAGE);
           
           // Log personalization status
           if (isPersonalizedResult) {
@@ -190,6 +198,37 @@ export default function TownDiscovery() {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Load more towns function
+  const loadMoreTowns = async () => {
+    if (loadingMore || !hasMore) return;
+    
+    setLoadingMore(true);
+    try {
+      const nextPage = currentPage + 1;
+      const { 
+        success: townSuccess, 
+        towns: moreTowns 
+      } = await fetchTowns({ 
+        limit: TOWNS_PER_PAGE,
+        offset: nextPage * TOWNS_PER_PAGE,
+        userId: userId,
+        usePersonalization: true
+      });
+
+      if (townSuccess) {
+        setTowns(prev => [...prev, ...moreTowns]);
+        setCurrentPage(nextPage);
+        // If we got fewer towns than requested, we've reached the end
+        setHasMore(moreTowns.length === TOWNS_PER_PAGE);
+      }
+    } catch (err) {
+      console.error("Error loading more towns:", err);
+      toast.error("Failed to load more towns");
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   // Check if a town is favorited
   const isFavorited = (townId) => {
@@ -789,6 +828,21 @@ export default function TownDiscovery() {
               </div>
             </div>
           ))}
+          </div>
+        )}
+        
+        {/* Load More Button */}
+        {!loading && hasMore && sortedAndFilteredTowns.length > 0 && (
+          <div className="flex justify-center mt-8 mb-4">
+            <button
+              onClick={loadMoreTowns}
+              disabled={loadingMore}
+              className={`px-6 py-3 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.lg} font-medium transition-all ${
+                loadingMore ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'
+              }`}
+            >
+              {loadingMore ? 'Loading...' : 'Load More Towns'}
+            </button>
           </div>
         )}
         </main>
