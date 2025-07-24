@@ -9,6 +9,7 @@ import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 import { getLoadingBackgroundClass, getLoadingTextClass } from '../../utils/themeUtils';
+import supabase from '../../utils/supabaseClient';
 
 // Option Button Component - Responsive for mobile and desktop
 const OptionButton = ({ label, description, isSelected, onClick }) => (
@@ -43,6 +44,10 @@ const OnboardingRegion = () => {
   const [showDependentDropdowns, setShowDependentDropdowns] = useState([false, false]);
   const [showCountryDropdowns, setShowCountryDropdowns] = useState([false, false]);
   
+  // NEW: Dynamic regions from database
+  const [regions, setRegions] = useState(['Recommended']); // Start with just Recommended
+  const [regionsLoading, setRegionsLoading] = useState(true);
+  
   // Create formData object for auto-save
   const formData = {
     regions: selectedRegions.filter(region => region && region !== ''),
@@ -54,21 +59,6 @@ const OnboardingRegion = () => {
   
   // Enable auto-save for this page
   const autoSave = useOnboardingAutoSave(formData, 'region_preferences');
-
-  // Preserved all original data arrays
-  const regions = [
-    'Recommended',
-    'North America',
-    'Central America',
-    'Caribbean',
-    'South America',
-    'Europe',
-    'Mediterranean',
-    'Asia',
-    'Africa',
-    'Australia & New Zealand',
-    'Oceania'
-  ];
 
   const geographicFeatures = [
     'Coastal',
@@ -92,18 +82,28 @@ const OnboardingRegion = () => {
     'Desert'
   ];
 
-  // Preserved all original data mappings
+  // Updated mapping for dynamic geo_regions from database
   const regionCountries = {
-    'North America': ['Mexico', 'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador', 'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon'],
+    // Keep US states/provinces in North America
+    'North America': ['United States', 'Canada', 'Mexico', 'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador', 'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon'],
     'Central America': ['Belize', 'Costa Rica', 'El Salvador', 'Guatemala', 'Honduras', 'Nicaragua', 'Panama'],
     'Caribbean': ['Antigua and Barbuda', 'Bahamas', 'Barbados', 'Cuba', 'Dominica', 'Dominican Republic', 'Grenada', 'Haiti', 'Jamaica', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Trinidad and Tobago'],
     'South America': ['Argentina', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Ecuador', 'French Guiana', 'Guyana', 'Paraguay', 'Peru', 'Suriname', 'Uruguay', 'Venezuela'],
-    'Europe': ['Albania', 'Andorra', 'Austria', 'Belarus', 'Belgium', 'Bosnia and Herzegovina', 'Bulgaria', 'Croatia', 'Cyprus', 'Czech Republic', 'Denmark', 'Estonia', 'Finland', 'France', 'Germany', 'Greece', 'Hungary', 'Iceland', 'Ireland', 'Italy', 'Latvia', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Malta', 'Moldova', 'Monaco', 'Montenegro', 'Netherlands', 'North Macedonia', 'Norway', 'Poland', 'Portugal', 'Romania', 'Russia', 'San Marino', 'Serbia', 'Slovakia', 'Slovenia', 'Spain', 'Sweden', 'Switzerland', 'Turkey', 'Ukraine', 'United Kingdom', 'Vatican City'],
+    'Western Europe': ['United Kingdom', 'Ireland', 'France', 'Netherlands', 'Belgium', 'Luxembourg', 'Germany', 'Austria', 'Switzerland', 'Spain', 'Portugal', 'Italy'],
+    'Eastern Europe': ['Poland', 'Czech Republic', 'Slovakia', 'Hungary', 'Romania', 'Bulgaria', 'Croatia', 'Slovenia', 'Serbia', 'Bosnia and Herzegovina', 'Montenegro', 'Albania', 'North Macedonia', 'Greece', 'Russia', 'Ukraine', 'Belarus', 'Moldova', 'Estonia', 'Latvia', 'Lithuania'],
+    'Scandinavia': ['Norway', 'Sweden', 'Denmark', 'Finland', 'Iceland'],
     'Mediterranean': ['Spain', 'France', 'Monaco', 'Italy', 'Slovenia', 'Croatia', 'Bosnia and Herzegovina', 'Montenegro', 'Albania', 'Greece', 'Turkey', 'Cyprus', 'Syria', 'Lebanon', 'Israel', 'Egypt', 'Libya', 'Tunisia', 'Algeria', 'Morocco', 'Malta'],
-    'Asia': ['Afghanistan', 'Armenia', 'Azerbaijan', 'Bahrain', 'Bangladesh', 'Bhutan', 'Brunei', 'Cambodia', 'China', 'Cyprus', 'East Timor', 'Georgia', 'India', 'Indonesia', 'Iran', 'Iraq', 'Israel', 'Japan', 'Jordan', 'Kazakhstan', 'Kuwait', 'Kyrgyzstan', 'Laos', 'Lebanon', 'Malaysia', 'Maldives', 'Mongolia', 'Myanmar', 'Nepal', 'North Korea', 'Oman', 'Pakistan', 'Palestine', 'Philippines', 'Qatar', 'Russia', 'Saudi Arabia', 'Singapore', 'South Korea', 'Sri Lanka', 'Syria', 'Taiwan', 'Tajikistan', 'Thailand', 'Turkey', 'Turkmenistan', 'United Arab Emirates', 'Uzbekistan', 'Vietnam', 'Yemen'],
-    'Africa': ['Algeria', 'Angola', 'Benin', 'Botswana', 'Burkina Faso', 'Burundi', 'Cameroon', 'Cape Verde', 'Central African Republic', 'Chad', 'Comoros', 'Democratic Republic of the Congo', 'Republic of the Congo', 'Djibouti', 'Egypt', 'Equatorial Guinea', 'Eritrea', 'Eswatini', 'Ethiopia', 'Gabon', 'Gambia', 'Ghana', 'Guinea', 'Guinea-Bissau', 'Ivory Coast', 'Kenya', 'Lesotho', 'Liberia', 'Libya', 'Madagascar', 'Malawi', 'Mali', 'Mauritania', 'Mauritius', 'Morocco', 'Mozambique', 'Namibia', 'Niger', 'Nigeria', 'Rwanda', 'São Tomé and Príncipe', 'Senegal', 'Seychelles', 'Sierra Leone', 'Somalia', 'South Africa', 'South Sudan', 'Sudan', 'Tanzania', 'Togo', 'Tunisia', 'Uganda', 'Zambia', 'Zimbabwe'],
-    'Australia & New Zealand': ['Australia', 'New Zealand'],
-    'Oceania': ['Fiji', 'Kiribati', 'Marshall Islands', 'Micronesia', 'Nauru', 'Palau', 'Papua New Guinea', 'Samoa', 'Solomon Islands', 'Tonga', 'Tuvalu', 'Vanuatu']
+    'Middle East': ['Turkey', 'Syria', 'Lebanon', 'Israel', 'Palestine', 'Jordan', 'Saudi Arabia', 'Yemen', 'Oman', 'United Arab Emirates', 'Qatar', 'Bahrain', 'Kuwait', 'Iraq', 'Iran'],
+    'East Asia': ['China', 'Japan', 'South Korea', 'North Korea', 'Mongolia', 'Taiwan'],
+    'Southeast Asia': ['Thailand', 'Vietnam', 'Cambodia', 'Laos', 'Myanmar', 'Malaysia', 'Singapore', 'Indonesia', 'Philippines', 'Brunei', 'East Timor'],
+    'South Asia': ['India', 'Pakistan', 'Bangladesh', 'Sri Lanka', 'Nepal', 'Bhutan', 'Maldives', 'Afghanistan'],
+    'North Africa': ['Egypt', 'Libya', 'Tunisia', 'Algeria', 'Morocco', 'Sudan'],
+    'East Africa': ['Ethiopia', 'Kenya', 'Tanzania', 'Uganda', 'Rwanda', 'Burundi', 'Somalia', 'Djibouti', 'Eritrea'],
+    'West Africa': ['Nigeria', 'Ghana', 'Senegal', 'Mali', 'Burkina Faso', 'Niger', 'Ivory Coast', 'Guinea', 'Benin', 'Togo', 'Sierra Leone', 'Liberia', 'Mauritania', 'Gambia', 'Guinea-Bissau'],
+    'Southern Africa': ['South Africa', 'Zimbabwe', 'Botswana', 'Namibia', 'Zambia', 'Mozambique', 'Angola', 'Malawi', 'Lesotho', 'Eswatini'],
+    'Oceania': ['Australia', 'New Zealand', 'Fiji', 'Papua New Guinea', 'Solomon Islands', 'Vanuatu', 'Samoa', 'Tonga'],
+    'Pacific Islands': ['Fiji', 'Samoa', 'Tonga', 'Vanuatu', 'Solomon Islands', 'French Polynesia', 'New Caledonia'],
+    'Indian Ocean': ['Mauritius', 'Seychelles', 'Madagascar', 'Maldives', 'Sri Lanka']
   };
 
   const countryProvinces = {
@@ -142,6 +142,36 @@ const OnboardingRegion = () => {
     'Australia & New Zealand': ['Indonesia', 'Papua New Guinea', 'Fiji', 'New Caledonia', 'Vanuatu'],
     'Oceania': ['Indonesia', 'Australia', 'New Zealand', 'Philippines']
   };
+
+  // Load regions from database
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        // Fetch unique geo_regions from towns table
+        const { data: towns, error } = await supabase
+          .from('towns')
+          .select('geo_region')
+          .not('geo_region', 'is', null);
+        
+        if (error) {
+          console.error('Error fetching regions:', error);
+          // Fall back to some defaults if needed
+          setRegions(['Recommended', 'North America', 'Europe', 'Asia', 'South America']);
+        } else {
+          // Get unique regions and sort them
+          const uniqueRegions = [...new Set(towns.map(t => t.geo_region))].sort();
+          // Add 'Recommended' at the beginning
+          setRegions(['Recommended', ...uniqueRegions]);
+        }
+      } catch (err) {
+        console.error('Error fetching regions:', err);
+      } finally {
+        setRegionsLoading(false);
+      }
+    };
+    
+    fetchRegions();
+  }, []); // Run once on mount
 
   // Load existing data if available
   useEffect(() => {
@@ -493,8 +523,8 @@ const OnboardingRegion = () => {
                         }}
                         className={`${uiConfig.components.select} appearance-none cursor-pointer focus:ring-0 focus:${uiConfig.colors.borderActive} ${uiConfig.animation.transition} h-[44px] sm:h-[48px]`}
                       >
-                        <option value="">Select region</option>
-                        {getAvailableRegions().map(region => (
+                        <option value="">{regionsLoading ? 'Loading regions...' : 'Select region'}</option>
+                        {!regionsLoading && getAvailableRegions().map(region => (
                           <option key={region} value={region}>
                             {region}
                           </option>
