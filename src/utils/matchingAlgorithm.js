@@ -76,7 +76,7 @@ export const clearPersonalizedCache = (userId) => {
  */
 export const getPersonalizedTowns = async (userId, options = {}) => {
   try {
-    const { limit = 20, offset = 0, townIds } = options;
+    const { limit = 100, offset = 0, townIds } = options; // Default to 100 to show all towns
 
     // 1. Get user's onboarding preferences (skip auth check for algorithm)
     const { success: onboardingSuccess, data: userPreferences } = await getOnboardingProgress(userId, true);
