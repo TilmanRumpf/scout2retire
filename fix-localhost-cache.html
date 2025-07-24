@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fix Localhost Cache</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 5px;
+            display: none;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix Localhost Town Limit</h1>
+        <p>Your localhost is showing cached results with only 20 towns. Click the button below to clear the cache and see all 71 towns.</p>
+        
+        <h3>Option 1: Automated Fix</h3>
+        <button onclick="clearCache()">Clear Cache & Reload</button>
+        
+        <h3>Option 2: Manual Fix</h3>
+        <p>Open Chrome DevTools Console (F12) and run:</p>
+        <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px;">
+// Clear matching algorithm cache
+for (let i = sessionStorage.length - 1; i >= 0; i--) {
+    const key = sessionStorage.key(i);
+    if (key && key.includes('personalized_')) {
+        sessionStorage.removeItem(key);
+    }
+}
+localStorage.clear();
+location.reload(true);</pre>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        function clearCache() {
+            try {
+                // Clear personalized cache
+                let cleared = 0;
+                const keysToRemove = [];
+                
+                for (let i = 0; i < sessionStorage.length; i++) {
+                    const key = sessionStorage.key(i);
+                    if (key && key.includes('personalized_')) {
+                        keysToRemove.push(key);
+                    }
+                }
+                
+                keysToRemove.forEach(key => {
+                    sessionStorage.removeItem(key);
+                    cleared++;
+                });
+                
+                // Also clear localStorage
+                localStorage.clear();
+                
+                const result = document.getElementById('result');
+                result.className = 'result';
+                result.style.display = 'block';
+                result.innerHTML = `
+                    <strong>✅ Success!</strong><br>
+                    Cleared ${cleared} cached personalized results.<br>
+                    Cleared all localStorage data.<br><br>
+                    Reloading page in 2 seconds...
+                `;
+                
+                setTimeout(() => {
+                    window.location.href = 'http://localhost:5173/discover';
+                }, 2000);
+                
+            } catch (error) {
+                const result = document.getElementById('result');
+                result.className = 'result error';
+                result.style.display = 'block';
+                result.innerHTML = `
+                    <strong>❌ Error:</strong><br>
+                    ${error.message}<br><br>
+                    Please use the manual method above.
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
