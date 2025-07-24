@@ -54,7 +54,7 @@ export default function TownDiscovery() {
   const [currentPage, setCurrentPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const TOWNS_PER_PAGE = 20;
+  const TOWNS_PER_PAGE = 35; // Initial load of 35 towns (half of 71) to ensure scrolling
   
   // Filter and sort states
   const [sortBy, setSortBy] = useState('match');
@@ -103,7 +103,6 @@ export default function TownDiscovery() {
         // Get user's favorites
         const { success: favSuccess, favorites: userFavorites } = await fetchFavorites(user.id);
         if (favSuccess) {
-          console.log("Loaded favorites:", userFavorites.length);
           setFavorites(userFavorites);
         }
 
@@ -124,20 +123,6 @@ export default function TownDiscovery() {
           setTowns(allTowns);
           // Check if there are more towns to load
           setHasMore(allTowns.length === TOWNS_PER_PAGE);
-          
-          // Log personalization status
-          if (isPersonalizedResult) {
-            console.log("Personalized recommendations loaded!");
-            console.log("User preferences:", userPrefs);
-            console.log("Top 3 towns with scores:", allTowns.slice(0, 3).map(t => ({
-              name: t.name,
-              score: t.matchScore,
-              reasons: t.matchReasons,
-              categoryScores: t.categoryScores
-            })));
-          } else {
-            console.log("Using general recommendations");
-          }
           
           // If a town is selected in URL, make sure it's in our data
           if (selectedTown) {
@@ -218,7 +203,7 @@ export default function TownDiscovery() {
         
         // Load more when user is 300px from the bottom
         if (scrollHeight - scrollTop - clientHeight < 300) {
-          if (!loadingMore && hasMore && !loading && sortedAndFilteredTowns.length > 0) {
+          if (!loadingMore && hasMore && !loading && towns.length > 0) {
             loadMoreTowns();
           }
         }
@@ -228,6 +213,20 @@ export default function TownDiscovery() {
     // Add scroll event listener
     window.addEventListener('scroll', handleScroll);
     
+    // Initial check in case content doesn't fill the screen
+    const checkAndLoadMore = () => {
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = window.innerHeight;
+      // If page isn't scrollable and we have more towns, load them
+      if (scrollHeight <= clientHeight + 100 && hasMore && !loadingMore && !loading) {
+        loadMoreTowns();
+      }
+    };
+    
+    // Check initially and after a delay
+    setTimeout(checkAndLoadMore, 500);
+    setTimeout(checkAndLoadMore, 1500); // Check again in case images loaded
+    
     // Cleanup
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -235,7 +234,24 @@ export default function TownDiscovery() {
         clearTimeout(scrollTimeout);
       }
     };
-  }, [loadingMore, hasMore, loading, sortedAndFilteredTowns.length]); // Dependencies for the scroll handler
+  }, [loadingMore, hasMore, loading, towns.length, currentPage]); // Dependencies for the scroll handler
+
+  // Auto-load more if page still isn't scrollable after loading
+  useEffect(() => {
+    if (towns.length > 0 && !loadingMore && hasMore) {
+      const checkScrollable = () => {
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = window.innerHeight;
+        
+        if (scrollHeight <= clientHeight + 100) {
+          loadMoreTowns();
+        }
+      };
+      
+      // Check after images might have loaded
+      setTimeout(checkScrollable, 1000);
+    }
+  }, [towns.length, hasMore, loadingMore]);
 
   // Load more towns function
   const loadMoreTowns = async () => {
@@ -244,6 +260,7 @@ export default function TownDiscovery() {
     setLoadingMore(true);
     try {
       const nextPage = currentPage + 1;
+      
       const { 
         success: townSuccess, 
         towns: moreTowns 
@@ -403,7 +420,6 @@ export default function TownDiscovery() {
 
   // IMPORTANT: Remove toast calls from here since they're handled in the LikeButton component
   const handleLikeToggle = (isLiked, action, townId) => {
-    console.log(`Town ${townId} ${action}`);
     
     // Update local favorites state without showing toasts
     if (action === 'added') {
@@ -878,6 +894,19 @@ export default function TownDiscovery() {
             </div>
           </div>
         )}
+        
+        {/* Manual load more button as fallback */}
+        {!loadingMore && hasMore && towns.length > 0 && (
+          <div className="flex justify-center py-8">
+            <button
+              onClick={() => loadMoreTowns()}
+              className={`px-6 py-3 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md} hover:opacity-90 transition-opacity`}
+            >
+              Load More Towns (showing {sortedAndFilteredTowns.length} of {towns.length} loaded, {totalTownCount || '71'} total)
+            </button>
+          </div>
+        )}
+        
         </main>
       </PageErrorBoundary>
 
