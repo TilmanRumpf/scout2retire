@@ -54,7 +54,7 @@ export default function TownDiscovery() {
   const [currentPage, setCurrentPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const TOWNS_PER_PAGE = 35; // Initial load of 35 towns (half of 71) to ensure scrolling
+  const TOWNS_PER_PAGE = 100; // Load all towns at once (we only have 71 with photos)
   
   // Filter and sort states
   const [sortBy, setSortBy] = useState('match');
