@@ -48,34 +48,84 @@ export function calculateRegionScore(preferences, town) {
     return { score, factors }
   }
   
+  // US States list for matching
+  const US_STATES = new Set([
+    'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware',
+    'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas',
+    'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi',
+    'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York',
+    'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina',
+    'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia',
+    'Wisconsin', 'Wyoming'
+  ])
+  
   // Direct country match (40 points)
-  if (preferences.countries?.includes(town.country)) {
-    score += 40
-    factors.push({ factor: 'Exact country match', score: 40 })
+  let countryMatched = false
+  if (preferences.countries?.length) {
+    for (const country of preferences.countries) {
+      // Check if it's a US state
+      if (US_STATES.has(country) && town.country === 'United States' && town.region === country) {
+        score += 40
+        factors.push({ factor: `State match (${country})`, score: 40 })
+        countryMatched = true
+        break
+      } else if (country === town.country) {
+        score += 40
+        factors.push({ factor: 'Exact country match', score: 40 })
+        countryMatched = true
+        break
+      }
+    }
   }
-  // Region match (30 points)
-  else if (preferences.regions?.some(region => 
-    town.regions?.includes(region))) {
-    score += 30
-    factors.push({ factor: 'Region match', score: 30 })
+  
+  // Region match (30 points) - bonus for region match even if country matched
+  if (preferences.regions?.length) {
+    // Check traditional regions array
+    if (preferences.regions?.some(region => 
+      town.regions?.includes(region))) {
+      score += 30
+      factors.push({ factor: 'Region match', score: 30 })
+    }
+    // NEW: Also check geo_region for broader matches
+    else if (town.geo_region && preferences.regions.includes(town.geo_region)) {
+      score += 30
+      factors.push({ factor: `Region match (${town.geo_region})`, score: 30 })
+    }
   }
+  
   // No country/region preference but has other preferences
-  else if (!preferences.countries?.length && !preferences.regions?.length) {
+  if (!countryMatched && !preferences.countries?.length && !preferences.regions?.length) {
     score += 50
     factors.push({ factor: 'Open to any country', score: 50 })
   }
   
   // Geographic features match (30 points)
   if (preferences.geographic_features?.length) {
+    let geoScore = 0
+    
+    // First try actual geographic features
     if (town.geographic_features_actual?.length) {
-      const geoScore = calculateArrayOverlap(
+      geoScore = calculateArrayOverlap(
         preferences.geographic_features,
         town.geographic_features_actual,
         30
       )
-      score += geoScore
       if (geoScore > 0) {
+        score += geoScore
         factors.push({ factor: 'Geographic features match', score: geoScore })
+      }
+    } 
+    // FALLBACK: Check regions array for coastal indicators when no geographic data
+    else if (preferences.geographic_features.includes('Coastal') && town.regions?.length) {
+      const coastalIndicators = ['gulf', 'ocean', 'coast', 'beach', 'sea', 'atlantic', 'pacific']
+      const hasCoastalRegion = town.regions.some(region => 
+        coastalIndicators.some(indicator => region.toLowerCase().includes(indicator))
+      )
+      
+      if (hasCoastalRegion) {
+        geoScore = 30 // Full points for coastal match via regions
+        score += geoScore
+        factors.push({ factor: 'Coastal location (from regions)', score: geoScore })
       }
     }
   } else {
@@ -1212,7 +1262,16 @@ export function calculateBudgetScore(preferences, town) {
   }
   
   // Overall budget fit (40 points)
-  const budgetRatio = preferences.total_monthly_budget / (town.typical_monthly_living_cost || town.cost_index)
+  // Use cost_of_living_usd (actual USD amount), NOT cost_index (relative scale)
+  const townCost = town.cost_of_living_usd || town.typical_monthly_living_cost
+  if (!townCost || !preferences.total_monthly_budget) {
+    // If we don't have cost data, give neutral score
+    score += 20
+    factors.push({ factor: 'Cost data not available', score: 20 })
+    return { score, factors, category: 'Budget' }
+  }
+  
+  const budgetRatio = preferences.total_monthly_budget / townCost
   
   if (budgetRatio >= 1.5) {
     score += 40

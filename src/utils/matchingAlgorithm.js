@@ -29,8 +29,22 @@ const convertPreferencesForEnhancedAlgorithm = (userPreferences) => {
   const climateData = userPreferences.climate || userPreferences.climate_preferences || {};
   const budgetData = userPreferences.costs || userPreferences.budget_preferences || {};
   
+  // Handle region preferences - combine countries and regions from top-level fields
+  const regionPreferences = userPreferences.region || userPreferences.region_preferences || {};
+  
+  // If top-level countries/regions exist, ensure they're in the region_preferences object
+  if (userPreferences.countries || userPreferences.regions) {
+    regionPreferences.countries = userPreferences.countries || regionPreferences.countries || [];
+    regionPreferences.regions = userPreferences.regions || regionPreferences.regions || [];
+  }
+  
+  // Add geographic_features if present at top level
+  if (userPreferences.geographic_features) {
+    regionPreferences.geographic_features = userPreferences.geographic_features;
+  }
+  
   return {
-    region_preferences: userPreferences.region || userPreferences.region_preferences || {},
+    region_preferences: regionPreferences,
     climate_preferences: climateData,  // NO DEFAULTS!
     culture_preferences: userPreferences.culture || userPreferences.culture_preferences || {},
     hobbies_preferences: userPreferences.hobbies || userPreferences.hobbies_preferences || {},
@@ -149,14 +163,9 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     
     // Only apply pre-filtering when NOT requesting specific towns
     if (!townIds || townIds.length === 0) {
-      // Pre-filter by budget range (only get towns within reasonable range)
-      if (finalUserPreferences.costs?.total_monthly_budget) {
-        const budget = finalUserPreferences.costs.total_monthly_budget;
-        // Only fetch towns between 50% and 200% of user's budget
-        query = query.gte('cost_index', budget * 0.5)
-                     .lte('cost_index', budget * 2.0);
-        console.log(`Pre-filtering towns by budget: $${budget * 0.5} - $${budget * 2.0}`);
-      }
+      // REMOVED budget pre-filtering due to scale mismatch
+      // The cost_index in DB is on a different scale (0-100) than user budgets ($3000)
+      // Budget matching is still handled in the scoring phase
       
       // Pre-filter by minimum healthcare for users with health concerns
       if (finalUserPreferences.administration?.healthcare_importance === 'excellent' || 
@@ -185,17 +194,16 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     }
     
     // If pre-filtering was too restrictive, fall back to broader search
-    if (allTowns.length < 10 && finalUserPreferences.costs?.total_monthly_budget) {
+    if (allTowns.length < 10) {
       console.log(`Only ${allTowns.length} towns found with filters, expanding search...`);
       
-      // Retry with more relaxed budget filter
-      const budget = finalUserPreferences.costs.total_monthly_budget;
+      // Retry without healthcare/safety filters
       const { data: moreTowns, error: retryError } = await supabase
         .from('towns')
         .select('*')
-        .not('image_url_1', 'is', null).not('image_url_1', 'eq', '')  // CRITICAL: Only towns with photos
-        .gte('cost_index', budget * 0.3)
-        .lte('cost_index', budget * 3.0)
+        .not('image_url_1', 'is', null)
+        .not('image_url_1', 'eq', '')
+        .not('image_url_1', 'ilike', 'NULL')  // CRITICAL: Only towns with photos
         .order('name');
         
       if (!retryError && moreTowns) {
