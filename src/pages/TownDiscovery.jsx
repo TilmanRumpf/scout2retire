@@ -108,7 +108,7 @@ export default function TownDiscovery() {
           isPersonalized: isPersonalizedResult,
           userPreferences: userPrefs
         } = await fetchTowns({ 
-          limit: 100,  // Increased from 50 to show all towns with photos
+          limit: 20,  // Reduced for better performance
           userId: user.id,
           usePersonalization: true  // Enable personalization with enhanced algorithm
         });
