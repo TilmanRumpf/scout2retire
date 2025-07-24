@@ -199,6 +199,44 @@ export default function TownDiscovery() {
     };
   }, []);
 
+  // Infinite scroll detection
+  useEffect(() => {
+    let scrollTimeout;
+    
+    const handleScroll = () => {
+      // Clear any existing timeout
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
+      
+      // Debounce the scroll check
+      scrollTimeout = setTimeout(() => {
+        // Check if we're near the bottom of the page
+        const scrollHeight = document.documentElement.scrollHeight;
+        const scrollTop = window.scrollY;
+        const clientHeight = window.innerHeight;
+        
+        // Load more when user is 300px from the bottom
+        if (scrollHeight - scrollTop - clientHeight < 300) {
+          if (!loadingMore && hasMore && !loading && sortedAndFilteredTowns.length > 0) {
+            loadMoreTowns();
+          }
+        }
+      }, 100); // 100ms debounce
+    };
+
+    // Add scroll event listener
+    window.addEventListener('scroll', handleScroll);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
+    };
+  }, [loadingMore, hasMore, loading, sortedAndFilteredTowns.length]); // Dependencies for the scroll handler
+
   // Load more towns function
   const loadMoreTowns = async () => {
     if (loadingMore || !hasMore) return;
@@ -831,18 +869,13 @@ export default function TownDiscovery() {
           </div>
         )}
         
-        {/* Load More Button */}
-        {!loading && hasMore && sortedAndFilteredTowns.length > 0 && (
-          <div className="flex justify-center mt-8 mb-4">
-            <button
-              onClick={loadMoreTowns}
-              disabled={loadingMore}
-              className={`px-6 py-3 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.lg} font-medium transition-all ${
-                loadingMore ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'
-              }`}
-            >
-              {loadingMore ? 'Loading...' : 'Load More Towns'}
-            </button>
+        {/* Loading indicator for infinite scroll */}
+        {loadingMore && (
+          <div className="flex justify-center py-8">
+            <div className="flex items-center gap-3">
+              <div className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full"></div>
+              <span className={`${uiConfig.colors.body}`}>Loading more towns...</span>
+            </div>
           </div>
         )}
         </main>
