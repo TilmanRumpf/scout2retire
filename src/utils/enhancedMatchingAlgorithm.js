@@ -2,6 +2,7 @@
 // Maps directly to the 6 onboarding sections: Region, Climate, Culture, Hobbies, Admin, Budget
 
 import supabase from './supabaseClient.js'
+import { mapToStandardValue } from './climateInference.js'
 
 // Weights optimized for 55+ retirees: equal emphasis on location preference, budget constraints, and healthcare/safety (60% combined), with climate and culture as secondary factors
 // Score weights for each category (total = 100)
@@ -379,16 +380,23 @@ export function calculateClimateScore(preferences, town) {
         factors.push({ factor: `Winter temperature outside preference (${town.avg_temp_winter}°C)`, score: points })
       }
     }
-  } else if (town.winter_climate_actual && preferences.winter_climate_preference === town.winter_climate_actual) {
-    // Fall back to string matching
-    score += 21
-    factors.push({ factor: 'Perfect winter climate match', score: 21 })
-  } else if (town.winter_climate_actual && (
-    (preferences.winter_climate_preference === 'mild' && town.winter_climate_actual === 'cool') ||
-    (preferences.winter_climate_preference === 'cool' && town.winter_climate_actual === 'mild')
-  )) {
-    score += 13
-    factors.push({ factor: 'Acceptable winter climate', score: 13 })
+  } else if (town.winter_climate_actual) {
+    // Fall back to string matching with standardization
+    const standardizedWinter = mapToStandardValue(town.winter_climate_actual, 'winter')
+    if (preferences.winter_climate_preference === standardizedWinter) {
+      score += 21
+      if (town.winter_climate_actual !== standardizedWinter) {
+        factors.push({ factor: `Perfect winter climate match [${town.winter_climate_actual} = ${standardizedWinter}]`, score: 21 })
+      } else {
+        factors.push({ factor: 'Perfect winter climate match', score: 21 })
+      }
+    } else if (
+      (preferences.winter_climate_preference === 'mild' && standardizedWinter === 'cool') ||
+      (preferences.winter_climate_preference === 'cool' && standardizedWinter === 'mild')
+    ) {
+      score += 13
+      factors.push({ factor: 'Acceptable winter climate', score: 13 })
+    }
   } else if (!town.winter_climate_actual && !town.avg_temp_winter && town.climate_description) {
     // Last fallback: parse climate description
     const climateDesc = town.climate_description.toLowerCase()
@@ -406,9 +414,11 @@ export function calculateClimateScore(preferences, town) {
   }
   
   if (town.humidity_level_actual && preferences.humidity_level?.length > 0) {
+    // Map town value to standard category first
+    const standardizedHumidity = mapToStandardValue(town.humidity_level_actual, 'humidity')
     const humidityResult = calculateGradualClimateScoreForArray(
       preferences.humidity_level, 
-      town.humidity_level_actual, 
+      standardizedHumidity, 
       17, 
       humidityAdjacency
     )
@@ -417,8 +427,13 @@ export function calculateClimateScore(preferences, town) {
       score += humidityResult.score
       const factorText = humidityResult.description === 'Perfect' ? 
         'Perfect humidity match' : 
-        `Good humidity compatibility (${humidityResult.matchedPref} → ${town.humidity_level_actual})`
-      factors.push({ factor: factorText, score: humidityResult.score })
+        `Good humidity compatibility (${humidityResult.matchedPref} → ${standardizedHumidity})`
+      // Add note if value was mapped
+      if (town.humidity_level_actual !== standardizedHumidity) {
+        factors.push({ factor: `${factorText} [${town.humidity_level_actual} = ${standardizedHumidity}]`, score: humidityResult.score })
+      } else {
+        factors.push({ factor: factorText, score: humidityResult.score })
+      }
     }
   } else if (!town.humidity_level_actual && town.climate_description && preferences.humidity_level?.length > 0) {
     // Fallback: try to infer from climate description
@@ -467,9 +482,11 @@ export function calculateClimateScore(preferences, town) {
   }
   
   if (town.sunshine_level_actual && preferences.sunshine?.length > 0) {
+    // Map town value to standard category first
+    const standardizedSunshine = mapToStandardValue(town.sunshine_level_actual, 'sunshine')
     const sunshineResult = calculateGradualClimateScoreForArray(
       preferences.sunshine, 
-      town.sunshine_level_actual, 
+      standardizedSunshine, 
       17, 
       sunshineAdjacency
     )
@@ -478,8 +495,13 @@ export function calculateClimateScore(preferences, town) {
       score += sunshineResult.score
       const factorText = sunshineResult.description === 'Perfect' ? 
         'Perfect sunshine match' : 
-        `Good sunshine compatibility (${sunshineResult.matchedPref} → ${town.sunshine_level_actual})`
-      factors.push({ factor: factorText, score: sunshineResult.score })
+        `Good sunshine compatibility (${sunshineResult.matchedPref} → ${standardizedSunshine})`
+      // Add note if value was mapped
+      if (town.sunshine_level_actual !== standardizedSunshine) {
+        factors.push({ factor: `${factorText} [${town.sunshine_level_actual} = ${standardizedSunshine}]`, score: sunshineResult.score })
+      } else {
+        factors.push({ factor: factorText, score: sunshineResult.score })
+      }
     }
   } else if (!town.sunshine_level_actual && town.sunshine_hours && preferences.sunshine?.length > 0) {
     // Fallback: use sunshine_hours data
@@ -550,9 +572,11 @@ export function calculateClimateScore(preferences, town) {
   }
   
   if (town.precipitation_level_actual && preferences.precipitation?.length > 0) {
+    // Map town value to standard category first
+    const standardizedPrecipitation = mapToStandardValue(town.precipitation_level_actual, 'precipitation')
     const precipitationResult = calculateGradualClimateScoreForArray(
       preferences.precipitation, 
-      town.precipitation_level_actual, 
+      standardizedPrecipitation, 
       9, 
       precipitationAdjacency
     )
@@ -561,8 +585,13 @@ export function calculateClimateScore(preferences, town) {
       score += precipitationResult.score
       const factorText = precipitationResult.description === 'Perfect' ? 
         'Perfect precipitation match' : 
-        `Good precipitation compatibility (${precipitationResult.matchedPref} → ${town.precipitation_level_actual})`
-      factors.push({ factor: factorText, score: precipitationResult.score })
+        `Good precipitation compatibility (${precipitationResult.matchedPref} → ${standardizedPrecipitation})`
+      // Add note if value was mapped
+      if (town.precipitation_level_actual !== standardizedPrecipitation) {
+        factors.push({ factor: `${factorText} [${town.precipitation_level_actual} = ${standardizedPrecipitation}]`, score: precipitationResult.score })
+      } else {
+        factors.push({ factor: factorText, score: precipitationResult.score })
+      }
     }
   } else if (!town.precipitation_level_actual && town.annual_rainfall && preferences.precipitation?.length > 0) {
     // Fallback: use annual_rainfall data (in mm)
