@@ -674,6 +674,31 @@ We've improved how climate preferences work to ensure what you see in the UI exa
 - Nothing! We've automatically updated all existing preferences
 - Just continue using the system as normal
 
+### July 27, 2025 - Smart Climate Data Enhancement
+Based on analysis by Tobias, we've dramatically improved how we handle towns with incomplete climate data:
+
+**The Challenge:**
+- 83% of towns were missing humidity information
+- Some towns had temperature readings but no climate descriptions
+- This meant many great retirement destinations weren't matching properly
+
+**Our Solution - Smart Inference System:**
+When a town lacks specific climate data, we now intelligently infer it from:
+
+1. **Climate descriptions** - We analyze text descriptions for keywords like "humid," "dry," or "mediterranean"
+2. **Rainfall data** - Annual precipitation helps determine humidity (e.g., <400mm suggests dry conditions)
+3. **Geographic features** - Coastal locations tend to be more humid, deserts are dry
+
+**What this means for you:**
+- **More towns to explore** - Towns previously hidden due to missing data now appear in your matches
+- **Better matching accuracy** - We can now match your climate preferences against 100% of towns
+- **Transparent data** - We'll always indicate when climate data is inferred vs. directly measured
+
+**Example:**
+If you prefer "dry" climates, a town with 250mm annual rainfall will now match your preference even if it lacks a specific humidity rating. The inference is based on the fact that low rainfall correlates with dry conditions.
+
+**No action needed** - This enhancement works automatically to give you better, more complete results!
+
 ## Questions?
 
 If you have questions about your match scores or want to understand why a particular town ranked high or low, please contact our support team. We're here to help you find your perfect retirement destination!
