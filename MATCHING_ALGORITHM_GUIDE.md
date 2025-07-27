@@ -233,19 +233,38 @@ Towns are sorted by total score (highest first) and presented with:
 Evaluates geographic alignment:
 
 **No Preferences = 100% Score**
-If you don't select any countries, regions, or geographic features, all towns receive 100% for this category.
+If you don't select any countries, regions, geographic features, or vegetation types, all towns receive 100% for this category.
 
-**What we check (when you have preferences):**
-- **Country match** (40 points) - Is it in your preferred countries?
-- **Region match** (30 points) - Is it in your preferred regions?
-- **Geographic features** (30 points) - Beach? Mountains? Historic?
-- **Vegetation type** (20 points) - Tropical? Mediterranean? Desert?
-- **Water proximity** (10 points) - For coastal preferences
+**Updated July 27, 2025**: Based on algorithm analysis, the region scoring was redesigned to prevent geographic bonuses from overriding core location preferences.
+
+**New Scoring System (Total: 90 points → percentage):**
+
+**1. Country/Region Match (Max 40 points):**
+- **No preferences selected**: 40 points (100%)
+- **Country match**: 40 points (100%)
+- **Region match only (no country match)**: 30 points (75%)
+- **No match**: 0 points
+
+**2. Geographic Features (Max 30 points):**
+- **No preferences selected**: 30 points (100%)
+- **ANY feature matches**: 30 points (100%) - Binary scoring
+- **No matches**: 0 points
+
+**3. Vegetation Type (Max 20 points):**
+- **No preferences selected**: 20 points (100%)
+- **ANY type matches**: 20 points (100%) - Binary scoring
+- **No matches**: 0 points
 
 **Example scoring:**
-- You want: Portugal, coastal location
-- Town: Lisbon, Portugal (coastal)
-- Score: 40 (country) + 30 (coastal) = 70/100 points
+- You want: Portugal, coastal location, Mediterranean vegetation
+  - Town in Portugal (coastal, Mediterranean): 40 + 30 + 20 = 90/90 = 100%
+  - Town in Spain (coastal, Mediterranean): 30 + 30 + 20 = 80/90 = 89%
+  - Town in USA (coastal, wrong vegetation): 0 + 30 + 0 = 30/90 = 33%
+
+**What changed:**
+- Removed water proximity bonus (didn't exist in data)
+- Binary scoring for features/vegetation (all or nothing)
+- Strong preferences now properly respected
 
 ### 2. Climate Score (15% of total)
 Matches your weather preferences:

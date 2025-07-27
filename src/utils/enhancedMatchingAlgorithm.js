@@ -36,16 +36,22 @@ function normalizeScore(value, min, max) {
   return ((value - min) / (max - min)) * 100
 }
 
-// 1. REGION MATCHING (15% of total)
+// 1. REGION MATCHING (20% of total)
 export function calculateRegionScore(preferences, town) {
   let score = 0
   let factors = []
   
-  // If user has NO location preferences, they're open to anywhere - give perfect score
-  if (!preferences.countries?.length && !preferences.regions?.length && !preferences.geographic_features?.length) {
+  // Check if user has any preferences at all
+  const hasCountryPrefs = preferences.countries?.length > 0
+  const hasRegionPrefs = preferences.regions?.length > 0
+  const hasGeoPrefs = preferences.geographic_features?.length > 0
+  const hasVegPrefs = preferences.vegetation_types?.length > 0
+  
+  // If user has NO preferences at all, they're open to anywhere - give perfect score
+  if (!hasCountryPrefs && !hasRegionPrefs && !hasGeoPrefs && !hasVegPrefs) {
     score = 100
     factors.push({ factor: 'Open to any location', score: 100 })
-    return { score, factors }
+    return { score, factors, category: 'Region' }
   }
   
   // US States list for matching
@@ -59,104 +65,127 @@ export function calculateRegionScore(preferences, town) {
     'Wisconsin', 'Wyoming'
   ])
   
-  // Direct country match (40 points)
-  let countryMatched = false
-  if (preferences.countries?.length) {
-    for (const country of preferences.countries) {
-      // Check if it's a US state
-      if (US_STATES.has(country) && town.country === 'United States' && town.region === country) {
-        score += 40
-        factors.push({ factor: `State match (${country})`, score: 40 })
-        countryMatched = true
-        break
-      } else if (country === town.country) {
-        score += 40
-        factors.push({ factor: 'Exact country match', score: 40 })
-        countryMatched = true
-        break
+  // PART 1: REGION/COUNTRY MATCHING (Max 40 points)
+  let regionCountryScore = 0
+  
+  if (!hasCountryPrefs && !hasRegionPrefs) {
+    // No country/region preferences = 100% = 40 points
+    regionCountryScore = 40
+    factors.push({ factor: 'Open to any country/region', score: 40 })
+  } else {
+    // Check for country match first (highest priority)
+    let countryMatched = false
+    if (hasCountryPrefs) {
+      for (const country of preferences.countries) {
+        // Check if it's a US state
+        if (US_STATES.has(country) && town.country === 'United States' && town.region === country) {
+          regionCountryScore = 40
+          factors.push({ factor: `State match (${country})`, score: 40 })
+          countryMatched = true
+          break
+        } else if (country === town.country) {
+          regionCountryScore = 40
+          factors.push({ factor: 'Country match', score: 40 })
+          countryMatched = true
+          break
+        }
       }
     }
-  }
-  
-  // Region match (30 points) - bonus for region match even if country matched
-  if (preferences.regions?.length) {
-    // Check traditional regions array
-    if (preferences.regions?.some(region => 
-      town.regions?.includes(region))) {
-      score += 30
-      factors.push({ factor: 'Region match', score: 30 })
+    
+    // If no country match, check for region match (75% = 30 points)
+    if (!countryMatched && hasRegionPrefs) {
+      // Check traditional regions array
+      if (town.regions?.some(region => preferences.regions.includes(region))) {
+        regionCountryScore = 30
+        factors.push({ factor: 'Region match only', score: 30 })
+      }
+      // Also check geo_region for broader matches
+      else if (town.geo_region && preferences.regions.includes(town.geo_region)) {
+        regionCountryScore = 30
+        factors.push({ factor: `Region match only (${town.geo_region})`, score: 30 })
+      }
     }
-    // NEW: Also check geo_region for broader matches
-    else if (town.geo_region && preferences.regions.includes(town.geo_region)) {
-      score += 30
-      factors.push({ factor: `Region match (${town.geo_region})`, score: 30 })
+    
+    // If nothing matched and user had preferences, score is 0
+    if (regionCountryScore === 0 && (hasCountryPrefs || hasRegionPrefs)) {
+      factors.push({ factor: 'No country/region match', score: 0 })
     }
   }
   
-  // No country/region preference but has other preferences
-  if (!countryMatched && !preferences.countries?.length && !preferences.regions?.length) {
-    score += 50
-    factors.push({ factor: 'Open to any country', score: 50 })
-  }
+  score += regionCountryScore
   
-  // Geographic features match (30 points)
-  if (preferences.geographic_features?.length) {
-    let geoScore = 0
+  // PART 2: GEOGRAPHIC FEATURES (Max 30 points)
+  let geoScore = 0
+  
+  if (!hasGeoPrefs) {
+    // No geographic preferences = 100% = 30 points
+    geoScore = 30
+    factors.push({ factor: 'Open to any geography', score: 30 })
+  } else {
+    // Check if ANY geographic feature matches
+    let hasMatch = false
     
     // First try actual geographic features
     if (town.geographic_features_actual?.length) {
-      geoScore = calculateArrayOverlap(
-        preferences.geographic_features,
-        town.geographic_features_actual,
-        30
-      )
-      if (geoScore > 0) {
-        score += geoScore
-        factors.push({ factor: 'Geographic features match', score: geoScore })
-      }
-    } 
+      const userFeatures = preferences.geographic_features.map(f => f.toLowerCase())
+      const townFeatures = town.geographic_features_actual.map(f => f.toLowerCase())
+      hasMatch = userFeatures.some(feature => townFeatures.includes(feature))
+    }
+    
     // FALLBACK: Check regions array for coastal indicators when no geographic data
-    else if (preferences.geographic_features.includes('Coastal') && town.regions?.length) {
+    if (!hasMatch && preferences.geographic_features.includes('Coastal') && town.regions?.length) {
       const coastalIndicators = ['gulf', 'ocean', 'coast', 'beach', 'sea', 'atlantic', 'pacific']
-      const hasCoastalRegion = town.regions.some(region => 
+      hasMatch = town.regions.some(region => 
         coastalIndicators.some(indicator => region.toLowerCase().includes(indicator))
       )
-      
-      if (hasCoastalRegion) {
-        geoScore = 30 // Full points for coastal match via regions
-        score += geoScore
-        factors.push({ factor: 'Coastal location (from regions)', score: geoScore })
-      }
+    }
+    
+    if (hasMatch) {
+      geoScore = 30
+      factors.push({ factor: 'Geographic features match', score: 30 })
+    } else {
+      factors.push({ factor: 'No geographic feature match', score: 0 })
+    }
+  }
+  
+  score += geoScore
+  
+  // PART 3: VEGETATION TYPE (Max 20 points)
+  let vegScore = 0
+  
+  if (!hasVegPrefs) {
+    // No vegetation preferences = 100% = 20 points
+    vegScore = 20
+    factors.push({ factor: 'Open to any vegetation', score: 20 })
+  } else if (town.vegetation_type_actual?.length) {
+    // Check if ANY vegetation type matches
+    const userVeg = preferences.vegetation_types.map(v => v.toLowerCase())
+    const townVeg = town.vegetation_type_actual.map(v => v.toLowerCase())
+    const hasMatch = userVeg.some(veg => townVeg.includes(veg))
+    
+    if (hasMatch) {
+      vegScore = 20
+      factors.push({ factor: 'Vegetation type match', score: 20 })
+    } else {
+      factors.push({ factor: 'No vegetation match', score: 0 })
     }
   } else {
-    // No geographic preference = open to any geography
-    score += 30
-    factors.push({ factor: 'Open to any geography', score: 30 })
+    // User has preferences but town has no vegetation data
+    factors.push({ factor: 'Vegetation data unavailable', score: 0 })
   }
   
-  // Vegetation type match (20 points)
-  if (preferences.vegetation_types?.length && town.vegetation_type_actual?.length) {
-    const vegScore = calculateArrayOverlap(
-      preferences.vegetation_types,
-      town.vegetation_type_actual,
-      20
-    )
-    score += vegScore
-    if (vegScore > 0) {
-      factors.push({ factor: 'Vegetation type match', score: vegScore })
-    }
-  }
+  score += vegScore
   
-  // Water body preferences (10 points)
-  if (preferences.geographic_features?.includes('Coastal') && town.beaches_nearby) {
-    score += 10
-    factors.push({ factor: 'Coastal preference matched', score: 10 })
-  }
+  // Calculate final percentage based on 90 points total
+  const totalPossible = 90
+  const percentage = Math.round((score / totalPossible) * 100)
   
   return {
-    score: Math.min(score, 100),
+    score: percentage,
     factors,
-    category: 'Region'
+    category: 'Region',
+    rawScore: score,
+    maxScore: totalPossible
   }
 }
 

@@ -360,7 +360,62 @@ if (town.summer_climate_actual &&
     preferences.summer_climate_preference === town.summer_climate_actual)
 ```
 
-### 9. Temperature-Based Climate Scoring with Seasonal Preferences
+### 9. Region Scoring Algorithm Update (July 27, 2025)
+Based on Tobias's algorithm analysis, the region scoring was redesigned to prevent geographic bonuses from overriding core user preferences. The previous system allowed bonus points (vegetation, coastal) to compensate for wrong country/region matches, violating user intent.
+
+**Old Algorithm Issues:**
+- Total possible: 130 points (100 base + 30 bonus), capped at 100
+- Geographic features weighted equally with country (30 vs 40 points)
+- Vegetation and coastal bonuses could override country/region mismatches
+- Example: User wants Portugal, but Florida with beaches could score 60+ points
+
+**New Algorithm (Total: 90 points → percentage):**
+```javascript
+// PART 1: REGION/COUNTRY MATCHING (Max 40 points)
+// - Nothing selected: 40 points (100%)
+// - Country match: 40 points (100%)
+// - Region match only (no country): 30 points (75%)
+// - No match: 0 points
+
+// PART 2: GEOGRAPHIC FEATURES (Max 30 points)
+// - Nothing selected: 30 points (100%)
+// - ANY feature matches: 30 points (100%) - binary scoring
+// - No matches: 0 points
+
+// PART 3: VEGETATION TYPE (Max 20 points)
+// - Nothing selected: 20 points (100%)
+// - ANY type matches: 20 points (100%) - binary scoring
+// - No matches: 0 points
+
+// Total calculation:
+const totalPossible = 90
+const percentage = Math.round((score / totalPossible) * 100)
+```
+
+**Key Changes:**
+- Removed water proximity/coastal bonus (was 10 points)
+- Changed from proportional to binary scoring for features/vegetation
+- Total is 90 points base, converted to percentage
+- No bonus points that can exceed maximum
+- Country/region preferences now properly respected
+
+**Impact Examples:**
+- User wants Portugal + Coastal + Mediterranean vegetation:
+  - Town in Portugal, coastal, correct vegetation: 90/90 = 100%
+  - Town in Spain (Mediterranean), coastal, correct vegetation: 80/90 = 89%
+  - Town in USA, coastal, wrong vegetation: 30/90 = 33%
+
+**Archived Original Structure:**
+```javascript
+// Original bonus point system (abandoned July 27, 2025)
+// - Base scoring: up to 100 points
+// - Vegetation bonus: up to 20 points
+// - Coastal bonus: 10 points (if preferences.geographic_features.includes('Coastal') && town.beaches_nearby)
+// - Total possible: 130 points, capped at 100
+// This allowed geographic bonuses to compensate for wrong locations
+```
+
+### 10. Temperature-Based Climate Scoring with Seasonal Preferences
 ```javascript
 // Temperature ranges for climate preferences (in Celsius)
 const TEMP_RANGES = {
@@ -778,4 +833,4 @@ The system gracefully handles:
 
 ---
 
-*Last updated: January 2025*
+*Last updated: July 27, 2025*
