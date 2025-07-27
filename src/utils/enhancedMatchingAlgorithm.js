@@ -654,10 +654,13 @@ export function calculateClimateScore(preferences, town) {
   // Updated July 27, 2025: No preference = full points (as per Tobias specification)
   
   // First, handle cases where user has no preference (gets full points)
+  // Including "Select Preference" which is the default dropdown value
   if (!preferences.seasonal_preference || 
       preferences.seasonal_preference === '' || 
       preferences.seasonal_preference === 'Optional' ||
-      preferences.seasonal_preference === 'no_specific_preference') {
+      preferences.seasonal_preference === 'no_specific_preference' ||
+      preferences.seasonal_preference === 'Select Preference' ||
+      preferences.seasonal_preference === 'select_preference') {
     score += 15
     factors.push({ factor: 'Flexible on seasonal preferences', score: 15 })
   } 
