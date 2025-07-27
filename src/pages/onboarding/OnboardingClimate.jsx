@@ -221,9 +221,9 @@ export default function OnboardingClimate() {
   ];
 
   const sunshineOptions = [
-    { value: 'mostly_sunny', label: 'Often Sunny' },
+    { value: 'often_sunny', label: 'Often Sunny' },
     { value: 'balanced', label: 'Balanced' },
-    { value: 'often_cloudy', label: 'Less Sunny' }
+    { value: 'less_sunny', label: 'Less Sunny' }
   ];
 
   const precipitationOptions = [

@@ -265,6 +265,38 @@ function calculateGradualClimateScore(userPref, townActual, maxPoints, adjacency
   }
 }
 
+/**
+ * Helper function for array-based climate preferences
+ * @param {Array} userPrefs - User's preferences array
+ * @param {string} townActual - Town's actual value
+ * @param {number} maxPoints - Maximum points for perfect match
+ * @param {Object} adjacencyMap - Map defining adjacent preferences
+ * @returns {Object} Best score and description from all preferences
+ */
+function calculateGradualClimateScoreForArray(userPrefs, townActual, maxPoints, adjacencyMap) {
+  if (!userPrefs?.length || !townActual) return { score: 0, description: null }
+  
+  let bestScore = 0
+  let bestDescription = null
+  let matchedPref = null
+  
+  // Check each user preference
+  for (const pref of userPrefs) {
+    const result = calculateGradualClimateScore(pref, townActual, maxPoints, adjacencyMap)
+    if (result.score > bestScore) {
+      bestScore = result.score
+      bestDescription = result.description
+      matchedPref = pref
+    }
+  }
+  
+  return {
+    score: bestScore,
+    description: bestDescription,
+    matchedPref: matchedPref
+  }
+}
+
 // 2. CLIMATE MATCHING (15% of total)
 export function calculateClimateScore(preferences, town) {
   let score = 0
@@ -373,8 +405,8 @@ export function calculateClimateScore(preferences, town) {
     'humid': ['balanced']
   }
   
-  if (town.humidity_level_actual && preferences.humidity_level) {
-    const humidityResult = calculateGradualClimateScore(
+  if (town.humidity_level_actual && preferences.humidity_level?.length > 0) {
+    const humidityResult = calculateGradualClimateScoreForArray(
       preferences.humidity_level, 
       town.humidity_level_actual, 
       17, 
@@ -385,10 +417,10 @@ export function calculateClimateScore(preferences, town) {
       score += humidityResult.score
       const factorText = humidityResult.description === 'Perfect' ? 
         'Perfect humidity match' : 
-        `Good humidity compatibility (${preferences.humidity_level} → ${town.humidity_level_actual})`
+        `Good humidity compatibility (${humidityResult.matchedPref} → ${town.humidity_level_actual})`
       factors.push({ factor: factorText, score: humidityResult.score })
     }
-  } else if (!town.humidity_level_actual && town.climate_description && preferences.humidity_level) {
+  } else if (!town.humidity_level_actual && town.climate_description && preferences.humidity_level?.length > 0) {
     // Fallback: try to infer from climate description
     const climateDesc = town.climate_description.toLowerCase()
     let inferredHumidity = null
@@ -402,7 +434,7 @@ export function calculateClimateScore(preferences, town) {
     }
     
     if (inferredHumidity) {
-      const humidityResult = calculateGradualClimateScore(
+      const humidityResult = calculateGradualClimateScoreForArray(
         preferences.humidity_level, 
         inferredHumidity, 
         13, // Reduced points for inferred data
@@ -421,15 +453,21 @@ export function calculateClimateScore(preferences, town) {
   
   // Sunshine match (17 points, was 20) - now with gradual scoring
   const sunshineAdjacency = {
-    'often_sunny': ['balanced'],
-    'mostly_sunny': ['balanced'], // Alternative spelling
-    'abundant': ['balanced'],     // Alternative spelling
-    'balanced': ['often_sunny', 'mostly_sunny', 'abundant', 'less_sunny'],
-    'less_sunny': ['balanced']
+    // User preferences (what they can select)
+    'often_sunny': ['balanced', 'mostly_sunny', 'sunny', 'abundant'],
+    'balanced': ['often_sunny', 'mostly_sunny', 'sunny', 'abundant', 'less_sunny', 'partly_sunny', 'often_cloudy'],
+    'less_sunny': ['balanced', 'partly_sunny', 'often_cloudy'],
+    
+    // Town values (for reverse lookup - town value as key)
+    'sunny': ['often_sunny', 'balanced'],
+    'abundant': ['often_sunny', 'balanced'],
+    'mostly_sunny': ['often_sunny', 'balanced'],
+    'partly_sunny': ['balanced', 'less_sunny'],
+    'often_cloudy': ['balanced', 'less_sunny']
   }
   
-  if (town.sunshine_level_actual && preferences.sunshine) {
-    const sunshineResult = calculateGradualClimateScore(
+  if (town.sunshine_level_actual && preferences.sunshine?.length > 0) {
+    const sunshineResult = calculateGradualClimateScoreForArray(
       preferences.sunshine, 
       town.sunshine_level_actual, 
       17, 
@@ -440,10 +478,10 @@ export function calculateClimateScore(preferences, town) {
       score += sunshineResult.score
       const factorText = sunshineResult.description === 'Perfect' ? 
         'Perfect sunshine match' : 
-        `Good sunshine compatibility (${preferences.sunshine} → ${town.sunshine_level_actual})`
+        `Good sunshine compatibility (${sunshineResult.matchedPref} → ${town.sunshine_level_actual})`
       factors.push({ factor: factorText, score: sunshineResult.score })
     }
-  } else if (!town.sunshine_level_actual && town.sunshine_hours && preferences.sunshine) {
+  } else if (!town.sunshine_level_actual && town.sunshine_hours && preferences.sunshine?.length > 0) {
     // Fallback: use sunshine_hours data
     let inferredSunshine = null
     
@@ -456,7 +494,7 @@ export function calculateClimateScore(preferences, town) {
     }
     
     if (inferredSunshine) {
-      const sunshineResult = calculateGradualClimateScore(
+      const sunshineResult = calculateGradualClimateScoreForArray(
         preferences.sunshine, 
         inferredSunshine, 
         13, // Reduced points for inferred data
@@ -471,7 +509,7 @@ export function calculateClimateScore(preferences, town) {
         })
       }
     }
-  } else if (!town.sunshine_level_actual && !town.sunshine_hours && town.climate_description && preferences.sunshine) {
+  } else if (!town.sunshine_level_actual && !town.sunshine_hours && town.climate_description && preferences.sunshine?.length > 0) {
     // Last fallback: infer from climate description
     const climateDesc = town.climate_description.toLowerCase()
     let inferredSunshine = null
@@ -485,7 +523,7 @@ export function calculateClimateScore(preferences, town) {
     }
     
     if (inferredSunshine) {
-      const sunshineResult = calculateGradualClimateScore(
+      const sunshineResult = calculateGradualClimateScoreForArray(
         preferences.sunshine, 
         inferredSunshine, 
         10, // Further reduced points for climate description inference
@@ -511,8 +549,8 @@ export function calculateClimateScore(preferences, town) {
     'wet': ['balanced']            // Alternative spelling
   }
   
-  if (town.precipitation_level_actual && preferences.precipitation) {
-    const precipitationResult = calculateGradualClimateScore(
+  if (town.precipitation_level_actual && preferences.precipitation?.length > 0) {
+    const precipitationResult = calculateGradualClimateScoreForArray(
       preferences.precipitation, 
       town.precipitation_level_actual, 
       9, 
@@ -523,10 +561,10 @@ export function calculateClimateScore(preferences, town) {
       score += precipitationResult.score
       const factorText = precipitationResult.description === 'Perfect' ? 
         'Perfect precipitation match' : 
-        `Good precipitation compatibility (${preferences.precipitation} → ${town.precipitation_level_actual})`
+        `Good precipitation compatibility (${precipitationResult.matchedPref} → ${town.precipitation_level_actual})`
       factors.push({ factor: factorText, score: precipitationResult.score })
     }
-  } else if (!town.precipitation_level_actual && town.annual_rainfall && preferences.precipitation) {
+  } else if (!town.precipitation_level_actual && town.annual_rainfall && preferences.precipitation?.length > 0) {
     // Fallback: use annual_rainfall data (in mm)
     let inferredPrecipitation = null
     
@@ -538,7 +576,7 @@ export function calculateClimateScore(preferences, town) {
       inferredPrecipitation = 'often_rainy'
     }
     
-    const precipitationResult = calculateGradualClimateScore(
+    const precipitationResult = calculateGradualClimateScoreForArray(
       preferences.precipitation, 
       inferredPrecipitation, 
       7, // Reduced points for inferred data
@@ -552,7 +590,7 @@ export function calculateClimateScore(preferences, town) {
         score: precipitationResult.score 
       })
     }
-  } else if (!town.precipitation_level_actual && !town.annual_rainfall && town.climate_description && preferences.precipitation) {
+  } else if (!town.precipitation_level_actual && !town.annual_rainfall && town.climate_description && preferences.precipitation?.length > 0) {
     // Last fallback: infer from climate description
     const climateDesc = town.climate_description.toLowerCase()
     let inferredPrecipitation = null
@@ -566,7 +604,7 @@ export function calculateClimateScore(preferences, town) {
     }
     
     if (inferredPrecipitation) {
-      const precipitationResult = calculateGradualClimateScore(
+      const precipitationResult = calculateGradualClimateScoreForArray(
         preferences.precipitation, 
         inferredPrecipitation, 
         5, // Further reduced points for climate description inference
