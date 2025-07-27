@@ -651,70 +651,130 @@ export function calculateClimateScore(preferences, town) {
   }
   
   // Seasonal preference match (15 points)
-  // Only apply if we have both summer and winter temperature data
-  if (preferences.seasonal_preference && 
-      town.avg_temp_summer !== null && town.avg_temp_summer !== undefined &&
-      town.avg_temp_winter !== null && town.avg_temp_winter !== undefined) {
+  // Updated July 27, 2025: No preference = full points (as per Tobias specification)
+  
+  // First, handle cases where user has no preference (gets full points)
+  if (!preferences.seasonal_preference || 
+      preferences.seasonal_preference === '' || 
+      preferences.seasonal_preference === 'Optional' ||
+      preferences.seasonal_preference === 'no_specific_preference') {
+    score += 15
+    factors.push({ factor: 'Flexible on seasonal preferences', score: 15 })
+  } 
+  // Otherwise, apply seasonal matching if we have temperature data
+  else if (town.avg_temp_summer !== null && town.avg_temp_summer !== undefined &&
+           town.avg_temp_winter !== null && town.avg_temp_winter !== undefined) {
     
     const seasonPref = preferences.seasonal_preference
     
-    if (seasonPref === 'summer_focused') {
-      // User prefers warm seasons - reward mild winters
+    if (seasonPref === 'summer_focused' || seasonPref === 'warm_seasons' || seasonPref === 'prefer_warm_seasons') {
+      // User prefers warm seasons - check if Summer Climate fits = 15 Pts
       let seasonScore = 0
-      if (town.avg_temp_winter >= 15) {
-        seasonScore = 15  // Perfect - warm winters
-      } else if (town.avg_temp_winter >= 10) {
-        seasonScore = 12  // Good - mild winters
-      } else if (town.avg_temp_winter >= 5) {
-        seasonScore = 8   // Okay - cool winters
+      let summerFits = false
+      
+      // Check if summer climate matches preference
+      if (preferences.summer_climate_preference) {
+        if (town.summer_climate_actual === preferences.summer_climate_preference) {
+          summerFits = true
+        } else if (town.avg_temp_summer !== null && TEMP_RANGES.summer[preferences.summer_climate_preference]) {
+          // Use temperature-based check as fallback
+          const tempScore = calculateTemperatureScore(town.avg_temp_summer, TEMP_RANGES.summer[preferences.summer_climate_preference])
+          summerFits = tempScore >= 80 // Consider it a fit if temperature is good/perfect
+        }
       } else {
-        seasonScore = 0   // Too cold
+        summerFits = true // No preference = fits
       }
       
-      if (seasonScore > 0) {
-        score += seasonScore
-        factors.push({ factor: 'Mild winters for year-round comfort', score: seasonScore })
+      if (summerFits) {
+        seasonScore = 15
+        factors.push({ factor: 'Summer climate matches preference for warm seasons', score: 15 })
+      } else {
+        seasonScore = 0
+        factors.push({ factor: 'Summer climate does not match warm season preference', score: 0 })
       }
       
-    } else if (seasonPref === 'winter_focused') {
-      // User prefers cool seasons - reward moderate summers
+      score += seasonScore
+      
+    } else if (seasonPref === 'winter_focused' || seasonPref === 'cool_seasons' || seasonPref === 'prefer_cool_seasons') {
+      // User prefers cool seasons - check if Winter Climate fits = 15 Pts
       let seasonScore = 0
-      if (town.avg_temp_summer <= 25) {
-        seasonScore = 15  // Perfect - cool summers
-      } else if (town.avg_temp_summer <= 28) {
-        seasonScore = 12  // Good - moderate summers
-      } else if (town.avg_temp_summer <= 32) {
-        seasonScore = 8   // Okay - warm summers
+      let winterFits = false
+      
+      // Check if winter climate matches preference
+      if (preferences.winter_climate_preference) {
+        const standardizedWinter = mapToStandardValue(town.winter_climate_actual, 'winter')
+        if (standardizedWinter === preferences.winter_climate_preference) {
+          winterFits = true
+        } else if (town.avg_temp_winter !== null && TEMP_RANGES.winter[preferences.winter_climate_preference]) {
+          // Use temperature-based check as fallback
+          const tempScore = calculateTemperatureScore(town.avg_temp_winter, TEMP_RANGES.winter[preferences.winter_climate_preference])
+          winterFits = tempScore >= 80 // Consider it a fit if temperature is good/perfect
+        }
       } else {
-        seasonScore = 0   // Too hot
+        winterFits = true // No preference = fits
       }
       
-      if (seasonScore > 0) {
-        score += seasonScore
-        factors.push({ factor: 'Moderate summers with cool seasons', score: seasonScore })
+      if (winterFits) {
+        seasonScore = 15
+        factors.push({ factor: 'Winter climate matches preference for cool seasons', score: 15 })
+      } else {
+        seasonScore = 0
+        factors.push({ factor: 'Winter climate does not match cool season preference', score: 0 })
       }
+      
+      score += seasonScore
       
     } else if (seasonPref === 'all_seasons') {
-      // User enjoys all seasons - reward seasonal variation
-      const variation = Math.abs(town.avg_temp_summer - town.avg_temp_winter)
+      // User enjoys all seasons - check if BOTH winter and summer climate match preferences
+      // Per Tobias spec: if Winter Climate and Summer Climate fits = 15 Pts
       let seasonScore = 0
+      let summerFits = false
+      let winterFits = false
       
-      if (variation >= 15) {
-        seasonScore = 15  // Distinct seasons
-      } else if (variation >= 10) {
-        seasonScore = 12  // Moderate variation
-      } else if (variation >= 5) {
-        seasonScore = 8   // Some variation
+      // Check if summer climate matches preference
+      if (preferences.summer_climate_preference) {
+        if (town.summer_climate_actual === preferences.summer_climate_preference) {
+          summerFits = true
+        } else if (town.avg_temp_summer !== null && TEMP_RANGES.summer[preferences.summer_climate_preference]) {
+          // Use temperature-based check as fallback
+          const tempScore = calculateTemperatureScore(town.avg_temp_summer, TEMP_RANGES.summer[preferences.summer_climate_preference])
+          summerFits = tempScore >= 80 // Consider it a fit if temperature is good/perfect
+        }
       } else {
-        seasonScore = 0   // Too stable
+        summerFits = true // No preference = fits
       }
       
-      if (seasonScore > 0) {
-        score += seasonScore
-        factors.push({ factor: 'Four distinct seasons', score: seasonScore })
+      // Check if winter climate matches preference
+      if (preferences.winter_climate_preference) {
+        const standardizedWinter = mapToStandardValue(town.winter_climate_actual, 'winter')
+        if (standardizedWinter === preferences.winter_climate_preference) {
+          winterFits = true
+        } else if (town.avg_temp_winter !== null && TEMP_RANGES.winter[preferences.winter_climate_preference]) {
+          // Use temperature-based check as fallback
+          const tempScore = calculateTemperatureScore(town.avg_temp_winter, TEMP_RANGES.winter[preferences.winter_climate_preference])
+          winterFits = tempScore >= 80 // Consider it a fit if temperature is good/perfect
+        }
+      } else {
+        winterFits = true // No preference = fits
       }
+      
+      // Award points only if BOTH seasons fit
+      if (summerFits && winterFits) {
+        seasonScore = 15
+        factors.push({ factor: 'Both summer and winter climate match preferences', score: 15 })
+      } else {
+        seasonScore = 0
+        if (!summerFits && !winterFits) {
+          factors.push({ factor: 'Neither summer nor winter climate matches', score: 0 })
+        } else if (!summerFits) {
+          factors.push({ factor: 'Summer climate does not match preference', score: 0 })
+        } else {
+          factors.push({ factor: 'Winter climate does not match preference', score: 0 })
+        }
+      }
+      
+      score += seasonScore
     }
-    // Note: 'Optional' or no preference = skip seasonal scoring entirely (0 points)
   }
   
   return {
