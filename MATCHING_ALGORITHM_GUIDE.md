@@ -309,6 +309,7 @@ If temperature data is missing, we use string matching. If that's also missing, 
 **Seasonal Preference Scoring (15 points):**
 This rewards flexibility or matches your seasonal preferences:
 
+- **"Select preference" (default)** → 15 points - Maximum flexibility
 - **No preference selected** → 15 points - Maximum flexibility
 - **"No specific preference"** → 15 points - Open to any seasonal pattern
 
