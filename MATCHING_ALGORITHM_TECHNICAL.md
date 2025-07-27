@@ -265,6 +265,28 @@ const CATEGORY_WEIGHTS = {
 }
 ```
 
+## Recent Improvements (July 2025)
+
+### Climate Value Standardization (July 27, 2025)
+Implemented automatic mapping of town climate values to user-selectable categories before comparison:
+
+```javascript
+// Before comparison, map town values to standard categories:
+const standardizedSunshine = mapToStandardValue(town.sunshine_level_actual, 'sunshine')
+// "often_cloudy" → "less_sunny"
+// "mostly_sunny" → "often_sunny"
+// etc.
+
+// Then compare standardized value with user preference
+// Result: "often_cloudy" now matches "less_sunny" at 100% instead of 70% adjacent
+```
+
+**Impact:**
+- Eliminates false "adjacent" matches for values in the same group
+- Example: Lemmer improved from 80% to 100% climate match
+- Applies to sunshine, humidity, precipitation, and winter climate
+- More intuitive matching that aligns with user expectations
+
 ## Recent Improvements (January 2025)
 
 ### 1. Comprehensive Tax Scoring (January 2025)
