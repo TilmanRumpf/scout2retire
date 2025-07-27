@@ -267,6 +267,31 @@ const CATEGORY_WEIGHTS = {
 
 ## Recent Improvements (July 2025)
 
+### Seasonal Preference Scoring Fix (July 27, 2025)
+Fixed seasonal preference scoring to align with specification where "no preference = full points":
+
+```javascript
+// Before: No seasonal preference → 0 points
+// After: No seasonal preference → 15 points
+
+// Implementation:
+if (!preferences.seasonal_preference || 
+    preferences.seasonal_preference === '' || 
+    preferences.seasonal_preference === 'Optional' ||
+    preferences.seasonal_preference === 'no_specific_preference') {
+  score += 15
+  factors.push({ factor: 'Flexible on seasonal preferences', score: 15 })
+}
+```
+
+**Corrected Logic:**
+- No preference selected → 15 points
+- "I prefer warm seasons" → 15 points IF summer climate matches
+- "I prefer cool seasons" → 15 points IF winter climate matches
+- "I enjoy all seasons" → 15 points IF both summer AND winter match
+
+**Impact:** Lemmer now correctly shows 100% climate match (was 85%)
+
 ### Climate Value Standardization (July 27, 2025)
 Implemented automatic mapping of town climate values to user-selectable categories before comparison:
 

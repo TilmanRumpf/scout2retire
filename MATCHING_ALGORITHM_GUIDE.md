@@ -307,27 +307,25 @@ When towns have actual temperature data, we use precise ranges:
 If temperature data is missing, we use string matching. If that's also missing, we parse the climate description (e.g., "Mediterranean climate" implies warm summers and mild winters).
 
 **Seasonal Preference Scoring (15 points):**
-This matches your preference for seasonal variation:
+This rewards flexibility or matches your seasonal preferences:
 
-- **"No specific preference"** → No seasonal scoring (0 points)
+- **No preference selected** → 15 points - Maximum flexibility
+- **"No specific preference"** → 15 points - Open to any seasonal pattern
 
-- **"I prefer warm seasons"** → We reward locations with mild winters:
-  - Winter ≥ 15°C (59°F): 15 points - Year-round warmth
-  - Winter ≥ 10°C (50°F): 12 points - Mild winters
-  - Winter ≥ 5°C (41°F): 8 points - Cool but manageable
-  - Winter < 5°C (41°F): 0 points - Too cold for warm-season lovers
+- **"I prefer warm seasons"** → 15 points IF summer climate matches your preference
+  - Checks if the town's summer climate aligns with what you selected
+  - Only awards points if there's a good match
+  - Example: You want "warm" summers and town has "warm" = 15 points
 
-- **"I prefer cool seasons"** → We reward locations with moderate summers:
-  - Summer ≤ 25°C (77°F): 15 points - Pleasantly cool year-round
-  - Summer ≤ 28°C (82°F): 12 points - Moderate summers
-  - Summer ≤ 32°C (90°F): 8 points - Warm but tolerable
-  - Summer > 32°C (90°F): 0 points - Too hot for cool-season lovers
+- **"I prefer cool seasons"** → 15 points IF winter climate matches your preference
+  - Checks if the town's winter climate aligns with what you selected
+  - Only awards points if there's a good match
+  - Example: You want "cool" winters and town has "cool" = 15 points
 
-- **"I enjoy all seasons equally"** → We reward locations with distinct seasonal variation:
-  - Temperature variation ≥ 15°C: 15 points - Four distinct seasons
-  - Temperature variation ≥ 10°C: 12 points - Moderate seasonal change
-  - Temperature variation ≥ 5°C: 8 points - Some seasonal variety
-  - Temperature variation < 5°C: 0 points - Too stable, no real seasons
+- **"I enjoy all seasons equally"** → 15 points IF BOTH summer AND winter match
+  - Must match both your summer preference AND winter preference
+  - If either doesn't match, you get 0 points
+  - Ensures the town truly offers what you want year-round
 
 Note: Seasonal scoring only applies when towns have both summer and winter temperature data.
 
