@@ -1,5 +1,20 @@
 # Safe Return Points Log
 
+## July 27, 2025 - Climate Preference Alignment
+- **Tag**: `safe-return-2025-07-27-climate-alignment`
+- **Commit**: a5491e8
+- **Changes**: Aligned climate preference values between UI and database
+  - UI now stores exact display values (e.g., "often_sunny" not "mostly_sunny")
+  - Migrated 6 users' existing preferences to new values
+  - Added array handling for climate preferences in matching algorithm
+  - Prevents old values from persisting when users update preferences
+- **Files Modified**:
+  - `src/pages/onboarding/OnboardingClimate.jsx`
+  - `src/utils/enhancedMatchingAlgorithm.js`
+  - `MATCHING_ALGORITHM_TECHNICAL.md`
+  - `MATCHING_ALGORITHM_GUIDE.md`
+  - `CLIMATE_MIGRATION_SUMMARY.md` (new)
+
 ## July 27, 2025 - Region Scoring Algorithm Update
 - **Tag**: `safe-return-2025-07-27-region-scoring`
 - **Commit**: a2b4506
