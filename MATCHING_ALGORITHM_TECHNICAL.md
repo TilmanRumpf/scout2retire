@@ -831,6 +831,32 @@ The system gracefully handles:
 - Weather API integration
 - Community feedback scores
 
+### 10. Climate Preference Value Alignment (July 27, 2025)
+Following the region scoring update, climate preference values were aligned between the UI and database to ensure consistency. The UI was updated to store exact display values, eliminating confusion from mismatched internal values.
+
+**Changes Made:**
+- **Sunshine preferences aligned:**
+  - UI "Often Sunny" now stores as `"often_sunny"` (was `"mostly_sunny"`)
+  - UI "Balanced" stores as `"balanced"` (unchanged)
+  - UI "Less Sunny" stores as `"less_sunny"` (was `"often_cloudy"`)
+
+- **Database migration completed:**
+  - Migrated all existing user preferences to new values
+  - 6 users updated successfully with 100% success rate
+  - Old values `"mostly_sunny"` → `"often_sunny"`
+  - Old values `"often_cloudy"` → `"less_sunny"`
+
+- **Algorithm updates:**
+  - Added `calculateGradualClimateScoreForArray()` to handle array preferences
+  - Updated adjacency mappings to support all town sunshine values
+  - Applied same array handling to humidity and precipitation preferences
+
+**Impact:**
+- UI labels now match stored database values exactly
+- Eliminates persistence of old values when users update preferences
+- Improves matching accuracy by ensuring consistent value comparison
+- Future preference additions should follow this pattern of UI-database alignment
+
 ---
 
 *Last updated: July 27, 2025*

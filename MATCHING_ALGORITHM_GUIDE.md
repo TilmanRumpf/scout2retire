@@ -655,10 +655,29 @@ We're constantly improving the matching algorithm:
 
 ---
 
+## Recent Updates
+
+### July 27, 2025 - Climate Preference Alignment
+We've improved how climate preferences work to ensure what you see in the UI exactly matches what's stored in our database:
+
+**What changed:**
+- When you select "Often Sunny", it now saves exactly as "often_sunny"
+- When you select "Less Sunny", it now saves exactly as "less_sunny" 
+- Previously, these were stored with different internal values that could cause confusion
+
+**Why it matters:**
+- Your preferences now persist correctly when you update them
+- No more old selections appearing when you change your mind
+- Climate matching is more accurate and predictable
+
+**What you need to do:**
+- Nothing! We've automatically updated all existing preferences
+- Just continue using the system as normal
+
 ## Questions?
 
 If you have questions about your match scores or want to understand why a particular town ranked high or low, please contact our support team. We're here to help you find your perfect retirement destination!
 
 ---
 
-*Last updated: January 2025*
+*Last updated: July 27, 2025*
