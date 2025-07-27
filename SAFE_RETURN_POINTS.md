@@ -1,5 +1,19 @@
 # Safe Return Points Log
 
+## July 27, 2025 - Climate Data Conflicts Resolution
+- **Tag**: `safe-return-2025-07-27-climate-conflicts`
+- **Commit**: [pending]
+- **Changes**: Resolved climate data conflicts using marketing-friendly approach
+  - Analyzed 75% of European towns had temperature/label conflicts
+  - Adopted "trust the labels" approach for existing data
+  - Updated temperature inference ranges to match marketing standards
+  - Only use inference when labels are missing
+- **Files Modified**:
+  - `src/utils/climateInference.js` (updated ranges)
+  - `CLIMATE_INFERENCE_DOCUMENTATION.md` (added conflicts section)
+  - `MATCHING_ALGORITHM_TECHNICAL.md` (updated temperature ranges)
+  - `MATCHING_ALGORITHM_GUIDE.md` (updated temperature ranges)
+
 ## July 27, 2025 - Smart Climate Data Inference System
 - **Tag**: `safe-return-2025-07-27-climate-inference`
 - **Commit**: 547ee20

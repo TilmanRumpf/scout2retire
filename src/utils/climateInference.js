@@ -69,41 +69,38 @@ export function inferHumidity(town) {
 
 /**
  * Infer summer climate from temperature data
+ * Updated to match marketing-friendly database labels (July 27, 2025)
  * @param {number} avgTempSummer - Average summer temperature in Celsius
  * @returns {string|null} - Inferred climate category
  */
 export function inferSummerClimate(avgTempSummer) {
   if (avgTempSummer === null || avgTempSummer === undefined) return null;
   
-  // Based on our defined ranges
+  // Marketing-friendly ranges that match database labels
+  // Note: Some edge cases exist (e.g., Funchal at 23°C = "hot")
+  // These are handled by trusting the database labels
   if (avgTempSummer < 15) return 'cool';
-  if (avgTempSummer >= 15 && avgTempSummer <= 24) return 'mild';
-  if (avgTempSummer >= 22 && avgTempSummer <= 32) return 'warm';
-  if (avgTempSummer >= 28) return 'hot';
-  
-  // Handle overlaps by choosing most appropriate
-  if (avgTempSummer >= 22 && avgTempSummer <= 24) return 'mild'; // Overlap zone, lean mild
-  if (avgTempSummer >= 28 && avgTempSummer <= 32) return 'warm'; // Overlap zone, lean warm
+  if (avgTempSummer >= 15 && avgTempSummer <= 22) return 'mild';
+  if (avgTempSummer > 22 && avgTempSummer < 27) return 'warm';
+  if (avgTempSummer >= 27) return 'hot';
   
   return 'mild'; // Default fallback
 }
 
 /**
  * Infer winter climate from temperature data
+ * Updated to match marketing-friendly database labels (July 27, 2025)
  * @param {number} avgTempWinter - Average winter temperature in Celsius
  * @returns {string|null} - Inferred climate category
  */
 export function inferWinterClimate(avgTempWinter) {
   if (avgTempWinter === null || avgTempWinter === undefined) return null;
   
-  // Based on our defined ranges
-  if (avgTempWinter < 5) return 'cold';
-  if (avgTempWinter >= 3 && avgTempWinter <= 15) return 'cool';
-  if (avgTempWinter >= 12) return 'mild';
-  
-  // Handle overlaps
-  if (avgTempWinter >= 3 && avgTempWinter < 5) return 'cold'; // Overlap zone, lean cold
-  if (avgTempWinter >= 12 && avgTempWinter <= 15) return 'cool'; // Overlap zone, lean cool
+  // Marketing-friendly ranges that match database labels
+  // Note: 12°C is often labeled "cool" in Mediterranean towns
+  if (avgTempWinter <= 5) return 'cold';
+  if (avgTempWinter > 5 && avgTempWinter <= 14) return 'cool';
+  if (avgTempWinter > 14) return 'mild';
   
   return 'cool'; // Default fallback
 }
@@ -153,18 +150,22 @@ export function mapToStandardValue(value, category) {
 
 /**
  * Get effective climate value with inference fallback
+ * Updated July 27, 2025: Trust database labels when they exist (marketing-friendly approach)
  * @param {Object} town - Town data
  * @param {string} category - Climate category
- * @returns {Object} { value: string, isInferred: boolean, source: string }
+ * @returns {Object} { value: string, isInferred: boolean, source: string, temperature: number|null }
  */
 export function getEffectiveClimateValue(town, category) {
   let value = null;
   let isInferred = false;
   let source = 'actual';
+  let temperature = null;
   
   switch (category) {
     case 'summer':
       value = town.summer_climate_actual;
+      temperature = town.avg_temp_summer;
+      // Only infer if label is missing
       if (!value && town.avg_temp_summer !== null) {
         value = inferSummerClimate(town.avg_temp_summer);
         isInferred = true;
@@ -174,6 +175,8 @@ export function getEffectiveClimateValue(town, category) {
       
     case 'winter':
       value = town.winter_climate_actual;
+      temperature = town.avg_temp_winter;
+      // Only infer if label is missing
       if (!value && town.avg_temp_winter !== null) {
         value = inferWinterClimate(town.avg_temp_winter);
         isInferred = true;
@@ -209,5 +212,5 @@ export function getEffectiveClimateValue(town, category) {
     value = mapToStandardValue(value, category);
   }
   
-  return { value, isInferred, source };
+  return { value, isInferred, source, temperature };
 }

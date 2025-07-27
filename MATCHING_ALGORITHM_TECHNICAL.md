@@ -418,15 +418,17 @@ const percentage = Math.round((score / totalPossible) * 100)
 ### 10. Temperature-Based Climate Scoring with Seasonal Preferences
 ```javascript
 // Temperature ranges for climate preferences (in Celsius)
+// Updated July 27, 2025 to match marketing-friendly database labels
 const TEMP_RANGES = {
   summer: {
-    mild: { min: 15, max: 24 },
-    warm: { min: 22, max: 32 },
+    cool: { min: -Infinity, max: 15 },
+    mild: { min: 15, max: 22 },
+    warm: { min: 22, max: 28 },
     hot: { min: 28, max: Infinity }
   },
   winter: {
     cold: { min: -Infinity, max: 5 },
-    cool: { min: 3, max: 15 },
+    cool: { min: 5, max: 12 },
     mild: { min: 12, max: Infinity }
   }
 }

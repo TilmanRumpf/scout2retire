@@ -283,14 +283,15 @@ If you don't select any climate preferences, all towns receive 100% for this cat
 **NEW: Temperature-Based Scoring**
 When towns have actual temperature data, we use precise ranges:
 
-**Summer Temperature Ranges:**
-- Mild: 15-24°C (59-75°F)
-- Warm: 22-32°C (72-90°F) 
+**Summer Temperature Ranges (Marketing-Friendly):**
+- Cool: Below 15°C (59°F)
+- Mild: 15-22°C (59-72°F)
+- Warm: 22-28°C (72-82°F) 
 - Hot: 28°C+ (82°F+)
 
-**Winter Temperature Ranges:**
+**Winter Temperature Ranges (Marketing-Friendly):**
 - Cold: Below 5°C (41°F)
-- Cool: 3-15°C (37-59°F)
+- Cool: 5-12°C (41-54°F)
 - Mild: 12°C+ (54°F+)
 
 **Gradual Scoring:**

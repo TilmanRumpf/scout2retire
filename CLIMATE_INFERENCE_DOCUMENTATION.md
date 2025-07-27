@@ -49,18 +49,23 @@ Mountain location → balanced
 
 ### 2. Temperature-Based Climate Inference
 
-For towns with temperature data but no climate labels:
+**Updated July 27, 2025**: We now trust existing database labels (marketing-friendly approach) and only use temperature inference when labels are missing.
 
-#### Summer Climate
+#### Marketing-Friendly Temperature Ranges
+When inferring from temperature (only for missing labels):
+
+##### Summer Climate
 - < 15°C → cool
-- 15-24°C → mild
-- 22-32°C → warm (overlaps handled)
-- ≥ 28°C → hot
+- 15-22°C → mild
+- 22-27°C → warm
+- ≥ 27°C → hot
 
-#### Winter Climate
-- < 5°C → cold
-- 3-15°C → cool (overlaps handled)
-- ≥ 12°C → mild
+##### Winter Climate
+- ≤ 5°C → cold
+- 5-14°C → cool
+- > 14°C → mild
+
+**Note**: The database uses marketing-friendly labels that may differ from strict meteorological definitions. For example, Greek towns at 28°C are often labeled "hot" for tourism appeal, and Mediterranean winters at 12-14°C are often labeled "cool" rather than "mild".
 
 ### 3. Data Standardization Mappings
 
@@ -161,5 +166,26 @@ const humidityData = getEffectiveClimateValue(town, 'humidity');
 - Monitor which inference methods are most used
 - Identify towns that frequently need inference
 
+## Handling Climate Data Conflicts (July 27, 2025)
+
+### The Challenge
+Analysis revealed that 75% of European towns have temperature data that conflicts with their climate labels when using strict meteorological definitions. For example:
+- Valencia at 30°C labeled "hot" (meteorologically would be "warm")
+- Athens at 28°C labeled "hot" (meteorologically would be "warm")
+- Many Mediterranean towns at 12-14°C labeled "cool" (meteorologically would be "mild")
+
+### The Solution: Trust Database Labels
+After analysis, we adopted a **marketing-friendly approach**:
+
+1. **When labels exist**: Trust them as ground truth
+2. **When labels are missing**: Use inference with adjusted ranges
+3. **Rationale**: The labels reflect how destinations market themselves and user expectations
+
+### Impact
+- Eliminates artificial conflicts between temperature and labels
+- Maintains consistency with how towns present themselves
+- Aligns with user expectations (e.g., Greek summer = "hot")
+- Inference only fills gaps, doesn't override existing data
+
 ## Conclusion
-The Smart Climate Data Inference System successfully addresses the challenge of incomplete climate data, enabling comprehensive matching for all users while maintaining transparency about data sources. This implementation follows software engineering best practices and provides a robust foundation for future enhancements.
+The Smart Climate Data Inference System successfully addresses the challenge of incomplete climate data, enabling comprehensive matching for all users while maintaining transparency about data sources. By trusting existing labels and using marketing-friendly temperature ranges for inference, we balance accuracy with user expectations. This implementation follows software engineering best practices and provides a robust foundation for future enhancements.
