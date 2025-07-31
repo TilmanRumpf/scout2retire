@@ -324,17 +324,17 @@ export default function OnboardingReview() {
           <div className={`space-y-1 ${uiConfig.font.size.xs}`}>
             <p>
               <span className={`${uiConfig.font.weight.medium}`}>Monthly Budget:</span>{' '}
-              ${data.total_monthly_budget?.toLocaleString() || '0'}
+              ${data.total_monthly_budget ? data.total_monthly_budget.toLocaleString() : '0'}
               {data.total_monthly_budget >= 5000 && '+'}
             </p>
             <p>
               <span className={`${uiConfig.font.weight.medium}`}>Max Rent:</span>{' '}
-              ${data.max_monthly_rent?.toLocaleString() || '0'}
+              ${data.max_monthly_rent ? data.max_monthly_rent.toLocaleString() : '0'}
               {data.max_monthly_rent >= 2000 && '+'}
             </p>
             <p>
               <span className={`${uiConfig.font.weight.medium}`}>Max Home Price:</span>{' '}
-              ${data.max_home_price?.toLocaleString() || '0'}
+              ${data.max_home_price ? data.max_home_price.toLocaleString() : '0'}
               {data.max_home_price >= 500000 && '+'}
             </p>
             <p>
