@@ -225,17 +225,33 @@ export default function OnboardingCosts() {
 
   // Format currency (TODO: Add currency conversion based on user location)
   const formatCurrency = (value) => {
-    if (value == null || isNaN(value)) return '$0';
-    return `$${value.toLocaleString()}`;
+    // Handle null, undefined, or non-numeric values
+    if (value == null || value === '') return '$0';
+    
+    // Convert to number if it's a string
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    
+    // Check if it's a valid number
+    if (isNaN(numValue)) return '$0';
+    
+    return `$${numValue.toLocaleString()}`;
   };
   
   // Format home price for display
   const formatHomePrice = (value) => {
-    if (value == null || isNaN(value)) return '$0';
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`;
+    // Handle null, undefined, or non-numeric values
+    if (value == null || value === '') return '$0';
+    
+    // Convert to number if it's a string
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    
+    // Check if it's a valid number
+    if (isNaN(numValue)) return '$0';
+    
+    if (numValue >= 1000000) {
+      return `$${(numValue / 1000000).toFixed(1)}M`;
     }
-    return `$${(value / 1000).toFixed(0)}k`;
+    return `$${(numValue / 1000).toFixed(0)}k`;
   };
 
   return (
