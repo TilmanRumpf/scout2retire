@@ -26,7 +26,7 @@ import Journal from "./pages/Journal";
 import DataImport from "./pages/admin/DataImport";
 import TownManager from "./pages/admin/TownManager";
 import HeaderMockup from "./pages/HeaderMockup";
-import TestClaude from "./components/TestClaude";
+// import TestClaude from "./components/TestClaude";
 import ScottyGuide from "./components/ScottyGuide";
 import TestOnboardingUpdate from "./pages/TestOnboardingUpdate";
 
@@ -266,10 +266,10 @@ const router = createBrowserRouter([
         path: "journal",
         element: <ProtectedRoute><AuthenticatedLayout><Journal /></AuthenticatedLayout></ProtectedRoute>
       },
-      {
-        path: "test-claude",
-        element: <ProtectedRoute><AuthenticatedLayout><TestClaude /></AuthenticatedLayout></ProtectedRoute>
-      },
+      // {
+      //   path: "test-claude",
+      //   element: <ProtectedRoute><AuthenticatedLayout><TestClaude /></AuthenticatedLayout></ProtectedRoute>
+      // },
       {
         path: "scotty",
         element: <ProtectedRoute><AuthenticatedLayout><ScottyGuide /></AuthenticatedLayout></ProtectedRoute>

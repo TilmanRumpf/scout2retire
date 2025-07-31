@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { askClaude } from '../../anthropic-api/anthropic-client.js';
+import { askClaude } from '../../anthropic-api/anthropic-client';
 
 function TestClaude() {
   const [message, setMessage] = useState('');
