@@ -224,10 +224,14 @@ export default function OnboardingCosts() {
   }
 
   // Format currency (TODO: Add currency conversion based on user location)
-  const formatCurrency = (value) => `$${value.toLocaleString()}`;
+  const formatCurrency = (value) => {
+    if (value == null || isNaN(value)) return '$0';
+    return `$${value.toLocaleString()}`;
+  };
   
   // Format home price for display
   const formatHomePrice = (value) => {
+    if (value == null || isNaN(value)) return '$0';
     if (value >= 1000000) {
       return `$${(value / 1000000).toFixed(1)}M`;
     }
