@@ -1,0 +1,36 @@
+[
+  {
+    "id": "6aaa85e6-f5dd-46c2-b9ce-44509062cc77",
+    "user_id": "f263b6d9-ec0a-4aa7-8227-b2702937cbc6",
+    "type": "friend_invitation",
+    "title": "New Friend Request",
+    "message": "Tobias Rumpf sent you a friend request",
+    "data": {
+      "sender_id": "3b1212f1-e30a-4ae1-8520-a69d02b0da78",
+      "sender_name": "Tobias Rumpf",
+      "sender_email": "tobiasrumpf@gmx.de",
+      "connection_id": "a56dfa8c-7e52-4454-8e23-3978c02aa458",
+      "invitation_message": null
+    },
+    "is_read": false,
+    "read_at": null,
+    "created_at": "2025-07-05T22:47:39.179545+00:00"
+  },
+  {
+    "id": "91dd3425-4427-44c4-9bee-db4b3a51c4bb",
+    "user_id": "d1039857-71e2-4562-86aa-1f0b4a0c17c8",
+    "type": "friend_invitation",
+    "title": "New Friend Request",
+    "message": "Torkc Bros sent you a friend request",
+    "data": {
+      "sender_id": "dad3aadb-4256-40f6-b05a-4d6bdf3ec3bc",
+      "sender_name": "Torkc Bros",
+      "sender_email": "dkd@gmail.com",
+      "connection_id": "0fbe64ea-cad9-4215-a2bb-2ff878cfdab2",
+      "invitation_message": null
+    },
+    "is_read": false,
+    "read_at": null,
+    "created_at": "2025-07-17T17:44:21.689138+00:00"
+  }
+]
