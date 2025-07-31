@@ -86,24 +86,25 @@ const OnboardingRegion = () => {
   const regionCountries = {
     // Keep US states/provinces in North America
     'North America': ['United States', 'Canada', 'Mexico', 'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador', 'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon'],
-    'Central America': ['Belize', 'Costa Rica', 'El Salvador', 'Guatemala', 'Honduras', 'Nicaragua', 'Panama'],
     'Caribbean': ['Antigua and Barbuda', 'Bahamas', 'Barbados', 'Cuba', 'Dominica', 'Dominican Republic', 'Grenada', 'Haiti', 'Jamaica', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Trinidad and Tobago'],
+    'Central America': ['Belize', 'Costa Rica', 'El Salvador', 'Guatemala', 'Honduras', 'Nicaragua', 'Panama'],
     'South America': ['Argentina', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Ecuador', 'French Guiana', 'Guyana', 'Paraguay', 'Peru', 'Suriname', 'Uruguay', 'Venezuela'],
-    'Western Europe': ['United Kingdom', 'Ireland', 'France', 'Netherlands', 'Belgium', 'Luxembourg', 'Germany', 'Austria', 'Switzerland', 'Spain', 'Portugal', 'Italy'],
-    'Eastern Europe': ['Poland', 'Czech Republic', 'Slovakia', 'Hungary', 'Romania', 'Bulgaria', 'Croatia', 'Slovenia', 'Serbia', 'Bosnia and Herzegovina', 'Montenegro', 'Albania', 'North Macedonia', 'Greece', 'Russia', 'Ukraine', 'Belarus', 'Moldova', 'Estonia', 'Latvia', 'Lithuania'],
-    'Scandinavia': ['Norway', 'Sweden', 'Denmark', 'Finland', 'Iceland'],
+    'Northern Europe': ['Norway', 'Sweden', 'Denmark', 'Finland', 'Iceland', 'Estonia', 'Latvia', 'Lithuania'],
+    'Western Europe': ['United Kingdom', 'Ireland', 'France', 'Netherlands', 'Belgium', 'Luxembourg', 'Germany', 'Austria', 'Switzerland'],
+    'Eastern Europe': ['Poland', 'Czech Republic', 'Slovakia', 'Hungary', 'Romania', 'Bulgaria', 'Russia', 'Ukraine', 'Belarus', 'Moldova'],
+    'Southern Europe': ['Spain', 'Portugal', 'Italy', 'Croatia', 'Slovenia', 'Serbia', 'Bosnia and Herzegovina', 'Montenegro', 'Albania', 'North Macedonia', 'Greece'],
     'Mediterranean': ['Spain', 'France', 'Monaco', 'Italy', 'Slovenia', 'Croatia', 'Bosnia and Herzegovina', 'Montenegro', 'Albania', 'Greece', 'Turkey', 'Cyprus', 'Syria', 'Lebanon', 'Israel', 'Egypt', 'Libya', 'Tunisia', 'Algeria', 'Morocco', 'Malta'],
-    'Middle East': ['Turkey', 'Syria', 'Lebanon', 'Israel', 'Palestine', 'Jordan', 'Saudi Arabia', 'Yemen', 'Oman', 'United Arab Emirates', 'Qatar', 'Bahrain', 'Kuwait', 'Iraq', 'Iran'],
-    'East Asia': ['China', 'Japan', 'South Korea', 'North Korea', 'Mongolia', 'Taiwan'],
-    'Southeast Asia': ['Thailand', 'Vietnam', 'Cambodia', 'Laos', 'Myanmar', 'Malaysia', 'Singapore', 'Indonesia', 'Philippines', 'Brunei', 'East Timor'],
-    'South Asia': ['India', 'Pakistan', 'Bangladesh', 'Sri Lanka', 'Nepal', 'Bhutan', 'Maldives', 'Afghanistan'],
     'North Africa': ['Egypt', 'Libya', 'Tunisia', 'Algeria', 'Morocco', 'Sudan'],
-    'East Africa': ['Ethiopia', 'Kenya', 'Tanzania', 'Uganda', 'Rwanda', 'Burundi', 'Somalia', 'Djibouti', 'Eritrea'],
     'West Africa': ['Nigeria', 'Ghana', 'Senegal', 'Mali', 'Burkina Faso', 'Niger', 'Ivory Coast', 'Guinea', 'Benin', 'Togo', 'Sierra Leone', 'Liberia', 'Mauritania', 'Gambia', 'Guinea-Bissau'],
+    'East Africa': ['Ethiopia', 'Kenya', 'Tanzania', 'Uganda', 'Rwanda', 'Burundi', 'Somalia', 'Djibouti', 'Eritrea'],
     'Southern Africa': ['South Africa', 'Zimbabwe', 'Botswana', 'Namibia', 'Zambia', 'Mozambique', 'Angola', 'Malawi', 'Lesotho', 'Eswatini'],
-    'Oceania': ['Australia', 'New Zealand', 'Fiji', 'Papua New Guinea', 'Solomon Islands', 'Vanuatu', 'Samoa', 'Tonga'],
+    'Middle East': ['Turkey', 'Syria', 'Lebanon', 'Israel', 'Palestine', 'Jordan', 'Saudi Arabia', 'Yemen', 'Oman', 'United Arab Emirates', 'Qatar', 'Bahrain', 'Kuwait', 'Iraq', 'Iran'],
+    'South Asia': ['India', 'Pakistan', 'Bangladesh', 'Sri Lanka', 'Nepal', 'Bhutan', 'Maldives', 'Afghanistan'],
+    'Indian Ocean': ['Mauritius', 'Seychelles', 'Madagascar', 'Maldives', 'Sri Lanka'],
+    'Southeast Asia': ['Thailand', 'Vietnam', 'Cambodia', 'Laos', 'Myanmar', 'Malaysia', 'Singapore', 'Indonesia', 'Philippines', 'Brunei', 'East Timor'],
+    'East Asia': ['China', 'Japan', 'South Korea', 'North Korea', 'Mongolia', 'Taiwan'],
     'Pacific Islands': ['Fiji', 'Samoa', 'Tonga', 'Vanuatu', 'Solomon Islands', 'French Polynesia', 'New Caledonia'],
-    'Indian Ocean': ['Mauritius', 'Seychelles', 'Madagascar', 'Maldives', 'Sri Lanka']
+    'Oceania': ['Australia', 'New Zealand', 'Fiji', 'Papua New Guinea', 'Solomon Islands', 'Vanuatu', 'Samoa', 'Tonga']
   };
 
   const countryProvinces = {
@@ -155,13 +156,12 @@ const OnboardingRegion = () => {
         
         if (error) {
           console.error('Error fetching regions:', error);
-          // Fall back to some defaults if needed
-          setRegions(['Recommended', 'North America', 'Europe', 'Asia', 'South America']);
+          // Fall back to the ordered defaults if needed
+          setRegions(['Recommended', 'North America', 'Caribbean', 'Central America', 'South America', 'Northern Europe', 'Western Europe', 'Eastern Europe', 'Southern Europe', 'Mediterranean', 'North Africa', 'West Africa', 'East Africa', 'Southern Africa', 'Middle East', 'South Asia', 'Indian Ocean', 'Southeast Asia', 'East Asia', 'Pacific Islands', 'Oceania']);
         } else {
-          // Get unique regions and sort them
-          const uniqueRegions = [...new Set(towns.map(t => t.geo_region))].sort();
-          // Add 'Recommended' at the beginning
-          setRegions(['Recommended', ...uniqueRegions]);
+          // Use the custom ordered list instead of dynamic regions
+          // This ensures the regions appear in the specific order requested
+          setRegions(['Recommended', 'North America', 'Caribbean', 'Central America', 'South America', 'Northern Europe', 'Western Europe', 'Eastern Europe', 'Southern Europe', 'Mediterranean', 'North Africa', 'West Africa', 'East Africa', 'Southern Africa', 'Middle East', 'South Asia', 'Indian Ocean', 'Southeast Asia', 'East Asia', 'Pacific Islands', 'Oceania']);
         }
       } catch (err) {
         console.error('Error fetching regions:', err);
