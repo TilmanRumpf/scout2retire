@@ -7,6 +7,29 @@
 
 **YOU MUST SAY THIS EVERY SINGLE TIME BEFORE DOING ANYTHING!**
 
+## 🔴🔴🔴 SUPER PRIORITY: BACKUP BEFORE VIOLENT CHANGES 🔴🔴🔴
+
+### MANDATORY BEFORE ANY SESSION WITH DATABASE CHANGES:
+```bash
+# 1. CREATE DATABASE SNAPSHOT
+node create-database-snapshot.js
+
+# 2. GIT CHECKPOINT  
+git add -A && git commit -m "🔒 CHECKPOINT: $(date)"
+git tag -a "checkpoint-$(date +%Y%m%d-%H%M)" -m "Safe return point"
+
+# 3. VERIFY BACKUP
+ls -la database-snapshots/latest/
+```
+
+### TO RESTORE IF SOMETHING BREAKS:
+```bash
+# Code: git checkout checkpoint-20250731-1430
+# Database: node restore-database-snapshot.js 2025-07-31T14-30-00
+```
+
+**⚠️ NO BACKUP = NO VIOLENT CHANGES! PERIOD!**
+
 ### ⚠️ CRITICAL: ALWAYS USE ONLINE SUPABASE INSTANCE
 - **ONLINE = PRIMARY** (https://axlruvvsjepsulcbqlho.supabase.co)
 - **LOCAL = MIRROR** (just for review, never primary data source)
