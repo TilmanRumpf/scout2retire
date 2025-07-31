@@ -148,26 +148,22 @@ export default function Settings() {
     try {
       setLoading(true);
       
-      // In a real implementation, we would verify the password first
+      // Step 1: Delete user data from database tables using RPC function
+      console.log('🗑️ Starting account deletion for user:', user.id);
+      const { data: deleteResult, error: deleteError } = await supabase.rpc('delete_user_account', {
+        user_id_param: user.id
+      });
       
-      // Delete user data from database
-      const { error: dbError } = await supabase
-        .from('users')
-        .delete()
-        .eq('id', user.id);
-      
-      if (dbError) {
-        throw new Error(dbError.message);
+      if (deleteError) {
+        console.error('❌ Database deletion failed:', deleteError);
+        throw deleteError;
       }
       
-      // Delete authentication
-      const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
+      console.log('✅ Database deletion result:', deleteResult);
       
-      if (authError) {
-        throw new Error(authError.message);
-      }
-      
-      // Sign out
+      // Step 2: Sign out the user
+      // Note: We cannot delete the auth user from client side - that requires admin access
+      // The user's auth account will remain but all their data is gone
       await supabase.auth.signOut();
       
       toast.success("Account deleted successfully");
