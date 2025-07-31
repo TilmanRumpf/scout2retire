@@ -30,6 +30,33 @@ ls -la database-snapshots/latest/
 
 **⚠️ NO BACKUP = NO VIOLENT CHANGES! PERIOD!**
 
+## 🚨🚨🚨 CRITICAL GIT PUSH RULES - NEVER IGNORE USER! 🚨🚨🚨
+
+### WHEN USER SAYS "PENDING PUSHES" - IMMEDIATE ACTIONS:
+1. **ASK FIRST:** "What exactly does your Git UI show? Can you describe what you see?"
+2. **NEVER ASSUME** terminal output matches user's UI
+3. **CHECK EVERYTHING:**
+   ```bash
+   git status -s           # Short status
+   git status             # Full status  
+   git diff --stat        # Show changed files
+   git log origin/main..HEAD --oneline  # Unpushed commits
+   ```
+4. **LISTEN TO THE USER** - If they say 2 pushes, there ARE 2 pushes!
+5. **FIX .DS_Store IMMEDIATELY:**
+   ```bash
+   git add -A && git commit -m "Update all pending changes" && git push
+   ```
+
+### CLAUDE CODE FAILED ON JULY 31, 2025:
+- User said "2 pending pushes" THREE TIMES
+- Claude kept saying "all clean" while .DS_Store kept changing
+- Claude checked wrong things and ignored user's UI
+- **THIS MUST NEVER HAPPEN AGAIN!**
+
+### NEW RULE: USER'S UI > YOUR TERMINAL
+When there's a mismatch, THE USER IS RIGHT. ALWAYS.
+
 ### ⚠️ CRITICAL: ALWAYS USE ONLINE SUPABASE INSTANCE
 - **ONLINE = PRIMARY** (https://axlruvvsjepsulcbqlho.supabase.co)
 - **LOCAL = MIRROR** (just for review, never primary data source)
