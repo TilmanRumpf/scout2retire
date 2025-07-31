@@ -60,139 +60,130 @@ export default function UnifiedHeader({
   return (
     <>
       <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-[9999]">
-        <div className={`${maxWidth} mx-auto px-4`}>
-          {/* Grid layout with logo column */}
-          <div className="grid grid-cols-[auto_1fr_auto] gap-3 gap-y-1 items-start">
-            {/* Logo Column - Spans both rows */}
-            <div className={`${hasSecondRow ? 'row-span-2' : ''} flex`}>
-              <Logo 
-                variant="full" 
-                className={hasSecondRow ? "h-[52px]" : "h-9"}
-                navigateTo="/daily"
-              />
-            </div>
+        <div className={`${maxWidth} mx-auto px-4 sm:px-6`}>
+          {/* Single row layout on mobile, expandable on desktop */}
+          <div className={`flex items-center ${hasSecondRow && showFilters ? 'h-16' : 'h-14'} gap-3`}>
+            {/* Logo - more compact */}
+            <Logo 
+              variant="full" 
+              className="h-8"
+              navigateTo="/daily"
+            />
             
-            {/* Content Column - First Row */}
-            <div className="h-9 flex items-center">
-              <h1 className="text-lg font-semibold text-gray-900 dark:text-white flex items-baseline">
-                {/* Title with optional styling */}
-                <span 
-                  className={`${title.includes("brings your future home") ? 'handwritten-tagline' : ''}`}
-                >
+            {/* Title and count - integrated inline */}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-base font-medium text-gray-900 dark:text-white">
+                <span className={`${title.includes("brings your future home") ? 'handwritten-tagline' : ''}`}>
                   {title}
                 </span>
-                
-                {/* Optional count display */}
                 {totalCount !== undefined && (
-                  <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
-                    {filteredCount} of {totalCount}
+                  <span className="ml-1.5 text-sm font-normal text-gray-500 dark:text-gray-400">
+                    ({filteredCount} of {totalCount})
                   </span>
                 )}
-                
-                {/* Optional step context */}
                 {stepContext && (
-                  <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+                  <span className="ml-1.5 text-sm font-normal text-gray-500 dark:text-gray-400">
                     {stepContext}
                   </span>
                 )}
               </h1>
             </div>
             
-            {/* Menu Column - First Row */}
-            <div className="h-9 flex items-center">
-              <button 
-                onClick={handleMenuClick}
-                className="nav-toggle p-1.5 -mr-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                aria-label="Open navigation menu"
-                type="button"
-              >
-                <Menu className="w-5 h-5 text-gray-900 dark:text-gray-100" />
-              </button>
-            </div>
-            
-            {/* Content Column - Second Row (when present) */}
-            {hasSecondRow && (
-              <>
-                <div className="min-h-[2rem] flex items-center overflow-visible col-start-2">
-                  {/* Filters */}
-                  {secondRowType === 'filters' && (
-                    <div className="flex-1">
-                      <FilterBarV3 {...filterProps} />
-                    </div>
-                  )}
-                  
-                  {/* Tabs */}
-                  {secondRowType === 'tabs' && (
-                    <div className="flex-1 overflow-x-auto scrollbar-hide">
-                      <div className="flex items-center gap-3 sm:gap-4">
-                        {tabs.map((tab) => {
-                          const Icon = tab.icon;
-                          const isActive = tab.isActive;
-                          
-                          return (
-                            <button
-                              key={tab.id}
-                              onClick={tab.onClick}
-                              className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm whitespace-nowrap transition-all duration-200 ${
-                                isActive 
-                                  ? 'bg-scout-accent-100 dark:bg-scout-accent-900/30 font-medium text-scout-accent-700 dark:text-scout-accent-300' 
-                                  : 'text-gray-500 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
-                              }`}
-                            >
-                              {Icon && <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-scout-accent-600 dark:text-scout-accent-400' : ''}`} />}
-                              <span>{tab.label}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Steps */}
-                  {secondRowType === 'steps' && (
-                    <div className="flex-1 overflow-x-auto scrollbar-hide">
-                      <div className="flex items-center gap-3 sm:gap-4">
-                        {steps.map((step) => {
-                          const Icon = step.icon;
-                          const isActive = step.isActive;
-                          const isCompleted = step.isCompleted;
-                          
-                          return (
-                            <Link
-                              key={step.key}
-                              to={step.path}
-                              className={`flex items-center gap-1 text-sm whitespace-nowrap transition-colors ${
-                                isActive 
-                                  ? 'font-medium text-gray-900 dark:text-gray-100' 
-                                  : isCompleted
-                                  ? 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
-                                  : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                              }`}
-                            >
-                              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-scout-accent-600 dark:text-scout-accent-400' : ''}`} />
-                              <span>{step.label}</span>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Empty cell for menu column in second row */}
-                <div className="col-start-3"></div>
-              </>
+            {/* Desktop: Show filters inline if present */}
+            {hasSecondRow && showFilters && (
+              <div className="hidden md:flex flex-1 items-center justify-end mr-3">
+                <FilterBarV3 {...filterProps} variant="compact" />
+              </div>
             )}
+            
+            {/* Menu button - always visible */}
+            <button 
+              onClick={handleMenuClick}
+              className="p-2 -mr-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label="Open navigation menu"
+              type="button"
+            >
+              <Menu className="w-5 h-5 text-gray-900 dark:text-gray-100" />
+            </button>
           </div>
           
-          {/* Subtitle Row - Only if subtitle exists AND no second row (for Daily page) */}
+          {/* Mobile filters - shown below header on mobile */}
+          {hasSecondRow && showFilters && (
+            <div className="md:hidden pb-3 -mt-1">
+              <FilterBarV3 {...filterProps} variant="mobile" />
+            </div>
+          )}
+          
+          {/* Tabs - clean horizontal scroll */}
+          {hasSecondRow && tabs.length > 0 && (
+            <div className="border-t border-gray-100 dark:border-gray-700">
+              <div className="overflow-x-auto scrollbar-hide py-2">
+                <div className="flex items-center gap-1 px-1">
+                  {tabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = tab.isActive;
+                    
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={tab.onClick}
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
+                          isActive 
+                            ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium' 
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                        }`}
+                      >
+                        {Icon && <Icon className="w-4 h-4" />}
+                        <span>{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Steps - clean navigation for onboarding */}
+          {hasSecondRow && steps.length > 0 && (
+            <div className="border-t border-gray-100 dark:border-gray-700">
+              <div className="overflow-x-auto scrollbar-hide py-2">
+                <div className="flex items-center gap-1 px-1">
+                  {steps.map((step, index) => {
+                    const Icon = step.icon;
+                    const isActive = step.isActive;
+                    const isCompleted = step.isCompleted;
+                    
+                    return (
+                      <Link
+                        key={step.key}
+                        to={step.path}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 text-sm whitespace-nowrap transition-colors relative ${
+                          isActive 
+                            ? 'font-medium text-gray-900 dark:text-gray-100' 
+                            : isCompleted
+                            ? 'text-gray-600 dark:text-gray-400'
+                            : 'text-gray-400 dark:text-gray-600'
+                        }`}
+                      >
+                        {index > 0 && (
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-px h-4 bg-gray-200 dark:bg-gray-700" />
+                        )}
+                        <Icon className={`w-4 h-4 ${isActive ? 'text-scout-accent-600' : ''}`} />
+                        <span>{step.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Subtitle - cleaner presentation */}
           {subtitle && !hasSecondRow && (
-            <div className="grid grid-cols-[auto_1fr_auto] gap-3 pb-2">
-              <div></div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="pb-2 -mt-1">
+              <p className="text-sm text-gray-600 dark:text-gray-400 px-1">
                 {subtitle}
               </p>
-              <div></div>
             </div>
           )}
         </div>

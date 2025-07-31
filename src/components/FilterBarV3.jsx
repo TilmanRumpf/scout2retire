@@ -128,10 +128,11 @@ export default function FilterBarV3({
     
     return createPortal(
       <div 
-        className={`fixed ${width} bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-[9999]`}
+        className={`fixed ${width} bg-white dark:bg-gray-800 rounded-lg shadow-md z-[9999]`}
         style={{
           top: `${dropdownPosition.top}px`,
-          left: `${dropdownPosition.left}px`
+          left: `${dropdownPosition.left}px`,
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
         }}
       >
         {children}
@@ -143,18 +144,18 @@ export default function FilterBarV3({
   // Main render for both variants
   return (
     <>
-      <div className="flex items-center gap-2 w-full">
-        {/* Search Input - Always visible */}
-        <div className="relative flex-shrink-0 w-48 md:w-56 lg:w-64" ref={searchInputRef}>
+      <div className={`flex items-center gap-2 w-full ${variant === 'mobile' ? 'flex-col' : variant === 'compact' ? 'justify-end' : ''}`}>
+        {/* Search Input - Clean Zillow style */}
+        <div className={`relative ${variant === 'mobile' ? 'w-full' : variant === 'compact' ? 'w-48' : 'flex-shrink-0 w-64'}`} ref={searchInputRef}>
           <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               value={searchInput}
               onChange={handleSearchInputChange}
               onFocus={() => searchInput.length > 0 && setShowSearchDropdown(true)}
-              placeholder="Search towns..."
-              className="w-full pl-9 pr-8 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-scout-accent-500 focus:border-transparent transition-all"
+              placeholder="Search cities..."
+              className="w-full h-10 pl-10 pr-8 text-sm bg-gray-50 dark:bg-gray-900 rounded-full focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:shadow-sm transition-all"
             />
             {searchInput && (
               <button
@@ -165,21 +166,22 @@ export default function FilterBarV3({
                   }
                   setShowSearchDropdown(false);
                 }}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5"
               >
-                <X size={14} />
+                <X size={16} />
               </button>
             )}
           </div>
           
           {/* Search Dropdown */}
           {showSearchDropdown && getFilteredTowns().length > 0 && (
-            <div className="absolute z-[9999] w-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-auto">
+            <div className="absolute z-[9999] w-full mt-2 bg-white dark:bg-gray-900 rounded-lg shadow-md max-h-60 overflow-auto"
+                 style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}>
               {getFilteredTowns().map((town) => (
                 <button
                   key={town.id}
                   onClick={() => handleSearchSelect(town.name)}
-                  className="w-full text-left px-4 py-2.5 hover:bg-scout-accent-50 dark:hover:bg-gray-800 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                  className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors first:rounded-t-lg last:rounded-b-lg"
                 >
                   <div className="font-medium text-gray-900 dark:text-gray-100">{town.name}</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -191,36 +193,35 @@ export default function FilterBarV3({
           )}
         </div>
 
-        {/* Divider */}
-        <div className="hidden md:block h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
+        {/* No divider for cleaner look */}
 
-        {/* Filter buttons */}
-        <div className="flex items-center gap-1 md:gap-2 overflow-x-auto">
+        {/* Filter buttons - Pill style */}
+        <div className={`flex items-center gap-2 ${variant === 'mobile' ? 'w-full overflow-x-auto' : 'flex-wrap'}`}>
           {/* Sort Button */}
           <button
             ref={sortButtonRef}
             onClick={() => toggleDropdown('sort')}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors whitespace-nowrap"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors whitespace-nowrap"
           >
-            <SortDesc size={14} />
+            <SortDesc size={16} />
             <span>Sort</span>
-            <ChevronDown size={12} className={`transition-transform ${openDropdown === 'sort' ? 'rotate-180' : ''}`} />
+            <ChevronDown size={14} className={`transition-transform ${openDropdown === 'sort' ? 'rotate-180' : ''}`} />
           </button>
           
           {/* Location Filter */}
           <button
             ref={locationButtonRef}
             onClick={() => toggleDropdown('location')}
-            className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors whitespace-nowrap ${
               activeFilters.location > 0
-                ? 'bg-scout-accent-100 text-scout-accent-700 dark:bg-scout-accent-900 dark:text-scout-accent-300 font-medium'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
-            <Globe size={14} />
+            <Globe size={16} />
             <span>Location</span>
             {activeFilters.location > 0 && (
-              <span className="text-xs">({activeFilters.location})</span>
+              <span className="ml-1 px-1.5 py-0.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs rounded-full">{activeFilters.location}</span>
             )}
           </button>
           
@@ -228,13 +229,13 @@ export default function FilterBarV3({
           <button
             ref={costButtonRef}
             onClick={() => toggleDropdown('cost')}
-            className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors whitespace-nowrap ${
               isFilterActive(filterCostRange)
-                ? 'bg-scout-accent-100 text-scout-accent-700 dark:bg-scout-accent-900 dark:text-scout-accent-300 font-medium'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
-            <DollarSign size={14} />
+            <DollarSign size={16} />
             <span>Cost</span>
           </button>
           
@@ -242,34 +243,31 @@ export default function FilterBarV3({
           <button
             ref={matchButtonRef}
             onClick={() => toggleDropdown('match')}
-            className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors whitespace-nowrap ${
               isFilterActive(filterMatchRange)
-                ? 'bg-scout-accent-100 text-scout-accent-700 dark:bg-scout-accent-900 dark:text-scout-accent-300 font-medium'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
-            <Crosshair size={14} />
+            <Crosshair size={16} />
             <span>Match</span>
           </button>
 
           {/* Clear filters button - only show if there are active filters */}
           {(filterCount > 0 || searchInput.trim()) && (
-            <>
-              <div className="h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
-              <button
-                onClick={() => {
-                  clearFilters();
-                  setSearchInput('');
-                  if (setSearchTerm) {
-                    setSearchTerm('');
-                  }
-                }}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors whitespace-nowrap"
-              >
-                <X size={14} />
-                <span>Clear</span>
-              </button>
-            </>
+            <button
+              onClick={() => {
+                clearFilters();
+                setSearchInput('');
+                if (setSearchTerm) {
+                  setSearchTerm('');
+                }
+              }}
+              className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors whitespace-nowrap"
+            >
+              <X size={16} />
+              <span>Clear all</span>
+            </button>
           )}
         </div>
       </div>
