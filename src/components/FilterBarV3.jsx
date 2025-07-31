@@ -1,5 +1,5 @@
 // Option 3: Icon-based Compact Design
-import { ChevronDown, X, Globe, DollarSign, Crosshair, SortDesc } from 'lucide-react';
+import { ChevronDown, X, Globe, DollarSign, Crosshair, SortDesc, Search } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -19,16 +19,22 @@ export default function FilterBarV3({
   filterCount,
   clearFilters,
   resultsCount,
-  variant = 'default' // 'default' or 'integrated'
+  variant = 'default', // 'default' or 'integrated'
+  searchTerm,
+  setSearchTerm,
+  availableTowns = []
 }) {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [searchInput, setSearchInput] = useState(searchTerm || '');
   
   // Refs for each button to calculate positions
   const sortButtonRef = useRef(null);
   const locationButtonRef = useRef(null);
   const costButtonRef = useRef(null);
   const matchButtonRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   const toggleDropdown = (dropdown) => {
     if (openDropdown === dropdown) {
@@ -87,9 +93,96 @@ export default function FilterBarV3({
 
   // Integrated variant for CompactPageHeader
   if (variant === 'integrated') {
+    // Filter available towns based on search input
+    const getFilteredTowns = () => {
+      if (!searchInput.trim()) return [];
+      const search = searchInput.toLowerCase();
+      return availableTowns
+        .filter(town => 
+          town.name.toLowerCase().includes(search) ||
+          town.state_code?.toLowerCase().includes(search) ||
+          town.country?.toLowerCase().includes(search)
+        )
+        .slice(0, 8); // Limit to 8 results for dropdown
+    };
+
+    const handleSearchSelect = (townName) => {
+      setSearchInput(townName);
+      setSearchTerm(townName);
+      setShowSearchDropdown(false);
+    };
+
+    const handleSearchInputChange = (e) => {
+      const value = e.target.value;
+      setSearchInput(value);
+      setShowSearchDropdown(value.length > 0);
+      
+      // Clear search term if input is empty
+      if (!value.trim()) {
+        setSearchTerm('');
+      }
+    };
+
+    // Close search dropdown when clicking outside
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (searchInputRef.current && !searchInputRef.current.contains(event.target)) {
+          setShowSearchDropdown(false);
+        }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     return (
       <>
         <div className="flex items-center w-full sm:w-auto sm:gap-4">
+        {/* Search Input */}
+        <div className="relative flex-1 sm:flex-initial mr-3 sm:mr-0" ref={searchInputRef}>
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={searchInput}
+              onChange={handleSearchInputChange}
+              onFocus={() => searchInput.length > 0 && setShowSearchDropdown(true)}
+              placeholder="Search towns..."
+              className="w-full sm:w-48 pl-8 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 focus:outline-none focus:border-scout-accent-300 dark:focus:border-scout-accent-600"
+            />
+            {searchInput && (
+              <button
+                onClick={() => {
+                  setSearchInput('');
+                  setSearchTerm('');
+                  setShowSearchDropdown(false);
+                }}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+          
+          {/* Search Dropdown */}
+          {showSearchDropdown && getFilteredTowns().length > 0 && (
+            <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-auto">
+              {getFilteredTowns().map((town) => (
+                <button
+                  key={town.id}
+                  onClick={() => handleSearchSelect(town.name)}
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-800 last:border-b-0"
+                >
+                  <div className="font-medium text-gray-900 dark:text-gray-100">{town.name}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    {town.state_code && `${town.state_code}, `}{town.country}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Sort Button */}
         <button
           ref={sortButtonRef}

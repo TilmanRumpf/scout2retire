@@ -62,6 +62,7 @@ export default function TownDiscovery() {
   const [filterRegion, setFilterRegion] = useState('all');
   const [filterCostRange, setFilterCostRange] = useState('all');
   const [filterMatchRange, setFilterMatchRange] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -349,11 +350,22 @@ export default function TownDiscovery() {
     setFilterRegion('all');
     setFilterCostRange('all');
     setFilterMatchRange('all');
+    setSearchTerm('');
   };
 
   // Sort and filter towns
   const getSortedAndFilteredTowns = () => {
     let filtered = [...towns];
+    
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const search = searchTerm.toLowerCase();
+      filtered = filtered.filter(town => 
+        town.name.toLowerCase().includes(search) ||
+        town.state_code?.toLowerCase().includes(search) ||
+        town.country?.toLowerCase().includes(search)
+      );
+    }
     
     // Apply region filter - filter by countries in the selected region
     if (filterRegion !== 'all' && REGION_COUNTRIES[filterRegion]) {
@@ -489,7 +501,10 @@ export default function TownDiscovery() {
           countries: countries,
           filterCount: filterCount,
           clearFilters: clearFilters,
-          resultsCount: sortedAndFilteredTowns.length
+          resultsCount: sortedAndFilteredTowns.length,
+          searchTerm: searchTerm,
+          setSearchTerm: setSearchTerm,
+          availableTowns: towns
         }}
       />
 
