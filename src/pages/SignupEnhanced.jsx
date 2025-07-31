@@ -1,12 +1,13 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signUp } from '../utils/authUtils';
 import { checkUsernameAvailability } from '../utils/userSearchUtils';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
-import { Camera, Upload, Check, X, AlertCircle } from 'lucide-react';
+import { Camera, Upload, Check, X, AlertCircle, MapPin } from 'lucide-react';
 import InitialsAvatar from '../components/InitialsAvatar';
 import supabase from '../utils/supabaseClient';
+import { getCountryOptions } from '../data/countries';
 
 export default function SignupEnhanced() {
   // Basic fields
@@ -17,6 +18,10 @@ export default function SignupEnhanced() {
   const [country, setCountry] = useState('');
   const [city, setCity] = useState('');
   const [postalCode, setPostalCode] = useState('');
+  const [filteredCountries, setFilteredCountries] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [detectedCountry, setDetectedCountry] = useState(null);
+  const [detectingLocation, setDetectingLocation] = useState(false);
   
   // New fields
   const [username, setUsername] = useState('');
@@ -38,6 +43,11 @@ export default function SignupEnhanced() {
   const [usernameError, setUsernameError] = useState('');
   
   const navigate = useNavigate();
+  const countryInputRef = useRef(null);
+  const dropdownRef = useRef(null);
+  
+  // Get country lists
+  const { topCountries, otherCountries, allCountries } = getCountryOptions();
 
   // Username validation and availability check
   const validateUsername = async (value) => {
@@ -192,6 +202,70 @@ export default function SignupEnhanced() {
     
     return { valid: true, sanitized: trimmedName };
   };
+
+  // Country handling functions
+  const handleCountryChange = (e) => {
+    const value = e.target.value;
+    setCountry(value);
+    
+    // Filter countries based on input
+    if (value.trim()) {
+      const searchTerm = value.toLowerCase();
+      const filtered = allCountries.filter(c => 
+        c.toLowerCase().startsWith(searchTerm)
+      );
+      setFilteredCountries(filtered);
+      setShowDropdown(true);
+    } else {
+      setFilteredCountries([]);
+      setShowDropdown(false);
+    }
+  };
+
+  const handleCountrySelect = (selectedCountry) => {
+    setCountry(selectedCountry);
+    setShowDropdown(false);
+    setFilteredCountries([]);
+  };
+
+  // Geolocation detection
+  useEffect(() => {
+    const detectLocation = async () => {
+      if ('geolocation' in navigator) {
+        setDetectingLocation(true);
+        try {
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              timeout: 5000,
+              enableHighAccuracy: false
+            });
+          });
+          
+          // In a real app, you'd use a geocoding API here
+          // For now, we'll just show that location was detected
+          setDetectedCountry('Location detected');
+        } catch (error) {
+          console.log('Geolocation not available or denied');
+        } finally {
+          setDetectingLocation(false);
+        }
+      }
+    };
+    
+    detectLocation();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -525,58 +599,99 @@ export default function SignupEnhanced() {
               </div>
             </div>
 
-            {/* Current Location - Country/Region dropdown + City field */}
+            {/* Current Location - Country with smart dropdown */}
             <div>
               <label htmlFor="country" className={uiConfig.components.label}>
-                Country/Region
+                Country <span className={`text-sm ${uiConfig.colors.hint} font-normal`}>(optional)</span>
               </label>
-              <div className="mt-1">
-                <select
+              <div className="mt-1 relative" ref={dropdownRef}>
+                <input
                   id="country"
                   name="country"
+                  type="text"
                   value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  required
-                  autoComplete="country-name"
+                  onChange={handleCountryChange}
+                  onFocus={() => {
+                    if (!country) {
+                      setFilteredCountries(topCountries);
+                      setShowDropdown(true);
+                    }
+                  }}
+                  placeholder="Type or select your country"
+                  autoComplete="off"
                   className={uiConfig.components.input}
-                >
-                  <option value="">Select your country</option>
-                  <option value="United States">United States</option>
-                  <option value="Canada">Canada</option>
-                  <option value="Mexico">Mexico</option>
-                  <option value="United Kingdom">United Kingdom</option>
-                  <option value="France">France</option>
-                  <option value="Germany">Germany</option>
-                  <option value="Spain">Spain</option>
-                  <option value="Italy">Italy</option>
-                  <option value="Portugal">Portugal</option>
-                  <option value="Australia">Australia</option>
-                  <option value="New Zealand">New Zealand</option>
-                  <option value="Japan">Japan</option>
-                  <option value="South Korea">South Korea</option>
-                  <option value="Singapore">Singapore</option>
-                  <option value="Thailand">Thailand</option>
-                  <option value="Malaysia">Malaysia</option>
-                  <option value="Philippines">Philippines</option>
-                  <option value="India">India</option>
-                  <option value="Brazil">Brazil</option>
-                  <option value="Argentina">Argentina</option>
-                  <option value="Chile">Chile</option>
-                  <option value="Costa Rica">Costa Rica</option>
-                  <option value="Panama">Panama</option>
-                  <option value="Netherlands">Netherlands</option>
-                  <option value="Belgium">Belgium</option>
-                  <option value="Switzerland">Switzerland</option>
-                  <option value="Austria">Austria</option>
-                  <option value="Sweden">Sweden</option>
-                  <option value="Norway">Norway</option>
-                  <option value="Denmark">Denmark</option>
-                  <option value="Finland">Finland</option>
-                  <option value="Ireland">Ireland</option>
-                  <option value="Israel">Israel</option>
-                  <option value="South Africa">South Africa</option>
-                  <option value="United Arab Emirates">United Arab Emirates</option>
-                </select>
+                />
+                
+                {/* Location detection indicator */}
+                {detectingLocation && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 dark:border-gray-100"></div>
+                  </div>
+                )}
+                
+                {detectedCountry && !detectingLocation && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <MapPin size={16} className={uiConfig.colors.hint} />
+                  </div>
+                )}
+                
+                {/* Dropdown */}
+                {showDropdown && (
+                  <div className={`absolute z-10 w-full mt-1 ${uiConfig.colors.card} border ${uiConfig.colors.borderLight} rounded-md shadow-lg max-h-60 overflow-auto`}>
+                    {/* Show filtered results if typing */}
+                    {country && filteredCountries.length > 0 ? (
+                      filteredCountries.map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => handleCountrySelect(c)}
+                          className={`w-full text-left px-3 py-2 hover:${uiConfig.colors.bgHover} ${uiConfig.colors.body}`}
+                        >
+                          {c}
+                        </button>
+                      ))
+                    ) : country && filteredCountries.length === 0 ? (
+                      <div className={`px-3 py-2 ${uiConfig.colors.hint}`}>
+                        No countries found
+                      </div>
+                    ) : (
+                      <>
+                        {/* Top countries */}
+                        <div className={`px-3 py-1 ${uiConfig.colors.hint} text-xs font-semibold`}>
+                          Popular retirement origins
+                        </div>
+                        {topCountries.map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => handleCountrySelect(c)}
+                            className={`w-full text-left px-3 py-2 hover:${uiConfig.colors.bgHover} ${uiConfig.colors.body}`}
+                          >
+                            {c}
+                          </button>
+                        ))}
+                        
+                        {/* Divider */}
+                        <div className={`border-t ${uiConfig.colors.borderLight} my-1`}></div>
+                        
+                        {/* All other countries */}
+                        <div className={`px-3 py-1 ${uiConfig.colors.hint} text-xs font-semibold`}>
+                          All countries
+                        </div>
+                        {otherCountries.map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => handleCountrySelect(c)}
+                            className={`w-full text-left px-3 py-2 hover:${uiConfig.colors.bgHover} ${uiConfig.colors.body}`}
+                          >
+                            {c}
+                          </button>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
