@@ -113,7 +113,7 @@ export default function UnifiedHeader({
             {/* Content Column - Second Row (when present) */}
             {hasSecondRow && (
               <>
-                <div className="h-8 flex items-center overflow-hidden col-start-2">
+                <div className="min-h-[2rem] flex items-center overflow-visible col-start-2">
                   {/* Filters */}
                   {secondRowType === 'filters' && (
                     <div className="flex-1">
