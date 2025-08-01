@@ -99,7 +99,7 @@ export default function UnifiedHeader({
             {/* Menu button - always visible */}
             <button 
               onClick={handleMenuClick}
-              className="p-2 -mr-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               aria-label="Open navigation menu"
               type="button"
             >
