@@ -195,18 +195,113 @@ export default function FilterBarV3({
 
         {/* No divider for cleaner look */}
 
-        {/* Filter buttons - Pill style */}
-        {variant === 'mobile' ? (
-          <button 
-            className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-            </svg>
-            <span>Filters</span>
-            {filterCount > 0 && <span className="text-xs font-medium">({filterCount})</span>}
-          </button>
-        ) : (
+        {/* Mobile Filter Layout */}
+        {variant === 'mobile' && (
+          <div className="flex flex-col gap-4 w-full">
+            {/* Sort */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm"
+              >
+                <option value="match">Best Match</option>
+                <option value="name">Name (A-Z)</option>
+                <option value="cost-low">Cost (Low to High)</option>
+                <option value="cost-high">Cost (High to Low)</option>
+                <option value="region">Region Score</option>
+                <option value="climate">Climate Score</option>
+                <option value="culture">Culture Score</option>
+                <option value="hobbies">Hobbies Score</option>
+                <option value="administration">Admin Score</option>
+                <option value="budget">Budget Score</option>
+              </select>
+            </div>
+
+            {/* Location */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Region</label>
+              <select
+                value={filterRegion}
+                onChange={(e) => setFilterRegion(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm mb-3"
+              >
+                <option value="all">All Regions</option>
+                {regions.map(region => (
+                  <option key={region} value={region}>{region}</option>
+                ))}
+              </select>
+              
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Country {filterRegion !== 'all' && `(${filterRegion})`}
+              </label>
+              <select
+                value={filterCountry}
+                onChange={(e) => setFilterCountry(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm"
+                disabled={countries.length === 0}
+              >
+                <option value="all">All Countries</option>
+                {countries.map(country => (
+                  <option key={country} value={country}>{country}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Cost Range */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cost Range</label>
+              <select
+                value={filterCostRange}
+                onChange={(e) => setFilterCostRange(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm"
+              >
+                <option value="all">Any Cost</option>
+                <option value="under2000">Under $2,000</option>
+                <option value="2000-3000">$2,000 - $3,000</option>
+                <option value="3000-4000">$3,000 - $4,000</option>
+                <option value="over4000">Over $4,000</option>
+              </select>
+            </div>
+
+            {/* Match Score */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Match Score</label>
+              <select
+                value={filterMatchRange}
+                onChange={(e) => setFilterMatchRange(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm"
+              >
+                <option value="all">Any Match Score</option>
+                <option value="excellent">Excellent (80%+)</option>
+                <option value="good">Good (60-79%)</option>
+                <option value="fair">Fair (40-59%)</option>
+                <option value="low">Low (&lt;40%)</option>
+              </select>
+            </div>
+
+            {/* Clear filters */}
+            {(filterCount > 0 || searchInput.trim()) && (
+              <button
+                onClick={() => {
+                  clearFilters();
+                  setSearchInput('');
+                  if (setSearchTerm) {
+                    setSearchTerm('');
+                  }
+                }}
+                className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              >
+                <X size={16} />
+                <span>Clear all filters</span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Desktop Filter buttons - Pill style */}
+        {variant !== 'mobile' ? (
         <div className={`flex items-center gap-1.5 ${variant === 'compact' ? 'flex-shrink-0' : 'flex-wrap'}`}>
           {/* Sort Button */}
           <button
@@ -281,7 +376,7 @@ export default function FilterBarV3({
             </button>
           )}
         </div>
-        )}
+        ) : null}
       </div>
       
       {/* Portal Dropdowns */}
