@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign } from 'lucide-react';
+import { Menu, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign, SlidersHorizontal } from 'lucide-react';
 import QuickNav from './QuickNav';
 import FilterBarV3 from './FilterBarV3';
 import Logo from './Logo';
@@ -93,16 +93,19 @@ export default function UnifiedHeader({
                 </h1>
               </div>
               
-              {/* Search icon for mobile - only show if filters are present */}
+              
+              {/* Filter button - visible on mobile when filters exist */}
               {hasSecondRow && showFilters && (
                 <button
-                  onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-                  className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors sm:hidden"
-                  aria-label="Search"
+                  className="relative p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors sm:hidden"
+                  aria-label="Filters"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+                  <SlidersHorizontal className="w-5 h-5 text-gray-900 dark:text-gray-100" />
+                  {filterProps.filterCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-scout-accent-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                      {filterProps.filterCount}
+                    </span>
+                  )}
                 </button>
               )}
               
@@ -117,17 +120,10 @@ export default function UnifiedHeader({
               </button>
             </div>
             
-            {/* Row 2: Mobile Search - shown when search icon is clicked */}
-            {hasSecondRow && showFilters && isMobileSearchOpen && (
-              <div className="sm:hidden pb-3 -mt-1">
-                <FilterBarV3 {...filterProps} variant="mobile" />
-              </div>
-            )}
-            
             {/* Row 2: Desktop Search and Filters - only on larger screens */}
             {hasSecondRow && showFilters && (
-              <div className="hidden sm:flex pb-3 -mt-1">
-                <FilterBarV3 {...filterProps} variant="default" />
+              <div className="hidden sm:block pb-3 -mt-1">
+                <FilterBarV3 {...filterProps} />
               </div>
             )}
           </div>
