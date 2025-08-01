@@ -61,7 +61,26 @@ export default function UnifiedHeader({
 
   return (
     <>
-      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-[9999]">
+      <header 
+        className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-[9999]"
+        style={{
+          paddingTop: 'env(safe-area-inset-top)',
+          /* Fallback for older iOS */
+          paddingTop: 'constant(safe-area-inset-top)',
+        }}
+      >
+        {/* Safe area background extension - covers status bar area */}
+        <div 
+          className="absolute inset-x-0 bg-white dark:bg-gray-800"
+          style={{
+            top: 'calc(-1 * env(safe-area-inset-top))',
+            height: 'env(safe-area-inset-top)',
+            /* Fallback */
+            top: 'calc(-1 * constant(safe-area-inset-top))',
+            height: 'constant(safe-area-inset-top)',
+          }}
+        />
+        
         <div className={`${maxWidth} mx-auto px-4`}>
           {/* Responsive layout based on screen size */}
           <div className="flex flex-col">
