@@ -39,6 +39,7 @@ export default function UnifiedHeader({
   maxWidth = 'max-w-7xl'
 }) {
   const [isQuickNavOpen, setIsQuickNavOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -60,51 +61,75 @@ export default function UnifiedHeader({
   return (
     <>
       <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-[9999]">
-        <div className={`${maxWidth} mx-auto px-4 sm:px-6`}>
-          {/* Single row layout on mobile, expandable on desktop */}
-          <div className={`flex items-center h-14 gap-2 py-2`}>
-            {/* Logo - more compact */}
-            <Logo 
-              variant="full" 
-              className="h-8"
-              navigateTo="/daily"
-            />
-            
-            {/* Title and count - integrated inline */}
-            <div className="flex-1 min-w-0">
-              <h1 className="text-base font-medium text-gray-900 dark:text-white">
-                <span className={`${title.includes("brings your future home") ? 'handwritten-tagline' : ''}`}>
-                  {title}
-                </span>
-                {totalCount !== undefined && (
-                  <span className="ml-1.5 text-sm font-normal text-gray-500 dark:text-gray-400">
-                    ({filteredCount} of {totalCount})
+        <div className={`${maxWidth} mx-auto px-4`}>
+          {/* Responsive layout based on screen size */}
+          <div className="flex flex-col">
+            {/* Row 1: Logo/Title + Menu */}
+            <div className="flex items-center h-14 gap-2">
+              {/* Logo - hidden on very narrow screens */}
+              <Logo 
+                variant="full" 
+                className="h-8 hidden sm:block"
+                navigateTo="/daily"
+              />
+              
+              {/* Title - always visible */}
+              <div className="flex-1 min-w-0">
+                <h1 className="text-base font-medium text-gray-900 dark:text-white">
+                  <span className={`${title.includes("brings your future home") ? 'handwritten-tagline' : ''}`}>
+                    {title}
                   </span>
-                )}
-                {stepContext && (
-                  <span className="ml-1.5 text-sm font-normal text-gray-500 dark:text-gray-400">
-                    {stepContext}
-                  </span>
-                )}
-              </h1>
+                  {/* Count - hidden on narrow screens */}
+                  {totalCount !== undefined && (
+                    <span className="ml-1.5 text-sm font-normal text-gray-500 dark:text-gray-400 hidden md:inline">
+                      ({filteredCount} of {totalCount})
+                    </span>
+                  )}
+                  {stepContext && (
+                    <span className="ml-1.5 text-sm font-normal text-gray-500 dark:text-gray-400">
+                      {stepContext}
+                    </span>
+                  )}
+                </h1>
+              </div>
+              
+              {/* Search icon for mobile - only show if filters are present */}
+              {hasSecondRow && showFilters && (
+                <button
+                  onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+                  className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors sm:hidden"
+                  aria-label="Search"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
+              )}
+              
+              {/* Menu button - always visible */}
+              <button 
+                onClick={handleMenuClick}
+                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                aria-label="Open navigation menu"
+                type="button"
+              >
+                <Menu className="w-5 h-5 text-gray-900 dark:text-gray-100" />
+              </button>
             </div>
             
-            {/* Desktop: Show filters inline if present - NEVER hide them */}
-            {hasSecondRow && showFilters && (
-              <div className="flex flex-1 items-center justify-end mr-3">
-                <FilterBarV3 {...filterProps} variant="compact" />
+            {/* Row 2: Mobile Search - shown when search icon is clicked */}
+            {hasSecondRow && showFilters && isMobileSearchOpen && (
+              <div className="sm:hidden pb-3 -mt-1">
+                <FilterBarV3 {...filterProps} variant="mobile" />
               </div>
             )}
             
-            {/* Menu button - always visible */}
-            <button 
-              onClick={handleMenuClick}
-              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              aria-label="Open navigation menu"
-              type="button"
-            >
-              <Menu className="w-5 h-5 text-gray-900 dark:text-gray-100" />
-            </button>
+            {/* Row 2: Desktop Search and Filters - only on larger screens */}
+            {hasSecondRow && showFilters && (
+              <div className="hidden sm:flex pb-3 -mt-1">
+                <FilterBarV3 {...filterProps} variant="default" />
+              </div>
+            )}
           </div>
           
           {/* Tabs - clean horizontal scroll */}
