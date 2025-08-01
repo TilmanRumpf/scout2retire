@@ -144,9 +144,9 @@ export default function FilterBarV3({
   // Main render for both variants
   return (
     <>
-      <div className={`flex items-center gap-2 w-full ${variant === 'mobile' ? 'flex-wrap' : variant === 'compact' ? '' : ''}`}>
+      <div className={`flex ${variant === 'mobile' ? 'flex-col gap-3' : 'items-center gap-2'} w-full`}>
         {/* Search Input - Clean Zillow style */}
-        <div className={`relative ${variant === 'mobile' ? 'w-full order-2' : variant === 'compact' ? 'flex-shrink min-w-[180px] max-w-[240px]' : 'flex-shrink-0 w-64'}`} ref={searchInputRef}>
+        <div className={`relative ${variant === 'mobile' ? 'w-full' : variant === 'compact' ? 'flex-shrink min-w-[180px] max-w-[240px]' : 'flex-shrink-0 w-64'}`} ref={searchInputRef}>
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
@@ -196,7 +196,18 @@ export default function FilterBarV3({
         {/* No divider for cleaner look */}
 
         {/* Filter buttons - Pill style */}
-        <div className={`flex items-center gap-1.5 ${variant === 'mobile' ? 'w-full order-1' : variant === 'compact' ? 'flex-shrink-0' : 'flex-wrap'}`}>
+        {variant === 'mobile' ? (
+          <button 
+            className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
+            <span>Filters</span>
+            {filterCount > 0 && <span className="text-xs font-medium">({filterCount})</span>}
+          </button>
+        ) : (
+        <div className={`flex items-center gap-1.5 ${variant === 'compact' ? 'flex-shrink-0' : 'flex-wrap'}`}>
           {/* Sort Button */}
           <button
             ref={sortButtonRef}
@@ -270,6 +281,7 @@ export default function FilterBarV3({
             </button>
           )}
         </div>
+        )}
       </div>
       
       {/* Portal Dropdowns */}
