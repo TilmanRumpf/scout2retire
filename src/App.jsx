@@ -8,6 +8,7 @@ import supabase from './utils/supabaseClient';
 import AuthenticatedLayout from './components/AuthenticatedLayout';
 import ErrorBoundary from './components/ErrorBoundary';
 import { checkAppVersion, setupAutoRefresh } from './utils/versionCheck';
+import InstallPromptBanner from './components/InstallPromptBanner';
 
 // Core Pages
 import Home from "./pages/Home";
@@ -206,6 +207,7 @@ const router = createBrowserRouter([
         <ThemeProvider>
           <>
             <Toaster position="top-center" />
+            <InstallPromptBanner />
             <Outlet />
           </>
         </ThemeProvider>
