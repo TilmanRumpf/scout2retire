@@ -4,6 +4,7 @@ import { Menu, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign,
 import QuickNav from './QuickNav';
 import FilterBarV3 from './FilterBarV3';
 import Logo from './Logo';
+import { useStandaloneMode } from '../hooks/useStandaloneMode';
 
 /**
  * UnifiedHeader - Intelligent header that adapts its second row based on props
@@ -43,6 +44,7 @@ export default function UnifiedHeader({
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const isStandalone = useStandaloneMode();
 
   // Close menu when route changes
   useEffect(() => {
@@ -63,23 +65,11 @@ export default function UnifiedHeader({
     <>
       <header 
         className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-[9999]"
-        style={{
-          paddingTop: 'env(safe-area-inset-top)',
-          /* Fallback for older iOS */
-          paddingTop: 'constant(safe-area-inset-top)',
-        }}
       >
-        {/* Safe area background extension - covers status bar area */}
+        {/* Safe area padding wrapper - handles both browser and standalone modes */}
         <div 
-          className="absolute inset-x-0 bg-white dark:bg-gray-800"
-          style={{
-            top: 'calc(-1 * env(safe-area-inset-top))',
-            height: 'env(safe-area-inset-top)',
-            /* Fallback */
-            top: 'calc(-1 * constant(safe-area-inset-top))',
-            height: 'constant(safe-area-inset-top)',
-          }}
-        />
+          className={`bg-white dark:bg-gray-800 ${isStandalone ? 'pwa-safe-header' : 'header-safe-extension'}`}
+        >
         
         <div className={`${maxWidth} mx-auto px-4`}>
           {/* Responsive layout based on screen size */}
@@ -221,6 +211,7 @@ export default function UnifiedHeader({
               </p>
             </div>
           )}
+        </div>
         </div>
       </header>
 

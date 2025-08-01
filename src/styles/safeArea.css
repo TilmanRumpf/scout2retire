@@ -50,3 +50,31 @@
     padding-bottom: constant(safe-area-inset-bottom);
   }
 }
+
+/* PWA/Standalone mode specific handling */
+@media (display-mode: standalone) {
+  /* In standalone mode, we need extra padding because of black-translucent status bar */
+  .pwa-safe-header {
+    padding-top: calc(20px + env(safe-area-inset-top));
+    margin-top: calc(-20px - env(safe-area-inset-top));
+  }
+}
+
+/* Handle notch and safe areas on modern iPhones */
+@supports (padding: env(safe-area-inset-top)) {
+  /* Ensure header extends behind status bar */
+  .header-safe-extension {
+    position: relative;
+    padding-top: env(safe-area-inset-top);
+    margin-top: calc(-1 * env(safe-area-inset-top));
+    background: inherit;
+  }
+  
+  /* Add extra padding in standalone mode */
+  @media (display-mode: standalone) {
+    .header-safe-extension {
+      padding-top: calc(20px + env(safe-area-inset-top));
+      margin-top: calc(-20px - env(safe-area-inset-top));
+    }
+  }
+}
