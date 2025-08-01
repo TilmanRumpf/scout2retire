@@ -84,7 +84,7 @@ export default function Logo({
     return (
       <button
         onClick={handleClick}
-        className={`inline-flex items-center ${isClickable ? 'hover:opacity-80 transition-opacity' : ''}`}
+        className={`inline-flex items-center border-0 bg-transparent p-0 ${isClickable ? 'hover:opacity-80 transition-opacity' : ''} focus:outline-none`}
         aria-label={alt}
       >
         {logoImage}
