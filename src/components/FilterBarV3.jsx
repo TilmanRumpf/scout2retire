@@ -155,7 +155,7 @@ export default function FilterBarV3({
               onChange={handleSearchInputChange}
               onFocus={() => searchInput.length > 0 && setShowSearchDropdown(true)}
               placeholder="Search cities..."
-              className="w-full h-9 pl-9 pr-8 text-sm bg-gray-50 dark:bg-gray-900 rounded-full focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:shadow-sm transition-all"
+              className="w-full h-9 pl-9 pr-8 text-sm bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:border-gray-300 dark:focus:border-gray-600 transition-all"
             />
             {searchInput && (
               <button
@@ -201,7 +201,7 @@ export default function FilterBarV3({
           <button
             ref={sortButtonRef}
             onClick={() => toggleDropdown('sort')}
-            className="flex items-center gap-1 px-2 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors whitespace-nowrap"
+            className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors whitespace-nowrap"
           >
             <SortDesc size={14} />
             <span>Sort</span>
@@ -212,16 +212,16 @@ export default function FilterBarV3({
           <button
             ref={locationButtonRef}
             onClick={() => toggleDropdown('location')}
-            className={`flex items-center gap-1 px-2 py-1.5 text-sm rounded-full transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg border transition-colors whitespace-nowrap ${
               activeFilters.location > 0
-                ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium border-gray-300 dark:border-gray-600'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
             }`}
           >
             <Globe size={14} />
             <span>Location</span>
             {activeFilters.location > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs rounded-full">{activeFilters.location}</span>
+              <span className="ml-0.5 text-xs font-medium">({activeFilters.location})</span>
             )}
           </button>
           
@@ -229,10 +229,10 @@ export default function FilterBarV3({
           <button
             ref={costButtonRef}
             onClick={() => toggleDropdown('cost')}
-            className={`flex items-center gap-1 px-2 py-1.5 text-sm rounded-full transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg border transition-colors whitespace-nowrap ${
               isFilterActive(filterCostRange)
-                ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium border-gray-300 dark:border-gray-600'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
             }`}
           >
             <DollarSign size={14} />
@@ -243,10 +243,10 @@ export default function FilterBarV3({
           <button
             ref={matchButtonRef}
             onClick={() => toggleDropdown('match')}
-            className={`flex items-center gap-1 px-2 py-1.5 text-sm rounded-full transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg border transition-colors whitespace-nowrap ${
               isFilterActive(filterMatchRange)
-                ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium border-gray-300 dark:border-gray-600'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
             }`}
           >
             <Crosshair size={14} />
@@ -263,7 +263,7 @@ export default function FilterBarV3({
                   setSearchTerm('');
                 }
               }}
-              className="flex items-center gap-1 px-2 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors whitespace-nowrap"
+              className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors whitespace-nowrap"
             >
               <X size={14} />
               <span>Clear all</span>
