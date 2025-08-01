@@ -4,6 +4,7 @@ import App from './App.jsx'
 import './index.css'
 import './styles/fonts.css'
 import './styles/safeArea.css'
+import './styles/iosHeader.css'
 
 // Enable transitions after initial load to prevent white flash
 if (typeof window !== 'undefined') {

@@ -1,0 +1,101 @@
+/* iOS Professional Header Styles */
+
+/* CSS Custom Properties for flexibility */
+:root {
+  --header-height: 44px;
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+  --safe-left: env(safe-area-inset-left);
+  --safe-right: env(safe-area-inset-right);
+}
+
+/* Fallback for older iOS */
+@supports (padding: constant(safe-area-inset-top)) {
+  :root {
+    --safe-top: constant(safe-area-inset-top);
+    --safe-bottom: constant(safe-area-inset-bottom);
+    --safe-left: constant(safe-area-inset-left);
+    --safe-right: constant(safe-area-inset-right);
+  }
+}
+
+/* Professional iOS header implementation */
+.ios-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+  
+  /* Handle safe area */
+  padding-top: var(--safe-top);
+  
+  /* Ensure minimum height */
+  min-height: calc(var(--header-height) + var(--safe-top));
+}
+
+/* Dark mode support */
+.dark .ios-header {
+  background: rgba(31, 41, 55, 0.9);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Header content wrapper */
+.ios-header-content {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+}
+
+/* Prevent tap highlight on iOS */
+.ios-header * {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Interactive elements can be selected */
+.ios-header button,
+.ios-header a {
+  -webkit-user-select: auto;
+  user-select: auto;
+}
+
+/* PWA/Standalone mode adjustments */
+@media (display-mode: standalone) {
+  .ios-header {
+    /* In PWA mode, status bar is translucent, so we see through it */
+    /* Add a background extension */
+    position: relative;
+  }
+  
+  .ios-header::before {
+    content: '';
+    position: absolute;
+    top: calc(-1 * var(--safe-top));
+    left: 0;
+    right: 0;
+    height: var(--safe-top);
+    background: inherit;
+    backdrop-filter: inherit;
+    -webkit-backdrop-filter: inherit;
+  }
+}
+
+/* Handle notch on iPhone X and later */
+@supports (padding: env(safe-area-inset-top)) {
+  .ios-header {
+    /* Extend padding for notch */
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+  }
+}
+
+/* Fixed height constraint - never more than 10% of viewport */
+.ios-header {
+  max-height: 10vh;
+  max-height: 10dvh; /* Dynamic viewport height */
+}
