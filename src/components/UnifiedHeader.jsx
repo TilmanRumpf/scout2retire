@@ -67,10 +67,10 @@ export default function UnifiedHeader({
           <div className="flex flex-col">
             {/* Row 1: Logo/Title + Menu */}
             <div className="flex items-center h-14 gap-2">
-              {/* Logo - hidden on very narrow screens */}
+              {/* Logo - hidden on mobile phones */}
               <Logo 
                 variant="full" 
-                className="h-8 hidden sm:block"
+                className="h-8 hidden md:block"
                 navigateTo="/daily"
               />
               
@@ -99,7 +99,7 @@ export default function UnifiedHeader({
               {hasSecondRow && showFilters && (
                 <button
                   onClick={() => setIsMobileFiltersOpen(true)}
-                  className="relative p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors sm:hidden"
+                  className="relative p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors md:hidden"
                   aria-label="Filters"
                 >
                   <SlidersHorizontal className="w-5 h-5 text-gray-900 dark:text-gray-100" />
@@ -124,7 +124,7 @@ export default function UnifiedHeader({
             
             {/* Row 2: Desktop Search and Filters - only on larger screens */}
             {hasSecondRow && showFilters && (
-              <div className="hidden sm:block pb-3 -mt-1">
+              <div className="hidden md:block pb-3 -mt-1">
                 <FilterBarV3 {...filterProps} />
               </div>
             )}
@@ -213,7 +213,7 @@ export default function UnifiedHeader({
 
       {/* Mobile Filters Modal */}
       {hasSecondRow && showFilters && isMobileFiltersOpen && (
-        <div className="fixed inset-0 z-[10000] sm:hidden">
+        <div className="fixed inset-0 z-[10000] md:hidden">
           {/* Backdrop */}
           <div 
             className="absolute inset-0 bg-black bg-opacity-50"
