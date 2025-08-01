@@ -6,6 +6,7 @@ import SimpleImage from '../components/SimpleImage';
 import TownImageOverlay from '../components/TownImageOverlay';
 import PageErrorBoundary from '../components/PageErrorBoundary';
 import UnifiedHeader from '../components/UnifiedHeader';
+import HeaderSpacer from '../components/HeaderSpacer';
 import TownRadarChart from '../components/TownRadarChart';
 import { uiConfig } from '../styles/uiConfig';
 import { Sparkles, MapPin } from 'lucide-react';
@@ -507,6 +508,9 @@ export default function TownDiscovery() {
           availableTowns: towns
         }}
       />
+      
+      {/* Spacer for iOS fixed header - no effect on other platforms */}
+      <HeaderSpacer />
 
       <PageErrorBoundary
         fallbackTitle="Discovery Error"
