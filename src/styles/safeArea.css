@@ -1,5 +1,39 @@
 /* Safe Area CSS for iPhone Support */
 
+/* Global body padding for iOS safe areas */
+body {
+  /* Ensure body doesn't go under status bar */
+  padding-top: env(safe-area-inset-top);
+  padding-top: constant(safe-area-inset-top); /* iOS 11 */
+}
+
+/* Reset padding in standalone mode as we handle it in header */
+@media (display-mode: standalone) {
+  body {
+    padding-top: 0;
+  }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari with notch */
+  .ios-safe-header {
+    /* Create a pseudo element that extends the header background */
+    position: relative;
+  }
+  
+  .ios-safe-header::before {
+    content: '';
+    position: absolute;
+    top: calc(-1 * max(20px, env(safe-area-inset-top)));
+    left: 0;
+    right: 0;
+    height: max(20px, env(safe-area-inset-top));
+    background: inherit;
+    z-index: -1;
+  }
+}
+
 /* Utility classes for safe area padding */
 .safe-top {
   padding-top: env(safe-area-inset-top);
