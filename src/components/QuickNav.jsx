@@ -21,6 +21,14 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
     loadUserAndInvites();
   }, []);
 
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      setInternalIsOpen(false);
+    }
+  };
+
   const loadUserAndInvites = async () => {
     try {
       const { user: currentUser } = await getCurrentUser();
@@ -120,11 +128,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
       // Check if click is outside the nav and not on the toggle button
       if (!event.target.closest('.nav-menu') && 
           !event.target.closest('.nav-toggle')) {
-        if (onClose) {
-          onClose();
-        } else {
-          setInternalIsOpen(false);
-        }
+        handleClose();
       }
     };
 
@@ -137,17 +141,13 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
       clearTimeout(timer);
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, handleClose]);
 
   // Handle escape key to close menu
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key === 'Escape') {
-        if (onClose) {
-          onClose();
-        } else {
-          setInternalIsOpen(false);
-        }
+        handleClose();
       }
     };
 
@@ -155,7 +155,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
     return () => {
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [onClose]); // onClose is stable and only changes if parent component changes
+  }, [handleClose]);
 
   // FIXED 09JUN25: Clean navigation items - NO MORE SVG ICON BULLSHIT
   const navItems = [
