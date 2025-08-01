@@ -195,11 +195,20 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
         </button>
       )}
 
-      {/* Slide-out navigation menu with increased z-index */}
+      {/* Backdrop overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+          style={{ zIndex: 10000 }}
+          onClick={handleClose}
+        />
+      )}
+
+      {/* Slide-out navigation menu with highest z-index */}
       <div
         className="nav-menu fixed top-0 h-full bg-white dark:bg-gray-800 shadow-lg w-64"
         style={{ 
-          zIndex: 90,
+          zIndex: 10001,
           right: isOpen ? '0' : '-256px',
           transition: 'right 0.3s ease-in-out'
         }}
