@@ -4,7 +4,6 @@ import { Menu, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign,
 import QuickNav from './QuickNav';
 import FilterBarV3 from './FilterBarV3';
 import Logo from './Logo';
-import { useStandaloneMode } from '../hooks/useStandaloneMode';
 
 /**
  * UnifiedHeader - Intelligent header that adapts its second row based on props
@@ -44,7 +43,6 @@ export default function UnifiedHeader({
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const isStandalone = useStandaloneMode();
 
   // Close menu when route changes
   useEffect(() => {
@@ -63,13 +61,7 @@ export default function UnifiedHeader({
 
   return (
     <>
-      <header 
-        className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-[9999]"
-        style={{
-          /* Add padding for safe area + PWA offset */
-          paddingTop: 'calc(var(--pwa-header-offset, 0px) + env(safe-area-inset-top))',
-        }}
-      >
+      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-[9999]">
         
         <div className={`${maxWidth} mx-auto px-4`}>
           {/* Responsive layout based on screen size */}
