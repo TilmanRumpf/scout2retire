@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign, SlidersHorizontal } from 'lucide-react';
+import { Menu, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign, SlidersHorizontal, X } from 'lucide-react';
 import QuickNav from './QuickNav';
 import FilterBarV3 from './FilterBarV3';
 import Logo from './Logo';
@@ -40,6 +40,7 @@ export default function UnifiedHeader({
 }) {
   const [isQuickNavOpen, setIsQuickNavOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -97,6 +98,7 @@ export default function UnifiedHeader({
               {/* Filter button - visible on mobile when filters exist */}
               {hasSecondRow && showFilters && (
                 <button
+                  onClick={() => setIsMobileFiltersOpen(true)}
                   className="relative p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors sm:hidden"
                   aria-label="Filters"
                 >
@@ -208,6 +210,49 @@ export default function UnifiedHeader({
         isOpen={isQuickNavOpen} 
         onClose={() => setIsQuickNavOpen(false)} 
       />
+
+      {/* Mobile Filters Modal */}
+      {hasSecondRow && showFilters && isMobileFiltersOpen && (
+        <div className="fixed inset-0 z-[10000] sm:hidden">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50"
+            onClick={() => setIsMobileFiltersOpen(false)}
+          />
+          
+          {/* Modal */}
+          <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-800 rounded-t-2xl shadow-xl max-h-[80vh] overflow-y-auto">
+            {/* Header */}
+            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Filters</h2>
+                <button
+                  onClick={() => setIsMobileFiltersOpen(false)}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  aria-label="Close filters"
+                >
+                  <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                </button>
+              </div>
+            </div>
+            
+            {/* Filter Content */}
+            <div className="p-4">
+              <FilterBarV3 {...filterProps} variant="mobile" />
+            </div>
+            
+            {/* Apply Button */}
+            <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
+              <button
+                onClick={() => setIsMobileFiltersOpen(false)}
+                className="w-full py-3 bg-scout-accent-600 text-white rounded-lg font-medium hover:bg-scout-accent-700 transition-colors"
+              >
+                Apply Filters
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
