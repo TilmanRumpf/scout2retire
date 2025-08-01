@@ -45,13 +45,6 @@ export default function UnifiedHeader({
   const location = useLocation();
   const navigate = useNavigate();
   const isStandalone = useStandaloneMode();
-  
-  // Debug standalone mode
-  useEffect(() => {
-    console.log('Standalone mode:', isStandalone);
-    console.log('Navigator standalone:', window.navigator.standalone);
-    console.log('Display mode matches:', window.matchMedia('(display-mode: standalone)').matches);
-  }, [isStandalone]);
 
   // Close menu when route changes
   useEffect(() => {
@@ -71,18 +64,12 @@ export default function UnifiedHeader({
   return (
     <>
       <header 
-        className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-[9999] ios-safe-header"
+        className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-[9999]"
+        style={{
+          /* Add padding for safe area + PWA offset */
+          paddingTop: 'calc(var(--pwa-header-offset, 0px) + env(safe-area-inset-top))',
+        }}
       >
-        {/* Extra wrapper for iOS safe area handling */}
-        <div 
-          className="bg-white dark:bg-gray-800"
-          style={{
-            /* Always add padding for safe area + status bar height */
-            paddingTop: 'max(20px, env(safe-area-inset-top))',
-            /* Extend background upward to cover the safe area */
-            marginTop: 'calc(-1 * max(20px, env(safe-area-inset-top)))',
-          }}
-        >
         
         <div className={`${maxWidth} mx-auto px-4`}>
           {/* Responsive layout based on screen size */}
@@ -224,7 +211,6 @@ export default function UnifiedHeader({
               </p>
             </div>
           )}
-        </div>
         </div>
       </header>
 
