@@ -62,7 +62,7 @@ export default function UnifiedHeader({
       <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-[9999]">
         <div className={`${maxWidth} mx-auto px-4 sm:px-6`}>
           {/* Single row layout on mobile, expandable on desktop */}
-          <div className={`flex items-center ${hasSecondRow && showFilters ? 'h-16' : 'h-14'} gap-3`}>
+          <div className={`flex items-center h-14 gap-2 py-2`}>
             {/* Logo - more compact */}
             <Logo 
               variant="full" 
@@ -89,9 +89,9 @@ export default function UnifiedHeader({
               </h1>
             </div>
             
-            {/* Desktop: Show filters inline if present */}
+            {/* Desktop: Show filters inline if present - NEVER hide them */}
             {hasSecondRow && showFilters && (
-              <div className="hidden md:flex flex-1 items-center justify-end mr-3">
+              <div className="flex flex-1 items-center justify-end mr-3">
                 <FilterBarV3 {...filterProps} variant="compact" />
               </div>
             )}
@@ -106,13 +106,6 @@ export default function UnifiedHeader({
               <Menu className="w-5 h-5 text-gray-900 dark:text-gray-100" />
             </button>
           </div>
-          
-          {/* Mobile filters - shown below header on mobile */}
-          {hasSecondRow && showFilters && (
-            <div className="md:hidden pb-3 -mt-1">
-              <FilterBarV3 {...filterProps} variant="mobile" />
-            </div>
-          )}
           
           {/* Tabs - clean horizontal scroll */}
           {hasSecondRow && tabs.length > 0 && (

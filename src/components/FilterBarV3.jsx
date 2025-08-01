@@ -144,18 +144,18 @@ export default function FilterBarV3({
   // Main render for both variants
   return (
     <>
-      <div className={`flex items-center gap-2 w-full ${variant === 'mobile' ? 'flex-col' : variant === 'compact' ? 'justify-end' : ''}`}>
+      <div className={`flex items-center gap-2 w-full ${variant === 'mobile' ? 'flex-wrap' : variant === 'compact' ? '' : ''}`}>
         {/* Search Input - Clean Zillow style */}
-        <div className={`relative ${variant === 'mobile' ? 'w-full' : variant === 'compact' ? 'w-48' : 'flex-shrink-0 w-64'}`} ref={searchInputRef}>
+        <div className={`relative ${variant === 'mobile' ? 'w-full order-2' : variant === 'compact' ? 'flex-shrink min-w-[180px] max-w-[240px]' : 'flex-shrink-0 w-64'}`} ref={searchInputRef}>
           <div className="relative">
-            <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               value={searchInput}
               onChange={handleSearchInputChange}
               onFocus={() => searchInput.length > 0 && setShowSearchDropdown(true)}
               placeholder="Search cities..."
-              className="w-full h-10 pl-10 pr-8 text-sm bg-gray-50 dark:bg-gray-900 rounded-full focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:shadow-sm transition-all"
+              className="w-full h-9 pl-9 pr-8 text-sm bg-gray-50 dark:bg-gray-900 rounded-full focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:shadow-sm transition-all"
             />
             {searchInput && (
               <button
@@ -168,7 +168,7 @@ export default function FilterBarV3({
                 }}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5"
               >
-                <X size={16} />
+                <X size={14} />
               </button>
             )}
           </div>
@@ -196,14 +196,14 @@ export default function FilterBarV3({
         {/* No divider for cleaner look */}
 
         {/* Filter buttons - Pill style */}
-        <div className={`flex items-center gap-2 ${variant === 'mobile' ? 'w-full overflow-x-auto' : 'flex-wrap'}`}>
+        <div className={`flex items-center gap-1.5 ${variant === 'mobile' ? 'w-full order-1' : variant === 'compact' ? 'flex-shrink-0' : 'flex-wrap'}`}>
           {/* Sort Button */}
           <button
             ref={sortButtonRef}
             onClick={() => toggleDropdown('sort')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors whitespace-nowrap"
+            className="flex items-center gap-1 px-2 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors whitespace-nowrap"
           >
-            <SortDesc size={16} />
+            <SortDesc size={14} />
             <span>Sort</span>
             <ChevronDown size={14} className={`transition-transform ${openDropdown === 'sort' ? 'rotate-180' : ''}`} />
           </button>
@@ -212,13 +212,13 @@ export default function FilterBarV3({
           <button
             ref={locationButtonRef}
             onClick={() => toggleDropdown('location')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-1 px-2 py-1.5 text-sm rounded-full transition-colors whitespace-nowrap ${
               activeFilters.location > 0
                 ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
-            <Globe size={16} />
+            <Globe size={14} />
             <span>Location</span>
             {activeFilters.location > 0 && (
               <span className="ml-1 px-1.5 py-0.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs rounded-full">{activeFilters.location}</span>
@@ -229,13 +229,13 @@ export default function FilterBarV3({
           <button
             ref={costButtonRef}
             onClick={() => toggleDropdown('cost')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-1 px-2 py-1.5 text-sm rounded-full transition-colors whitespace-nowrap ${
               isFilterActive(filterCostRange)
                 ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
-            <DollarSign size={16} />
+            <DollarSign size={14} />
             <span>Cost</span>
           </button>
           
@@ -243,13 +243,13 @@ export default function FilterBarV3({
           <button
             ref={matchButtonRef}
             onClick={() => toggleDropdown('match')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-1 px-2 py-1.5 text-sm rounded-full transition-colors whitespace-nowrap ${
               isFilterActive(filterMatchRange)
                 ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
-            <Crosshair size={16} />
+            <Crosshair size={14} />
             <span>Match</span>
           </button>
 
@@ -263,9 +263,9 @@ export default function FilterBarV3({
                   setSearchTerm('');
                 }
               }}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors whitespace-nowrap"
+              className="flex items-center gap-1 px-2 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors whitespace-nowrap"
             >
-              <X size={16} />
+              <X size={14} />
               <span>Clear all</span>
             </button>
           )}
