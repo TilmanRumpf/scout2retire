@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
 import UnifiedHeader from '../components/UnifiedHeader';
+import HeaderSpacer from '../components/HeaderSpacer';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
@@ -9,6 +10,7 @@ import { uiConfig } from '../styles/uiConfig';
 export default function MasterSchedule() {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
+  const [userRetirementYear, setUserRetirementYear] = useState(null);
   const [milestones, setMilestones] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -16,7 +18,7 @@ export default function MasterSchedule() {
   const [formData, setFormData] = useState({
     milestone: '',
     target_date: '',
-    status: 'not_started',
+    status: null,
     notes: ''
   });
   
@@ -37,6 +39,19 @@ export default function MasterSchedule() {
         
         setUserId(user.id);
         
+        // Fetch user's retirement year
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('retirement_year_estimate')
+          .eq('id', user.id)
+          .single();
+          
+        if (userError) {
+          console.error("Error fetching user retirement year:", userError);
+        } else {
+          setUserRetirementYear(userData?.retirement_year_estimate);
+        }
+        
         // Fetch retirement milestones
         const { data, error } = await supabase
           .from('retirement_schedule')
@@ -49,10 +64,14 @@ export default function MasterSchedule() {
         }
         
         setMilestones(data || []);
+        console.log('Loaded milestones:', data?.length, 'items');
+        console.log('Milestone names:', data?.map(m => m.milestone));
         
         // If no milestones exist, create default ones
         if (!data || data.length === 0) {
           await createDefaultMilestones(user.id);
+          // Force page reload to show all milestones
+          window.location.reload();
         }
       } catch (err) {
         console.error("Error loading schedule:", err);
@@ -71,7 +90,7 @@ export default function MasterSchedule() {
       // Get user retirement date
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('retirement_year_estimate, retirement_date')
+        .select('retirement_year_estimate')
         .eq('id', userId)
         .single();
       
@@ -79,57 +98,94 @@ export default function MasterSchedule() {
         throw new Error(userError.message);
       }
       
-      const retirementDate = userData?.retirement_date 
-        ? new Date(userData.retirement_date)
-        : new Date(userData?.retirement_year_estimate || new Date().getFullYear() + 5, 0, 1);
+      // Set retirement date to end of retirement year (December 31st) instead of January 1st
+      const retirementDate = new Date(userData?.retirement_year_estimate || new Date().getFullYear() + 5, 11, 31);
       const currentDate = new Date();
-      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth();
       const retirementYear = retirementDate.getFullYear();
-      const monthsToRetirement = Math.floor((retirementDate - currentDate) / (1000 * 60 * 60 * 24 * 30));
-      const yearsToRetirement = Math.floor(monthsToRetirement / 12);
+      const monthsToRetirement = (retirementYear - currentDate.getFullYear()) * 12 - currentMonth;
       
-      // Default milestones
+      // Helper to ensure dates are in the future with minimum delays
+      const getFutureDate = (monthsFromNow, minimumDays = 30) => {
+        const date = new Date();
+        const targetDate = new Date();
+        targetDate.setMonth(targetDate.getMonth() + monthsFromNow);
+        
+        // Ensure minimum days in future
+        const minDate = new Date();
+        minDate.setDate(minDate.getDate() + minimumDays);
+        
+        // Return the later of the two dates
+        const finalDate = targetDate > minDate ? targetDate : minDate;
+        return finalDate.toISOString().split('T')[0];
+      };
+      
+      // Default milestones - comprehensive 11-step retirement planning timeline
       const defaultMilestones = [
         {
           user_id: userId,
           milestone: 'Research Potential Locations',
-          target_date: new Date(currentYear, 0, 1).toISOString().split('T')[0],
-          status: 'in_progress',
+          target_date: getFutureDate(1, 7), // At least 1 week to start research
           notes: 'Explore towns using Scout2Retire and create a shortlist of favorites.'
         },
         {
           user_id: userId,
+          milestone: 'Declutter Your Current Home',
+          target_date: getFutureDate(Math.floor(monthsToRetirement * 0.2), 30), // 30 days minimum
+          notes: 'Start downsizing possessions and donate/sell items you won\'t need in retirement. Begin with one room at a time.'
+        },
+        {
+          user_id: userId,
           milestone: 'Visit Top 3 Locations',
-          target_date: new Date(currentYear + Math.max(1, Math.floor(yearsToRetirement * 0.3)), 0, 1).toISOString().split('T')[0],
-          status: 'not_started',
+          target_date: getFutureDate(Math.floor(monthsToRetirement * 0.3), 75), // 75 DAYS MINIMUM for trip planning!
           notes: 'Plan trips to experience the lifestyle in each location.'
         },
         {
           user_id: userId,
+          milestone: 'Healthcare Coverage Research',
+          target_date: getFutureDate(Math.floor(monthsToRetirement * 0.4), 60), // 60 days - healthcare research takes time
+          notes: 'Research Medicare options, international health insurance, or local healthcare systems in your target location.'
+        },
+        {
+          user_id: userId,
           milestone: 'Financial Planning',
-          target_date: new Date(currentYear + Math.max(1, Math.floor(yearsToRetirement * 0.5)), 0, 1).toISOString().split('T')[0],
-          status: 'not_started',
+          target_date: getFutureDate(Math.floor(monthsToRetirement * 0.5)),
           notes: 'Meet with financial advisor to finalize retirement budget and savings plan.'
         },
         {
           user_id: userId,
+          milestone: 'Language & Cultural Preparation',
+          target_date: getFutureDate(Math.floor(monthsToRetirement * 0.6)),
+          notes: 'Start learning the local language, customs, and cultural norms of your chosen retirement destination.'
+        },
+        {
+          user_id: userId,
           milestone: 'Housing Decision',
-          target_date: new Date(currentYear + Math.max(1, Math.floor(yearsToRetirement * 0.7)), 0, 1).toISOString().split('T')[0],
-          status: 'not_started',
+          target_date: getFutureDate(Math.floor(monthsToRetirement * 0.7)),
           notes: 'Decide whether to rent or buy in chosen location.'
         },
         {
           user_id: userId,
+          milestone: 'Social Network Building',
+          target_date: getFutureDate(Math.floor(monthsToRetirement * 0.8)),
+          notes: 'Connect with expat communities, local groups, and potential friends in your retirement location through online forums and social media.'
+        },
+        {
+          user_id: userId,
           milestone: 'Visa/Immigration Paperwork',
-          target_date: new Date(retirementYear - 1, 0, 1).toISOString().split('T')[0],
-          status: 'not_started',
+          target_date: getFutureDate(monthsToRetirement - 12, 90), // 90 days - visa processing needs lead time
           notes: 'Start paperwork for residence permits or visas if moving internationally.'
         },
         {
           user_id: userId,
+          milestone: 'Final Move Logistics',
+          target_date: getFutureDate(monthsToRetirement - 6, 45), // 45 days - movers need advance booking
+          notes: 'Arrange international movers, ship belongings, set up utilities, and handle final administrative tasks for your move.'
+        },
+        {
+          user_id: userId,
           milestone: 'Moving Day!',
-          target_date: new Date(retirementYear, 0, 1).toISOString().split('T')[0],
-          status: 'not_started',
+          target_date: retirementDate.toISOString().split('T')[0],
           notes: 'Begin your new life in your chosen retirement location.'
         }
       ];
@@ -195,7 +251,7 @@ export default function MasterSchedule() {
         user_id: userId,
         milestone: formData.milestone,
         target_date: formData.target_date,
-        status: formData.status,
+        status: formData.status || null,
         notes: formData.notes
       };
       
@@ -215,7 +271,7 @@ export default function MasterSchedule() {
       setFormData({
         milestone: '',
         target_date: '',
-        status: 'not_started',
+        status: null,
         notes: ''
       });
       setShowAddForm(false);
@@ -237,7 +293,7 @@ export default function MasterSchedule() {
         .update({
           milestone: formData.milestone,
           target_date: formData.target_date,
-          status: formData.status,
+          status: formData.status || null,
           notes: formData.notes
         })
         .eq('id', editingMilestone.id);
@@ -254,7 +310,7 @@ export default function MasterSchedule() {
                 ...milestone, 
                 milestone: formData.milestone,
                 target_date: formData.target_date,
-                status: formData.status,
+                status: formData.status || null,
                 notes: formData.notes
               } 
             : milestone
@@ -334,15 +390,28 @@ export default function MasterSchedule() {
             Completed
           </span>
         );
+      case null:
+      case undefined:
+        return (
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300`}>
+            Pending
+          </span>
+        );
       default:
-        return null;
+        return (
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300`}>
+            Unknown
+          </span>
+        );
     }
   };
   
   // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
+    // Parse the date properly to avoid timezone issues
+    const [year, month, day] = dateString.split('-');
+    const date = new Date(year, month - 1, day);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
   
@@ -360,8 +429,27 @@ export default function MasterSchedule() {
       <UnifiedHeader 
         title="Retirement Master Schedule"
       />
+      <HeaderSpacer />
 
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 pt-8 pb-6 space-y-6">
+        {/* Retirement Year Banner */}
+        {userRetirementYear && (
+          <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-6 text-center border-2 border-scout-accent-500`}>
+            <h2 className={`text-2xl font-bold ${uiConfig.colors.heading} mb-2`}>
+              Your Retirement Target: {userRetirementYear}
+            </h2>
+            <p className={`${uiConfig.colors.body}`}>
+              {(() => {
+                const yearsToGo = userRetirementYear - new Date().getFullYear();
+                if (yearsToGo < 0) return "You're already retired! 🎉";
+                if (yearsToGo === 0) return "This is your retirement year! 🎊";
+                if (yearsToGo === 1) return "Just 1 year to go! Almost there! 💪";
+                return `${yearsToGo} years to go - let's make them count! 🚀`;
+              })()}
+            </p>
+          </div>
+        )}
+        
         {/* Action buttons */}
         <div className="flex justify-between items-center">
           <h2 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>
@@ -374,7 +462,7 @@ export default function MasterSchedule() {
               setFormData({
                 milestone: '',
                 target_date: '',
-                status: 'not_started',
+                status: null,
                 notes: ''
               });
             }}
@@ -429,10 +517,11 @@ export default function MasterSchedule() {
                 <select
                   id="status"
                   name="status"
-                  value={formData.status}
+                  value={formData.status || ''}
                   onChange={handleInputChange}
                   className={uiConfig.components.select}
                 >
+                  <option value="">Pending</option>
                   <option value="not_started">Not Started</option>
                   <option value="in_progress">In Progress</option>
                   <option value="completed">Completed</option>
@@ -508,10 +597,11 @@ export default function MasterSchedule() {
                 <select
                   id="edit_status"
                   name="status"
-                  value={formData.status}
+                  value={formData.status || ''}
                   onChange={handleInputChange}
                   className={uiConfig.components.select}
                 >
+                  <option value="">Pending</option>
                   <option value="not_started">Not Started</option>
                   <option value="in_progress">In Progress</option>
                   <option value="completed">Completed</option>
@@ -561,7 +651,11 @@ export default function MasterSchedule() {
               </p>
             </div>
           ) : (
-            milestones.map((milestone) => (
+            <>
+              <div className="text-sm text-gray-600 mb-2">
+                Showing {milestones.length} milestones
+              </div>
+              {milestones.map((milestone, index) => (
               <div 
                 key={milestone.id} 
                 className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden border-l-4 ${
@@ -595,32 +689,29 @@ export default function MasterSchedule() {
                     {/* Status change buttons */}
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap gap-2">
-                        {milestone.status !== 'not_started' && (
-                          <button
-                            onClick={() => handleStatusChange(milestone.id, 'not_started')}
-                            className={`text-xs px-2 py-1 ${uiConfig.colors.btnSecondary} rounded`}
-                          >
-                            Mark Not Started
-                          </button>
-                        )}
+                        <button
+                          onClick={() => handleStatusChange(milestone.id, 'not_started')}
+                          className={`text-xs px-2 py-1 ${milestone.status === 'not_started' ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : uiConfig.colors.btnSecondary} rounded`}
+                          disabled={milestone.status === 'not_started'}
+                        >
+                          Not Started
+                        </button>
                         
-                        {milestone.status !== 'in_progress' && (
-                          <button
-                            onClick={() => handleStatusChange(milestone.id, 'in_progress')}
-                            className={`text-xs px-2 py-1 ${uiConfig.colors.statusInfo} rounded ${uiConfig.animation.transition}`}
-                          >
-                            Mark In Progress
-                          </button>
-                        )}
+                        <button
+                          onClick={() => handleStatusChange(milestone.id, 'in_progress')}
+                          className={`text-xs px-2 py-1 ${milestone.status === 'in_progress' ? 'bg-blue-200 text-blue-800 cursor-not-allowed' : uiConfig.colors.statusInfo} rounded ${uiConfig.animation.transition}`}
+                          disabled={milestone.status === 'in_progress'}
+                        >
+                          In Progress
+                        </button>
                         
-                        {milestone.status !== 'completed' && (
-                          <button
-                            onClick={() => handleStatusChange(milestone.id, 'completed')}
-                            className={`text-xs px-2 py-1 ${uiConfig.colors.statusSuccess} rounded ${uiConfig.animation.transition}`}
-                          >
-                            Mark Completed
-                          </button>
-                        )}
+                        <button
+                          onClick={() => handleStatusChange(milestone.id, 'completed')}
+                          className={`text-xs px-2 py-1 ${milestone.status === 'completed' ? 'bg-green-200 text-green-800 cursor-not-allowed' : uiConfig.colors.statusSuccess} rounded ${uiConfig.animation.transition}`}
+                          disabled={milestone.status === 'completed'}
+                        >
+                          Completed
+                        </button>
                       </div>
                     </div>
                     
@@ -643,22 +734,41 @@ export default function MasterSchedule() {
                   </div>
                 </div>
               </div>
-            ))
+            ))}
+            </>
           )}
         </div>
         
         {/* Tips section */}
-        <div className={`${uiConfig.notifications.success} border ${uiConfig.layout.radius.lg} p-4`}>
-          <h3 className={`text-lg font-semibold ${uiConfig.colors.success} mb-2`}>
-            Tips for Planning Your Retirement Timeline
+        <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} ${uiConfig.layout.spacing.card} border-l-4 border-blue-500`}>
+          <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-3 flex items-center`}>
+            <span className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+              💡
+            </span>
+            Planning Tips
           </h3>
           
-          <ul className={`space-y-2 ${uiConfig.colors.success} text-sm`}>
-            <li>• Start researching potential locations at least 5 years before your planned retirement date.</li>
-            <li>• Visit your top choices during different seasons to experience the full climate cycle.</li>
-            <li>• Begin visa and immigration paperwork at least 12-18 months before your planned move.</li>
-            <li>• Consider a "trial retirement" by spending 2-3 months in your chosen location before making a permanent move.</li>
-            <li>• Plan your healthcare transition well in advance, especially for international moves.</li>
+          <ul className={`space-y-3 ${uiConfig.colors.body} text-sm`}>
+            <li className="flex items-start">
+              <span className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+              <span>Start researching potential locations at least 5 years before your planned retirement date.</span>
+            </li>
+            <li className="flex items-start">
+              <span className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+              <span>Visit your top choices during different seasons to experience the full climate cycle.</span>
+            </li>
+            <li className="flex items-start">
+              <span className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+              <span>Begin visa and immigration paperwork at least 12-18 months before your planned move.</span>
+            </li>
+            <li className="flex items-start">
+              <span className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+              <span>Consider a "trial retirement" by spending 2-3 months in your chosen location before making a permanent move.</span>
+            </li>
+            <li className="flex items-start">
+              <span className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+              <span>Plan your healthcare transition well in advance, especially for international moves.</span>
+            </li>
           </ul>
         </div>
       </main>
