@@ -61,13 +61,9 @@ export default function UnifiedHeader({
 
   return (
     <>
-      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-[9999]">
-        
+      <header className="ios-header">
         <div className={`${maxWidth} mx-auto px-4`}>
-          {/* Responsive layout based on screen size */}
-          <div className="flex flex-col">
-            {/* Row 1: Logo/Title + Menu */}
-            <div className="flex items-center h-14 gap-2">
+          <div className="ios-header-content gap-2">
               {/* Logo - hidden on mobile phones */}
               <Logo 
                 variant="full" 
@@ -123,86 +119,6 @@ export default function UnifiedHeader({
               </button>
             </div>
             
-            {/* Row 2: Desktop Search and Filters - only on larger screens */}
-            {hasSecondRow && showFilters && (
-              <div className="hidden md:block pb-3 -mt-1">
-                <FilterBarV3 {...filterProps} />
-              </div>
-            )}
-          </div>
-          
-          {/* Tabs - clean horizontal scroll */}
-          {hasSecondRow && tabs.length > 0 && (
-            <div className="border-t border-gray-100 dark:border-gray-700">
-              <div className="overflow-x-auto scrollbar-hide py-2">
-                <div className="flex items-center gap-1 px-1">
-                  {tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    const isActive = tab.isActive;
-                    
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={tab.onClick}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
-                          isActive 
-                            ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium' 
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
-                        }`}
-                      >
-                        {Icon && <Icon className="w-4 h-4" />}
-                        <span>{tab.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {/* Steps - clean navigation for onboarding */}
-          {hasSecondRow && steps.length > 0 && (
-            <div className="border-t border-gray-100 dark:border-gray-700">
-              <div className="overflow-x-auto scrollbar-hide py-2">
-                <div className="flex items-center gap-1 px-1">
-                  {steps.map((step, index) => {
-                    const Icon = step.icon;
-                    const isActive = step.isActive;
-                    const isCompleted = step.isCompleted;
-                    
-                    return (
-                      <Link
-                        key={step.key}
-                        to={step.path}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 text-sm whitespace-nowrap transition-colors relative ${
-                          isActive 
-                            ? 'font-medium text-gray-900 dark:text-gray-100' 
-                            : isCompleted
-                            ? 'text-gray-600 dark:text-gray-400'
-                            : 'text-gray-400 dark:text-gray-600'
-                        }`}
-                      >
-                        {index > 0 && (
-                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-px h-4 bg-gray-200 dark:bg-gray-700" />
-                        )}
-                        <Icon className={`w-4 h-4 ${isActive ? 'text-scout-accent-600' : ''}`} />
-                        <span>{step.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {/* Subtitle - cleaner presentation */}
-          {subtitle && !hasSecondRow && (
-            <div className="pb-2 -mt-1">
-              <p className="text-sm text-gray-600 dark:text-gray-400 px-1">
-                {subtitle}
-              </p>
-            </div>
-          )}
         </div>
       </header>
 
