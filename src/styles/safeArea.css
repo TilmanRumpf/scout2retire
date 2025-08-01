@@ -1,20 +1,5 @@
 /* Safe Area CSS for iPhone Support */
 
-/* For PWA/Standalone mode - add extra space for status bar */
-@media (display-mode: standalone) {
-  /* When app is installed to home screen */
-  :root {
-    --pwa-header-offset: 20px; /* Standard status bar height */
-  }
-}
-
-/* For browser mode */
-@media not all and (display-mode: standalone) {
-  :root {
-    --pwa-header-offset: 0px;
-  }
-}
-
 /* Utility classes for safe area padding */
 .safe-top {
   padding-top: env(safe-area-inset-top);
