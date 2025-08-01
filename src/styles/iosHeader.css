@@ -19,7 +19,7 @@
   }
 }
 
-/* Professional iOS header implementation */
+/* Professional header implementation - default for all platforms */
 .ios-header {
   position: sticky;
   top: 0;
@@ -34,6 +34,27 @@
   
   /* Ensure minimum height */
   min-height: calc(var(--header-height) + var(--safe-top));
+}
+
+/* iOS-specific overrides - ONLY for iOS devices */
+@supports (-webkit-touch-callout: none) and (not (overflow: -webkit-marquee)) and (-webkit-tap-highlight-color: transparent) {
+  .ios-header {
+    /* Fixed position on iOS to prevent scroll-under */
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+  
+  /* Do not add padding to body - causes issues with other layouts */
+  /* Instead, we'll use a spacer element or page-specific padding */
+  
+  /* Ensure content doesn't jump when header becomes fixed */
+  .ios-content-wrapper {
+    /* This class can be added to main content areas */
+    margin-top: 0;
+  }
 }
 
 /* Dark mode support */
@@ -64,24 +85,26 @@
   user-select: auto;
 }
 
-/* PWA/Standalone mode adjustments */
-@media (display-mode: standalone) {
-  .ios-header {
-    /* In PWA mode, status bar is translucent, so we see through it */
-    /* Add a background extension */
-    position: relative;
-  }
-  
-  .ios-header::before {
-    content: '';
-    position: absolute;
-    top: calc(-1 * var(--safe-top));
-    left: 0;
-    right: 0;
-    height: var(--safe-top);
-    background: inherit;
-    backdrop-filter: inherit;
-    -webkit-backdrop-filter: inherit;
+/* iOS-specific adjustments for PWA/Standalone mode */
+@supports (-webkit-touch-callout: none) and (not (overflow: -webkit-marquee)) and (-webkit-tap-highlight-color: transparent) {
+  @media (display-mode: standalone) {
+    .ios-header {
+      /* In PWA mode, extend background to cover status bar */
+      position: fixed;
+    }
+    
+    .ios-header::before {
+      content: '';
+      position: absolute;
+      top: calc(-1 * var(--safe-top));
+      left: 0;
+      right: 0;
+      height: var(--safe-top);
+      background: inherit;
+      backdrop-filter: inherit;
+      -webkit-backdrop-filter: inherit;
+      z-index: -1;
+    }
   }
 }
 
@@ -98,4 +121,26 @@
 .ios-header {
   max-height: 10vh;
   max-height: 10dvh; /* Dynamic viewport height */
+}
+
+/* Main content spacing for iOS devices with fixed header */
+@supports (-webkit-touch-callout: none) and (not (overflow: -webkit-marquee)) and (-webkit-tap-highlight-color: transparent) {
+  /* Header spacer - only takes up space on iOS */
+  .ios-header-spacer {
+    height: calc(var(--header-height) + var(--safe-top));
+    width: 100%;
+    flex-shrink: 0;
+  }
+  
+  /* Alternative: class for pages that need spacing */
+  .ios-page-content {
+    padding-top: calc(var(--header-height) + var(--safe-top));
+  }
+}
+
+/* Non-iOS devices - spacer has no height */
+@supports not ((-webkit-touch-callout: none) and (not (overflow: -webkit-marquee)) and (-webkit-tap-highlight-color: transparent)) {
+  .ios-header-spacer {
+    display: none;
+  }
 }
