@@ -518,7 +518,7 @@ export default function TownDiscovery() {
         onReset={() => window.location.reload()}
       >
         {/* Main content - reduced top padding */}
-        <main className="max-w-7xl mx-auto px-4 py-3">
+        <main className="pt-16 max-w-7xl mx-auto px-4 py-3">
         {error && (
           <div className={`${uiConfig.colors.statusError} border ${uiConfig.colors.borderDanger} p-4 ${uiConfig.layout.radius.lg} mb-6`}>
             {typeof error === 'string' ? error : (error?.message || error?.text || 'An error occurred')}

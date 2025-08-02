@@ -105,18 +105,26 @@ export default function MasterSchedule() {
       const retirementYear = retirementDate.getFullYear();
       const monthsToRetirement = (retirementYear - currentDate.getFullYear()) * 12 - currentMonth;
       
-      // Helper to ensure dates are in the future with minimum delays
+      // Helper to ensure dates are ALWAYS in the future with minimum delays
       const getFutureDate = (monthsFromNow, minimumDays = 30) => {
-        const date = new Date();
+        const today = new Date();
         const targetDate = new Date();
         targetDate.setMonth(targetDate.getMonth() + monthsFromNow);
         
-        // Ensure minimum days in future
+        // Ensure minimum days in future from TODAY
         const minDate = new Date();
         minDate.setDate(minDate.getDate() + minimumDays);
         
-        // Return the later of the two dates
+        // CRITICAL: Always use the LATER date to prevent past dates
         const finalDate = targetDate > minDate ? targetDate : minDate;
+        
+        // EXTRA SAFETY: If somehow still in past, use minimum future date
+        if (finalDate <= today) {
+          const safeDate = new Date();
+          safeDate.setDate(safeDate.getDate() + minimumDays);
+          return safeDate.toISOString().split('T')[0];
+        }
+        
         return finalDate.toISOString().split('T')[0];
       };
       
@@ -431,7 +439,7 @@ export default function MasterSchedule() {
       />
       <HeaderSpacer />
 
-      <main className="max-w-7xl mx-auto px-4 pt-8 pb-6 space-y-6">
+      <main className="pt-16 max-w-7xl mx-auto px-4 pt-8 pb-6 space-y-6">
         {/* Retirement Year Banner */}
         {userRetirementYear && (
           <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-6 text-center border-2 border-scout-accent-500`}>

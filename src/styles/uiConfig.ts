@@ -53,6 +53,9 @@ export const colors = {
   // Focus states - iOS-style focus rings
   focusRing: 'focus:ring-2 focus:ring-scout-accent-400 focus:ring-opacity-50 dark:focus:ring-scout-accent-500',
   focusRingDanger: 'focus:ring-2 focus:ring-red-400 focus:ring-opacity-50 dark:focus:ring-red-500',
+  
+  // Hover states
+  hoverBg: 'hover:bg-gray-50 dark:hover:bg-gray-700',
 };
 
 export const font = {
@@ -249,6 +252,56 @@ export const bottomNavigation = {
     container: 'flex justify-between items-center pt-8 mt-8 border-t border-gray-200 dark:border-gray-700',
     backButton: 'inline-flex items-center px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-scout-accent-400 focus:ring-offset-2 transition-all duration-200',
     nextButton: 'inline-flex items-center px-4 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-scout-accent-500 hover:bg-scout-accent-600 dark:bg-scout-accent-400 dark:hover:bg-scout-accent-500 focus:outline-none focus:ring-2 focus:ring-scout-accent-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
+  }
+};
+
+// Header/Top Navigation Configuration - Added 02AUG25
+export const header = {
+  // Heights for different header types
+  heights: {
+    mobile: 'h-14',        // 56px - Standard mobile header
+    desktop: 'h-16',       // 64px - Desktop header
+    withSearch: 'h-20',    // 80px - Header with search bar
+    compact: 'h-12',       // 48px - Compact header
+  },
+  
+  // Actual pixel values for padding calculations
+  heightValues: {
+    mobile: 56,
+    desktop: 64,
+    withSearch: 80,
+    compact: 48,
+  },
+  
+  // Content padding to prevent overlap
+  contentPadding: {
+    mobile: 'pt-14',       // Matches mobile header height
+    desktop: 'pt-16',      // Matches desktop header height
+    withSearch: 'pt-20',   // Matches header with search
+    compact: 'pt-12',      // Matches compact header
+  },
+  
+  // Header styles - using existing color tokens
+  styles: {
+    container: `${colors.card} ${layout.shadow.sm} sticky top-0 z-30`,
+    innerContainer: 'max-w-7xl mx-auto px-4 py-3',
+    title: `text-xl font-bold ${colors.heading}`,
+    
+    // For headers with back buttons
+    withBackButton: 'flex items-center justify-between',
+    backButton: `p-2 -ml-2 ${layout.radius.lg} ${colors.hoverBg} ${animation.transition}`,
+    
+    // For headers with actions
+    actionButton: `p-2 ${layout.radius.lg} ${colors.hoverBg} ${animation.transition}`,
+    actionIcon: `h-6 w-6 ${colors.muted}`,
+  },
+  
+  // Z-index hierarchy
+  zIndex: {
+    header: 'z-30',           // Main header
+    dropdown: 'z-40',         // Dropdowns from header
+    mobileMenu: 'z-50',       // Mobile menu overlay
+    hamburgerButton: 'z-[60]', // Hamburger button (higher than menu)
   }
 };
 
@@ -617,6 +670,7 @@ export const uiConfig = {
   icons,
   stepNavigation, // Updated 10JUN25: Fixed step definitions
   bottomNavigation, // Added 10JUN25: Bottom navigation patterns
+  header, // Added 02AUG25: Header/top navigation configuration
   components, // Updated 10JUN25: Enhanced form styling
   financial,
   progress,

@@ -413,7 +413,7 @@ export default function DailyRedesignV2() {
         fallbackMessage="We're having trouble loading your dashboard. Please try refreshing the page."
         onReset={() => window.location.reload()}
       >
-        <main className="max-w-7xl mx-auto px-4 py-6 space-y-8">
+        <main className="pt-16 max-w-7xl mx-auto px-4 py-6 space-y-8">
           {/* Split Section: Featured Town and Today's Inspiration */}
           <section className="grid lg:grid-cols-2 gap-6">
             {/* Left: Featured Town */}

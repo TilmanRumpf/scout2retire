@@ -294,7 +294,7 @@ export default function Favorites() {
         }}
       />
 
-      <main className="max-w-7xl mx-auto px-4 py-3">
+      <main className="pt-16 max-w-7xl mx-auto px-4 py-3">
         {favorites.length === 0 ? (
           <div className="text-center py-12">
             <svg xmlns="http://www.w3.org/2000/svg" className={`mx-auto h-24 w-24 ${uiConfig.colors.muted} mb-6`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
