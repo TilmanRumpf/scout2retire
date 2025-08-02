@@ -1,0 +1,13 @@
+{
+	"servers": {
+		"Ref": {
+			"type": "http",
+			"url": "https://api.ref.tools/mcp?apiKey=ref-314b702f2bc9d69198fe"
+		},
+		"my-mcp-server-1342801b": {
+			"url": "https://api.ref.tools/mcp?apiKey=ref-314b702f2bc9d69198fe",
+			"type": "http"
+		}
+	},
+	"inputs": []
+}
