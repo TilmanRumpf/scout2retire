@@ -1,3 +1,22 @@
+# ⚠️ MANDATORY BEFORE ANY UI WORK ⚠️
+
+STOP! Before writing ANY UI code:
+1. OPEN and READ /src/styles/DESIGN_STANDARDS.md
+2. IMPORT uiConfig: import { uiConfig } from '../styles/uiConfig';
+3. USE ONLY classes from uiConfig - NO hardcoded colors!
+
+FORBIDDEN:
+❌ className="text-gray-500" 
+❌ className="bg-white"
+❌ Any color not from uiConfig
+
+REQUIRED:
+✅ className={uiConfig.components.button}
+✅ className={uiConfig.text.primary}
+✅ Use scout-accent-300 (#8fbc8f) for EVERYTHING green
+
+If you write even ONE hardcoded color, you have FAILED.
+
 # Scout2Retire Development Guide - v2.0
 
 ## 🚨 CLAUDE CODE: YOU HAVE DIRECT SUPABASE ACCESS!

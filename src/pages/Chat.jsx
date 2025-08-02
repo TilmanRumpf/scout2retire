@@ -1058,7 +1058,7 @@ export default function Chat() {
         fallbackMessage="We're having trouble loading the chat. Please try refreshing the page."
         onReset={() => window.location.reload()}
       >
-        <main className={`${uiConfig.layout.width.containerWide} px-4 py-6`}>
+        <main className={`pt-16 ${uiConfig.layout.width.containerWide} px-4 py-6`}>
           <div className="flex flex-col md:flex-row gap-6">
           {/* Sidebar */}
           <div className="w-full md:w-64 space-y-4">

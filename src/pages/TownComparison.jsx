@@ -776,7 +776,7 @@ export default function TownComparison() {
       />
 
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="pt-16 max-w-7xl mx-auto px-4 py-6">
         {/* Error message */}
         {error && (
           <div className={`${uiConfig.colors.statusError} border ${uiConfig.colors.borderDanger.replace('border-', '')} p-4 rounded-lg mb-6`}>

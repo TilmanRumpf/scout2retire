@@ -198,7 +198,7 @@ export default function Journal() {
         ]}
       />
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="pt-16 max-w-7xl mx-auto px-4 py-6">
         {/* Date filter */}
         <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 mb-6`}>
           <div className="flex justify-between items-center">
