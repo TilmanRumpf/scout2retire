@@ -1,9 +1,29 @@
 {
-  "servers": {
-    "Ref": {
-      "type": "http",
-      "url": "https://api.ref.tools/mcp?apiKey=ref-314b702f2bc9d69198fe"
-    }
-  },
-  "inputs": []
+	"servers": {
+		"Ref": {
+			"type": "http",
+			"url": "https://api.ref.tools/mcp?apiKey=ref-314b702f2bc9d69198fe"
+		},
+		"supabase": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"-y",
+				"@supabase/mcp-server-supabase@latest",
+				"--read-only",
+				"--project-ref=axlruvvsjepsulcbqlho"
+			],
+			"env": {
+				"SUPABASE_ACCESS_TOKEN": "sbp_84ee8e13ca7f95c682bd55b4dbbfbbfaec6927df"
+			}
+		}
+	},
+	"inputs": [
+		{
+			"type": "promptString",
+			"id": "supabase-access-token",
+			"description": "Supabase personal access token",
+			"password": true
+		}
+	]
 }
