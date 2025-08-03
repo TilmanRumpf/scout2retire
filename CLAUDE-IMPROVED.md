@@ -10,23 +10,6 @@
 **Claude Code, state this at start of every session:**
 *"I have direct Supabase access via service key and MCP servers in Agent Mode. CLI commands (npx supabase, psql) don't work for me. For DDL operations, I provide SQL for manual execution."*
 
-## 🛠️ VS Code Environment Awareness
-**Claude Code: You have access to these specific tools:**
-
-### Installed Extensions
-- **Claude Code for VSCode** (Anthropic) - Your primary interface
-- **Container Tools** (Microsoft) - For containerized development
-- **npm Intellisense** - Auto-completion for npm modules
-- **markdownlint** - Markdown linting and style checking
-
-### MCP Servers Available (Agent Mode Only)
-- **Supabase** - Direct database queries and schema operations
-- **Playwright** (Microsoft) - Web browser automation, testing, data extraction
-- **DeepWiki** (Kevin Kern) - GitHub repository information extraction
-- **Ref** - Technical documentation and API reference lookup
-
-**CRITICAL:** These MCP servers only work in Agent Mode. Always switch to Agent Mode to access them.
-
 ---
 
 ## 🛡️ Safety Protocol (Non-Negotiable)
@@ -97,14 +80,11 @@ const { data } = await supabase.from('towns').select('*');
 - `psql` commands
 - CLI-based operations
 
-### MCP Server Usage Examples
-```
-# Agent Mode examples
-"Show me database tables and suggest optimizations"
-"Test the user onboarding flow end-to-end"  
-"Research best practices for 55+ user interfaces"
-"Find latest Supabase performance documentation"
-```
+### MCP Servers Available (Agent Mode)
+- **Supabase:** Direct database queries via natural language
+- **Playwright:** Automated testing and browser automation
+- **DeepWiki:** Research and knowledge extraction  
+- **Ref:** Technical documentation lookup
 
 ---
 
@@ -206,6 +186,15 @@ node claude-db-helper.js  # Quick status check
 # Create analysis scripts and run them
 echo "console.log('Analysis results:', data)" > analyze.js
 node analyze.js
+```
+
+### MCP-Enhanced Development
+```
+# Agent Mode examples
+"Show me database tables and suggest optimizations"
+"Test the user onboarding flow end-to-end"  
+"Research best practices for 55+ user interfaces"
+"Find latest Supabase performance documentation"
 ```
 
 ### Real-Time Problem Solving
