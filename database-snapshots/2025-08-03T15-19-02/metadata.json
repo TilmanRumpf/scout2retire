@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-08-03T15:19:04.499Z",
+  "tables": [
+    "users",
+    "towns",
+    "user_preferences",
+    "favorites",
+    "shared_towns",
+    "notifications",
+    "invitations",
+    "reviews"
+  ],
+  "project_id": "axlruvvsjepsulcbqlho",
+  "purpose": "Pre-aggressive-changes backup",
+  "restore_instructions": "Use restore-database-snapshot.js with this timestamp"
+}
