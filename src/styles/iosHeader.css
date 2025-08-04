@@ -105,3 +105,10 @@
   width: 100%;
   flex-shrink: 0;
 }
+
+/* Header spacer when filters are present (two rows) */
+.ios-header-spacer-with-filters {
+  height: calc(var(--header-height) * 2 + var(--safe-top));
+  width: 100%;
+  flex-shrink: 0;
+}
