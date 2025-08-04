@@ -143,8 +143,8 @@
 /* Tablet and larger screens need consistent spacing */
 @media (min-width: 1024px) {
   .ios-header-spacer-with-filters {
-    /* Increased spacing for desktop to prevent overlap */
-    height: 130px;
-    min-height: 130px;
+    /* MASSIVE spacing to finally stop the overlap on desktop Chrome */
+    height: 200px !important;
+    min-height: 200px !important;
   }
 }
