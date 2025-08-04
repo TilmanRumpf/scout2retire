@@ -143,12 +143,8 @@
 /* Tablet and larger screens need consistent spacing */
 @media (min-width: 1024px) {
   .ios-header-spacer-with-filters {
-    /* Fallback for older browsers */
-    height: 106px; /* 44px header + 62px filter area */
-    min-height: 106px;
-    
-    /* Slightly more space for desktop layout */
-    height: calc(var(--header-height) + var(--safe-top) + 62px);
-    min-height: calc(var(--header-height) + var(--safe-top) + 62px);
+    /* Increased spacing for desktop to prevent overlap */
+    height: 130px;
+    min-height: 130px;
   }
 }
