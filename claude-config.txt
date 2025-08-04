@@ -1,0 +1,74 @@
+PROJECT INFO FOR CLAUDE
+=====================
+Website URL: https://scout2retire.vercel.app/
+Local Dev URL: http://localhost:5173
+Code Location: /Users/tilmanrumpf/Desktop/scout2retire
+Supabase Project: axlruvvsjepsulcbqlho
+
+File Structure:
+- /src (main code files)
+- /public (images and static files)
+- /scripts (utility and data scripts)
+- /supabase (migrations and functions)
+- /towns-updater (town data management)
+- /anthropic-api (API integration)
+- /database-snapshots (backup data)
+- /docs (documentation)
+- /.vscode (VS Code config including MCP servers)
+
+Critical Files to Know:
+
+DOCUMENTATION:
+- CLAUDE.md (project instructions - READ FIRST!)
+- /src/styles/DESIGN_STANDARDS.md (UI design system)
+- MATCHING_ALGORITHM_GUIDE.md (matching system docs)
+- SAFE_RETURN_POINTS.md (backup procedures)
+
+CONFIGURATION:
+- .env (environment variables and API keys)
+- package.json (dependencies and scripts)
+- vite.config.js (build configuration)
+- tailwind.config.js (styling config)
+- vercel.json (deployment config)
+- /.vscode/mcp.json (MCP servers config)
+
+DATABASE:
+- claude-db-helper.js (database access utility)
+- create-database-snapshot.js (backup script)
+- restore-database-snapshot.js (restore script)
+- /supabase/migrations/ (all migration files)
+- online_schema.sql (current schema)
+
+CORE COMPONENTS:
+- /src/App.jsx (main app component)
+- /src/components/AuthenticatedLayout.jsx (auth wrapper)
+- /src/components/TownCard.jsx (town display)
+- /src/components/DailyTownCard.jsx (daily feature)
+- /src/components/FilterBarV3.jsx (filtering)
+- /src/components/ScottyGuide.jsx (AI assistant)
+- /src/components/UnifiedHeader.jsx (main header)
+
+KEY PAGES:
+- /src/pages/Home.jsx (landing page)
+- /src/pages/Login.jsx & SignupEnhanced.jsx (auth)
+- /src/pages/DailyRedesignV2.jsx (daily town)
+- /src/pages/Favorites.jsx (user favorites)
+- /src/pages/TownDiscovery.jsx (browse towns)
+- /src/pages/ProfileUnified.jsx (user profile)
+- /src/pages/Chat.jsx (Scotty chat)
+- /src/pages/onboarding/* (all onboarding steps)
+
+CRITICAL UTILITIES:
+- /src/utils/supabaseClient.js (Supabase connection)
+- /src/utils/matchingAlgorithm.js (core matching)
+- /src/utils/enhancedMatchingAlgorithm.js (enhanced matching)
+- /src/utils/authUtils.js (authentication)
+- /src/utils/scottyContext.js (AI context)
+- /src/utils/onboardingUtils.js (onboarding logic)
+- /src/utils/userPreferences.js (preferences)
+- /src/utils/emailUtils.js (email functions)
+
+STYLING:
+- /src/styles/uiConfig.ts (design system config)
+- /src/index.css (global styles)
+- /src/styles/*.css (component styles)
