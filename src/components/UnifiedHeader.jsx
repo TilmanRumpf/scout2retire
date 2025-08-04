@@ -121,7 +121,7 @@ export default function UnifiedHeader({
             
             {/* Desktop Search and Filters - only on larger screens */}
             {hasSecondRow && showFilters && (
-              <div className="hidden md:block py-2">
+              <div className="filter-row hidden md:block py-2">
                 <FilterBarV3 {...filterProps} />
               </div>
             )}
