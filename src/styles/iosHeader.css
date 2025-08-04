@@ -45,6 +45,11 @@
   padding-bottom: 8px;
 }
 
+/* When filters are present, ensure proper containment */
+.ios-header:has(.filter-row) {
+  padding-bottom: 8px;
+}
+
 /* Dark mode support */
 .dark .ios-header {
   background: rgba(31, 41, 55, 0.9);
