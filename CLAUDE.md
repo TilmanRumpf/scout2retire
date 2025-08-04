@@ -6,6 +6,27 @@
 2. IMPORT: `import { uiConfig } from '../styles/uiConfig';`
 3. USE ONLY: `className={uiConfig.components.button}` - NO hardcoded colors
 
+### 🎨 DESIGN COHERENCE IS TOP PRIORITY
+**STOP creating random UI elements!**
+- **ALWAYS** look at existing patterns FIRST
+- **COPY** existing design patterns EXACTLY - be a professional copycat
+- **CONSISTENCY** across entire site, not random bits here and there
+- **ASK** before creating new patterns: "Does this already exist somewhere?"
+
+### 💯 BRUTAL HONESTY & PARTNERSHIP
+**User needs:**
+- **HONEST FEEDBACK**: "Your design doesn't match AT ALL" not "Let me adjust this"
+- **TRUE PARTNERSHIP**: Guide them, don't just execute blindly
+- **PROFESSIONAL COPYCAT**: Match existing patterns 100%, not 70%
+- **HELP & GUIDANCE**: They're asking for help, provide expertise
+
+**Example of good partnership:**
+```
+"I see the Discover page has an integrated filter bar in the header.
+Your Compare page should match this EXACTLY, not have a separate toolbar.
+Let me show you the existing pattern and copy it properly."
+```
+
 ## 🚨 Essential Acknowledgment
 **Claude Code, state this at start of every session:**
 *"I have direct Supabase access via service key and MCP servers in Agent Mode. CLI commands (npx supabase, psql) don't work for me. For DDL operations, I provide SQL for manual execution."*

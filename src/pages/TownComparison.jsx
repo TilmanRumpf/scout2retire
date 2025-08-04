@@ -5,7 +5,6 @@ import { getCurrentUser } from '../utils/authUtils';
 import TownRadarChart from '../components/TownRadarChart';
 import LikeButton from '../components/LikeButton';
 import UnifiedHeader from '../components/UnifiedHeader';
-import ComparisonToolbar from '../components/ComparisonToolbar';
 import { Eye, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
@@ -796,18 +795,15 @@ export default function TownComparison() {
           isActive: activeCategory === category.id,
           onClick: () => setActiveCategory(category.id)
         }))}
+        showComparison={true}
+        comparisonProps={{
+          towns: towns,
+          onRemoveTown: handleRemoveTown,
+          maxTowns: 3
+        }}
       />
 
-      {/* Comparison Toolbar - shows current towns and allows editing */}
-      {towns.length > 0 && (
-        <ComparisonToolbar 
-          towns={towns}
-          onRemoveTown={handleRemoveTown}
-          maxTowns={3}
-        />
-      )}
-
-      <main className={`${towns.length > 0 ? 'pt-32' : 'pt-16'} max-w-7xl mx-auto px-4 py-6`}>
+      <main className="pt-16 max-w-7xl mx-auto px-4 py-6">
         {/* Error message */}
         {error && (
           <div className={`${uiConfig.colors.statusError} border ${uiConfig.colors.borderDanger.replace('border-', '')} p-4 rounded-lg mb-6`}>

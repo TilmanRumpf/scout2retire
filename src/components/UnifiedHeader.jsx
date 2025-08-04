@@ -25,6 +25,8 @@ import Logo from './Logo';
  * @param {Array} props.tabs - Array of tab objects with {id, label, icon?, isActive, onClick}
  * @param {Array} props.steps - Array of step objects with {id, key, label, path, icon, isActive?, isCompleted?}
  * @param {string} props.stepContext - Additional context for steps (e.g., "3 of 7")
+ * @param {boolean} props.showComparison - Whether to show comparison controls
+ * @param {Object} props.comparisonProps - All comparison-related props
  */
 export default function UnifiedHeader({
   title,
@@ -33,6 +35,8 @@ export default function UnifiedHeader({
   filteredCount,
   showFilters = false,
   filterProps = {},
+  showComparison = false,
+  comparisonProps = {},
   tabs = [],
   steps = [],
   stepContext = '',
@@ -50,8 +54,8 @@ export default function UnifiedHeader({
   }, [location.pathname]);
 
   // Determine what type of second row to show
-  const hasSecondRow = showFilters || tabs.length > 0 || steps.length > 0;
-  const secondRowType = showFilters ? 'filters' : tabs.length > 0 ? 'tabs' : steps.length > 0 ? 'steps' : null;
+  const hasSecondRow = showFilters || showComparison || tabs.length > 0 || steps.length > 0;
+  const secondRowType = showFilters ? 'filters' : showComparison ? 'comparison' : tabs.length > 0 ? 'tabs' : steps.length > 0 ? 'steps' : null;
 
   const handleMenuClick = (e) => {
     e.preventDefault();
@@ -123,6 +127,53 @@ export default function UnifiedHeader({
             {hasSecondRow && showFilters && (
               <div className="filter-row hidden md:block py-2">
                 <FilterBarV3 {...filterProps} />
+              </div>
+            )}
+            
+            {/* Comparison Controls - both mobile and desktop */}
+            {hasSecondRow && showComparison && comparisonProps.towns && (
+              <div className="filter-row py-2">
+                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+                  {/* Town count */}
+                  <span className="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0">
+                    {comparisonProps.towns.length}/{comparisonProps.maxTowns || 3}
+                  </span>
+                  
+                  {/* Town pills */}
+                  {comparisonProps.towns.map((town) => (
+                    <div
+                      key={town.id}
+                      className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full text-sm"
+                    >
+                      <MapPin className="w-3 h-3 text-scout-accent-600" />
+                      <span className="text-gray-900 dark:text-white">{town.name}</span>
+                      <button
+                        onClick={() => comparisonProps.onRemoveTown(town.id)}
+                        className="ml-1 text-gray-400 hover:text-red-500 transition-colors"
+                        aria-label={`Remove ${town.name}`}
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  
+                  {/* Add town button */}
+                  {comparisonProps.towns.length < (comparisonProps.maxTowns || 3) && (
+                    <button
+                      onClick={() => navigate('/favorites')}
+                      className="flex-shrink-0 px-3 py-1.5 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 border border-scout-accent-200 dark:border-scout-accent-800 rounded-full text-sm hover:bg-scout-accent-100 dark:hover:bg-scout-accent-900/30 transition-colors"
+                    >
+                      + Add Town
+                    </button>
+                  )}
+                  
+                  {/* Max reached */}
+                  {comparisonProps.towns.length >= (comparisonProps.maxTowns || 3) && (
+                    <span className="text-sm text-gray-500 dark:text-gray-400 italic flex-shrink-0">
+                      Maximum reached
+                    </span>
+                  )}
+                </div>
               </div>
             )}
         </div>
