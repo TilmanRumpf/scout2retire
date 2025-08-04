@@ -117,11 +117,14 @@
   height: calc(var(--header-height) + 60px + var(--safe-top));
   width: 100%;
   flex-shrink: 0;
+  display: block;
+  visibility: hidden;
 }
 
 /* Desktop: needs more space for the filter row */
 @media (min-width: 768px) {
   .ios-header-spacer-with-filters {
-    height: calc(var(--header-height) + 80px + var(--safe-top));
+    height: 120px !important; /* Fixed height for desktop - no safe area needed */
+    min-height: 120px !important;
   }
 }
