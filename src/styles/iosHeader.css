@@ -112,19 +112,43 @@
 }
 
 /* Header spacer when filters are present (two rows) */
-/* Mobile: smaller spacing */
 .ios-header-spacer-with-filters {
-  height: calc(var(--header-height) + 60px + var(--safe-top));
+  /* Fallback for browsers without CSS custom property support */
+  height: 108px; /* 44px header + 64px filter area */
+  min-height: 108px;
+  
+  /* Modern calculation: header height + filter row height + safe area + padding */
+  height: calc(var(--header-height) + var(--safe-top) + 64px);
+  min-height: calc(var(--header-height) + var(--safe-top) + 64px);
+  
   width: 100%;
   flex-shrink: 0;
   display: block;
   visibility: hidden;
 }
 
-/* Desktop: needs more space for the filter row */
+/* Desktop: account for larger filter row and different layout */
 @media (min-width: 768px) {
   .ios-header-spacer-with-filters {
-    height: 120px !important; /* Fixed height for desktop - no safe area needed */
-    min-height: 120px !important;
+    /* Fallback for older browsers */
+    height: 102px; /* 44px header + 58px filter area */
+    min-height: 102px;
+    
+    /* Header (44px) + filter row with padding (~52px) + safe area + buffer */
+    height: calc(var(--header-height) + var(--safe-top) + 58px);
+    min-height: calc(var(--header-height) + var(--safe-top) + 58px);
+  }
+}
+
+/* Tablet and larger screens need consistent spacing */
+@media (min-width: 1024px) {
+  .ios-header-spacer-with-filters {
+    /* Fallback for older browsers */
+    height: 106px; /* 44px header + 62px filter area */
+    min-height: 106px;
+    
+    /* Slightly more space for desktop layout */
+    height: calc(var(--header-height) + var(--safe-top) + 62px);
+    min-height: calc(var(--header-height) + var(--safe-top) + 62px);
   }
 }
