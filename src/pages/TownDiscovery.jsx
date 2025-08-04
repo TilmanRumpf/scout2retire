@@ -517,8 +517,8 @@ export default function TownDiscovery() {
         fallbackMessage="We're having trouble loading town recommendations. Please try refreshing the page."
         onReset={() => window.location.reload()}
       >
-        {/* Main content - reduced top padding */}
-        <main className="pt-16 max-w-7xl mx-auto px-4 py-3">
+        {/* Main content - no top padding since HeaderSpacer handles it */}
+        <main className="max-w-7xl mx-auto px-4 py-3">
         {error && (
           <div className={`${uiConfig.colors.statusError} border ${uiConfig.colors.borderDanger} p-4 ${uiConfig.layout.radius.lg} mb-6`}>
             {typeof error === 'string' ? error : (error?.message || error?.text || 'An error occurred')}
