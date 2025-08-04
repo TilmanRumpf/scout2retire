@@ -509,8 +509,8 @@ export default function TownDiscovery() {
         }}
       />
       
-      {/* Spacer for iOS fixed header - no effect on other platforms */}
-      <HeaderSpacer />
+      {/* Spacer for fixed header with filters */}
+      <HeaderSpacer hasFilters={true} />
 
       <PageErrorBoundary
         fallbackTitle="Discovery Error"
