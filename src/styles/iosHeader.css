@@ -45,11 +45,6 @@
   padding-bottom: 8px;
 }
 
-/* When filters are present, ensure proper containment */
-.ios-header:has(.filter-row) {
-  padding-bottom: 8px;
-}
-
 /* Dark mode support */
 .dark .ios-header {
   background: rgba(31, 41, 55, 0.9);
@@ -117,15 +112,16 @@
 }
 
 /* Header spacer when filters are present (two rows) */
+/* Header (44px) + header padding-bottom (8px) + filter row (52px) = 104px total */
 .ios-header-spacer-with-filters {
-  height: calc(var(--header-height) + 56px + var(--safe-top));
+  height: calc(var(--header-height) + 60px + var(--safe-top));
   width: 100%;
   flex-shrink: 0;
 }
 
-/* Medium screens and up need more space for desktop filter layout */
+/* Medium screens and up have the same filter height */
 @media (min-width: 768px) {
   .ios-header-spacer-with-filters {
-    height: calc(var(--header-height) + 72px + var(--safe-top));
+    height: calc(var(--header-height) + 60px + var(--safe-top));
   }
 }
