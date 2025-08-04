@@ -121,13 +121,9 @@
 
 /* Header spacer when filters are present (two rows) */
 .ios-header-spacer-with-filters {
-  /* PRODUCTION FIX: Use fixed values as fallback for Vercel */
-  height: 108px;
-  min-height: 108px;
-  
-  /* Then try calc for browsers that support it */
-  height: calc(var(--header-height, 44px) + var(--safe-top, 0px) + 64px);
-  min-height: calc(var(--header-height, 44px) + var(--safe-top, 0px) + 64px);
+  /* Fixed height: header (44px) + filter row (40px) + tiny gap (4px) = 88px */
+  height: 88px;
+  min-height: 88px;
   
   width: 100%;
   flex-shrink: 0;
@@ -135,20 +131,20 @@
   visibility: hidden;
 }
 
-/* Desktop: ensure enough space on MacBook/desktop screens */
+/* Desktop: same height */
 @media (min-width: 768px) {
   .ios-header-spacer-with-filters {
-    /* VERCEL FIX: More aggressive spacing for desktop */
-    height: 120px !important;
-    min-height: 120px !important;
+    /* Consistent 88px */
+    height: 88px;
+    min-height: 88px;
   }
 }
 
-/* For very large screens like MacBook Air */
+/* Large screens: same height */
 @media (min-width: 1024px) {
   .ios-header-spacer-with-filters {
-    /* VERCEL FIX: Even more space for large screens */
-    height: 130px !important;
-    min-height: 130px !important;
+    /* Still 88px */
+    height: 88px;
+    min-height: 88px;
   }
 }
