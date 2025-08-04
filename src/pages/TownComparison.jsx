@@ -5,6 +5,7 @@ import { getCurrentUser } from '../utils/authUtils';
 import TownRadarChart from '../components/TownRadarChart';
 import LikeButton from '../components/LikeButton';
 import UnifiedHeader from '../components/UnifiedHeader';
+import ComparisonToolbar from '../components/ComparisonToolbar';
 import { Eye, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
@@ -170,6 +171,28 @@ export default function TownComparison() {
   // Helper to check if a town is favorited
   const isFavorited = (townId) => {
     return favorites.some(fav => fav.town_id === townId);
+  };
+
+  // Handle removing a town from comparison
+  const handleRemoveTown = (townId) => {
+    setTowns(prev => {
+      const updatedTowns = prev.filter(town => town.id !== townId);
+      
+      // Update URL to reflect the change
+      const remainingTownIds = updatedTowns.map(t => t.id);
+      if (remainingTownIds.length > 0) {
+        navigate(`/compare?towns=${remainingTownIds.join(',')}`, { replace: true });
+      } else {
+        // If no towns left, redirect to favorites
+        setTimeout(() => {
+          navigate('/favorites');
+        }, 1000); // Small delay for animation
+      }
+      
+      return updatedTowns;
+    });
+    
+    toast.success('Town removed from comparison');
   };
 
   // Helper to get the overall rating for a category
@@ -775,8 +798,16 @@ export default function TownComparison() {
         }))}
       />
 
+      {/* Comparison Toolbar - shows current towns and allows editing */}
+      {towns.length > 0 && (
+        <ComparisonToolbar 
+          towns={towns}
+          onRemoveTown={handleRemoveTown}
+          maxTowns={3}
+        />
+      )}
 
-      <main className="pt-16 max-w-7xl mx-auto px-4 py-6">
+      <main className={`${towns.length > 0 ? 'pt-32' : 'pt-16'} max-w-7xl mx-auto px-4 py-6`}>
         {/* Error message */}
         {error && (
           <div className={`${uiConfig.colors.statusError} border ${uiConfig.colors.borderDanger.replace('border-', '')} p-4 rounded-lg mb-6`}>
