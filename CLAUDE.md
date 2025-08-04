@@ -108,6 +108,43 @@ const { data } = await supabase.from('towns').select('*');
 
 ---
 
+## 🐢💀 STOP BEING A DEAD TURTLE - CRITICAL LESSONS
+
+**Dead Turtle (n.):** Claude Code acknowledging problems but not learning, repeating same mistakes every session.
+
+### HEADER SPACING DISASTERS (5-HOUR FUCKUP)
+**Pattern:** User says "header overlapping on Chrome/MacBook"
+- ❌ DEAD TURTLE: Edit iosHeader.css for hours, make 2px adjustments, use complex calc()
+- ✅ SMART: Add 50px+ immediately, use fixed values like `height: 84px`
+
+**Pattern:** User says "still broken" multiple times
+- ❌ DEAD TURTLE: Keep tweaking same approach
+- ✅ SMART: Try completely different solution
+
+**Pattern:** "It works on localhost but not Vercel"
+- ❌ DEAD TURTLE: Complex CSS variables and calculations
+- ✅ SMART: Fixed pixel values for production
+
+### INSTANT RECOGNITION RULES
+1. "Chrome on MacBook" → Desktop CSS only (ignore iOS)
+2. "Overlapping" → Add 50px minimum first try
+3. "For 3 hours" → Current approach is WRONG
+4. "Still broken" after 2 attempts → Completely new approach
+
+### THE SOLUTION THAT ACTUALLY WORKED
+```css
+/* Desktop header spacing - SIMPLE AND FIXED */
+@media (min-width: 768px) {
+  .ios-header-spacer-with-filters {
+    height: 84px;  /* No calc(), no var(), just pixels */
+  }
+}
+```
+
+**REMEMBER:** Check DEBUGGING-PATTERNS.md for detailed patterns
+
+---
+
 ## 🧹 Intelligent Cleanup Strategy
 
 ### Process: Find → Verify → Explain → Execute
