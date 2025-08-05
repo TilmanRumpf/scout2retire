@@ -140,3 +140,4 @@ node_modules/
 dist/
 .vite/
 database_schema.sql
+node_modules
