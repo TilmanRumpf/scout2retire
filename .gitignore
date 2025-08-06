@@ -141,3 +141,6 @@ dist/
 .vite/
 database_schema.sql
 node_modules
+
+# macOS system files
+.DS_Store
