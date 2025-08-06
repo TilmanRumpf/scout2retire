@@ -22,9 +22,12 @@
     "http",
     "net"
   ],
-  "git.autorefresh": false,
+  "git.autorefresh": true,
   "git.enabled": true,
   "git.openRepositoryInParentFolders": "never",
+  "git.countBadge": "tracked",
+  "git.confirmSync": false,
+  "git.enableSmartCommit": false,
   "files.watcherExclude": {
     "**/.git/objects/**": true,
     "**/.git/subtree-cache/**": true,
