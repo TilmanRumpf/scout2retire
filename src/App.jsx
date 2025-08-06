@@ -24,8 +24,7 @@ import TownComparison from "./pages/TownComparison";
 import TownDiscovery from "./pages/TownDiscovery";
 import Chat from "./pages/Chat";
 import Journal from "./pages/Journal";
-import DataImport from "./pages/admin/DataImport";
-import TownManager from "./pages/admin/TownManager";
+import TownsManager from "./pages/admin/towns-manager";
 import HeaderMockup from "./pages/HeaderMockup";
 // import TestClaude from "./components/TestClaude";
 import ScottyGuide from "./components/ScottyGuide";
@@ -296,12 +295,8 @@ const router = createBrowserRouter([
       
       // Admin routes
       {
-        path: "admin/data-import",
-        element: <ProtectedRoute><AuthenticatedLayout><DataImport /></AuthenticatedLayout></ProtectedRoute>
-      },
-      {
-        path: "admin/towns",
-        element: <ProtectedRoute><AuthenticatedLayout><TownManager /></AuthenticatedLayout></ProtectedRoute>
+        path: "admin/towns-manager",
+        element: <ProtectedRoute><AuthenticatedLayout><TownsManager /></AuthenticatedLayout></ProtectedRoute>
       },
       {
         path: "test-onboarding",
