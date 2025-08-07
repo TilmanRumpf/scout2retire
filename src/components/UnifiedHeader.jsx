@@ -96,11 +96,11 @@ export default function UnifiedHeader({
               </div>
               
               
-              {/* Filter button - visible on mobile when filters exist */}
+              {/* Filter button - visible on mobile and tablet when filters exist */}
               {hasSecondRow && showFilters && (
                 <button
                   onClick={() => setIsMobileFiltersOpen(true)}
-                  className="relative p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors md:hidden"
+                  className="relative p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors lg:hidden"
                   aria-label="Filters"
                 >
                   <SlidersHorizontal className="w-5 h-5 text-gray-900 dark:text-gray-100" />
@@ -123,9 +123,9 @@ export default function UnifiedHeader({
               </button>
             </div>
             
-            {/* Desktop Search and Filters - only on larger screens */}
+            {/* Desktop Search and Filters - only on larger screens (desktop only) */}
             {hasSecondRow && showFilters && (
-              <div className="filter-row hidden md:block py-2">
+              <div className="filter-row hidden lg:block py-2">
                 <FilterBarV3 {...filterProps} />
               </div>
             )}
