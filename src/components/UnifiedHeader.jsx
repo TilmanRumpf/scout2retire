@@ -256,9 +256,9 @@ export default function UnifiedHeader({
             {secondRowType === 'steps' && (
               <div className="filter-row pb-2 -mt-1">
                 <div className="relative">
-                  {/* Gradient masks for horizontal scroll */}
-                  <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white/95 dark:from-gray-800/90 to-transparent z-10 pointer-events-none" />
-                  <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-white/95 dark:from-gray-800/90 to-transparent z-10 pointer-events-none" />
+                  {/* Gradient masks for horizontal scroll - match filter-row background */}
+                  <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[rgba(255,255,255,0.95)] dark:from-[rgba(31,41,55,0.9)] to-transparent z-10 pointer-events-none" />
+                  <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[rgba(255,255,255,0.95)] dark:from-[rgba(31,41,55,0.9)] to-transparent z-10 pointer-events-none" />
                   
                   <div ref={scrollContainerRef} className="overflow-x-auto scrollbar-hide">
                     <div className="flex items-center gap-2 px-1">
@@ -306,9 +306,9 @@ export default function UnifiedHeader({
             {secondRowType === 'tabs' && (
               <div className="filter-row pb-2 -mt-1">
                 <div className="relative">
-                  {/* Gradient masks for horizontal scroll on mobile */}
-                  <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white/95 dark:from-gray-800/90 to-transparent z-10 pointer-events-none sm:hidden" />
-                  <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-white/95 dark:from-gray-800/90 to-transparent z-10 pointer-events-none sm:hidden" />
+                  {/* Gradient masks for horizontal scroll on mobile - match filter-row background */}
+                  <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[rgba(255,255,255,0.95)] dark:from-[rgba(31,41,55,0.9)] to-transparent z-10 pointer-events-none sm:hidden" />
+                  <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[rgba(255,255,255,0.95)] dark:from-[rgba(31,41,55,0.9)] to-transparent z-10 pointer-events-none sm:hidden" />
                   
                   <div ref={scrollContainerRef} className="overflow-x-auto scrollbar-hide">
                     <div className="flex items-center gap-1 px-1">

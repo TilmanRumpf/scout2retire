@@ -52,6 +52,10 @@
   /* Ensure consistent height */
   min-height: 48px;
   align-items: center;
+  /* Opaque background matching header */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   /* Add bottom border to the second row instead of main header */
   border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
   /* Extend background slightly to avoid gap */
@@ -59,8 +63,9 @@
   padding-bottom: 1px;
 }
 
-/* Dark mode border for filter row */
+/* Dark mode styling for filter row */
 .dark .filter-row {
+  background: rgba(31, 41, 55, 0.9);
   border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
