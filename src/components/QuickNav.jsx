@@ -213,8 +213,8 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
           right: 0
         }}
       >
-        <div className="px-4 pb-6" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
-          <div className="h-9 flex items-center">
+        <div className="px-4 pb-6" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+          <div className="h-11 flex items-center" style={{ paddingTop: '0.75rem' }}>
             <h2 className={`text-xl font-bold ${uiConfig.colors.heading} s2r-logo`}>
               Scout<span style={{ color: '#f66527' }}>2</span>Retire
             </h2>
