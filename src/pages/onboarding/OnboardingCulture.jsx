@@ -296,7 +296,7 @@ export default function OnboardingCulture() {
 
   // Pace of life options
   const paceOptions = [
-    { value: 'slow', label: 'Relaxed' },
+    { value: 'relaxed', label: 'Relaxed' },
     { value: 'moderate', label: 'Moderate' },
     { value: 'fast', label: 'Fast' }
   ];
