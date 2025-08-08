@@ -27,7 +27,7 @@
   left: 0;
   right: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: 30; /* Reduced from 1000 to allow QuickNav (z-50) to appear above */
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
