@@ -167,10 +167,17 @@ export default function OnboardingLayout() {
       <HeaderSpacer hasFilters={false} />
       
       {/* Content Area with smooth transitions and swipe support */}
-      <main className="relative">
+      <main className="relative min-h-screen">
         {isSwipeableStep ? (
           <SwipeableOnboardingContent onNext={handleNext} onPrevious={handlePrevious}>
-            <div ref={outletRef} className="transition-opacity duration-150 ease-in-out">
+            <div 
+              ref={outletRef} 
+              className="transition-opacity duration-150 ease-in-out min-h-screen"
+              style={{
+                minHeight: 'calc(100vh - 100px)', // Account for header space
+                touchAction: 'pan-y', // Allow vertical scrolling within content
+              }}
+            >
               <Suspense fallback={null}>
                 <Outlet context={{ 
                   onNext: handleNext, 

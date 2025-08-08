@@ -82,12 +82,14 @@
   align-items: center;
 }
 
-/* Prevent tap highlight on iOS */
+/* Prevent tap highlight on iOS - but allow touch events to pass through */
 .ios-header * {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+  /* Don't block touch events */
+  pointer-events: auto;
 }
 
 /* Interactive elements can be selected */
@@ -95,6 +97,12 @@
 .ios-header a {
   -webkit-user-select: auto;
   user-select: auto;
+  pointer-events: auto;
+}
+
+/* Allow touch events to pass through header to content below */
+.ios-header {
+  pointer-events: auto;
 }
 
 /* PWA/Standalone mode adjustments - extend background */

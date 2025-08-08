@@ -11,15 +11,41 @@ export default function SwipeableOnboardingContent({ children, onNext, onPreviou
       console.log('[SWIPE] Detected RIGHT swipe - moving to previous step');
       if (onPrevious) onPrevious();
     },
-    preventScrollOnSwipe: true,
+    onSwiping: (eventData) => {
+      console.log('[SWIPE] Swiping:', eventData);
+    },
+    onTouchStartOrOnMouseDown: () => {
+      console.log('[SWIPE] Touch started');
+    },
+    preventScrollOnSwipe: false, // Allow vertical scrolling
     trackMouse: false, // Don't track mouse for mobile swipes
     trackTouch: true,
-    delta: 30, // Min distance for swipe (lower than default 50)
+    delta: 25, // Lower threshold for easier swipes on mobile
+    swipeDuration: 1000, // Allow slower swipes
+    touchEventOptions: { passive: false }, // Allow preventDefault for iOS
   });
 
-  // Apply handlers to a div that wraps the content
+  // Apply handlers to a div that wraps the content with proper iOS touch configuration
   return (
-    <div {...handlers} style={{ height: '100%', touchAction: 'pan-y' }}>
+    <div 
+      {...handlers} 
+      style={{ 
+        height: '100%', 
+        touchAction: 'pan-y pinch-zoom', // Allow vertical scroll and zoom
+        WebkitUserSelect: 'none',
+        userSelect: 'none',
+        WebkitTouchCallout: 'none',
+        WebkitTapHighlightColor: 'transparent',
+        position: 'relative',
+        zIndex: 1,
+        overscrollBehavior: 'contain', // Prevent overscroll from interfering
+      }}
+      onTouchStart={(e) => {
+        console.log('[SWIPE] Native touch start event');
+        // Ensure touch events are not blocked
+        e.stopPropagation();
+      }}
+    >
       {children}
     </div>
   );
