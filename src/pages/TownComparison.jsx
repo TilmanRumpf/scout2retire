@@ -798,8 +798,8 @@ export default function TownComparison() {
         }))}
       />
       
-      {/* Spacer for fixed header with tabs */}
-      <HeaderSpacer hasFilters={true} />
+      {/* Spacer for fixed header with tabs on both mobile and desktop */}
+      <HeaderSpacer hasFilters={true} hasMobileSecondRow={true} />
 
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Town Selection Section - Mobile and Desktop */}

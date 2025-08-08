@@ -509,8 +509,8 @@ export default function TownDiscovery() {
         }}
       />
       
-      {/* Spacer for fixed header with filters */}
-      <HeaderSpacer hasFilters={true} />
+      {/* Spacer for fixed header - filters on desktop only, icon on mobile */}
+      <HeaderSpacer hasFilters={true} hasMobileSecondRow={false} />
 
       <PageErrorBoundary
         fallbackTitle="Discovery Error"
