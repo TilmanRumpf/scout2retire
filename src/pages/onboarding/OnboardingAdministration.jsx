@@ -6,6 +6,8 @@ import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardin
 import { saveUserPreferences } from '../../utils/userPreferences';
 import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
+import UnifiedHeader from '../../components/UnifiedHeader';
+import HeaderSpacer from '../../components/HeaderSpacer';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
@@ -306,7 +308,11 @@ export default function OnboardingAdministration() {
 
   return (
     <>
-      
+      <UnifiedHeader 
+        title="Administration & Healthcare"
+        stepContext="Step 6 of 8"
+      />
+      <HeaderSpacer hasFilters={false} />
       <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         
         <form onSubmit={handleSubmit} className="py-6">

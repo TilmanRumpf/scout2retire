@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../../utils/authUtils';
 import { getOnboardingProgress } from '../../utils/onboardingUtils';
+import UnifiedHeader from '../../components/UnifiedHeader';
+import HeaderSpacer from '../../components/HeaderSpacer';
 import { 
   MapPin, 
   Globe, 
@@ -195,7 +197,10 @@ export default function OnboardingProgress() {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page}`}>
-      
+      <UnifiedHeader 
+        title="Your Onboarding Progress"
+      />
+      <HeaderSpacer hasFilters={false} />
       <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
           {/* Help text with same formatting as step items */}
           <div className={`mb-6 flex items-center text-sm ${uiConfig.colors.body}`}>
