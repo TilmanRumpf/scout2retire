@@ -6,8 +6,6 @@ import { uiConfig } from '../../styles/uiConfig';
 import { testMatchingInBrowser } from '../../utils/testMatching';
 import TownRadarChart from '../../components/TownRadarChart';
 import LikeButton from '../../components/LikeButton';
-import UnifiedHeader from '../../components/UnifiedHeader';
-import HeaderSpacer from '../../components/HeaderSpacer';
 import toast from 'react-hot-toast';
 import { Sparkles, Trophy, MapPin, DollarSign, Heart, Shield, Sun, Users, Compass } from 'lucide-react';
 
@@ -147,11 +145,6 @@ export default function OnboardingComplete() {
   const currentMatch = topMatches[selectedMatch];
 
   return (
-    <>
-      <UnifiedHeader 
-        title="Your Perfect Matches Await!"
-      />
-      <HeaderSpacer hasFilters={false} />
       <div className={`min-h-screen ${uiConfig.colors.page}`}>
       {/* Hero Section */}
       <div className={`${uiConfig.colors.card} ${uiConfig.layout.shadow.sm}`}>
@@ -432,6 +425,5 @@ export default function OnboardingComplete() {
         </div>
       </div>
     </div>
-    </>
   );
 }

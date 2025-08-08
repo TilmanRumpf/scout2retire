@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../../utils/authUtils';
 import { getOnboardingProgress, completeOnboarding } from '../../utils/onboardingUtils';
-import UnifiedHeader from '../../components/UnifiedHeader';
-import HeaderSpacer from '../../components/HeaderSpacer';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
@@ -381,12 +379,6 @@ export default function OnboardingReview() {
   ];
 
   return (
-    <>
-      <UnifiedHeader 
-        title="Review Your Preferences"
-        stepContext="Step 8 of 8"
-      />
-      <HeaderSpacer hasFilters={false} />
       <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         <div className="py-6">
           {/* Header */}
@@ -458,6 +450,5 @@ export default function OnboardingReview() {
           </div>
         </div>
       </main>
-    </>
   );
 }
