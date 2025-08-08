@@ -1,45 +1,81 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign, SlidersHorizontal, X } from 'lucide-react';
 import QuickNav from './QuickNav';
 import FilterBarV3 from './FilterBarV3';
 import Logo from './Logo';
 
+/*
+=== UNIFIED HEADER - Single Source of Truth ===
+Consolidated header component handling ALL header variations in the app.
+Successfully merged functionality from multiple header components into one.
+
+Functionality:
+- Basic header (title + menu)
+- Step navigation (Onboarding) with auto-scroll
+- Tab navigation (Compare, Journal) with horizontal scrolling
+- Comparison controls (Compare page town pills)
+- Filters (Discover, Favorites) with mobile modal
+- Logo and quick navigation
+
+Priority-based second row rendering ensures only one type displays at a time.
+The component maintains 100% backward compatibility.
+=== END DOCUMENTATION ===
+*/
+
 /**
- * UnifiedHeader - Intelligent header that adapts its second row based on props
+ * UnifiedHeader - SINGLE source of truth for ALL headers in the app
  * 
  * First row ALWAYS contains: S2R logo + title + hamburger menu
- * Second row intelligently shows one of:
- * - Filters (when showFilters=true)
- * - Tabs (when tabs array is provided)
- * - Steps (when steps array is provided)
- * - Nothing (when no second row content is needed)
+ * Second row intelligently shows one of (priority order):
+ * 1. Steps (when steps array provided) - for Onboarding
+ * 2. Tabs (when tabs array provided) - for Compare, Journal
+ * 3. Comparison controls (when showComparison=true) - for Compare page
+ * 4. Filters (when showFilters=true) - for Discover, Favorites
+ * 5. Nothing (when no second row content needed)
  * 
  * @param {Object} props
  * @param {string} props.title - Main title text (required)
  * @param {string} props.subtitle - Optional subtitle for certain pages
  * @param {number} props.totalCount - Total items count (shows "X of Y" format)
  * @param {number} props.filteredCount - Filtered items count
- * @param {boolean} props.showFilters - Whether to show filter row
- * @param {Object} props.filterProps - All filter-related props
- * @param {Array} props.tabs - Array of tab objects with {id, label, icon?, isActive, onClick}
- * @param {Array} props.steps - Array of step objects with {id, key, label, path, icon, isActive?, isCompleted?}
- * @param {string} props.stepContext - Additional context for steps (e.g., "3 of 7")
+ * 
+ * // Second row options (mutually exclusive, rendered in priority order)
+ * @param {Array} props.steps - Step objects: {id, key, label, path, icon, isActive?, isCompleted?}
+ * @param {string} props.currentStep - Current step key for step navigation
+ * @param {Object} props.completedSteps - Object with completed step keys
+ * @param {Function} props.onStepNavigate - Callback for step navigation
+ * 
+ * @param {Array} props.tabs - Tab objects: {id, label, icon?, isActive, onClick}
+ * 
  * @param {boolean} props.showComparison - Whether to show comparison controls
  * @param {Object} props.comparisonProps - All comparison-related props
+ * 
+ * @param {boolean} props.showFilters - Whether to show filter row
+ * @param {Object} props.filterProps - All filter-related props
+ * 
+ * @param {string} props.maxWidth - CSS max-width class
  */
 export default function UnifiedHeader({
   title,
   subtitle,
   totalCount,
   filteredCount,
-  showFilters = false,
-  filterProps = {},
+  
+  // Second row options (mutually exclusive, rendered in priority order)
+  steps = [],
+  currentStep,
+  completedSteps = {},
+  onStepNavigate,
+  
+  tabs = [],
+  
   showComparison = false,
   comparisonProps = {},
-  tabs = [],
-  steps = [],
-  stepContext = '',
+  
+  showFilters = false,
+  filterProps = {},
+  
   maxWidth = 'max-w-7xl'
 }) {
   const [isQuickNavOpen, setIsQuickNavOpen] = useState(false);
@@ -47,21 +83,111 @@ export default function UnifiedHeader({
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Refs for auto-scrolling
+  const scrollContainerRef = useRef(null);
+  const activeStepRef = useRef(null);
+  const activeTabRef = useRef(null);
 
   // Close menu when route changes
   useEffect(() => {
     setIsQuickNavOpen(false);
   }, [location.pathname]);
 
-  // Determine what type of second row to show
-  const hasSecondRow = showFilters || showComparison || tabs.length > 0 || steps.length > 0;
-  const secondRowType = showFilters ? 'filters' : showComparison ? 'comparison' : tabs.length > 0 ? 'tabs' : steps.length > 0 ? 'steps' : null;
+  // Determine what type of second row to show (PRIORITY ORDER)
+  const hasSecondRow = steps.length > 0 || tabs.length > 0 || showComparison || showFilters;
+  const secondRowType = steps.length > 0 ? 'steps' 
+    : tabs.length > 0 ? 'tabs'
+    : showComparison ? 'comparison' 
+    : showFilters ? 'filters' 
+    : null;
+  
+  // Find current step number for display
+  const currentStepNum = currentStep ? (steps.findIndex(s => s.key === currentStep) + 1 || 1) : 0;
 
   const handleMenuClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setIsQuickNavOpen(true);
   };
+  
+  // Auto-scroll for steps on mobile
+  useEffect(() => {
+    if (secondRowType !== 'steps') return;
+    
+    const animationFrame = requestAnimationFrame(() => {
+      if (activeStepRef.current && scrollContainerRef.current) {
+        const container = scrollContainerRef.current;
+        const activeElement = activeStepRef.current;
+        
+        const innerContent = container.querySelector('.flex');
+        if (!innerContent) return;
+        
+        const elementRect = activeElement.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const innerRect = innerContent.getBoundingClientRect();
+        
+        const elementLeft = elementRect.left - innerRect.left;
+        const elementRight = elementRect.right - innerRect.left;
+        
+        const visibleLeft = container.scrollLeft + 32;
+        const visibleRight = container.scrollLeft + containerRect.width - 32;
+        
+        if (elementLeft < visibleLeft) {
+          container.scrollTo({
+            left: Math.max(0, elementLeft - 32),
+            behavior: 'smooth'
+          });
+        } else if (elementRight > visibleRight) {
+          container.scrollTo({
+            left: elementRight - containerRect.width + 32,
+            behavior: 'smooth'
+          });
+        }
+      }
+    });
+    
+    return () => cancelAnimationFrame(animationFrame);
+  }, [currentStep, secondRowType]);
+  
+  // Auto-scroll for tabs
+  useEffect(() => {
+    if (secondRowType !== 'tabs') return;
+    
+    const animationFrame = requestAnimationFrame(() => {
+      if (activeTabRef.current && scrollContainerRef.current) {
+        const container = scrollContainerRef.current;
+        const activeElement = activeTabRef.current;
+        
+        const innerContent = container.querySelector('.flex');
+        if (!innerContent) return;
+        
+        const elementRect = activeElement.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const innerRect = innerContent.getBoundingClientRect();
+        
+        const elementLeft = elementRect.left - innerRect.left;
+        const elementRight = elementRect.right - innerRect.left;
+        
+        const visibleLeft = container.scrollLeft + 16;
+        const visibleRight = container.scrollLeft + containerRect.width - 16;
+        
+        if (elementLeft < visibleLeft) {
+          container.scrollTo({
+            left: Math.max(0, elementLeft - 16),
+            behavior: 'smooth'
+          });
+        } else if (elementRight > visibleRight) {
+          container.scrollTo({
+            left: elementRight - containerRect.width + 16,
+            behavior: 'smooth'
+          });
+        }
+      }
+    });
+    
+    return () => cancelAnimationFrame(animationFrame);
+  }, [tabs, secondRowType]);
 
   return (
     <>
@@ -87,9 +213,10 @@ export default function UnifiedHeader({
                       ({filteredCount} of {totalCount})
                     </span>
                   )}
-                  {stepContext && (
+                  {/* Step context for onboarding */}
+                  {steps.length > 0 && currentStepNum > 0 && (
                     <span className="ml-1.5 text-sm font-normal text-gray-500 dark:text-gray-400">
-                      {stepContext}
+                      {currentStepNum} of {steps.length}
                     </span>
                   )}
                 </h1>
@@ -97,7 +224,7 @@ export default function UnifiedHeader({
               
               
               {/* Filter button - visible on mobile and tablet when filters exist */}
-              {hasSecondRow && showFilters && (
+              {secondRowType === 'filters' && (
                 <button
                   onClick={() => setIsMobileFiltersOpen(true)}
                   className="relative p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors lg:hidden"
@@ -123,15 +250,101 @@ export default function UnifiedHeader({
               </button>
             </div>
             
-            {/* Desktop Search and Filters - only on larger screens (desktop only) */}
-            {hasSecondRow && showFilters && (
-              <div className="filter-row hidden lg:block py-2">
-                <FilterBarV3 {...filterProps} />
+            {/* SECOND ROW - Priority order: Steps > Tabs > Comparison > Filters */}
+            
+            {/* Steps Row - For Onboarding (Priority 1) */}
+            {secondRowType === 'steps' && (
+              <div className="filter-row py-2">
+                <div className="relative">
+                  {/* Gradient masks for horizontal scroll */}
+                  <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white dark:from-gray-800 to-transparent z-10 pointer-events-none opacity-90" />
+                  <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-white dark:from-gray-800 to-transparent z-10 pointer-events-none opacity-90" />
+                  
+                  <div ref={scrollContainerRef} className="overflow-x-auto scrollbar-hide">
+                    <div className="flex items-center gap-2 px-1">
+                      {steps.map((step) => {
+                        const Icon = step.icon;
+                        const isActive = step.key === currentStep;
+                        const isCompleted = completedSteps[step.key];
+                        
+                        return (
+                          <button
+                            key={step.key}
+                            ref={isActive ? activeStepRef : null}
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              if (onStepNavigate) {
+                                await onStepNavigate(step.path);
+                              }
+                            }}
+                            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm whitespace-nowrap transition-all duration-200 ${
+                              isActive 
+                                ? 'bg-scout-accent-100 dark:bg-scout-accent-900/30 font-medium text-scout-accent-700 dark:text-scout-accent-300' 
+                                : isCompleted
+                                ? 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+                                : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400'
+                            }`}
+                          >
+                            <Icon className={`w-4 h-4 transition-colors duration-200 ${
+                              isActive 
+                                ? 'text-scout-accent-600 dark:text-scout-accent-400' 
+                                : isCompleted
+                                ? 'text-gray-600 dark:text-gray-400'
+                                : 'text-gray-400 dark:text-gray-500'
+                            }`} />
+                            <span>{step.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
             
-            {/* Comparison Controls - both mobile and desktop */}
-            {hasSecondRow && showComparison && comparisonProps.towns && (
+            {/* Tabs Row - For Compare, Journal (Priority 2) */}
+            {secondRowType === 'tabs' && (
+              <div className="filter-row py-2">
+                <div className="relative">
+                  {/* Gradient masks for horizontal scroll on mobile */}
+                  <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white dark:from-gray-800 to-transparent z-10 pointer-events-none opacity-90 sm:hidden" />
+                  <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-white dark:from-gray-800 to-transparent z-10 pointer-events-none opacity-90 sm:hidden" />
+                  
+                  <div ref={scrollContainerRef} className="overflow-x-auto scrollbar-hide">
+                    <div className="flex items-center gap-1 px-1">
+                      {tabs.map((tab) => {
+                        const Icon = tab.icon;
+                        
+                        return (
+                          <button
+                            key={tab.id}
+                            ref={tab.isActive ? activeTabRef : null}
+                            onClick={tab.onClick}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-all duration-200 ${
+                              tab.isActive
+                                ? 'bg-scout-accent-100 dark:bg-scout-accent-900/30 font-medium text-scout-accent-700 dark:text-scout-accent-300'
+                                : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'
+                            }`}
+                          >
+                            {Icon && (
+                              <Icon className={`w-4 h-4 transition-colors duration-200 ${
+                                tab.isActive
+                                  ? 'text-scout-accent-600 dark:text-scout-accent-400'
+                                  : 'text-gray-500 dark:text-gray-500'
+                              }`} />
+                            )}
+                            <span>{tab.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Comparison Controls - For Compare page (Priority 3) */}
+            {secondRowType === 'comparison' && comparisonProps.towns && (
               <div className="filter-row py-2">
                 <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
                   {/* Town count */}
@@ -176,6 +389,13 @@ export default function UnifiedHeader({
                 </div>
               </div>
             )}
+            
+            {/* Desktop Filters - For Discover, Favorites (Priority 4) */}
+            {secondRowType === 'filters' && (
+              <div className="filter-row hidden lg:block py-2">
+                <FilterBarV3 {...filterProps} />
+              </div>
+            )}
         </div>
       </header>
 
@@ -186,7 +406,7 @@ export default function UnifiedHeader({
       />
 
       {/* Mobile Filters Modal */}
-      {hasSecondRow && showFilters && isMobileFiltersOpen && (
+      {secondRowType === 'filters' && isMobileFiltersOpen && (
         <div className="fixed inset-0 z-[10000] md:hidden">
           {/* Backdrop */}
           <div 

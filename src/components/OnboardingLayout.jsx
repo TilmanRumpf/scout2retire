@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useTransition, Suspense, useRef } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import OnboardingProgressiveNav from './OnboardingProgressiveNav';
+import UnifiedHeader from './UnifiedHeader';
+import HeaderSpacer from './HeaderSpacer';
+import { MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign } from 'lucide-react';
 import { getOnboardingProgress } from '../utils/onboardingUtils';
 import { getCurrentUser } from '../utils/authUtils';
 
@@ -33,6 +35,17 @@ export default function OnboardingLayout() {
   };
   
   const currentStep = stepMapping[currentStepPath] || 'progress';
+  
+  // Define all onboarding steps for UnifiedHeader
+  const steps = [
+    { key: 'current_status', label: 'Status', path: '/onboarding/current-status', icon: MapPin },
+    { key: 'region_preferences', label: 'Region', path: '/onboarding/region', icon: Globe },
+    { key: 'climate_preferences', label: 'Climate', path: '/onboarding/climate', icon: CloudSun },
+    { key: 'culture_preferences', label: 'Culture', path: '/onboarding/culture', icon: Users },
+    { key: 'hobbies', label: 'Hobbies', path: '/onboarding/hobbies', icon: SmilePlus },
+    { key: 'administration', label: 'Admin', path: '/onboarding/administration', icon: HousePlus },
+    { key: 'costs', label: 'Costs', path: '/onboarding/costs', icon: DollarSign }
+  ];
   
   // Load onboarding progress on location change
   useEffect(() => {
@@ -120,13 +133,23 @@ export default function OnboardingLayout() {
     return null; // Return nothing during initial load to prevent flash
   }
   
+  // Get title based on current step
+  const getTitle = () => {
+    if (currentStep === 'progress') return 'Your Onboarding Progress';
+    if (currentStep === 'review') return 'Review Your Preferences';
+    if (currentStep === 'complete') return 'Welcome to Scout2Retire!';
+    return 'Onboarding';
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* Persistent Navigation - Never unmounts */}
-      <OnboardingProgressiveNav 
-        currentStep={currentStep} 
+      {/* Unified Header - Single source of truth */}
+      <UnifiedHeader 
+        title={getTitle()}
+        steps={currentStep !== 'progress' && currentStep !== 'review' && currentStep !== 'complete' ? steps : []}
+        currentStep={currentStep}
         completedSteps={progress.completedSteps}
-        onNavigate={async (path) => {
+        onStepNavigate={async (path) => {
           // Call the save function if available
           if (saveCallbackRef.current) {
             await saveCallbackRef.current();
@@ -134,6 +157,9 @@ export default function OnboardingLayout() {
           navigate(path);
         }}
       />
+      
+      {/* Header spacer for proper content positioning */}
+      <HeaderSpacer hasFilters={false} />
       
       {/* Content Area with smooth transitions */}
       <main className="relative">

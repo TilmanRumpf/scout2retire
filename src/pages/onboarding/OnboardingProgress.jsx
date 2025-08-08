@@ -195,10 +195,22 @@ export default function OnboardingProgress() {
     );
   }
 
+  // Convert steps for UnifiedHeader - reuse icon definitions
+  const headerSteps = steps.map(step => ({
+    key: step.key,
+    label: step.label,
+    path: step.path,
+    icon: step.icon
+  }));
+
   return (
     <div className={`min-h-screen ${uiConfig.colors.page}`}>
       <UnifiedHeader 
         title="Your Onboarding Progress"
+        steps={headerSteps}
+        currentStep={null} // Don't highlight any step on progress page
+        completedSteps={progress.completedSteps}
+        onStepNavigate={(path) => navigate(path)}
       />
       <HeaderSpacer hasFilters={false} />
       <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
