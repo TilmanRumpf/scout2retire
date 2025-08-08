@@ -254,11 +254,11 @@ export default function UnifiedHeader({
             
             {/* Steps Row - For Onboarding (Priority 1) */}
             {secondRowType === 'steps' && (
-              <div className="filter-row py-2">
+              <div className="filter-row pb-2 -mt-1">
                 <div className="relative">
                   {/* Gradient masks for horizontal scroll */}
-                  <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white dark:from-gray-800 to-transparent z-10 pointer-events-none opacity-90" />
-                  <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-white dark:from-gray-800 to-transparent z-10 pointer-events-none opacity-90" />
+                  <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white/95 dark:from-gray-800/90 to-transparent z-10 pointer-events-none" />
+                  <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-white/95 dark:from-gray-800/90 to-transparent z-10 pointer-events-none" />
                   
                   <div ref={scrollContainerRef} className="overflow-x-auto scrollbar-hide">
                     <div className="flex items-center gap-2 px-1">
@@ -304,11 +304,11 @@ export default function UnifiedHeader({
             
             {/* Tabs Row - For Compare, Journal (Priority 2) */}
             {secondRowType === 'tabs' && (
-              <div className="filter-row py-2">
+              <div className="filter-row pb-2 -mt-1">
                 <div className="relative">
                   {/* Gradient masks for horizontal scroll on mobile */}
-                  <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white dark:from-gray-800 to-transparent z-10 pointer-events-none opacity-90 sm:hidden" />
-                  <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-white dark:from-gray-800 to-transparent z-10 pointer-events-none opacity-90 sm:hidden" />
+                  <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white/95 dark:from-gray-800/90 to-transparent z-10 pointer-events-none sm:hidden" />
+                  <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-white/95 dark:from-gray-800/90 to-transparent z-10 pointer-events-none sm:hidden" />
                   
                   <div ref={scrollContainerRef} className="overflow-x-auto scrollbar-hide">
                     <div className="flex items-center gap-1 px-1">
@@ -346,7 +346,7 @@ export default function UnifiedHeader({
             
             {/* Comparison Controls - For Compare page (Priority 3) */}
             {secondRowType === 'comparison' && comparisonProps.towns && (
-              <div className="filter-row py-2">
+              <div className="filter-row pb-2 -mt-1">
                 <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
                   {/* Town count */}
                   <span className="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0">
@@ -393,7 +393,7 @@ export default function UnifiedHeader({
             
             {/* Desktop Filters - For Discover, Favorites (Priority 4) */}
             {secondRowType === 'filters' && (
-              <div className="filter-row hidden lg:block py-2">
+              <div className="filter-row hidden lg:block pb-2 -mt-1">
                 <FilterBarV3 {...filterProps} />
               </div>
             )}
