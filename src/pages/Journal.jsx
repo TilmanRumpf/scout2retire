@@ -199,8 +199,8 @@ export default function Journal() {
         ]}
       />
       
-      {/* Spacer for fixed header */}
-      <HeaderSpacer hasFilters={false} />
+      {/* Spacer for fixed header with tabs */}
+      <HeaderSpacer hasFilters={true} />
 
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Date filter */}
