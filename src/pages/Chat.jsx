@@ -463,10 +463,13 @@ export default function Chat() {
     };
   }, [activeThread, user]);
   
-  // Scroll to bottom when messages change
+  // Scroll to bottom when messages change (but not on initial load)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    // Only scroll if we have messages and it's not the initial load
+    if (messages.length > 0 && !loading) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages.length]); // Use messages.length instead of messages to avoid scrolling on every render
   
   // Switch to town chat
   const switchToTownChat = async (town) => {
