@@ -4,6 +4,7 @@ import { getCurrentUser, signOut, updatePassword } from '../utils/authUtils';
 import { getOnboardingProgress } from '../utils/onboardingUtils';
 import { useTheme } from '../contexts/useTheme';
 import UnifiedHeader from '../components/UnifiedHeader';
+import HeaderSpacer from '../components/HeaderSpacer';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
@@ -344,7 +345,10 @@ export default function ProfileUnified() {
     <div className={`min-h-[100svh] ${uiConfig.colors.page} pb-20 sm:pb-6`}>
       <UnifiedHeader title="Profile" showBack />
       
-      <main className="pt-16 max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+      {/* Spacer for fixed header */}
+      <HeaderSpacer hasFilters={false} />
+      
+      <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         {/* Tab Navigation */}
         <div className={`flex gap-2 mb-6 border-b ${uiConfig.colors.borderLight}`}>
           <button

@@ -5,6 +5,7 @@ import { getCurrentUser } from '../utils/authUtils';
 import { fetchJournalEntries, deleteJournalEntry, saveJournalEntry } from '../utils/journalUtils';
 import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
 import UnifiedHeader from '../components/UnifiedHeader';
+import HeaderSpacer from '../components/HeaderSpacer';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 import { FileText, MapPin, Users, CheckCircle, File } from 'lucide-react';
@@ -197,8 +198,11 @@ export default function Journal() {
           { id: 'tasks', label: 'Tasks', icon: CheckCircle, isActive: filterType === 'tasks', onClick: () => setFilterType('tasks') }
         ]}
       />
+      
+      {/* Spacer for fixed header */}
+      <HeaderSpacer hasFilters={false} />
 
-      <main className="pt-16 max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Date filter */}
         <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4 mb-6`}>
           <div className="flex justify-between items-center">

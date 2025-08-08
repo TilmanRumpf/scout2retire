@@ -7,6 +7,7 @@ import { saveJournalEntry } from '../utils/journalUtils';
 import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
 import PageErrorBoundary from '../components/PageErrorBoundary';
 import UnifiedHeader from '../components/UnifiedHeader';
+import HeaderSpacer from '../components/HeaderSpacer';
 import SimpleImage from '../components/SimpleImage';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
@@ -413,7 +414,10 @@ export default function DailyRedesignV2() {
         fallbackMessage="We're having trouble loading your dashboard. Please try refreshing the page."
         onReset={() => window.location.reload()}
       >
-        <main className="pt-16 max-w-7xl mx-auto px-4 py-6 space-y-8">
+        {/* Spacer for fixed header */}
+        <HeaderSpacer hasFilters={false} />
+        
+        <main className="max-w-7xl mx-auto px-4 py-6 space-y-8">
           {/* Split Section: Featured Town and Today's Inspiration */}
           <section className="grid lg:grid-cols-2 gap-6">
             {/* Left: Featured Town */}
