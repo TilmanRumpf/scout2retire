@@ -3,6 +3,7 @@ import { useSwipeable } from 'react-swipeable';
 import { useMobileDetection } from '../hooks/useMobileDetection';
 
 export default function SwipeableOnboardingContent({ children, onNext, onPrevious }) {
+  console.log('🚨 SwipeableOnboardingContent RENDERED! onNext:', !!onNext, 'onPrevious:', !!onPrevious);
   const containerRef = useRef(null);
   const [swipeIndicator, setSwipeIndicator] = useState(null);
   const [debugInfo, setDebugInfo] = useState([]);

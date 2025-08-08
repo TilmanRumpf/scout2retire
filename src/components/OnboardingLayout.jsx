@@ -135,6 +135,9 @@ export default function OnboardingLayout() {
   const isSwipeableStep = ['current_status', 'region_preferences', 'climate_preferences', 
                            'culture_preferences', 'hobbies', 'administration', 'costs'].includes(currentStep);
   
+  // FORCE DEBUG - Always show debug elements for testing
+  const FORCE_DEBUG = true;
+  
   // DEBUG: Log key values
   console.log('[ONBOARDING] Current step:', currentStep);
   console.log('[ONBOARDING] Current path:', location.pathname);
@@ -172,6 +175,54 @@ export default function OnboardingLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      {/* FORCE VISIBLE DEBUG INFO */}
+      {(isSwipeableStep || FORCE_DEBUG) && (
+        <div style={{
+        position: 'fixed',
+        top: '100px',
+        left: '10px',
+        width: '300px',
+        background: 'red',
+        color: 'white',
+        padding: '20px',
+        zIndex: 99999,
+        fontSize: '16px',
+        fontWeight: 'bold',
+        border: '3px solid yellow'
+      }}>
+        🔥 DEBUG INFO 🔥<br/>
+        Step: {currentStep}<br/>
+        Path: {location.pathname}<br/>
+        Swipeable: {isSwipeableStep ? 'YES ✅' : 'NO ❌'}<br/>
+        Width: {typeof window !== 'undefined' ? window.innerWidth : 'N/A'}px<br/>
+        <button 
+          onClick={handleNext}
+          style={{
+            marginTop: '10px',
+            padding: '10px',
+            background: 'blue',
+            color: 'white',
+            border: 'none',
+            width: '100%'
+          }}
+        >
+          NEXT →
+        </button>
+        <button 
+          onClick={handlePrevious}
+          style={{
+            marginTop: '5px',
+            padding: '10px',
+            background: 'green',
+            color: 'white',
+            border: 'none',
+            width: '100%'
+          }}
+        >
+          ← PREVIOUS
+        </button>
+      </div>
+      )}
       {/* Unified Header - Single source of truth */}
       <UnifiedHeader 
         title={getTitle()}
@@ -193,8 +244,8 @@ export default function OnboardingLayout() {
       {/* SIMPLE SWIPE TEST - Raw Touch Events */}
       {isSwipeableStep && (
         <div 
-          className="fixed top-20 left-4 z-50 bg-green-500 p-4 rounded shadow-lg text-white"
-          style={{ width: '200px', height: '100px' }}
+          className="fixed left-4 bg-green-500 p-4 rounded shadow-lg text-white"
+          style={{ width: '200px', height: '100px', top: '120px', zIndex: 9999 }}
           onTouchStart={(e) => {
             console.log('🟢 TOUCH START:', e.touches.length, 'touches');
             alert('Touch started!');
@@ -217,7 +268,7 @@ export default function OnboardingLayout() {
 
       {/* DEBUG BUTTON - TEMPORARY TESTING */}
       {isSwipeableStep && (
-        <div className="fixed top-20 right-4 z-50 bg-red-500 p-2 rounded shadow-lg">
+        <div className="fixed right-4 bg-red-500 p-2 rounded shadow-lg" style={{ top: '120px', zIndex: 9999 }}>
           <div className="text-white text-xs mb-2 text-center">
             Width: {typeof window !== 'undefined' ? window.innerWidth : 'N/A'}
             <br />
