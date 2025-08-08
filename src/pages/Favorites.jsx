@@ -7,6 +7,7 @@ import SimpleImage from '../components/SimpleImage';
 import TownImageOverlay from '../components/TownImageOverlay';
 import { MapPin } from 'lucide-react';
 import UnifiedHeader from '../components/UnifiedHeader';
+import HeaderSpacer from '../components/HeaderSpacer';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 
@@ -293,8 +294,11 @@ export default function Favorites() {
           resultsCount: sortedFavorites.length
         }}
       />
+      
+      {/* Spacer for fixed header with filters */}
+      <HeaderSpacer hasFilters={true} />
 
-      <main className="pt-16 max-w-7xl mx-auto px-4 py-3">
+      <main className="max-w-7xl mx-auto px-4 py-3">
         {favorites.length === 0 ? (
           <div className="text-center py-12">
             <svg xmlns="http://www.w3.org/2000/svg" className={`mx-auto h-24 w-24 ${uiConfig.colors.muted} mb-6`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
