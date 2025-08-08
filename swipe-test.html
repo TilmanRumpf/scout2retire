@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Swipe Detection Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: white;
+            overflow: hidden;
+            /* Prevent iOS bounce */
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .test-area {
+            width: 90%;
+            max-width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 3px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            touch-action: pan-x; /* Allow horizontal panning only */
+        }
+
+        .test-area.swiping {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .instruction {
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .status {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        .log {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            width: 100%;
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .reset-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+
+        .reset-btn:active {
+            transform: scale(0.95);
+        }
+
+        .device-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 12px;
+            opacity: 0.7;
+            max-width: 200px;
+        }
+
+        .direction-indicator {
+            font-size: 48px;
+            margin: 10px 0;
+            transition: all 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+    <button class="reset-btn" onclick="clearLog()">Clear Log</button>
+    
+    <div class="device-info">
+        <div id="userAgent"></div>
+        <div id="screenSize"></div>
+        <div id="touchSupport"></div>
+    </div>
+
+    <div class="test-area" id="testArea">
+        <div class="instruction">👆 Swipe Here</div>
+        <div class="status" id="status">Ready to test...</div>
+        <div class="direction-indicator" id="directionIndicator">🔄</div>
+        <div class="log" id="log">
+            <div class="log-entry">Swipe detection test loaded</div>
+        </div>
+    </div>
+
+    <script>
+        let startX = 0;
+        let startY = 0;
+        let startTime = 0;
+        let logCount = 0;
+        const MIN_SWIPE_DISTANCE = 50;
+        const MAX_SWIPE_TIME = 300;
+
+        const testArea = document.getElementById('testArea');
+        const status = document.getElementById('status');
+        const log = document.getElementById('log');
+        const directionIndicator = document.getElementById('directionIndicator');
+
+        // Display device info
+        document.getElementById('userAgent').textContent = `UA: ${navigator.userAgent.substring(0, 50)}...`;
+        document.getElementById('screenSize').textContent = `Screen: ${screen.width}x${screen.height}`;
+        document.getElementById('touchSupport').textContent = `Touch: ${'ontouchstart' in window ? 'Yes' : 'No'}`;
+
+        function addLog(message) {
+            logCount++;
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `${logCount}: ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+            
+            // Keep only last 10 entries
+            if (log.children.length > 10) {
+                log.removeChild(log.firstChild);
+            }
+        }
+
+        function clearLog() {
+            log.innerHTML = '<div class="log-entry">Log cleared</div>';
+            logCount = 0;
+            status.textContent = 'Ready to test...';
+            directionIndicator.textContent = '🔄';
+        }
+
+        function updateStatus(message) {
+            status.textContent = message;
+            addLog(message);
+        }
+
+        function updateDirection(direction) {
+            const indicators = {
+                'left': '👈',
+                'right': '👉',
+                'up': '👆',
+                'down': '👇'
+            };
+            directionIndicator.textContent = indicators[direction] || '🔄';
+        }
+
+        // Touch events
+        testArea.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            testArea.classList.add('swiping');
+            
+            const touch = e.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+            startTime = Date.now();
+            
+            addLog(`Touch start: (${Math.round(startX)}, ${Math.round(startY)})`);
+            updateStatus('Touch started...');
+        }, { passive: false });
+
+        testArea.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const currentX = touch.clientX;
+            const currentY = touch.clientY;
+            const deltaX = currentX - startX;
+            const deltaY = currentY - startY;
+            
+            updateStatus(`Moving: dx=${Math.round(deltaX)}, dy=${Math.round(deltaY)}`);
+        }, { passive: false });
+
+        testArea.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            testArea.classList.remove('swiping');
+            
+            const touch = e.changedTouches[0];
+            const endX = touch.clientX;
+            const endY = touch.clientY;
+            const endTime = Date.now();
+            
+            const deltaX = endX - startX;
+            const deltaY = endY - startY;
+            const deltaTime = endTime - startTime;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            addLog(`Touch end: (${Math.round(endX)}, ${Math.round(endY)})`);
+            addLog(`Delta: dx=${Math.round(deltaX)}, dy=${Math.round(deltaY)}`);
+            addLog(`Distance: ${Math.round(distance)}px, Time: ${deltaTime}ms`);
+            
+            if (distance > MIN_SWIPE_DISTANCE && deltaTime < MAX_SWIPE_TIME) {
+                let direction = '';
+                
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    // Horizontal swipe
+                    direction = deltaX > 0 ? 'right' : 'left';
+                } else {
+                    // Vertical swipe
+                    direction = deltaY > 0 ? 'down' : 'up';
+                }
+                
+                updateStatus(`✅ SWIPE ${direction.toUpperCase()} detected!`);
+                updateDirection(direction);
+                addLog(`🎉 SUCCESS: Swipe ${direction} (${Math.round(distance)}px in ${deltaTime}ms)`);
+            } else {
+                updateStatus(`❌ Not a swipe (${Math.round(distance)}px in ${deltaTime}ms)`);
+                updateDirection('');
+                addLog(`❌ FAILED: Too slow or short`);
+            }
+        }, { passive: false });
+
+        // Mouse events for desktop testing
+        let isMouseDown = false;
+
+        testArea.addEventListener('mousedown', function(e) {
+            isMouseDown = true;
+            testArea.classList.add('swiping');
+            
+            startX = e.clientX;
+            startY = e.clientY;
+            startTime = Date.now();
+            
+            addLog(`Mouse down: (${Math.round(startX)}, ${Math.round(startY)})`);
+            updateStatus('Mouse down...');
+        });
+
+        testArea.addEventListener('mousemove', function(e) {
+            if (!isMouseDown) return;
+            
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            
+            updateStatus(`Moving: dx=${Math.round(deltaX)}, dy=${Math.round(deltaY)}`);
+        });
+
+        testArea.addEventListener('mouseup', function(e) {
+            if (!isMouseDown) return;
+            isMouseDown = false;
+            testArea.classList.remove('swiping');
+            
+            const endX = e.clientX;
+            const endY = e.clientY;
+            const endTime = Date.now();
+            
+            const deltaX = endX - startX;
+            const deltaY = endY - startY;
+            const deltaTime = endTime - startTime;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            addLog(`Mouse up: (${Math.round(endX)}, ${Math.round(endY)})`);
+            
+            if (distance > MIN_SWIPE_DISTANCE && deltaTime < MAX_SWIPE_TIME) {
+                let direction = '';
+                
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    direction = deltaX > 0 ? 'right' : 'left';
+                } else {
+                    direction = deltaY > 0 ? 'down' : 'up';
+                }
+                
+                updateStatus(`✅ SWIPE ${direction.toUpperCase()} detected!`);
+                updateDirection(direction);
+                addLog(`🎉 SUCCESS: Swipe ${direction}`);
+            } else {
+                updateStatus(`❌ Not a swipe (${Math.round(distance)}px in ${deltaTime}ms)`);
+                updateDirection('');
+            }
+        });
+
+        // Prevent context menu
+        testArea.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // Initial log
+        addLog('Touch detection initialized');
+        addLog(`Swipe threshold: ${MIN_SWIPE_DISTANCE}px in <${MAX_SWIPE_TIME}ms`);
+    </script>
+</body>
+</html>
