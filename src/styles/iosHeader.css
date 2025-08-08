@@ -31,6 +31,7 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  /* Border only when no second row */
   border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
   
   /* Handle safe area */
@@ -40,9 +41,10 @@
   min-height: calc(var(--header-height) + var(--safe-top));
 }
 
-/* When filters are present, ensure proper containment */
+/* When filters/second row are present, ensure proper containment */
 .ios-header:has(.filter-row) {
-  padding-bottom: 8px;
+  /* Remove bottom border when second row present - border goes on the second row */
+  border-bottom: none;
 }
 
 /* Filter row specific styling */
@@ -50,6 +52,16 @@
   /* Ensure consistent height */
   min-height: 48px;
   align-items: center;
+  /* Add bottom border to the second row instead of main header */
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+  /* Extend background slightly to avoid gap */
+  margin-bottom: -1px;
+  padding-bottom: 1px;
+}
+
+/* Dark mode border for filter row */
+.dark .filter-row {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Dark mode support */
