@@ -938,17 +938,11 @@ export function calculateCultureScore(preferences, town) {
       score += 20
       factors.push({ factor: 'English is primary language', score: 20 })
     } else if (town.english_proficiency_level) {
+      // Normalized values after database cleanup
       const proficiencyScores = {
-        'excellent': 18,
-        'good': 15,
-        'moderate': 10,
-        'basic': 5,
-        'none': 0,
-        // Legacy values
         'native': 20,
-        'very_high': 18,
         'high': 15,
-        'medium': 10,
+        'moderate': 10,
         'low': 5
       }
       
@@ -957,7 +951,7 @@ export function calculateCultureScore(preferences, town) {
       if (proficiencyScore > 0) {
         factors.push({ factor: `English proficiency: ${town.english_proficiency_level}`, score: proficiencyScore })
       } else {
-        factors.push({ factor: 'No English proficiency', score: 0 })
+        factors.push({ factor: 'English proficiency unknown', score: 0 })
       }
     } else {
       factors.push({ factor: 'English proficiency unknown', score: 0 })
