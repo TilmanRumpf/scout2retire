@@ -8,7 +8,7 @@ import UnifiedHeader from '../components/UnifiedHeader';
 import HeaderSpacer from '../components/HeaderSpacer';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
-import { FileText, MapPin, Users, CheckCircle, File } from 'lucide-react';
+import { FileText, MapPin, Users, CheckCircle, File, List } from 'lucide-react';
 
 export default function Journal() {
   const [entries, setEntries] = useState([]);
@@ -191,7 +191,7 @@ export default function Journal() {
       <UnifiedHeader 
         title="Your Retirement Journey"
         tabs={[
-          { id: 'all', label: 'All', isActive: filterType === 'all', onClick: () => setFilterType('all') },
+          { id: 'all', label: 'All', icon: List, isActive: filterType === 'all', onClick: () => setFilterType('all') },
           { id: 'journal', label: 'Journal', icon: FileText, isActive: filterType === 'journal', onClick: () => setFilterType('journal') },
           { id: 'town', label: 'Town', icon: MapPin, isActive: filterType === 'town', onClick: () => setFilterType('town') },
           { id: 'social', label: 'Social', icon: Users, isActive: filterType === 'social', onClick: () => setFilterType('social') },
