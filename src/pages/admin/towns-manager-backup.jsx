@@ -1,4 +1,4 @@
-// src/pages/admin/towns-manager.jsx - Reorganized with onboarding subcategories
+// src/pages/admin/towns-manager.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../../utils/supabaseClient';
@@ -7,123 +7,39 @@ import SmartFieldEditor from '../../components/SmartFieldEditor';
 // Admin email check
 const ADMIN_EMAIL = 'tilman.rumpf@gmail.com';
 
-// Column mappings organized by category and subcategory to match onboarding structure
+// Column mappings by category
 const COLUMN_CATEGORIES = {
   Region: {
-    subcategories: {
-      'Countries & Regions': {
-        used: ['country', 'region', 'regions', 'geo_region'],
-        unused: []
-      },
-      'Geographic Features': {
-        used: ['geographic_features_actual'],
-        unused: ['latitude', 'longitude', 'elevation_meters', 'distance_to_ocean_km']
-      },
-      'Vegetation Types': {
-        used: ['vegetation_type_actual'],
-        unused: []
-      }
-    }
+    used: ['country', 'region', 'regions', 'geo_region', 'geographic_features_actual', 'vegetation_type_actual'],
+    unused: ['latitude', 'longitude', 'elevation_meters', 'distance_to_ocean_km']
   },
   Climate: {
-    subcategories: {
-      'Summer Climate': {
-        used: ['avg_temp_summer', 'summer_climate_actual'],
-        unused: ['avg_temp_spring']
-      },
-      'Winter Climate': {
-        used: ['avg_temp_winter', 'winter_climate_actual'],
-        unused: ['avg_temp_fall', 'snow_days']
-      },
-      'Humidity': {
-        used: ['humidity_level_actual'],
-        unused: []
-      },
-      'Sunshine': {
-        used: ['sunshine_level_actual', 'sunshine_hours'],
-        unused: ['uv_index']
-      },
-      'Precipitation': {
-        used: ['precipitation_level_actual', 'annual_rainfall'],
-        unused: ['storm_frequency']
-      },
-      'General Climate': {
-        used: ['climate_description', 'climate'],
-        unused: []
-      }
-    }
+    used: ['avg_temp_summer', 'avg_temp_winter', 'summer_climate_actual', 'winter_climate_actual', 
+            'humidity_level_actual', 'sunshine_level_actual', 'sunshine_hours', 'precipitation_level_actual', 
+            'annual_rainfall', 'climate_description', 'climate'],
+    unused: ['avg_temp_spring', 'avg_temp_fall', 'snow_days', 'storm_frequency', 'uv_index']
   },
   Culture: {
-    subcategories: {
-      'Language': {
-        used: ['language', 'languages_spoken', 'english_proficiency'],
-        unused: []
-      },
-      'Expat Community': {
-        used: ['expat_rating', 'expat_friendly'],
-        unused: []
-      },
-      'Local Culture': {
-        used: [],
-        unused: ['cultural_events', 'local_cuisine', 'religious_diversity', 'arts_scene', 'music_scene']
-      }
-    }
+    used: ['language', 'languages_spoken', 'english_proficiency', 'expat_rating'],
+    unused: ['cultural_events', 'local_cuisine', 'religious_diversity', 'arts_scene', 'music_scene']
   },
   Hobbies: {
-    subcategories: {
-      'Outdoor Activities': {
-        used: ['outdoor_activities', 'hiking_trails', 'beaches_nearby'],
-        unused: []
-      },
-      'Sports & Recreation': {
-        used: ['golf_courses'],
-        unused: ['ski_resorts_nearby']
-      },
-      'Cultural Attractions': {
-        used: ['cultural_attractions'],
-        unused: []
-      }
-    }
+    used: [],
+    unused: ['golf_courses', 'hiking_trails', 'beaches_nearby', 'ski_resorts_nearby', 'cultural_attractions']
   },
   Admin: {
-    subcategories: {
-      'Healthcare': {
-        used: ['healthcare_score', 'english_speaking_doctors'],
-        unused: ['emergency_response_time']
-      },
-      'Safety': {
-        used: ['safety_score'],
-        unused: ['political_stability_score']
-      },
-      'Infrastructure': {
-        used: ['walkability', 'air_quality_index', 'airport_distance'],
-        unused: []
-      },
-      'Legal & Admin': {
-        used: ['visa_requirements'],
-        unused: ['government_efficiency_score', 'tax_treaty']
-      }
-    }
+    used: ['healthcare_score', 'safety_score', 'walkability', 'air_quality_index', 
+           'english_speaking_doctors', 'airport_distance'],
+    unused: ['visa_requirements', 'political_stability_score', 'government_efficiency_score', 
+             'tax_treaty', 'emergency_response_time']
   },
   Costs: {
-    subcategories: {
-      'Living Costs': {
-        used: ['cost_of_living_usd', 'typical_monthly_living_cost'],
-        unused: []
-      },
-      'Housing': {
-        used: ['rent_1bed'],
-        unused: ['rent_2bed', 'home_price_sqm']
-      },
-      'Daily Expenses': {
-        used: [],
-        unused: ['utilities_cost', 'groceries_index', 'restaurant_price_index']
-      }
-    }
+    used: ['cost_of_living_usd', 'typical_monthly_living_cost', 'rent_1bed'],
+    unused: ['rent_2bed', 'home_price_sqm', 'utilities_cost', 'groceries_index', 'restaurant_price_index']
   }
 };
 
-// Columns not in categories (metadata)
+// Columns not in categories
 const OTHER_COLUMNS = {
   used: ['id', 'name', 'image_url_1', 'description', 'appealStatement', 'matchScore'],
   unused: ['created_at', 'updated_at', 'last_ai_update', 'data_source']
@@ -193,6 +109,7 @@ const TownsManager = () => {
       });
       
       setTowns(townsWithMetrics);
+      // Don't set filtered towns here - let the filter effect handle it
     };
     
     if (!isLoading) {
@@ -262,6 +179,7 @@ const TownsManager = () => {
       'Kathmandu': 'Nepal',
       'Bangkok': 'Thailand',
       'Kyoto': 'Japan',
+      // Add more known city-country pairs
     };
     
     if (cityCountryErrors[town.name] && town.country !== cityCountryErrors[town.name]) {
@@ -294,17 +212,15 @@ const TownsManager = () => {
 
   // Calculate completion percentage
   const calculateCompletion = (town) => {
-    const allUsedColumns = [];
-    
-    // Collect all "used" columns from all categories
-    Object.values(COLUMN_CATEGORIES).forEach(category => {
-      Object.values(category.subcategories).forEach(subcategory => {
-        allUsedColumns.push(...subcategory.used);
-      });
-    });
-    
-    // Add metadata columns
-    allUsedColumns.push(...OTHER_COLUMNS.used);
+    const allUsedColumns = [
+      ...COLUMN_CATEGORIES.Region.used,
+      ...COLUMN_CATEGORIES.Climate.used,
+      ...COLUMN_CATEGORIES.Culture.used,
+      ...COLUMN_CATEGORIES.Hobbies.used,
+      ...COLUMN_CATEGORIES.Admin.used,
+      ...COLUMN_CATEGORIES.Costs.used,
+      ...OTHER_COLUMNS.used
+    ];
     
     const filledColumns = allUsedColumns.filter(col => 
       town[col] !== null && 
@@ -327,10 +243,11 @@ const TownsManager = () => {
     setFilters({...filters, townSearch: value});
     
     if (value.length > 0) {
+      // Generate suggestions
       const suggestions = towns
         .filter(t => t.name && t.name.toLowerCase().startsWith(value.toLowerCase()))
         .map(t => t.name)
-        .slice(0, 10);
+        .slice(0, 10); // Limit to 10 suggestions
       setSearchSuggestions(suggestions);
       setShowSuggestions(suggestions.length > 0);
     } else {
@@ -366,6 +283,7 @@ const TownsManager = () => {
   // Handle inline editing
   const startEdit = (townId, column, value) => {
     setEditingCell({ townId, column });
+    // Convert objects to JSON string for editing
     const editableValue = typeof value === 'object' && value !== null 
       ? JSON.stringify(value, null, 2)
       : (value || '');
@@ -377,6 +295,7 @@ const TownsManager = () => {
     
     const { townId, column } = editingCell;
     
+    // Parse JSON strings back to objects for object columns
     let valueToSave = editValue;
     if (editValue && typeof editValue === 'string' && editValue.startsWith('{')) {
       try {
@@ -394,6 +313,7 @@ const TownsManager = () => {
     
     if (error) {
       console.error('Error updating:', error);
+      console.error('Error details:', error.message, error.details, error.hint);
       alert(`Error saving changes: ${error.message || 'Unknown error'}`);
       return;
     }
@@ -402,6 +322,7 @@ const TownsManager = () => {
     const updatedTowns = towns.map(t => {
       if (t.id === townId) {
         const updatedTown = { ...t, [column]: valueToSave };
+        // Recalculate errors and completion for the updated town
         updatedTown._errors = detectErrors(updatedTown);
         updatedTown._completion = calculateCompletion(updatedTown);
         return updatedTown;
@@ -410,6 +331,7 @@ const TownsManager = () => {
     });
     setTowns(updatedTowns);
     
+    // Also update selectedTown if it's the one being edited
     if (selectedTown && selectedTown.id === townId) {
       const updatedSelectedTown = updatedTowns.find(t => t.id === townId);
       setSelectedTown(updatedSelectedTown);
@@ -423,61 +345,6 @@ const TownsManager = () => {
     setEditingCell(null);
     setEditValue('');
   };
-
-  // Render field row helper
-  const renderFieldRow = (column, town) => (
-    <div key={column} className="flex items-center py-1">
-      <div className="w-64 text-sm font-medium text-gray-600">{column}:</div>
-      {editingCell?.townId === town.id && editingCell?.column === column ? (
-        <SmartFieldEditor
-          fieldName={column}
-          currentValue={town[column]}
-          onSave={async (newValue) => {
-            const { data, error } = await supabase
-              .from('towns')
-              .update({ [column]: newValue })
-              .eq('id', town.id)
-              .select();
-            
-            if (error) {
-              console.error('Error updating:', error);
-              alert(`Error saving changes: ${error.message || 'Unknown error'}`);
-              return;
-            }
-            
-            const updatedTowns = towns.map(t => {
-              if (t.id === town.id) {
-                const updatedTown = { ...t, [column]: newValue };
-                updatedTown._errors = detectErrors(updatedTown);
-                updatedTown._completion = calculateCompletion(updatedTown);
-                return updatedTown;
-              }
-              return t;
-            });
-            setTowns(updatedTowns);
-            
-            const updatedSelectedTown = updatedTowns.find(t => t.id === town.id);
-            setSelectedTown(updatedSelectedTown);
-            
-            setEditingCell(null);
-            setEditValue('');
-          }}
-          onCancel={cancelEdit}
-        />
-      ) : (
-        <div 
-          onClick={() => startEdit(town.id, column, town[column])}
-          className="flex-1 px-2 py-1 hover:bg-gray-100 cursor-pointer rounded"
-        >
-          <span className={town[column] ? 'text-gray-800' : 'text-gray-400'}>
-            {typeof town[column] === 'object' && town[column] !== null
-              ? JSON.stringify(town[column])
-              : (town[column] || '(empty)')}
-          </span>
-        </div>
-      )}
-    </div>
-  );
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Checking access...</div>;
@@ -672,43 +539,131 @@ const TownsManager = () => {
                   </div>
                 </div>
 
-                {/* Category Content with Subcategories */}
+                {/* Category Content */}
                 <div className="p-6">
-                  {Object.entries(COLUMN_CATEGORIES[activeCategory].subcategories).map(([subcategoryName, subcategory]) => {
-                    const hasUsedFields = subcategory.used.length > 0;
-                    const hasUnusedFields = subcategory.unused.length > 0;
-                    
-                    if (!hasUsedFields && !hasUnusedFields) return null;
-                    
-                    return (
-                      <div key={subcategoryName} className="mb-8">
-                        {/* Subcategory Title */}
-                        <h3 className="text-lg font-semibold text-gray-700 mb-3 border-b pb-1">
-                          {subcategoryName}
-                        </h3>
-                        
-                        {/* Used Fields (Towns Data for Matching) */}
-                        {hasUsedFields && (
-                          <div className="mb-4">
-                            <h4 className="text-sm font-medium text-gray-600 mb-2">Towns Data for Matching</h4>
-                            <div className="space-y-1 pl-4">
-                              {subcategory.used.map(column => renderFieldRow(column, selectedTown))}
+                  {/* Used Columns */}
+                  <div className="mb-8">
+                    <h3 className="font-semibold text-gray-800 mb-3">Towns Data for Matching</h3>
+                    <div className="space-y-2">
+                      {COLUMN_CATEGORIES[activeCategory].used.map((column) => (
+                        <div key={column} className="flex items-center">
+                          <div className="w-64 text-sm font-medium text-gray-600">{column}:</div>
+                          {editingCell?.townId === selectedTown.id && editingCell?.column === column ? (
+                            <SmartFieldEditor
+                              fieldName={column}
+                              currentValue={selectedTown[column]}
+                              onSave={async (newValue) => {
+                                const { data, error } = await supabase
+                                  .from('towns')
+                                  .update({ [column]: newValue })
+                                  .eq('id', selectedTown.id)
+                                  .select();
+                                
+                                if (error) {
+                                  console.error('Error updating:', error);
+                                  alert(`Error saving changes: ${error.message || 'Unknown error'}`);
+                                  return;
+                                }
+                                
+                                // Update local state
+                                const updatedTowns = towns.map(t => {
+                                  if (t.id === selectedTown.id) {
+                                    const updatedTown = { ...t, [column]: newValue };
+                                    updatedTown._errors = detectErrors(updatedTown);
+                                    updatedTown._completion = calculateCompletion(updatedTown);
+                                    return updatedTown;
+                                  }
+                                  return t;
+                                });
+                                setTowns(updatedTowns);
+                                
+                                const updatedSelectedTown = updatedTowns.find(t => t.id === selectedTown.id);
+                                setSelectedTown(updatedSelectedTown);
+                                
+                                setEditingCell(null);
+                                setEditValue('');
+                              }}
+                              onCancel={cancelEdit}
+                            />
+                          ) : (
+                            <div 
+                              onClick={() => startEdit(selectedTown.id, column, selectedTown[column])}
+                              className="flex-1 px-2 py-1 hover:bg-gray-100 cursor-pointer rounded"
+                            >
+                              <span className={selectedTown[column] ? 'text-gray-800' : 'text-gray-400'}>
+                                {typeof selectedTown[column] === 'object' && selectedTown[column] !== null
+                                  ? JSON.stringify(selectedTown[column])
+                                  : (selectedTown[column] || '(empty)')}
+                              </span>
                             </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Unused Columns */}
+                  {COLUMN_CATEGORIES[activeCategory].unused.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-gray-800 mb-3">Towns Data for Context</h3>
+                      <div className="space-y-2 opacity-60">
+                        {COLUMN_CATEGORIES[activeCategory].unused.map((column) => (
+                          <div key={column} className="flex items-center">
+                            <div className="w-64 text-sm font-medium text-gray-600">{column}:</div>
+                            {editingCell?.townId === selectedTown.id && editingCell?.column === column ? (
+                              <SmartFieldEditor
+                                fieldName={column}
+                                currentValue={selectedTown[column]}
+                                onSave={async (newValue) => {
+                                  const { data, error } = await supabase
+                                    .from('towns')
+                                    .update({ [column]: newValue })
+                                    .eq('id', selectedTown.id)
+                                    .select();
+                                  
+                                  if (error) {
+                                    console.error('Error updating:', error);
+                                    alert(`Error saving changes: ${error.message || 'Unknown error'}`);
+                                    return;
+                                  }
+                                  
+                                  // Update local state
+                                  const updatedTowns = towns.map(t => {
+                                    if (t.id === selectedTown.id) {
+                                      const updatedTown = { ...t, [column]: newValue };
+                                      updatedTown._errors = detectErrors(updatedTown);
+                                      updatedTown._completion = calculateCompletion(updatedTown);
+                                      return updatedTown;
+                                    }
+                                    return t;
+                                  });
+                                  setTowns(updatedTowns);
+                                  
+                                  const updatedSelectedTown = updatedTowns.find(t => t.id === selectedTown.id);
+                                  setSelectedTown(updatedSelectedTown);
+                                  
+                                  setEditingCell(null);
+                                  setEditValue('');
+                                }}
+                                onCancel={cancelEdit}
+                              />
+                            ) : (
+                              <div 
+                                onClick={() => startEdit(selectedTown.id, column, selectedTown[column])}
+                                className="flex-1 px-2 py-1 hover:bg-gray-100 cursor-pointer rounded"
+                              >
+                                <span className={selectedTown[column] ? 'text-gray-800' : 'text-gray-400'}>
+                                  {typeof selectedTown[column] === 'object' && selectedTown[column] !== null
+                                    ? JSON.stringify(selectedTown[column])
+                                    : (selectedTown[column] || '(empty)')}
+                                </span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                        
-                        {/* Unused Fields (Towns Data for Context) */}
-                        {hasUnusedFields && (
-                          <div className="opacity-60">
-                            <h4 className="text-sm font-medium text-gray-600 mb-2">Towns Data for Context</h4>
-                            <div className="space-y-1 pl-4">
-                              {subcategory.unused.map(column => renderFieldRow(column, selectedTown))}
-                            </div>
-                          </div>
-                        )}
+                        ))}
                       </div>
-                    );
-                  })}
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
