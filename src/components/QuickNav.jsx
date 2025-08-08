@@ -14,6 +14,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Note: Removed location change effect as it was causing immediate closes
 
@@ -34,6 +35,9 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
     try {
       const { user: currentUser } = await getCurrentUser();
       if (currentUser) {
+        // Check if user is admin
+        const adminEmails = ['tilman.rumpf@gmail.com', 'tobias.rumpf1@gmail.com', 'madara.grisule@gmail.com'];
+        setIsAdmin(adminEmails.includes(currentUser.email));
         
         // Check for pending invitations
         const { data, error } = await supabase
@@ -264,6 +268,26 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
                 </Link>
               );
             })}
+            
+            {/* Admin Section - Only visible for admin users */}
+            {isAdmin && (
+              <>
+                <div className={`border-t ${uiConfig.colors.border} my-4`}></div>
+                <div className={`px-3 py-2 text-xl font-bold s2r-logo`}>
+                  S<span style={{ color: '#f66527' }}>2</span>R Admin
+                </div>
+                <Link
+                  to="/admin/towns-manager"
+                  className={`flex items-center justify-between p-3 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
+                    location.pathname === '/admin/towns-manager'
+                      ? `${uiConfig.colors.success} ${uiConfig.colors.statusSuccess}`
+                      : `${uiConfig.colors.hoverBg}`
+                  }`}
+                >
+                  <span className="font-medium text-[#f66527]">Towns-Manager</span>
+                </Link>
+              </>
+            )}
           </nav>
         </div>
         <div className="absolute bottom-8 left-0 right-0 px-4">

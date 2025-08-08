@@ -3,7 +3,6 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import UnifiedHeader from './UnifiedHeader';
 import HeaderSpacer from './HeaderSpacer';
 import SwipeableOnboardingContent from './SwipeableOnboardingContent';
-import SimpleSwipeTest from './SimpleSwipeTest';
 import { MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign } from 'lucide-react';
 import { getOnboardingProgress } from '../utils/onboardingUtils';
 import { getCurrentUser } from '../utils/authUtils';
@@ -135,14 +134,6 @@ export default function OnboardingLayout() {
   const isSwipeableStep = ['current_status', 'region_preferences', 'climate_preferences', 
                            'culture_preferences', 'hobbies', 'administration', 'costs'].includes(currentStep);
   
-  // FORCE DEBUG - Always show debug elements for testing
-  const FORCE_DEBUG = true;
-  
-  // DEBUG: Log key values
-  console.log('[ONBOARDING] Current step:', currentStep);
-  console.log('[ONBOARDING] Current path:', location.pathname);
-  console.log('[ONBOARDING] Is swipeable step:', isSwipeableStep);
-  console.log('[ONBOARDING] Window width:', typeof window !== 'undefined' ? window.innerWidth : 'N/A');
   
   // Add CSS class for swipeable pages to override global overscroll behavior
   useEffect(() => {
@@ -175,54 +166,6 @@ export default function OnboardingLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* FORCE VISIBLE DEBUG INFO */}
-      {(isSwipeableStep || FORCE_DEBUG) && (
-        <div style={{
-        position: 'fixed',
-        top: '100px',
-        left: '10px',
-        width: '300px',
-        background: 'red',
-        color: 'white',
-        padding: '20px',
-        zIndex: 99999,
-        fontSize: '16px',
-        fontWeight: 'bold',
-        border: '3px solid yellow'
-      }}>
-        🔥 DEBUG INFO 🔥<br/>
-        Step: {currentStep}<br/>
-        Path: {location.pathname}<br/>
-        Swipeable: {isSwipeableStep ? 'YES ✅' : 'NO ❌'}<br/>
-        Width: {typeof window !== 'undefined' ? window.innerWidth : 'N/A'}px<br/>
-        <button 
-          onClick={handleNext}
-          style={{
-            marginTop: '10px',
-            padding: '10px',
-            background: 'blue',
-            color: 'white',
-            border: 'none',
-            width: '100%'
-          }}
-        >
-          NEXT →
-        </button>
-        <button 
-          onClick={handlePrevious}
-          style={{
-            marginTop: '5px',
-            padding: '10px',
-            background: 'green',
-            color: 'white',
-            border: 'none',
-            width: '100%'
-          }}
-        >
-          ← PREVIOUS
-        </button>
-      </div>
-      )}
       {/* Unified Header - Single source of truth */}
       <UnifiedHeader 
         title={getTitle()}
@@ -241,62 +184,8 @@ export default function OnboardingLayout() {
       {/* Header spacer for proper content positioning */}
       <HeaderSpacer hasFilters={false} />
       
-      {/* SIMPLE SWIPE TEST - Raw Touch Events */}
-      {isSwipeableStep && (
-        <div 
-          className="fixed left-4 bg-green-500 p-4 rounded shadow-lg text-white"
-          style={{ width: '200px', height: '100px', top: '120px', zIndex: 9999 }}
-          onTouchStart={(e) => {
-            console.log('🟢 TOUCH START:', e.touches.length, 'touches');
-            alert('Touch started!');
-          }}
-          onTouchMove={(e) => {
-            console.log('🔵 TOUCH MOVE:', e.touches[0].clientX, e.touches[0].clientY);
-          }}
-          onTouchEnd={(e) => {
-            console.log('🔴 TOUCH END');
-            alert('Touch ended!');
-          }}
-        >
-          <div className="text-center text-sm font-bold">
-            SWIPE TEST ZONE
-            <br />
-            Touch here to test
-          </div>
-        </div>
-      )}
-
-      {/* DEBUG BUTTON - TEMPORARY TESTING */}
-      {isSwipeableStep && (
-        <div className="fixed right-4 bg-red-500 p-2 rounded shadow-lg" style={{ top: '120px', zIndex: 9999 }}>
-          <div className="text-white text-xs mb-2 text-center">
-            Width: {typeof window !== 'undefined' ? window.innerWidth : 'N/A'}
-            <br />
-            Step: {currentStep}
-            <br />
-            Swipeable: {isSwipeableStep ? 'YES' : 'NO'}
-          </div>
-          <button 
-            onClick={handleNext} 
-            className="bg-white text-red-500 px-3 py-1 rounded text-sm font-bold mr-2"
-          >
-            DEBUG NEXT
-          </button>
-          <button 
-            onClick={handlePrevious} 
-            className="bg-white text-red-500 px-3 py-1 rounded text-sm font-bold"
-          >
-            DEBUG PREV
-          </button>
-        </div>
-      )}
-
-      {/* SIMPLE SWIPE TEST COMPONENT */}
-      {isSwipeableStep && <SimpleSwipeTest />}
-      
       {/* Content Area with smooth transitions and swipe support */}
       <main className="relative min-h-screen">
-        {console.log('[ONBOARDING] Rendering content area, isSwipeableStep:', isSwipeableStep)}
         {isSwipeableStep ? (
           <SwipeableOnboardingContent onNext={handleNext} onPrevious={handlePrevious}>
             <div 

@@ -141,13 +141,14 @@ const TownsManager = () => {
   
   // Filters
   const [filters, setFilters] = useState({
-    hasPhoto: 'all',
+    hasPhoto: 'yes',  // Default to "Has Photo"
     completionLevel: 'all',
     worstOffenders: false,
     country: 'all',
     geo_region: 'all',
-    regions: 'all',
-    townSearch: ''
+    townSearch: '',
+    sortBy: 'abc', // 'abc', 'completion-high', 'completion-low'
+    sortDirection: 'asc' // 'asc', 'desc'
   });
   
   // Search suggestions state
@@ -212,12 +213,22 @@ const TownsManager = () => {
     }
     
     // Completion filter
-    if (filters.completionLevel === 'low') {
-      filtered = filtered.filter(t => t._completion < 30);
-    } else if (filters.completionLevel === 'medium') {
-      filtered = filtered.filter(t => t._completion >= 30 && t._completion < 70);
-    } else if (filters.completionLevel === 'high') {
-      filtered = filtered.filter(t => t._completion >= 70);
+    if (filters.completionLevel === '0-20') {
+      filtered = filtered.filter(t => t._completion >= 0 && t._completion <= 20);
+    } else if (filters.completionLevel === '21-40') {
+      filtered = filtered.filter(t => t._completion >= 21 && t._completion <= 40);
+    } else if (filters.completionLevel === '41-60') {
+      filtered = filtered.filter(t => t._completion >= 41 && t._completion <= 60);
+    } else if (filters.completionLevel === '61-80') {
+      filtered = filtered.filter(t => t._completion >= 61 && t._completion <= 80);
+    } else if (filters.completionLevel === '81-100') {
+      filtered = filtered.filter(t => t._completion >= 81 && t._completion <= 100);
+    } else if (filters.completionLevel === 'top50') {
+      // Sort by completion and take top 50
+      filtered = [...filtered].sort((a, b) => b._completion - a._completion).slice(0, 50);
+    } else if (filters.completionLevel === 'worst50') {
+      // Sort by completion and take worst 50
+      filtered = [...filtered].sort((a, b) => a._completion - b._completion).slice(0, 50);
     }
     
     // Worst offenders filter
@@ -236,18 +247,23 @@ const TownsManager = () => {
       filtered = filtered.filter(t => t.geo_region === filters.geo_region);
     }
     
-    // Regions filter (plural - the regions array column)
-    if (filters.regions !== 'all') {
-      filtered = filtered.filter(t => 
-        t.regions && Array.isArray(t.regions) && t.regions.includes(filters.regions)
-      );
-    }
-    
     // Town name search filter
     if (filters.townSearch) {
       filtered = filtered.filter(t => 
         t.name && t.name.toLowerCase().startsWith(filters.townSearch.toLowerCase())
       );
+    }
+    
+    // Apply sorting
+    if (filters.sortBy === 'abc') {
+      filtered.sort((a, b) => {
+        const result = a.name.localeCompare(b.name);
+        return filters.sortDirection === 'asc' ? result : -result;
+      });
+    } else if (filters.sortBy === 'completion-high') {
+      filtered.sort((a, b) => b._completion - a._completion);
+    } else if (filters.sortBy === 'completion-low') {
+      filtered.sort((a, b) => a._completion - b._completion);
     }
     
     setFilteredTowns(filtered);
@@ -341,9 +357,25 @@ const TownsManager = () => {
   
   // Handle suggestion click
   const handleSuggestionClick = (townName) => {
-    setFilters({...filters, townSearch: townName});
+    // Reset all filters to defaults to ensure searched town is visible
+    setFilters({
+      hasPhoto: 'all',  // Reset to 'all' so town is visible regardless of photo status
+      completionLevel: 'all',
+      worstOffenders: false,
+      country: 'all',
+      geo_region: 'all',
+      townSearch: townName,
+      sortBy: 'abc',
+      sortDirection: 'asc'
+    });
     setShowSuggestions(false);
     setSearchSuggestions([]);
+    
+    // Find and auto-select the searched town
+    const foundTown = towns.find(t => t.name === townName);
+    if (foundTown) {
+      setSelectedTown(foundTown);
+    }
   };
   
   // Get unique values for geo_region column
@@ -352,16 +384,6 @@ const TownsManager = () => {
     return geoRegionValues.sort();
   };
   
-  // Get unique values for regions column (plural array)
-  const getUniqueRegions = () => {
-    const regionsSet = new Set();
-    towns.forEach(t => {
-      if (t.regions && Array.isArray(t.regions)) {
-        t.regions.forEach(r => regionsSet.add(r));
-      }
-    });
-    return [...regionsSet].filter(Boolean).sort();
-  };
 
   // Handle inline editing
   const startEdit = (townId, column, value) => {
@@ -538,10 +560,14 @@ const TownsManager = () => {
             onChange={(e) => setFilters({...filters, completionLevel: e.target.value})}
             className="border rounded px-3 py-1"
           >
-            <option value="all">All Completion</option>
-            <option value="low">Low (&lt;30%)</option>
-            <option value="medium">Medium (30-70%)</option>
-            <option value="high">High (&gt;70%)</option>
+            <option value="all">Completion</option>
+            <option value="top50">Top 50</option>
+            <option value="81-100">81-100%</option>
+            <option value="61-80">61-80%</option>
+            <option value="41-60">41-60%</option>
+            <option value="21-40">21-40%</option>
+            <option value="0-20">0-20%</option>
+            <option value="worst50">Worst 50</option>
           </select>
           
           <label className="flex items-center gap-2">
@@ -575,18 +601,6 @@ const TownsManager = () => {
               <option key={region} value={region}>{region}</option>
             ))}
           </select>
-          
-          <select 
-            value={filters.regions} 
-            onChange={(e) => setFilters({...filters, regions: e.target.value})}
-            className="border rounded px-3 py-1"
-            title="Filter by regions array (geographic areas)"
-          >
-            <option value="all">Regions (Geographic)</option>
-            {getUniqueRegions().map(region => (
-              <option key={region} value={region}>{region}</option>
-            ))}
-          </select>
         </div>
       </div>
 
@@ -595,8 +609,55 @@ const TownsManager = () => {
           {/* Town List */}
           <div className="col-span-3">
             <div className="bg-white rounded-lg shadow max-h-[800px] overflow-y-auto">
-              <div className="sticky top-0 bg-white border-b px-4 py-2">
-                <h2 className="font-semibold">Towns</h2>
+              <div className="sticky top-0 bg-white border-b">
+                <div className="px-4 py-2">
+                  <h2 className="font-semibold">Towns</h2>
+                </div>
+                {/* Sorting controls - more functional and left-aligned */}
+                <div className="px-4 py-2 bg-gray-50 border-t flex items-center gap-2">
+                  <button
+                    onClick={() => setFilters({...filters, 
+                      sortBy: 'abc', 
+                      sortDirection: filters.sortBy === 'abc' && filters.sortDirection === 'asc' ? 'desc' : 'asc'
+                    })}
+                    className={`flex items-center gap-1 px-3 py-1 text-sm rounded transition-colors ${
+                      filters.sortBy === 'abc' 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-white border hover:bg-gray-100'
+                    }`}
+                    title="Sort alphabetically"
+                  >
+                    <span>A-Z</span>
+                    {filters.sortBy === 'abc' && (
+                      <span className="text-xs">
+                        {filters.sortDirection === 'asc' ? '↓' : '↑'}
+                      </span>
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={() => setFilters({...filters, 
+                      sortBy: filters.sortBy === 'completion-high' ? 'completion-low' : 'completion-high'
+                    })}
+                    className={`flex items-center gap-1 px-3 py-1 text-sm rounded transition-colors ${
+                      filters.sortBy.startsWith('completion') 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-white border hover:bg-gray-100'
+                    }`}
+                    title="Sort by completion percentage"
+                  >
+                    <span>%</span>
+                    {filters.sortBy.startsWith('completion') && (
+                      <span className="text-xs">
+                        {filters.sortBy === 'completion-high' ? '↓' : '↑'}
+                      </span>
+                    )}
+                  </button>
+                  
+                  <span className="text-xs text-gray-500 ml-2">
+                    {filteredTowns.length} towns
+                  </span>
+                </div>
               </div>
               <div className="divide-y">
                 {filteredTowns.map((town) => (
@@ -615,7 +676,7 @@ const TownsManager = () => {
                         town._completion < 70 ? 'bg-yellow-100 text-yellow-700' :
                         'bg-green-100 text-green-700'
                       }`}>
-                        {town._completion}%
+                        {town._completion}% Completion
                       </span>
                       {town._errors.length > 0 && (
                         <span className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">
