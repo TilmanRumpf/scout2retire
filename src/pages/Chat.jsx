@@ -38,6 +38,7 @@ export default function Chat() {
   const [pendingInvitations, setPendingInvitations] = useState({ sent: [], received: [] });
   
   const messagesEndRef = useRef(null);
+  const isInitialMount = useRef(true); // Track if this is the first mount
   const navigate = useNavigate();
   const { townId } = useParams();
   const [searchParams] = useSearchParams();
@@ -463,13 +464,22 @@ export default function Chat() {
     };
   }, [activeThread, user]);
   
-  // Scroll to bottom when messages change (but not on initial load)
+  // Scroll to bottom only for NEW messages, not initial load
   useEffect(() => {
-    // Only scroll if we have messages and it's not the initial load
-    if (messages.length > 0 && !loading) {
+    // Skip scrolling on initial mount (when page first loads)
+    if (isInitialMount.current) {
+      if (messages.length > 0) {
+        // We have initial messages loaded, mark as no longer initial mount
+        isInitialMount.current = false;
+      }
+      return; // Don't scroll on initial load
+    }
+    
+    // Only scroll for new messages after initial load
+    if (messages.length > 0) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages.length]); // Use messages.length instead of messages to avoid scrolling on every render
+  }, [messages]); // Watch the full messages array for new additions
   
   // Switch to town chat
   const switchToTownChat = async (town) => {
