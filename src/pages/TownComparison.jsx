@@ -6,6 +6,7 @@ import TownRadarChart from '../components/TownRadarChart';
 import LikeButton from '../components/LikeButton';
 import UnifiedHeader from '../components/UnifiedHeader';
 import ComparePageSpacer from '../components/ComparePageSpacer';
+import SwipeableCompare from '../components/SwipeableCompare';
 import { Eye, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign, X, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
@@ -933,14 +934,20 @@ export default function TownComparison() {
                   </div>
                 )}
 
-                {/* Category content */}
+                {/* Category content with swipe support on mobile */}
                 <div className="p-4 min-h-[30rem]">
-                  <h3 className={`text-sm font-medium ${uiConfig.colors.body} mb-2`}>
-                    {activeCategory === 'overview' ? 'Overview' : 'Summary'}
-                  </h3>
-                  <div className={`text-sm ${uiConfig.colors.body} h-full`}>
-                    {getCategoryValue(town, activeCategory)}
-                  </div>
+                  <SwipeableCompare 
+                    activeCategory={activeCategory}
+                    categories={categories}
+                    onCategoryChange={setActiveCategory}
+                  >
+                    <h3 className={`text-sm font-medium ${uiConfig.colors.body} mb-2`}>
+                      {activeCategory === 'overview' ? 'Overview' : 'Summary'}
+                    </h3>
+                    <div className={`text-sm ${uiConfig.colors.body} h-full`}>
+                      {getCategoryValue(town, activeCategory)}
+                    </div>
+                  </SwipeableCompare>
                 </div>
 
                 {/* View details button */}
