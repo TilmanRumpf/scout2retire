@@ -7,6 +7,7 @@ import DailyTownCard from '../components/DailyTownCard';
 import TownCard from '../components/TownCard';
 import PageErrorBoundary from '../components/PageErrorBoundary';
 import UnifiedHeader from '../components/UnifiedHeader';
+import HeaderSpacer from '../components/HeaderSpacer';
 import { fetchFavorites } from '../utils/townUtils.jsx';
 import { saveJournalEntry } from '../utils/journalUtils';
 import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
@@ -142,8 +143,11 @@ export default function Home() {
         fallbackMessage="We're having trouble loading your dashboard. Please try refreshing the page."
         onReset={() => window.location.reload()}
       >
+        {/* Spacer for fixed header */}
+        <HeaderSpacer hasFilters={false} />
+        
         {/* Main content */}
-        <main className="pt-16 max-w-7xl mx-auto px-4 py-6 space-y-6">
+        <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Welcome message */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">

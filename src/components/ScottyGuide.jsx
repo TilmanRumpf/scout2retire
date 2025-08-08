@@ -5,6 +5,7 @@ import { getUserContext, formatContextForPrompt } from '../utils/scottyContext';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchFavorites } from '../utils/townUtils.jsx';
 import UnifiedHeader from './UnifiedHeader';
+import HeaderSpacer from './HeaderSpacer';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
@@ -614,6 +615,9 @@ What would you like to know about ${name}?`;
         title="Scotty - Your AI Guide"
         maxWidth="max-w-6xl"
       />
+      
+      {/* Spacer for fixed header */}
+      <HeaderSpacer hasFilters={false} />
       
       <main className={`${uiConfig.layout.width.containerWide} px-4 py-6`}>
         <div className="flex flex-col md:flex-row gap-6">

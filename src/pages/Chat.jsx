@@ -7,6 +7,7 @@ import { cancelInvitation } from '../utils/companionUtils';
 import { sendInvitationEmailViaAuth } from '../utils/emailUtils';
 import PageErrorBoundary from '../components/PageErrorBoundary';
 import UnifiedHeader from '../components/UnifiedHeader';
+import HeaderSpacer from '../components/HeaderSpacer';
 import FriendsSection from '../components/FriendsSection';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
@@ -86,7 +87,7 @@ export default function Chat() {
             setTimeout(() => {
               const element = document.getElementById(`invitation-${invitationId}`);
               if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 element.classList.add('ring-2', 'ring-scout-accent-500', 'ring-opacity-75');
                 setTimeout(() => {
                   element.classList.remove('ring-2', 'ring-scout-accent-500', 'ring-opacity-75');
@@ -1058,7 +1059,10 @@ export default function Chat() {
         fallbackMessage="We're having trouble loading the chat. Please try refreshing the page."
         onReset={() => window.location.reload()}
       >
-        <main className={`pt-16 ${uiConfig.layout.width.containerWide} px-4 py-6`}>
+        {/* Spacer for fixed header */}
+        <HeaderSpacer hasFilters={false} />
+        
+        <main className={`${uiConfig.layout.width.containerWide} px-4 py-6`}>
           <div className="flex flex-col md:flex-row gap-6">
           {/* Sidebar */}
           <div className="w-full md:w-64 space-y-4">
