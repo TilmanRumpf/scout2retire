@@ -6,7 +6,7 @@ import TownRadarChart from '../components/TownRadarChart';
 import LikeButton from '../components/LikeButton';
 import UnifiedHeader from '../components/UnifiedHeader';
 import ComparePageSpacer from '../components/ComparePageSpacer';
-import SwipeableCompare from '../components/SwipeableCompare';
+import { useSwipeGesture } from '../hooks/useSwipeGesture';
 import { Eye, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign, X, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
@@ -31,6 +31,25 @@ export default function TownComparison() {
     { id: 'administration', label: 'Admin', icon: HousePlus },
     { id: 'budget', label: 'Budget', icon: DollarSign }
   ];
+  
+  // Enable swipe gestures on mobile for category navigation
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  
+  const handleSwipeLeft = () => {
+    const currentIndex = categories.findIndex(cat => cat.id === activeCategory);
+    if (currentIndex < categories.length - 1) {
+      setActiveCategory(categories[currentIndex + 1].id);
+    }
+  };
+  
+  const handleSwipeRight = () => {
+    const currentIndex = categories.findIndex(cat => cat.id === activeCategory);
+    if (currentIndex > 0) {
+      setActiveCategory(categories[currentIndex - 1].id);
+    }
+  };
+  
+  useSwipeGesture(handleSwipeLeft, handleSwipeRight, isMobile);
 
   // Load data
   useEffect(() => {
@@ -936,18 +955,12 @@ export default function TownComparison() {
 
                 {/* Category content with swipe support on mobile */}
                 <div className="p-4 min-h-[30rem]">
-                  <SwipeableCompare 
-                    activeCategory={activeCategory}
-                    categories={categories}
-                    onCategoryChange={setActiveCategory}
-                  >
-                    <h3 className={`text-sm font-medium ${uiConfig.colors.body} mb-2`}>
-                      {activeCategory === 'overview' ? 'Overview' : 'Summary'}
-                    </h3>
-                    <div className={`text-sm ${uiConfig.colors.body} h-full`}>
-                      {getCategoryValue(town, activeCategory)}
-                    </div>
-                  </SwipeableCompare>
+                  <h3 className={`text-sm font-medium ${uiConfig.colors.body} mb-2`}>
+                    {activeCategory === 'overview' ? 'Overview' : 'Summary'}
+                  </h3>
+                  <div className={`text-sm ${uiConfig.colors.body} h-full`}>
+                    {getCategoryValue(town, activeCategory)}
+                  </div>
                 </div>
 
                 {/* View details button */}
