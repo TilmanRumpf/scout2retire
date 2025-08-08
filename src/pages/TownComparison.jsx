@@ -6,7 +6,7 @@ import TownRadarChart from '../components/TownRadarChart';
 import LikeButton from '../components/LikeButton';
 import UnifiedHeader from '../components/UnifiedHeader';
 import HeaderSpacer from '../components/HeaderSpacer';
-import { Eye, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign } from 'lucide-react';
+import { Eye, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 
@@ -796,16 +796,44 @@ export default function TownComparison() {
           isActive: activeCategory === category.id,
           onClick: () => setActiveCategory(category.id)
         }))}
-        showComparison={true}
-        comparisonProps={{
-          towns: towns,
-          onRemoveTown: handleRemoveTown,
-          maxTowns: 3
-        }}
       />
       
       {/* Spacer for fixed header with tabs */}
       <HeaderSpacer hasFilters={true} />
+
+      {/* Mobile-friendly town management bar */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 md:hidden">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+          <span className="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0">
+            {towns.length}/3
+          </span>
+          
+          {towns.map((town) => (
+            <div
+              key={town.id}
+              className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full text-sm"
+            >
+              <span className="text-gray-900 dark:text-white">{town.name}</span>
+              <button
+                onClick={() => handleRemoveTown(town.id)}
+                className="ml-0.5 text-gray-400 hover:text-red-500 transition-colors"
+                aria-label={`Remove ${town.name}`}
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+          
+          {towns.length < 3 && (
+            <button
+              onClick={() => navigate('/favorites')}
+              className="flex-shrink-0 px-2.5 py-1 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 border border-scout-accent-200 dark:border-scout-accent-800 rounded-full text-sm"
+            >
+              + Add
+            </button>
+          )}
+        </div>
+      </div>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Error message */}
