@@ -2,6 +2,7 @@ import React, { useState, useEffect, useTransition, Suspense, useRef } from 'rea
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import UnifiedHeader from './UnifiedHeader';
 import HeaderSpacer from './HeaderSpacer';
+import SwipeableOnboarding from './SwipeableOnboarding';
 import { MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign } from 'lucide-react';
 import { getOnboardingProgress } from '../utils/onboardingUtils';
 import { getCurrentUser } from '../utils/authUtils';
@@ -161,30 +162,32 @@ export default function OnboardingLayout() {
       {/* Header spacer for proper content positioning */}
       <HeaderSpacer hasFilters={false} />
       
-      {/* Content Area with smooth transitions */}
+      {/* Content Area with smooth transitions and swipe support */}
       <main className="relative">
-        <div ref={outletRef} className="transition-opacity duration-150 ease-in-out">
-          <Suspense fallback={null}>
-            <Outlet context={{ 
-              onNext: handleNext, 
-              onPrevious: handlePrevious,
-              progress,
-              setProgress,
-              refreshProgress: async () => {
-                const user = await getCurrentUser();
-                if (user) {
-                  const progressData = await getOnboardingProgress(user.id);
-                  if (progressData.success) {
-                    setProgress(progressData.progress || { completedSteps: {} });
+        <SwipeableOnboarding onNext={handleNext} onPrevious={handlePrevious}>
+          <div ref={outletRef} className="transition-opacity duration-150 ease-in-out">
+            <Suspense fallback={null}>
+              <Outlet context={{ 
+                onNext: handleNext, 
+                onPrevious: handlePrevious,
+                progress,
+                setProgress,
+                refreshProgress: async () => {
+                  const user = await getCurrentUser();
+                  if (user) {
+                    const progressData = await getOnboardingProgress(user.id);
+                    if (progressData.success) {
+                      setProgress(progressData.progress || { completedSteps: {} });
+                    }
                   }
+                },
+                setSaveCallback: (callback) => {
+                  saveCallbackRef.current = callback;
                 }
-              },
-              setSaveCallback: (callback) => {
-                saveCallbackRef.current = callback;
-              }
-            }} />
-          </Suspense>
-        </div>
+              }} />
+            </Suspense>
+          </div>
+        </SwipeableOnboarding>
       </main>
     </div>
   );
