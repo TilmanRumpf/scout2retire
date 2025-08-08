@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import UnifiedHeader from './UnifiedHeader';
 import HeaderSpacer from './HeaderSpacer';
 import SwipeableOnboardingContent from './SwipeableOnboardingContent';
+import SimpleSwipeTest from './SimpleSwipeTest';
 import { MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign } from 'lucide-react';
 import { getOnboardingProgress } from '../utils/onboardingUtils';
 import { getCurrentUser } from '../utils/authUtils';
@@ -134,6 +135,29 @@ export default function OnboardingLayout() {
   const isSwipeableStep = ['current_status', 'region_preferences', 'climate_preferences', 
                            'culture_preferences', 'hobbies', 'administration', 'costs'].includes(currentStep);
   
+  // DEBUG: Log key values
+  console.log('[ONBOARDING] Current step:', currentStep);
+  console.log('[ONBOARDING] Current path:', location.pathname);
+  console.log('[ONBOARDING] Is swipeable step:', isSwipeableStep);
+  console.log('[ONBOARDING] Window width:', typeof window !== 'undefined' ? window.innerWidth : 'N/A');
+  
+  // Add CSS class for swipeable pages to override global overscroll behavior
+  useEffect(() => {
+    if (isSwipeableStep) {
+      document.body.classList.add('onboarding-swipeable');
+      // Temporarily override overscroll behavior for better swipe detection
+      document.body.style.overscrollBehavior = 'auto';
+    } else {
+      document.body.classList.remove('onboarding-swipeable');
+      document.body.style.overscrollBehavior = 'contain';
+    }
+    
+    return () => {
+      document.body.classList.remove('onboarding-swipeable');
+      document.body.style.overscrollBehavior = 'contain';
+    };
+  }, [isSwipeableStep]);
+  
   if (loading) {
     return null; // Return nothing during initial load to prevent flash
   }
@@ -166,8 +190,62 @@ export default function OnboardingLayout() {
       {/* Header spacer for proper content positioning */}
       <HeaderSpacer hasFilters={false} />
       
+      {/* SIMPLE SWIPE TEST - Raw Touch Events */}
+      {isSwipeableStep && (
+        <div 
+          className="fixed top-20 left-4 z-50 bg-green-500 p-4 rounded shadow-lg text-white"
+          style={{ width: '200px', height: '100px' }}
+          onTouchStart={(e) => {
+            console.log('🟢 TOUCH START:', e.touches.length, 'touches');
+            alert('Touch started!');
+          }}
+          onTouchMove={(e) => {
+            console.log('🔵 TOUCH MOVE:', e.touches[0].clientX, e.touches[0].clientY);
+          }}
+          onTouchEnd={(e) => {
+            console.log('🔴 TOUCH END');
+            alert('Touch ended!');
+          }}
+        >
+          <div className="text-center text-sm font-bold">
+            SWIPE TEST ZONE
+            <br />
+            Touch here to test
+          </div>
+        </div>
+      )}
+
+      {/* DEBUG BUTTON - TEMPORARY TESTING */}
+      {isSwipeableStep && (
+        <div className="fixed top-20 right-4 z-50 bg-red-500 p-2 rounded shadow-lg">
+          <div className="text-white text-xs mb-2 text-center">
+            Width: {typeof window !== 'undefined' ? window.innerWidth : 'N/A'}
+            <br />
+            Step: {currentStep}
+            <br />
+            Swipeable: {isSwipeableStep ? 'YES' : 'NO'}
+          </div>
+          <button 
+            onClick={handleNext} 
+            className="bg-white text-red-500 px-3 py-1 rounded text-sm font-bold mr-2"
+          >
+            DEBUG NEXT
+          </button>
+          <button 
+            onClick={handlePrevious} 
+            className="bg-white text-red-500 px-3 py-1 rounded text-sm font-bold"
+          >
+            DEBUG PREV
+          </button>
+        </div>
+      )}
+
+      {/* SIMPLE SWIPE TEST COMPONENT */}
+      {isSwipeableStep && <SimpleSwipeTest />}
+      
       {/* Content Area with smooth transitions and swipe support */}
       <main className="relative min-h-screen">
+        {console.log('[ONBOARDING] Rendering content area, isSwipeableStep:', isSwipeableStep)}
         {isSwipeableStep ? (
           <SwipeableOnboardingContent onNext={handleNext} onPrevious={handlePrevious}>
             <div 
