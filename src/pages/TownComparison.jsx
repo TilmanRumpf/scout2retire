@@ -6,7 +6,7 @@ import TownRadarChart from '../components/TownRadarChart';
 import LikeButton from '../components/LikeButton';
 import UnifiedHeader from '../components/UnifiedHeader';
 import ComparePageSpacer from '../components/ComparePageSpacer';
-import { useSwipeGesture } from '../hooks/useSwipeGesture';
+import SwipeableCompareContent from '../components/SwipeableCompareContent';
 import { Eye, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign, X, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
@@ -31,25 +31,6 @@ export default function TownComparison() {
     { id: 'administration', label: 'Admin', icon: HousePlus },
     { id: 'budget', label: 'Budget', icon: DollarSign }
   ];
-  
-  // Enable swipe gestures on mobile for category navigation
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  
-  const handleSwipeLeft = () => {
-    const currentIndex = categories.findIndex(cat => cat.id === activeCategory);
-    if (currentIndex < categories.length - 1) {
-      setActiveCategory(categories[currentIndex + 1].id);
-    }
-  };
-  
-  const handleSwipeRight = () => {
-    const currentIndex = categories.findIndex(cat => cat.id === activeCategory);
-    if (currentIndex > 0) {
-      setActiveCategory(categories[currentIndex - 1].id);
-    }
-  };
-  
-  useSwipeGesture(handleSwipeLeft, handleSwipeRight, isMobile);
 
   // Load data
   useEffect(() => {
@@ -821,7 +802,12 @@ export default function TownComparison() {
       {/* Special spacer for Compare page - tabs need extra space on mobile */}
       <ComparePageSpacer />
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <SwipeableCompareContent 
+        categories={categories}
+        activeCategory={activeCategory}
+        onCategoryChange={setActiveCategory}
+      >
+        <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Town Selection Section - Mobile and Desktop */}
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3 flex-wrap">
@@ -1006,7 +992,8 @@ export default function TownComparison() {
             </button>
           </div>
         )}
-      </main>
+        </main>
+      </SwipeableCompareContent>
 
     </div>
   );
