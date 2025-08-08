@@ -5,7 +5,7 @@ import { getCurrentUser } from '../utils/authUtils';
 import TownRadarChart from '../components/TownRadarChart';
 import LikeButton from '../components/LikeButton';
 import UnifiedHeader from '../components/UnifiedHeader';
-import HeaderSpacer from '../components/HeaderSpacer';
+import ComparePageSpacer from '../components/ComparePageSpacer';
 import { Eye, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign, X, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
@@ -798,8 +798,8 @@ export default function TownComparison() {
         }))}
       />
       
-      {/* Spacer for fixed header with tabs on both mobile and desktop */}
-      <HeaderSpacer hasFilters={true} hasMobileSecondRow={true} />
+      {/* Special spacer for Compare page - tabs need extra space on mobile */}
+      <ComparePageSpacer />
 
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Town Selection Section - Mobile and Desktop */}
