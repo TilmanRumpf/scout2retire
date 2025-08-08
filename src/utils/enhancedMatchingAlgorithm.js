@@ -787,183 +787,315 @@ export function calculateClimateScore(preferences, town) {
   }
 }
 
-// 3. CULTURE MATCHING (20% of total)
+// 3. CULTURE MATCHING (20% of total) - NEW ALGORITHM
+// Total: 100 pts distributed as:
+// - Living Environment: 20 pts
+// - Pace of Life: 20 pts  
+// - Language Preference: 20 pts
+// - Expat Community: 10 pts
+// - Dining & Nightlife: 10 pts
+// - Events & Concerts: 10 pts
+// - Museums & Arts: 10 pts
+
+// Adjacency maps for gradual scoring
+const CULTURE_ADJACENCY = {
+  urban_rural: {
+    'urban': ['suburban'],
+    'suburban': ['urban', 'rural'],
+    'rural': ['suburban']
+  },
+  pace_of_life: {
+    'fast': ['moderate'],
+    'moderate': ['fast', 'relaxed'],
+    'relaxed': ['moderate']
+  },
+  expat_community: {
+    'large': ['moderate'],
+    'moderate': ['large', 'small'],
+    'small': ['moderate']
+  }
+}
+
 export function calculateCultureScore(preferences, town) {
   let score = 0
   let factors = []
   
-  // If user has NO culture preferences at all, they're flexible - give perfect score
-  if (!preferences.language_comfort?.preferences && 
-      !preferences.language_comfort?.already_speak?.length &&
-      !preferences.lifestyle_preferences?.pace_of_life?.length &&
-      !preferences.lifestyle_preferences?.social_atmosphere?.length &&
-      !preferences.cultural_diversity?.tolerance) {
+  // Check if user has any culture preferences at all
+  const hasAnyPreferences = 
+    preferences.lifestyle_preferences?.urban_rural?.length ||
+    preferences.lifestyle_preferences?.pace_of_life?.length ||
+    preferences.expat_community_preference?.length ||
+    preferences.language_comfort?.preferences?.length ||
+    preferences.language_comfort?.already_speak?.length ||
+    (preferences.cultural_importance?.dining_nightlife > 1) ||
+    (preferences.cultural_importance?.cultural_events > 1) ||
+    (preferences.cultural_importance?.museums > 1)
+  
+  if (!hasAnyPreferences) {
     score = 100
     factors.push({ factor: 'Open to any culture', score: 100 })
     return { score, factors, category: 'Culture' }
   }
   
-  // Language compatibility (25 points)
-  const languagePrefs = preferences.language_comfort?.preferences
-  const langPref = Array.isArray(languagePrefs) ? languagePrefs[0] : languagePrefs
-  
-  // Get primary language - prioritize real data over assumptions
-  let primaryLanguage = town.primary_language
-  let usingEstimatedLanguage = false
-  
-  // Only use fallback if primary_language is missing AND data completeness is low
-  if (!primaryLanguage && (!town.data_completeness_score || town.data_completeness_score < 60)) {
-    // Country to language mapping fallback (last resort)
-    const countryLanguages = {
-      'Portugal': 'Portuguese', 'Spain': 'Spanish', 'France': 'French',
-      'Italy': 'Italian', 'Germany': 'German', 'Greece': 'Greek',
-      'Mexico': 'Spanish', 'Costa Rica': 'Spanish', 'Panama': 'Spanish',
-      'Ecuador': 'Spanish', 'Colombia': 'Spanish', 'Peru': 'Spanish',
-      'Thailand': 'Thai', 'Vietnam': 'Vietnamese', 'Malaysia': 'Malay',
-      'Cyprus': 'Greek',
-      // Former colonies and multi-language countries  
-      'Malta': 'English', 'Singapore': 'English', 'Ireland': 'English',
-      'South Africa': 'English', 'New Zealand': 'English', 'Australia': 'English',
-      'Canada': 'English', 'Hong Kong': 'English', 'India': 'English',
-      'Philippines': 'English', 'Nigeria': 'English', 'Ghana': 'English',
-      'Switzerland': 'German', 'Belgium': 'Dutch', 'Luxembourg': 'French'
+  // 1. LIVING ENVIRONMENT (20 points)
+  const livingEnvPref = preferences.lifestyle_preferences?.urban_rural
+  if (!livingEnvPref || livingEnvPref.length === 0) {
+    // User doesn't care - full points
+    score += 20
+    factors.push({ factor: 'Flexible on living environment', score: 20 })
+  } else if (town.urban_rural_character) {
+    // Check for exact match
+    if (livingEnvPref.includes(town.urban_rural_character)) {
+      score += 20
+      factors.push({ factor: `Living environment matched (${town.urban_rural_character})`, score: 20 })
+    } else {
+      // Check for adjacent match
+      let isAdjacent = false
+      for (const pref of livingEnvPref) {
+        if (CULTURE_ADJACENCY.urban_rural[pref]?.includes(town.urban_rural_character)) {
+          isAdjacent = true
+          break
+        }
+      }
+      if (isAdjacent) {
+        score += 10
+        factors.push({ factor: `Living environment close match (${town.urban_rural_character})`, score: 10 })
+      } else {
+        factors.push({ factor: `Living environment mismatch (${town.urban_rural_character})`, score: 0 })
+      }
     }
-    primaryLanguage = countryLanguages[town.country] || 'Local'
-    usingEstimatedLanguage = true
+  } else {
+    // Town has no data - give partial credit
+    score += 12
+    factors.push({ factor: 'Living environment data unavailable', score: 12 })
   }
   
-  if (langPref === 'english_only') {
-    // Check if English is the primary language
-    if (primaryLanguage && primaryLanguage.toLowerCase() === 'english') {
-      score += 25
-      factors.push({ factor: 'English is primary language', score: 25 })
+  // 2. PACE OF LIFE (20 points)
+  const pacePref = preferences.lifestyle_preferences?.pace_of_life
+  const townPace = town.pace_of_life_actual || town.pace_of_life // Use actual if available
+  
+  if (!pacePref || pacePref.length === 0) {
+    // User doesn't care - full points
+    score += 20
+    factors.push({ factor: 'Flexible on pace of life', score: 20 })
+  } else if (townPace) {
+    // Check for exact match
+    if (pacePref.includes(townPace)) {
+      score += 20
+      factors.push({ factor: `Pace of life matched (${townPace})`, score: 20 })
+    } else {
+      // Check for adjacent match
+      let isAdjacent = false
+      for (const pref of pacePref) {
+        if (CULTURE_ADJACENCY.pace_of_life[pref]?.includes(townPace)) {
+          isAdjacent = true
+          break
+        }
+      }
+      if (isAdjacent) {
+        score += 10
+        factors.push({ factor: `Pace of life close match (${townPace})`, score: 10 })
+      } else {
+        factors.push({ factor: `Pace of life mismatch (${townPace})`, score: 0 })
+      }
+    }
+  } else {
+    // Town has no data - give partial credit
+    score += 12
+    factors.push({ factor: 'Pace of life data unavailable', score: 12 })
+  }
+  
+  // 3. LANGUAGE PREFERENCE (20 points)
+  const languagePrefs = preferences.language_comfort?.preferences
+  const langPref = Array.isArray(languagePrefs) ? languagePrefs[0] : languagePrefs
+  const speaksLanguages = preferences.language_comfort?.already_speak || []
+  
+  // No language preference at all - full points
+  if (!langPref && speaksLanguages.length === 0) {
+    score += 20
+    factors.push({ factor: 'Flexible on language', score: 20 })
+  } 
+  // Check if user speaks the local language
+  else if (speaksLanguages.length > 0 && town.primary_language) {
+    const speaksLocal = speaksLanguages.some(lang => 
+      town.primary_language?.toLowerCase().includes(lang.toLowerCase()) ||
+      town.languages_spoken?.some(l => l.toLowerCase().includes(lang.toLowerCase()))
+    )
+    
+    if (speaksLocal) {
+      score += 20
+      factors.push({ factor: `Speaks local language (${town.primary_language})`, score: 20 })
+    } else if (langPref === 'willing_to_learn' || langPref === 'comfortable') {
+      score += 10
+      factors.push({ factor: 'Willing to learn local language', score: 10 })
+    } else {
+      factors.push({ factor: 'Language barrier', score: 0 })
+    }
+  }
+  // English only preference
+  else if (langPref === 'english_only') {
+    if (town.primary_language?.toLowerCase() === 'english') {
+      score += 20
+      factors.push({ factor: 'English is primary language', score: 20 })
     } else if (town.english_proficiency_level) {
-      // Use actual English proficiency data with updated scoring
       const proficiencyScores = {
-        'excellent': 22,    // Near-native level
-        'good': 18,         // Conversational level
-        'moderate': 12,     // Basic communication
-        'basic': 8,         // Limited communication
-        'none': 0,          // No English
-        // Legacy values for backward compatibility
-        'native': 25,
-        'very_high': 22,
-        'high': 18,
-        'medium': 12,
-        'low': 8
+        'excellent': 18,
+        'good': 15,
+        'moderate': 10,
+        'basic': 5,
+        'none': 0,
+        // Legacy values
+        'native': 20,
+        'very_high': 18,
+        'high': 15,
+        'medium': 10,
+        'low': 5
       }
       
       const proficiencyScore = proficiencyScores[town.english_proficiency_level] || 0
+      score += proficiencyScore
       if (proficiencyScore > 0) {
-        score += proficiencyScore
-        const proficiencyText = town.english_proficiency_level === 'excellent' ? 'Excellent English proficiency' :
-                              town.english_proficiency_level === 'good' ? 'Good English proficiency' :
-                              town.english_proficiency_level === 'moderate' ? 'Moderate English proficiency' :
-                              town.english_proficiency_level === 'basic' ? 'Basic English available' :
-                              'English proficiency available'
-        factors.push({ factor: proficiencyText, score: proficiencyScore })
-      }
-    } else if (usingEstimatedLanguage) {
-      // Only use fallback for tourist areas when we're already estimating
-      score += 8
-      factors.push({ factor: 'Some English expected (estimated)', score: 8 })
-    }
-    
-    // Add warning if using estimated language data
-    if (usingEstimatedLanguage && !town.english_proficiency_level) {
-      factors.push({ factor: 'Language data estimated from country', score: -2 })
-    }
-    
-  } else if (preferences.language_comfort?.already_speak?.length) {
-    // Check if user speaks local language
-    const speaksLocal = preferences.language_comfort.already_speak.some(lang => {
-      if (primaryLanguage) {
-        return primaryLanguage.toLowerCase().includes(lang.toLowerCase())
-      }
-      // Also check languages_spoken array if available
-      return town.languages_spoken?.some(l => l.toLowerCase().includes(lang.toLowerCase()))
-    })
-    
-    if (speaksLocal) {
-      score += 25
-      const languageUsed = usingEstimatedLanguage ? `${primaryLanguage} (estimated)` : primaryLanguage
-      factors.push({ factor: `Speaks local language (${languageUsed})`, score: 25 })
-    }
-    
-  } else {
-    // User willing to learn - give partial credit with Romance language bonus
-    let learnScore = 15
-    
-    if (primaryLanguage) {
-      const romanceLanguages = ['spanish', 'portuguese', 'italian', 'french', 'catalan', 'romanian']
-      if (romanceLanguages.includes(primaryLanguage.toLowerCase())) {
-        learnScore += 5  // Bonus for easier learning
-        factors.push({ factor: `Language learning opportunity (${primaryLanguage} - easier for English speakers)`, score: learnScore })
+        factors.push({ factor: `English proficiency: ${town.english_proficiency_level}`, score: proficiencyScore })
       } else {
-        factors.push({ factor: `Language learning opportunity (${primaryLanguage})`, score: learnScore })
+        factors.push({ factor: 'No English proficiency', score: 0 })
       }
     } else {
-      factors.push({ factor: 'Language learning opportunity', score: learnScore })
+      factors.push({ factor: 'English proficiency unknown', score: 0 })
+    }
+  }
+  // Willing to learn or flexible
+  else if (langPref === 'willing_to_learn' || langPref === 'comfortable') {
+    score += 10
+    factors.push({ factor: 'Open to learning local language', score: 10 })
+  }
+  
+  // 4. EXPAT COMMUNITY (10 points)
+  const expatPref = preferences.expat_community_preference
+  
+  if (!expatPref || (Array.isArray(expatPref) && expatPref.length === 0)) {
+    // User doesn't care - full points
+    score += 10
+    factors.push({ factor: 'Flexible on expat community', score: 10 })
+  } else if (town.expat_community_size) {
+    const expatPrefs = Array.isArray(expatPref) ? expatPref : [expatPref]
+    
+    // Check for exact match
+    if (expatPrefs.includes(town.expat_community_size)) {
+      score += 10
+      factors.push({ factor: `Expat community matched (${town.expat_community_size})`, score: 10 })
+    } else {
+      // Check for adjacent match
+      let isAdjacent = false
+      for (const pref of expatPrefs) {
+        if (CULTURE_ADJACENCY.expat_community[pref]?.includes(town.expat_community_size)) {
+          isAdjacent = true
+          break
+        }
+      }
+      if (isAdjacent) {
+        score += 5
+        factors.push({ factor: `Expat community close match (${town.expat_community_size})`, score: 5 })
+      } else {
+        factors.push({ factor: `Expat community mismatch (${town.expat_community_size})`, score: 0 })
+      }
+    }
+  } else {
+    // Town has no data - give partial credit
+    score += 6
+    factors.push({ factor: 'Expat community data unavailable', score: 6 })
+  }
+  
+  // 5. DINING & NIGHTLIFE (10 points)
+  const diningImportance = preferences.cultural_importance?.dining_nightlife || 1
+  
+  if (diningImportance === 1) {
+    // User doesn't care - full points
+    score += 10
+    factors.push({ factor: 'Flexible on dining & nightlife', score: 10 })
+  } else if (town.dining_nightlife_level) {
+    const difference = Math.abs(diningImportance - town.dining_nightlife_level)
+    let points = 0
+    
+    if (difference === 0) {
+      points = 10 // Exact match
+      factors.push({ factor: 'Dining & nightlife perfectly matched', score: 10 })
+    } else if (difference === 1) {
+      points = 7  // Adjacent
+      factors.push({ factor: 'Dining & nightlife good match', score: 7 })
+    } else if (difference === 2) {
+      points = 4  // Near
+      factors.push({ factor: 'Dining & nightlife acceptable', score: 4 })
+    } else {
+      factors.push({ factor: 'Dining & nightlife mismatch', score: 0 })
     }
     
-    score += learnScore
+    score += points
+  } else {
+    // No data - give partial credit
+    score += 5
+    factors.push({ factor: 'Dining & nightlife data unavailable', score: 5 })
+  }
+  
+  // 6. EVENTS & CONCERTS (10 points)
+  const eventsImportance = preferences.cultural_importance?.cultural_events || 1
+  
+  if (eventsImportance === 1) {
+    // User doesn't care - full points
+    score += 10
+    factors.push({ factor: 'Flexible on cultural events', score: 10 })
+  } else if (town.cultural_events_level) {
+    const difference = Math.abs(eventsImportance - town.cultural_events_level)
+    let points = 0
     
-    // Add warning if using estimated language data
-    if (usingEstimatedLanguage) {
-      factors.push({ factor: 'Language data estimated from country', score: -2 })
+    if (difference === 0) {
+      points = 10 // Exact match
+      factors.push({ factor: 'Cultural events perfectly matched', score: 10 })
+    } else if (difference === 1) {
+      points = 7  // Adjacent
+      factors.push({ factor: 'Cultural events good match', score: 7 })
+    } else if (difference === 2) {
+      points = 4  // Near
+      factors.push({ factor: 'Cultural events acceptable', score: 4 })
+    } else {
+      factors.push({ factor: 'Cultural events mismatch', score: 0 })
     }
+    
+    score += points
+  } else {
+    // No data - give partial credit
+    score += 5
+    factors.push({ factor: 'Cultural events data unavailable', score: 5 })
   }
   
-  // Expat community match (20 points)
-  if (preferences.expat_community_preference === town.expat_community_size) {
-    score += 20
-    factors.push({ factor: 'Expat community size matched', score: 20 })
-  }
+  // 7. MUSEUMS & ARTS (10 points)
+  const museumsImportance = preferences.cultural_importance?.museums || 1
   
-  // Pace of life match (20 points)
-  if (preferences.lifestyle_preferences?.pace_of_life === town.pace_of_life_actual) {
-    score += 20
-    factors.push({ factor: 'Pace of life matched', score: 20 })
-  }
-  
-  // Urban/rural match (15 points)
-  if (preferences.lifestyle_preferences?.urban_rural === town.urban_rural_character) {
-    score += 15
-    factors.push({ factor: 'Urban/rural preference matched', score: 15 })
-  }
-  
-  // Cultural amenities match (20 points)
-  const culturalImportance = preferences.cultural_importance || {}
-  let culturalScore = 0
-  let culturalMatches = 0
-  
-  if (culturalImportance.dining_nightlife && town.dining_nightlife_level) {
-    const match = Math.abs(culturalImportance.dining_nightlife - town.dining_nightlife_level) <= 1
-    if (match) {
-      culturalScore += 7
-      culturalMatches++
+  if (museumsImportance === 1) {
+    // User doesn't care - full points
+    score += 10
+    factors.push({ factor: 'Flexible on museums & arts', score: 10 })
+  } else if (town.museums_level) {
+    const difference = Math.abs(museumsImportance - town.museums_level)
+    let points = 0
+    
+    if (difference === 0) {
+      points = 10 // Exact match
+      factors.push({ factor: 'Museums & arts perfectly matched', score: 10 })
+    } else if (difference === 1) {
+      points = 7  // Adjacent
+      factors.push({ factor: 'Museums & arts good match', score: 7 })
+    } else if (difference === 2) {
+      points = 4  // Near
+      factors.push({ factor: 'Museums & arts acceptable', score: 4 })
+    } else {
+      factors.push({ factor: 'Museums & arts mismatch', score: 0 })
     }
-  }
-  
-  if (culturalImportance.museums && town.museums_level) {
-    const match = Math.abs(culturalImportance.museums - town.museums_level) <= 1
-    if (match) {
-      culturalScore += 7
-      culturalMatches++
-    }
-  }
-  
-  if (culturalImportance.cultural_events && town.cultural_events_level) {
-    const match = Math.abs(culturalImportance.cultural_events - town.cultural_events_level) <= 1
-    if (match) {
-      culturalScore += 6
-      culturalMatches++
-    }
-  }
-  
-  if (culturalMatches > 0) {
-    score += culturalScore
-    factors.push({ factor: 'Cultural amenities match', score: culturalScore })
+    
+    score += points
+  } else {
+    // No data - give partial credit
+    score += 5
+    factors.push({ factor: 'Museums & arts data unavailable', score: 5 })
   }
   
   return {
