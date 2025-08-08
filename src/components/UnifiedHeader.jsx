@@ -312,7 +312,7 @@ export default function UnifiedHeader({
                   <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[rgba(255,255,255,0.95)] dark:from-[rgba(31,41,55,0.9)] to-transparent z-10 pointer-events-none sm:hidden" />
                   
                   <div ref={scrollContainerRef} className="overflow-x-auto scrollbar-hide">
-                    <div className="flex items-center gap-1 px-1">
+                    <div className="flex items-center gap-2 px-1">
                       {tabs.map((tab) => {
                         const Icon = tab.icon;
                         
@@ -320,22 +320,37 @@ export default function UnifiedHeader({
                           <button
                             key={tab.id}
                             ref={tab.isActive ? activeTabRef : null}
-                            onClick={tab.onClick}
-                            title={tab.label}
-                            className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-all duration-200 ${
-                              tab.isActive
-                                ? 'bg-scout-accent-100 dark:bg-scout-accent-900/30 font-medium text-scout-accent-700 dark:text-scout-accent-300'
+                            onClick={(e) => {
+                              // Auto-center the clicked tab
+                              const button = e.currentTarget;
+                              const container = scrollContainerRef.current;
+                              if (container && button) {
+                                const buttonRect = button.getBoundingClientRect();
+                                const containerRect = container.getBoundingClientRect();
+                                const buttonCenter = buttonRect.left + (buttonRect.width / 2) - containerRect.left;
+                                const containerCenter = containerRect.width / 2;
+                                const scrollPosition = container.scrollLeft + (buttonCenter - containerCenter);
+                                
+                                container.scrollTo({
+                                  left: Math.max(0, scrollPosition),
+                                  behavior: 'smooth'
+                                });
+                              }
+                              
+                              tab.onClick();
+                            }}
+                            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm whitespace-nowrap transition-all duration-200 ${
+                              tab.isActive 
+                                ? 'bg-scout-accent-100 dark:bg-scout-accent-900/30 font-medium text-scout-accent-700 dark:text-scout-accent-300' 
                                 : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'
                             }`}
                           >
-                            {Icon && (
-                              <Icon className={`w-4 h-4 transition-colors duration-200 flex-shrink-0 ${
-                                tab.isActive
-                                  ? 'text-scout-accent-600 dark:text-scout-accent-400'
-                                  : 'text-gray-500 dark:text-gray-500'
-                              }`} />
-                            )}
-                            <span className="hidden min-[400px]:inline">{tab.label}</span>
+                            <Icon className={`w-4 h-4 transition-colors duration-200 ${
+                              tab.isActive 
+                                ? 'text-scout-accent-600 dark:text-scout-accent-400' 
+                                : 'text-gray-500 dark:text-gray-500'
+                            }`} />
+                            <span>{tab.label}</span>
                           </button>
                         );
                       })}
