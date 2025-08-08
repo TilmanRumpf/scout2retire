@@ -147,8 +147,9 @@
   visibility: hidden;
 }
 
-/* Mobile-specific: When second row EXISTS on mobile (tabs, steps) */
-.ios-header-spacer-mobile-second-row {
+/* Special spacer ONLY for Compare page with tabs */
+.compare-page-spacer {
+  /* Mobile needs extra space for tabs */
   height: 110px;
   min-height: 110px;
   width: 100%;
@@ -157,28 +158,16 @@
   visibility: hidden;
 }
 
-/* Mobile-specific: When NO second row on mobile (filter icon only) */
-.ios-header-spacer-mobile-no-second-row {
-  height: 70px;
-  min-height: 70px;
-  width: 100%;
-  flex-shrink: 0;
-  display: block;
-  visibility: hidden;
-}
-
 /* Desktop: LESS space because no safe areas and compact filters */
 @media (min-width: 768px) {
-  .ios-header-spacer-with-filters,
-  .md\:ios-header-spacer-with-filters {
+  .ios-header-spacer-with-filters {
     /* Desktop only needs 84px */
     height: 84px;
     min-height: 84px;
   }
   
-  /* Override mobile-specific classes on desktop */
-  .ios-header-spacer-mobile-second-row,
-  .ios-header-spacer-mobile-no-second-row {
+  .compare-page-spacer {
+    /* Desktop also needs 84px like other pages with second row */
     height: 84px;
     min-height: 84px;
   }

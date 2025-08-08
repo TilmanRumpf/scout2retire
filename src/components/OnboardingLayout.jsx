@@ -158,11 +158,8 @@ export default function OnboardingLayout() {
         }}
       />
       
-      {/* Header spacer - steps visible on both mobile and desktop when not on progress/review/complete */}
-      <HeaderSpacer 
-        hasFilters={currentStep !== 'progress' && currentStep !== 'review' && currentStep !== 'complete'}
-        hasMobileSecondRow={currentStep !== 'progress' && currentStep !== 'review' && currentStep !== 'complete'}
-      />
+      {/* Header spacer for proper content positioning */}
+      <HeaderSpacer hasFilters={false} />
       
       {/* Content Area with smooth transitions */}
       <main className="relative">
