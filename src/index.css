@@ -95,8 +95,8 @@ html, body {
   height: 100%;
   overflow-x: hidden;
   
-  /* Prevent bounce scrolling on iOS */
-  overscroll-behavior: none;
+  /* Allow controlled overscroll for swipe gestures */
+  overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
 
