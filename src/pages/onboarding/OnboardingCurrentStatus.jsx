@@ -346,7 +346,6 @@ export default function OnboardingCurrentStatus() {
   const isCouple = formData.family_situation === 'couple';
 
   return (
-    <>
       
       <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         
@@ -804,6 +803,5 @@ export default function OnboardingCurrentStatus() {
           </div>
         </div>
       </main>
-    </>
   );
 }
