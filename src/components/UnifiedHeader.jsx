@@ -111,7 +111,7 @@ export default function UnifiedHeader({
     setIsQuickNavOpen(true);
   };
   
-  // Auto-scroll for steps on mobile
+  // Auto-scroll to CENTER active step
   useEffect(() => {
     if (secondRowType !== 'steps') return;
     
@@ -120,37 +120,29 @@ export default function UnifiedHeader({
         const container = scrollContainerRef.current;
         const activeElement = activeStepRef.current;
         
-        const innerContent = container.querySelector('.flex');
-        if (!innerContent) return;
-        
+        // Get element position and dimensions
         const elementRect = activeElement.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect();
-        const innerRect = innerContent.getBoundingClientRect();
         
-        const elementLeft = elementRect.left - innerRect.left;
-        const elementRight = elementRect.right - innerRect.left;
+        // Calculate element center relative to container
+        const elementCenter = elementRect.left + (elementRect.width / 2) - containerRect.left;
+        const containerCenter = containerRect.width / 2;
         
-        const visibleLeft = container.scrollLeft + 32;
-        const visibleRight = container.scrollLeft + containerRect.width - 32;
+        // Calculate scroll position to center the element
+        const scrollPosition = container.scrollLeft + (elementCenter - containerCenter);
         
-        if (elementLeft < visibleLeft) {
-          container.scrollTo({
-            left: Math.max(0, elementLeft - 32),
-            behavior: 'smooth'
-          });
-        } else if (elementRight > visibleRight) {
-          container.scrollTo({
-            left: elementRight - containerRect.width + 32,
-            behavior: 'smooth'
-          });
-        }
+        // Smooth scroll to center
+        container.scrollTo({
+          left: Math.max(0, scrollPosition),
+          behavior: 'smooth'
+        });
       }
     });
     
     return () => cancelAnimationFrame(animationFrame);
   }, [currentStep, secondRowType]);
   
-  // Auto-scroll for tabs
+  // Auto-scroll to CENTER active tab
   useEffect(() => {
     if (secondRowType !== 'tabs') return;
     
@@ -159,30 +151,22 @@ export default function UnifiedHeader({
         const container = scrollContainerRef.current;
         const activeElement = activeTabRef.current;
         
-        const innerContent = container.querySelector('.flex');
-        if (!innerContent) return;
-        
+        // Get element position and dimensions
         const elementRect = activeElement.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect();
-        const innerRect = innerContent.getBoundingClientRect();
         
-        const elementLeft = elementRect.left - innerRect.left;
-        const elementRight = elementRect.right - innerRect.left;
+        // Calculate element center relative to container
+        const elementCenter = elementRect.left + (elementRect.width / 2) - containerRect.left;
+        const containerCenter = containerRect.width / 2;
         
-        const visibleLeft = container.scrollLeft + 16;
-        const visibleRight = container.scrollLeft + containerRect.width - 16;
+        // Calculate scroll position to center the element
+        const scrollPosition = container.scrollLeft + (elementCenter - containerCenter);
         
-        if (elementLeft < visibleLeft) {
-          container.scrollTo({
-            left: Math.max(0, elementLeft - 16),
-            behavior: 'smooth'
-          });
-        } else if (elementRight > visibleRight) {
-          container.scrollTo({
-            left: elementRight - containerRect.width + 16,
-            behavior: 'smooth'
-          });
-        }
+        // Smooth scroll to center
+        container.scrollTo({
+          left: Math.max(0, scrollPosition),
+          behavior: 'smooth'
+        });
       }
     });
     
@@ -273,6 +257,23 @@ export default function UnifiedHeader({
                             ref={isActive ? activeStepRef : null}
                             onClick={async (e) => {
                               e.preventDefault();
+                              
+                              // Auto-center the clicked button
+                              const button = e.currentTarget;
+                              const container = scrollContainerRef.current;
+                              if (container && button) {
+                                const buttonRect = button.getBoundingClientRect();
+                                const containerRect = container.getBoundingClientRect();
+                                const buttonCenter = buttonRect.left + (buttonRect.width / 2) - containerRect.left;
+                                const containerCenter = containerRect.width / 2;
+                                const scrollPosition = container.scrollLeft + (buttonCenter - containerCenter);
+                                
+                                container.scrollTo({
+                                  left: Math.max(0, scrollPosition),
+                                  behavior: 'smooth'
+                                });
+                              }
+                              
                               if (onStepNavigate) {
                                 await onStepNavigate(step.path);
                               }
