@@ -295,8 +295,8 @@ export default function Favorites() {
         }}
       />
       
-      {/* Spacer for fixed header with filters */}
-      <HeaderSpacer hasFilters={true} />
+      {/* Spacer for fixed header - filters on desktop only, icon on mobile */}
+      <HeaderSpacer hasFilters={true} hasMobileSecondRow={false} />
 
       <main className="max-w-7xl mx-auto px-4 py-3">
         {favorites.length === 0 ? (
