@@ -24,7 +24,7 @@ import TownComparison from "./pages/TownComparison";
 import TownDiscovery from "./pages/TownDiscovery";
 import Chat from "./pages/Chat";
 import Journal from "./pages/Journal";
-import TownsManager from "./pages/admin/towns-manager";
+import TownsManager from "./pages/admin/TownsManager";
 import HeaderMockup from "./pages/HeaderMockup";
 // import TestClaude from "./components/TestClaude";
 import ScottyGuide from "./components/ScottyGuide";
