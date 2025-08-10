@@ -1,5 +1,5 @@
 // Updated QuickNav.jsx - FIXED 09JUN25: REMOVED ALL FUCKING ICONS
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import supabase from '../utils/supabaseClient';
 import { getCurrentUser, signOut } from '../utils/authUtils';
@@ -15,8 +15,27 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
   const navigate = useNavigate();
   const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
+  
+  // Auto-expand admin section when on admin pages
+  const isOnAdminPage = location.pathname.startsWith('/admin');
+  const [adminExpanded, setAdminExpanded] = useState(isOnAdminPage);
+  const scrollContainerRef = useRef(null);
 
   // Note: Removed location change effect as it was causing immediate closes
+
+  // Auto-scroll to top when menu opens
+  useEffect(() => {
+    if (isOpen && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [isOpen]);
+
+  // Update admin expanded state when navigating to/from admin pages
+  useEffect(() => {
+    if (isOnAdminPage && !adminExpanded) {
+      setAdminExpanded(true);
+    }
+  }, [isOnAdminPage]);
 
   // Load user and check for pending invitations
   useEffect(() => {
@@ -179,24 +198,17 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
 
   return (
     <>
-      {/* Hamburger toggle button - only show when QuickNav manages its own state */}
-      {propIsOpen === undefined && (
+      {/* Hamburger toggle button - only show when QuickNav manages its own state and menu is closed */}
+      {propIsOpen === undefined && !isOpen && (
         <button
           onClick={() => setInternalIsOpen(!internalIsOpen)}
           className={`nav-toggle fixed top-3 right-3 ${uiConfig.header.zIndex.hamburgerButton} p-2 ${uiConfig.layout.radius.md} ${uiConfig.colors.card} ${uiConfig.layout.shadow.md}`}
-          aria-label={isOpen ? "Close menu" : "Open menu"}
+          aria-label="Open menu"
         >
-          {isOpen ? (
-            // X icon when menu is open
-            <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${uiConfig.colors.heading}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          ) : (
-            // Hamburger icon when menu is closed
-            <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${uiConfig.colors.heading}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          )}
+          {/* Hamburger icon */}
+          <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${uiConfig.colors.heading}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
         </button>
       )}
 
@@ -210,20 +222,38 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
 
       {/* Slide-out navigation menu with highest z-index */}
       <div
-        className={`nav-menu fixed top-0 h-full ${uiConfig.colors.card} ${uiConfig.layout.shadow.lg} ${uiConfig.header.zIndex.mobileMenu} w-64 transform transition-transform duration-300 ease-in-out ${
+        className={`nav-menu fixed top-0 h-full ${uiConfig.colors.card} ${uiConfig.layout.shadow.lg} ${uiConfig.header.zIndex.mobileMenu} w-64 transform transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{ 
           right: 0
         }}
       >
-        <div className="px-4 pb-6" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-          <div className="h-11 flex items-center" style={{ paddingTop: '0.75rem' }}>
-            <h2 className={`text-xl font-bold ${uiConfig.colors.heading} s2r-logo`}>
+        {/* Fixed Header */}
+        <div className="px-3 sm:px-4 border-b border-gray-200 dark:border-gray-700" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+          <div className="h-12 sm:h-14 flex items-center justify-between">
+            <h2 className={`text-lg sm:text-xl font-bold ${uiConfig.colors.heading} s2r-logo`}>
               Scout<span style={{ color: '#f66527' }}>2</span>Retire
             </h2>
+            {/* Gear icon for admin panel - only visible for admins */}
+            {isAdmin && (
+              <button
+                onClick={() => setAdminExpanded(!adminExpanded)}
+                className={`p-1.5 -mr-1 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${uiConfig.colors.hoverBg}`}
+                aria-label="Toggle admin menu"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${adminExpanded ? 'text-[#f66527]' : uiConfig.colors.muted}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </button>
+            )}
           </div>
-          <nav className="space-y-1 mt-6">
+        </div>
+
+        {/* Scrollable Navigation Content */}
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-3 sm:px-4 py-4">
+          <nav className="space-y-0.5 sm:space-y-1">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path && item.label !== 'Preferences';
               
@@ -238,7 +268,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
                         navigate('/welcome');
                       }
                     }}
-                    className={`w-full flex items-center justify-between p-3 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${uiConfig.colors.hoverBg} text-left`}
+                    className={`w-full flex items-center justify-between p-2 sm:p-3 text-sm sm:text-base ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${uiConfig.colors.hoverBg} text-left`}
                   >
                     <span className={`font-medium ${item.special ? 'text-[#f66527]' : ''}`}>{item.label}</span>
                   </button>
@@ -249,7 +279,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center justify-between p-3 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
+                  className={`flex items-center justify-between p-2 sm:p-3 text-sm sm:text-base ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
                     isActive
                       ? `${uiConfig.colors.success} ${uiConfig.colors.statusSuccess}`
                       : item.special
@@ -269,16 +299,16 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
               );
             })}
             
-            {/* Admin Section - Only visible for admin users */}
-            {isAdmin && (
+            {/* Admin Section - Only visible for admin users and when expanded */}
+            {isAdmin && adminExpanded && (
               <>
-                <div className={`border-t ${uiConfig.colors.border} my-4`}></div>
-                <div className={`px-3 py-2 text-xl font-bold s2r-logo`}>
+                <div className={`border-t ${uiConfig.colors.border} my-2 sm:my-4`}></div>
+                <div className={`px-2 sm:px-3 py-1 sm:py-2 text-base sm:text-xl font-bold s2r-logo`}>
                   S<span style={{ color: '#f66527' }}>2</span>R Admin
                 </div>
                 <Link
                   to="/admin/towns-manager"
-                  className={`flex items-center justify-between p-3 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
+                  className={`flex items-center justify-between p-2 sm:p-3 text-sm sm:text-base ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
                     location.pathname === '/admin/towns-manager'
                       ? `${uiConfig.colors.success} ${uiConfig.colors.statusSuccess}`
                       : `${uiConfig.colors.hoverBg}`
@@ -290,11 +320,11 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
             )}
           </nav>
         </div>
-        <div className="absolute bottom-8 left-0 right-0 px-4">
-          <div className={`border-t ${uiConfig.colors.border} pt-4`}>
-            <div className={`text-sm ${uiConfig.colors.muted} text-center`}>
-              &copy; 2025 Scout2Retire
-            </div>
+
+        {/* Fixed Footer */}
+        <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
+          <div className={`text-sm ${uiConfig.colors.muted} text-center`}>
+            &copy; 2025 Scout2Retire
           </div>
         </div>
       </div>

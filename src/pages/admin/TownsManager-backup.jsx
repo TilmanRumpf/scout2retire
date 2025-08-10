@@ -1,4 +1,4 @@
-// src/pages/admin/towns-manager.jsx - Reorganized with onboarding subcategories
+// src/pages/admin/TownsManager-backup.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../../utils/supabaseClient';
@@ -7,123 +7,39 @@ import SmartFieldEditor from '../../components/SmartFieldEditor';
 // Admin email check
 const ADMIN_EMAIL = 'tilman.rumpf@gmail.com';
 
-// Column mappings organized by category and subcategory to match onboarding structure
+// Column mappings by category
 const COLUMN_CATEGORIES = {
   Region: {
-    subcategories: {
-      'Countries & Regions': {
-        used: ['country', 'region', 'regions', 'geo_region'],
-        unused: []
-      },
-      'Geographic Features': {
-        used: ['geographic_features_actual'],
-        unused: ['latitude', 'longitude', 'elevation_meters', 'distance_to_ocean_km']
-      },
-      'Vegetation Types': {
-        used: ['vegetation_type_actual'],
-        unused: []
-      }
-    }
+    used: ['country', 'region', 'regions', 'geo_region', 'geographic_features_actual', 'vegetation_type_actual'],
+    unused: ['latitude', 'longitude', 'elevation_meters', 'distance_to_ocean_km']
   },
   Climate: {
-    subcategories: {
-      'Summer Climate': {
-        used: ['avg_temp_summer', 'summer_climate_actual'],
-        unused: ['avg_temp_spring']
-      },
-      'Winter Climate': {
-        used: ['avg_temp_winter', 'winter_climate_actual'],
-        unused: ['avg_temp_fall', 'snow_days']
-      },
-      'Humidity': {
-        used: ['humidity_level_actual'],
-        unused: []
-      },
-      'Sunshine': {
-        used: ['sunshine_level_actual', 'sunshine_hours'],
-        unused: ['uv_index']
-      },
-      'Precipitation': {
-        used: ['precipitation_level_actual', 'annual_rainfall'],
-        unused: ['storm_frequency']
-      },
-      'General Climate': {
-        used: ['climate_description', 'climate'],
-        unused: []
-      }
-    }
+    used: ['avg_temp_summer', 'avg_temp_winter', 'summer_climate_actual', 'winter_climate_actual', 
+            'humidity_level_actual', 'sunshine_level_actual', 'sunshine_hours', 'precipitation_level_actual', 
+            'annual_rainfall', 'climate_description', 'climate'],
+    unused: ['avg_temp_spring', 'avg_temp_fall', 'snow_days', 'storm_frequency', 'uv_index']
   },
   Culture: {
-    subcategories: {
-      'Language': {
-        used: ['language', 'languages_spoken', 'english_proficiency'],
-        unused: []
-      },
-      'Expat Community': {
-        used: ['expat_rating', 'expat_friendly'],
-        unused: []
-      },
-      'Local Culture': {
-        used: [],
-        unused: ['cultural_events', 'local_cuisine', 'religious_diversity', 'arts_scene', 'music_scene']
-      }
-    }
+    used: ['language', 'languages_spoken', 'english_proficiency', 'expat_rating'],
+    unused: ['cultural_events', 'local_cuisine', 'religious_diversity', 'arts_scene', 'music_scene']
   },
   Hobbies: {
-    subcategories: {
-      'Outdoor Activities': {
-        used: ['outdoor_activities', 'hiking_trails', 'beaches_nearby'],
-        unused: []
-      },
-      'Sports & Recreation': {
-        used: ['golf_courses'],
-        unused: ['ski_resorts_nearby']
-      },
-      'Cultural Attractions': {
-        used: ['cultural_attractions'],
-        unused: []
-      }
-    }
+    used: [],
+    unused: ['golf_courses', 'hiking_trails', 'beaches_nearby', 'ski_resorts_nearby', 'cultural_attractions']
   },
   Admin: {
-    subcategories: {
-      'Healthcare': {
-        used: ['healthcare_score', 'english_speaking_doctors'],
-        unused: ['emergency_response_time']
-      },
-      'Safety': {
-        used: ['safety_score'],
-        unused: ['political_stability_score']
-      },
-      'Infrastructure': {
-        used: ['walkability', 'air_quality_index', 'airport_distance'],
-        unused: []
-      },
-      'Legal & Admin': {
-        used: ['visa_requirements'],
-        unused: ['government_efficiency_score', 'tax_treaty']
-      }
-    }
+    used: ['healthcare_score', 'safety_score', 'walkability', 'air_quality_index', 
+           'english_speaking_doctors', 'airport_distance'],
+    unused: ['visa_requirements', 'political_stability_score', 'government_efficiency_score', 
+             'tax_treaty', 'emergency_response_time']
   },
   Costs: {
-    subcategories: {
-      'Living Costs': {
-        used: ['cost_of_living_usd', 'typical_monthly_living_cost'],
-        unused: []
-      },
-      'Housing': {
-        used: ['rent_1bed'],
-        unused: ['rent_2bed', 'home_price_sqm']
-      },
-      'Daily Expenses': {
-        used: [],
-        unused: ['utilities_cost', 'groceries_index', 'restaurant_price_index']
-      }
-    }
+    used: ['cost_of_living_usd', 'typical_monthly_living_cost', 'rent_1bed'],
+    unused: ['rent_2bed', 'home_price_sqm', 'utilities_cost', 'groceries_index', 'restaurant_price_index']
   }
 };
 
-// Columns not in categories (metadata)
+// Columns not in categories
 const OTHER_COLUMNS = {
   used: ['id', 'name', 'image_url_1', 'description', 'appealStatement', 'matchScore'],
   unused: ['created_at', 'updated_at', 'last_ai_update', 'data_source']
@@ -141,14 +57,13 @@ const TownsManager = () => {
   
   // Filters
   const [filters, setFilters] = useState({
-    hasPhoto: 'yes',  // Default to "Has Photo"
+    hasPhoto: 'all',
     completionLevel: 'all',
     worstOffenders: false,
     country: 'all',
     geo_region: 'all',
-    townSearch: '',
-    sortBy: 'abc', // 'abc', 'completion-high', 'completion-low'
-    sortDirection: 'asc' // 'asc', 'desc'
+    regions: 'all',
+    townSearch: ''
   });
   
   // Search suggestions state
@@ -194,6 +109,7 @@ const TownsManager = () => {
       });
       
       setTowns(townsWithMetrics);
+      // Don't set filtered towns here - let the filter effect handle it
     };
     
     if (!isLoading) {
@@ -213,22 +129,12 @@ const TownsManager = () => {
     }
     
     // Completion filter
-    if (filters.completionLevel === '0-20') {
-      filtered = filtered.filter(t => t._completion >= 0 && t._completion <= 20);
-    } else if (filters.completionLevel === '21-40') {
-      filtered = filtered.filter(t => t._completion >= 21 && t._completion <= 40);
-    } else if (filters.completionLevel === '41-60') {
-      filtered = filtered.filter(t => t._completion >= 41 && t._completion <= 60);
-    } else if (filters.completionLevel === '61-80') {
-      filtered = filtered.filter(t => t._completion >= 61 && t._completion <= 80);
-    } else if (filters.completionLevel === '81-100') {
-      filtered = filtered.filter(t => t._completion >= 81 && t._completion <= 100);
-    } else if (filters.completionLevel === 'top50') {
-      // Sort by completion and take top 50
-      filtered = [...filtered].sort((a, b) => b._completion - a._completion).slice(0, 50);
-    } else if (filters.completionLevel === 'worst50') {
-      // Sort by completion and take worst 50
-      filtered = [...filtered].sort((a, b) => a._completion - b._completion).slice(0, 50);
+    if (filters.completionLevel === 'low') {
+      filtered = filtered.filter(t => t._completion < 30);
+    } else if (filters.completionLevel === 'medium') {
+      filtered = filtered.filter(t => t._completion >= 30 && t._completion < 70);
+    } else if (filters.completionLevel === 'high') {
+      filtered = filtered.filter(t => t._completion >= 70);
     }
     
     // Worst offenders filter
@@ -247,23 +153,18 @@ const TownsManager = () => {
       filtered = filtered.filter(t => t.geo_region === filters.geo_region);
     }
     
+    // Regions filter (plural - the regions array column)
+    if (filters.regions !== 'all') {
+      filtered = filtered.filter(t => 
+        t.regions && Array.isArray(t.regions) && t.regions.includes(filters.regions)
+      );
+    }
+    
     // Town name search filter
     if (filters.townSearch) {
       filtered = filtered.filter(t => 
         t.name && t.name.toLowerCase().startsWith(filters.townSearch.toLowerCase())
       );
-    }
-    
-    // Apply sorting
-    if (filters.sortBy === 'abc') {
-      filtered.sort((a, b) => {
-        const result = a.name.localeCompare(b.name);
-        return filters.sortDirection === 'asc' ? result : -result;
-      });
-    } else if (filters.sortBy === 'completion-high') {
-      filtered.sort((a, b) => b._completion - a._completion);
-    } else if (filters.sortBy === 'completion-low') {
-      filtered.sort((a, b) => a._completion - b._completion);
     }
     
     setFilteredTowns(filtered);
@@ -278,6 +179,7 @@ const TownsManager = () => {
       'Kathmandu': 'Nepal',
       'Bangkok': 'Thailand',
       'Kyoto': 'Japan',
+      // Add more known city-country pairs
     };
     
     if (cityCountryErrors[town.name] && town.country !== cityCountryErrors[town.name]) {
@@ -310,17 +212,15 @@ const TownsManager = () => {
 
   // Calculate completion percentage
   const calculateCompletion = (town) => {
-    const allUsedColumns = [];
-    
-    // Collect all "used" columns from all categories
-    Object.values(COLUMN_CATEGORIES).forEach(category => {
-      Object.values(category.subcategories).forEach(subcategory => {
-        allUsedColumns.push(...subcategory.used);
-      });
-    });
-    
-    // Add metadata columns
-    allUsedColumns.push(...OTHER_COLUMNS.used);
+    const allUsedColumns = [
+      ...COLUMN_CATEGORIES.Region.used,
+      ...COLUMN_CATEGORIES.Climate.used,
+      ...COLUMN_CATEGORIES.Culture.used,
+      ...COLUMN_CATEGORIES.Hobbies.used,
+      ...COLUMN_CATEGORIES.Admin.used,
+      ...COLUMN_CATEGORIES.Costs.used,
+      ...OTHER_COLUMNS.used
+    ];
     
     const filledColumns = allUsedColumns.filter(col => 
       town[col] !== null && 
@@ -343,10 +243,11 @@ const TownsManager = () => {
     setFilters({...filters, townSearch: value});
     
     if (value.length > 0) {
+      // Generate suggestions
       const suggestions = towns
         .filter(t => t.name && t.name.toLowerCase().startsWith(value.toLowerCase()))
         .map(t => t.name)
-        .slice(0, 10);
+        .slice(0, 10); // Limit to 10 suggestions
       setSearchSuggestions(suggestions);
       setShowSuggestions(suggestions.length > 0);
     } else {
@@ -357,25 +258,9 @@ const TownsManager = () => {
   
   // Handle suggestion click
   const handleSuggestionClick = (townName) => {
-    // Reset all filters to defaults to ensure searched town is visible
-    setFilters({
-      hasPhoto: 'all',  // Reset to 'all' so town is visible regardless of photo status
-      completionLevel: 'all',
-      worstOffenders: false,
-      country: 'all',
-      geo_region: 'all',
-      townSearch: townName,
-      sortBy: 'abc',
-      sortDirection: 'asc'
-    });
+    setFilters({...filters, townSearch: townName});
     setShowSuggestions(false);
     setSearchSuggestions([]);
-    
-    // Find and auto-select the searched town
-    const foundTown = towns.find(t => t.name === townName);
-    if (foundTown) {
-      setSelectedTown(foundTown);
-    }
   };
   
   // Get unique values for geo_region column
@@ -384,10 +269,21 @@ const TownsManager = () => {
     return geoRegionValues.sort();
   };
   
+  // Get unique values for regions column (plural array)
+  const getUniqueRegions = () => {
+    const regionsSet = new Set();
+    towns.forEach(t => {
+      if (t.regions && Array.isArray(t.regions)) {
+        t.regions.forEach(r => regionsSet.add(r));
+      }
+    });
+    return [...regionsSet].filter(Boolean).sort();
+  };
 
   // Handle inline editing
   const startEdit = (townId, column, value) => {
     setEditingCell({ townId, column });
+    // Convert objects to JSON string for editing
     const editableValue = typeof value === 'object' && value !== null 
       ? JSON.stringify(value, null, 2)
       : (value || '');
@@ -399,6 +295,7 @@ const TownsManager = () => {
     
     const { townId, column } = editingCell;
     
+    // Parse JSON strings back to objects for object columns
     let valueToSave = editValue;
     if (editValue && typeof editValue === 'string' && editValue.startsWith('{')) {
       try {
@@ -416,6 +313,7 @@ const TownsManager = () => {
     
     if (error) {
       console.error('Error updating:', error);
+      console.error('Error details:', error.message, error.details, error.hint);
       alert(`Error saving changes: ${error.message || 'Unknown error'}`);
       return;
     }
@@ -424,6 +322,7 @@ const TownsManager = () => {
     const updatedTowns = towns.map(t => {
       if (t.id === townId) {
         const updatedTown = { ...t, [column]: valueToSave };
+        // Recalculate errors and completion for the updated town
         updatedTown._errors = detectErrors(updatedTown);
         updatedTown._completion = calculateCompletion(updatedTown);
         return updatedTown;
@@ -432,6 +331,7 @@ const TownsManager = () => {
     });
     setTowns(updatedTowns);
     
+    // Also update selectedTown if it's the one being edited
     if (selectedTown && selectedTown.id === townId) {
       const updatedSelectedTown = updatedTowns.find(t => t.id === townId);
       setSelectedTown(updatedSelectedTown);
@@ -445,61 +345,6 @@ const TownsManager = () => {
     setEditingCell(null);
     setEditValue('');
   };
-
-  // Render field row helper
-  const renderFieldRow = (column, town) => (
-    <div key={column} className="flex items-center py-1">
-      <div className="w-64 text-sm font-medium text-gray-600">{column}:</div>
-      {editingCell?.townId === town.id && editingCell?.column === column ? (
-        <SmartFieldEditor
-          fieldName={column}
-          currentValue={town[column]}
-          onSave={async (newValue) => {
-            const { data, error } = await supabase
-              .from('towns')
-              .update({ [column]: newValue })
-              .eq('id', town.id)
-              .select();
-            
-            if (error) {
-              console.error('Error updating:', error);
-              alert(`Error saving changes: ${error.message || 'Unknown error'}`);
-              return;
-            }
-            
-            const updatedTowns = towns.map(t => {
-              if (t.id === town.id) {
-                const updatedTown = { ...t, [column]: newValue };
-                updatedTown._errors = detectErrors(updatedTown);
-                updatedTown._completion = calculateCompletion(updatedTown);
-                return updatedTown;
-              }
-              return t;
-            });
-            setTowns(updatedTowns);
-            
-            const updatedSelectedTown = updatedTowns.find(t => t.id === town.id);
-            setSelectedTown(updatedSelectedTown);
-            
-            setEditingCell(null);
-            setEditValue('');
-          }}
-          onCancel={cancelEdit}
-        />
-      ) : (
-        <div 
-          onClick={() => startEdit(town.id, column, town[column])}
-          className="flex-1 px-2 py-1 hover:bg-gray-100 cursor-pointer rounded"
-        >
-          <span className={town[column] ? 'text-gray-800' : 'text-gray-400'}>
-            {typeof town[column] === 'object' && town[column] !== null
-              ? JSON.stringify(town[column])
-              : (town[column] || '(empty)')}
-          </span>
-        </div>
-      )}
-    </div>
-  );
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Checking access...</div>;
@@ -560,14 +405,10 @@ const TownsManager = () => {
             onChange={(e) => setFilters({...filters, completionLevel: e.target.value})}
             className="border rounded px-3 py-1"
           >
-            <option value="all">Completion</option>
-            <option value="top50">Top 50</option>
-            <option value="81-100">81-100%</option>
-            <option value="61-80">61-80%</option>
-            <option value="41-60">41-60%</option>
-            <option value="21-40">21-40%</option>
-            <option value="0-20">0-20%</option>
-            <option value="worst50">Worst 50</option>
+            <option value="all">All Completion</option>
+            <option value="low">Low (&lt;30%)</option>
+            <option value="medium">Medium (30-70%)</option>
+            <option value="high">High (&gt;70%)</option>
           </select>
           
           <label className="flex items-center gap-2">
@@ -601,6 +442,18 @@ const TownsManager = () => {
               <option key={region} value={region}>{region}</option>
             ))}
           </select>
+          
+          <select 
+            value={filters.regions} 
+            onChange={(e) => setFilters({...filters, regions: e.target.value})}
+            className="border rounded px-3 py-1"
+            title="Filter by regions array (geographic areas)"
+          >
+            <option value="all">Regions (Geographic)</option>
+            {getUniqueRegions().map(region => (
+              <option key={region} value={region}>{region}</option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -609,55 +462,8 @@ const TownsManager = () => {
           {/* Town List */}
           <div className="col-span-3">
             <div className="bg-white rounded-lg shadow max-h-[800px] overflow-y-auto">
-              <div className="sticky top-0 bg-white border-b">
-                <div className="px-4 py-2">
-                  <h2 className="font-semibold">Towns</h2>
-                </div>
-                {/* Sorting controls - more functional and left-aligned */}
-                <div className="px-4 py-2 bg-gray-50 border-t flex items-center gap-2">
-                  <button
-                    onClick={() => setFilters({...filters, 
-                      sortBy: 'abc', 
-                      sortDirection: filters.sortBy === 'abc' && filters.sortDirection === 'asc' ? 'desc' : 'asc'
-                    })}
-                    className={`flex items-center gap-1 px-3 py-1 text-sm rounded transition-colors ${
-                      filters.sortBy === 'abc' 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-white border hover:bg-gray-100'
-                    }`}
-                    title="Sort alphabetically"
-                  >
-                    <span>A-Z</span>
-                    {filters.sortBy === 'abc' && (
-                      <span className="text-xs">
-                        {filters.sortDirection === 'asc' ? '↓' : '↑'}
-                      </span>
-                    )}
-                  </button>
-                  
-                  <button
-                    onClick={() => setFilters({...filters, 
-                      sortBy: filters.sortBy === 'completion-high' ? 'completion-low' : 'completion-high'
-                    })}
-                    className={`flex items-center gap-1 px-3 py-1 text-sm rounded transition-colors ${
-                      filters.sortBy.startsWith('completion') 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-white border hover:bg-gray-100'
-                    }`}
-                    title="Sort by completion percentage"
-                  >
-                    <span>%</span>
-                    {filters.sortBy.startsWith('completion') && (
-                      <span className="text-xs">
-                        {filters.sortBy === 'completion-high' ? '↓' : '↑'}
-                      </span>
-                    )}
-                  </button>
-                  
-                  <span className="text-xs text-gray-500 ml-2">
-                    {filteredTowns.length} towns
-                  </span>
-                </div>
+              <div className="sticky top-0 bg-white border-b px-4 py-2">
+                <h2 className="font-semibold">Towns</h2>
               </div>
               <div className="divide-y">
                 {filteredTowns.map((town) => (
@@ -676,7 +482,7 @@ const TownsManager = () => {
                         town._completion < 70 ? 'bg-yellow-100 text-yellow-700' :
                         'bg-green-100 text-green-700'
                       }`}>
-                        {town._completion}% Completion
+                        {town._completion}%
                       </span>
                       {town._errors.length > 0 && (
                         <span className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">
@@ -733,43 +539,131 @@ const TownsManager = () => {
                   </div>
                 </div>
 
-                {/* Category Content with Subcategories */}
+                {/* Category Content */}
                 <div className="p-6">
-                  {Object.entries(COLUMN_CATEGORIES[activeCategory].subcategories).map(([subcategoryName, subcategory]) => {
-                    const hasUsedFields = subcategory.used.length > 0;
-                    const hasUnusedFields = subcategory.unused.length > 0;
-                    
-                    if (!hasUsedFields && !hasUnusedFields) return null;
-                    
-                    return (
-                      <div key={subcategoryName} className="mb-8">
-                        {/* Subcategory Title */}
-                        <h3 className="text-lg font-semibold text-gray-700 mb-3 border-b pb-1">
-                          {subcategoryName}
-                        </h3>
-                        
-                        {/* Used Fields (Towns Data for Matching) */}
-                        {hasUsedFields && (
-                          <div className="mb-4">
-                            <h4 className="text-sm font-medium text-gray-600 mb-2">Towns Data for Matching</h4>
-                            <div className="space-y-1 pl-4">
-                              {subcategory.used.map(column => renderFieldRow(column, selectedTown))}
+                  {/* Used Columns */}
+                  <div className="mb-8">
+                    <h3 className="font-semibold text-gray-800 mb-3">Towns Data for Matching</h3>
+                    <div className="space-y-2">
+                      {COLUMN_CATEGORIES[activeCategory].used.map((column) => (
+                        <div key={column} className="flex items-center">
+                          <div className="w-64 text-sm font-medium text-gray-600">{column}:</div>
+                          {editingCell?.townId === selectedTown.id && editingCell?.column === column ? (
+                            <SmartFieldEditor
+                              fieldName={column}
+                              currentValue={selectedTown[column]}
+                              onSave={async (newValue) => {
+                                const { data, error } = await supabase
+                                  .from('towns')
+                                  .update({ [column]: newValue })
+                                  .eq('id', selectedTown.id)
+                                  .select();
+                                
+                                if (error) {
+                                  console.error('Error updating:', error);
+                                  alert(`Error saving changes: ${error.message || 'Unknown error'}`);
+                                  return;
+                                }
+                                
+                                // Update local state
+                                const updatedTowns = towns.map(t => {
+                                  if (t.id === selectedTown.id) {
+                                    const updatedTown = { ...t, [column]: newValue };
+                                    updatedTown._errors = detectErrors(updatedTown);
+                                    updatedTown._completion = calculateCompletion(updatedTown);
+                                    return updatedTown;
+                                  }
+                                  return t;
+                                });
+                                setTowns(updatedTowns);
+                                
+                                const updatedSelectedTown = updatedTowns.find(t => t.id === selectedTown.id);
+                                setSelectedTown(updatedSelectedTown);
+                                
+                                setEditingCell(null);
+                                setEditValue('');
+                              }}
+                              onCancel={cancelEdit}
+                            />
+                          ) : (
+                            <div 
+                              onClick={() => startEdit(selectedTown.id, column, selectedTown[column])}
+                              className="flex-1 px-2 py-1 hover:bg-gray-100 cursor-pointer rounded"
+                            >
+                              <span className={selectedTown[column] ? 'text-gray-800' : 'text-gray-400'}>
+                                {typeof selectedTown[column] === 'object' && selectedTown[column] !== null
+                                  ? JSON.stringify(selectedTown[column])
+                                  : (selectedTown[column] || '(empty)')}
+                              </span>
                             </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Unused Columns */}
+                  {COLUMN_CATEGORIES[activeCategory].unused.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-gray-800 mb-3">Towns Data for Context</h3>
+                      <div className="space-y-2 opacity-60">
+                        {COLUMN_CATEGORIES[activeCategory].unused.map((column) => (
+                          <div key={column} className="flex items-center">
+                            <div className="w-64 text-sm font-medium text-gray-600">{column}:</div>
+                            {editingCell?.townId === selectedTown.id && editingCell?.column === column ? (
+                              <SmartFieldEditor
+                                fieldName={column}
+                                currentValue={selectedTown[column]}
+                                onSave={async (newValue) => {
+                                  const { data, error } = await supabase
+                                    .from('towns')
+                                    .update({ [column]: newValue })
+                                    .eq('id', selectedTown.id)
+                                    .select();
+                                  
+                                  if (error) {
+                                    console.error('Error updating:', error);
+                                    alert(`Error saving changes: ${error.message || 'Unknown error'}`);
+                                    return;
+                                  }
+                                  
+                                  // Update local state
+                                  const updatedTowns = towns.map(t => {
+                                    if (t.id === selectedTown.id) {
+                                      const updatedTown = { ...t, [column]: newValue };
+                                      updatedTown._errors = detectErrors(updatedTown);
+                                      updatedTown._completion = calculateCompletion(updatedTown);
+                                      return updatedTown;
+                                    }
+                                    return t;
+                                  });
+                                  setTowns(updatedTowns);
+                                  
+                                  const updatedSelectedTown = updatedTowns.find(t => t.id === selectedTown.id);
+                                  setSelectedTown(updatedSelectedTown);
+                                  
+                                  setEditingCell(null);
+                                  setEditValue('');
+                                }}
+                                onCancel={cancelEdit}
+                              />
+                            ) : (
+                              <div 
+                                onClick={() => startEdit(selectedTown.id, column, selectedTown[column])}
+                                className="flex-1 px-2 py-1 hover:bg-gray-100 cursor-pointer rounded"
+                              >
+                                <span className={selectedTown[column] ? 'text-gray-800' : 'text-gray-400'}>
+                                  {typeof selectedTown[column] === 'object' && selectedTown[column] !== null
+                                    ? JSON.stringify(selectedTown[column])
+                                    : (selectedTown[column] || '(empty)')}
+                                </span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                        
-                        {/* Unused Fields (Towns Data for Context) */}
-                        {hasUnusedFields && (
-                          <div className="opacity-60">
-                            <h4 className="text-sm font-medium text-gray-600 mb-2">Towns Data for Context</h4>
-                            <div className="space-y-1 pl-4">
-                              {subcategory.unused.map(column => renderFieldRow(column, selectedTown))}
-                            </div>
-                          </div>
-                        )}
+                        ))}
                       </div>
-                    );
-                  })}
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
