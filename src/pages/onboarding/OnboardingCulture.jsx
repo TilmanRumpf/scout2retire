@@ -63,7 +63,6 @@ export default function OnboardingCulture() {
     lifestyle_preferences: {
       pace_of_life: [],
       urban_rural: [],
-      social_preference: '',
       traditional_progressive: ''
     }
   });
@@ -134,7 +133,6 @@ export default function OnboardingCulture() {
               urban_rural: Array.isArray(progressResult.data.culture_preferences.lifestyle_preferences?.urban_rural)
                 ? progressResult.data.culture_preferences.lifestyle_preferences.urban_rural
                 : (progressResult.data.culture_preferences.lifestyle_preferences?.urban_rural ? [progressResult.data.culture_preferences.lifestyle_preferences.urban_rural] : []),
-              social_preference: progressResult.data.culture_preferences.lifestyle_preferences?.social_preference || ''
             },
             cultural_importance: {
               // Handle legacy data: combine restaurants and nightlife if they exist separately
@@ -315,12 +313,6 @@ export default function OnboardingCulture() {
   { value: 'urban', label: 'Urban' }
   ];
 
-  // Social preference options
-  const socialOptions = [
-    { value: 'social', label: 'Very Social' },
-    { value: 'balanced', label: 'Balanced' },
-    { value: 'private', label: 'Private' }
-  ];
 
   // Simple slider component with consistent icon colors
   const ImportanceSlider = ({ category, icon }) => {
@@ -398,30 +390,6 @@ export default function OnboardingCulture() {
                   label={option.label}
                   isSelected={formData.lifestyle_preferences.pace_of_life.includes(option.value)}
                   onClick={() => handleMultiSelect('lifestyle_preferences.pace_of_life', option.value, true)}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Social Preference - between Pace of Life and Expat Community */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Users size={16} className="mr-1.5 lg:mr-2" />
-              Social Preference
-            </label>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
-              {socialOptions.map((option) => (
-                <OptionButton
-                  key={option.value}
-                  label={option.label}
-                  isSelected={formData.lifestyle_preferences.social_preference === option.value}
-                  onClick={() => setFormData(prev => ({ 
-                    ...prev, 
-                    lifestyle_preferences: { 
-                      ...prev.lifestyle_preferences, 
-                      social_preference: option.value 
-                    } 
-                  }))}
                 />
               ))}
             </div>
@@ -531,7 +499,6 @@ export default function OnboardingCulture() {
           {(formData.expat_community_preference.length > 0 ||
             formData.lifestyle_preferences.pace_of_life.length > 0 ||
             formData.lifestyle_preferences.urban_rural.length > 0 ||
-            formData.lifestyle_preferences.social_preference ||
             formData.language_comfort.preferences.length > 0 ||
             formData.language_comfort.already_speak.length > 0) && (
             <div className={`mb-4 p-3 lg:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
@@ -544,9 +511,6 @@ export default function OnboardingCulture() {
                 )}
                 {formData.lifestyle_preferences.pace_of_life.length > 0 && (
                   <div><span className={`${uiConfig.font.weight.medium}`}>Pace:</span> {formData.lifestyle_preferences.pace_of_life.join(', ')}</div>
-                )}
-                {formData.lifestyle_preferences.social_preference && (
-                  <div><span className={`${uiConfig.font.weight.medium}`}>Social:</span> {formData.lifestyle_preferences.social_preference}</div>
                 )}
                 {formData.expat_community_preference.length > 0 && (
                   <div><span className={`${uiConfig.font.weight.medium}`}>Community:</span> {formData.expat_community_preference.join(', ')}</div>

@@ -227,10 +227,6 @@ export default function OnboardingReview() {
               </p>
             )}
             <p>
-              <span className={`${uiConfig.font.weight.medium}`}>Social:</span>{' '}
-              {safeRender(data.lifestyle_preferences?.social_preference || data.social_preference)}
-            </p>
-            <p>
               <span className={`${uiConfig.font.weight.medium}`}>Travel:</span>{' '}
               {safeRender(data.travel_frequency)}
             </p>

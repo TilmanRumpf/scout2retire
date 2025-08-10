@@ -842,14 +842,6 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
 //     });
 //   }
 
-//   // Social preferences
-//   if (hobbiesPrefs.social_preference) {
-//     const socialPref = hobbiesPrefs.social_preference;
-//     if (socialPref === 'social' && (townText.includes('community') || townText.includes('social'))) {
-//       score += 5;
-//     }
-//   }
-
 //   // Travel frequency consideration
 //   if (hobbiesPrefs.travel_frequency && town.transport_links) {
 //     const travelFreq = hobbiesPrefs.travel_frequency;
