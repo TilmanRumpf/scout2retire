@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import supabase from '../../utils/supabaseClient';
 import SmartFieldEditor from '../../components/SmartFieldEditor';
 import QuickNav from '../../components/QuickNav';
+import GoogleSearchPopup from '../../components/GoogleSearchPopup';
+import { getFieldOptions, isMultiSelectField } from '../../utils/townDataOptions';
 
 // Admin email check
 const ADMIN_EMAIL = 'tilman.rumpf@gmail.com';
@@ -18,7 +20,7 @@ const COLUMN_CATEGORIES = {
       },
       'Geographic Features': {
         used: ['geographic_features_actual'],
-        unused: ['latitude', 'longitude', 'elevation_meters', 'distance_to_ocean_km']
+        unused: ['latitude', 'longitude', 'elevation_meters', 'distance_to_ocean_km', 'water_bodies']
       },
       'Vegetation Types': {
         used: ['vegetation_type_actual'],
@@ -140,11 +142,16 @@ const TownsManager = () => {
   const [editingCell, setEditingCell] = useState(null);
   const [editValue, setEditValue] = useState('');
   
+  // Audit state - tracks which fields have been audited
+  const [auditedFields, setAuditedFields] = useState({});
+  const [showAuditDialog, setShowAuditDialog] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  
   // Filters
   const [filters, setFilters] = useState({
     hasPhoto: 'yes',  // Default to "Has Photo"
     completionLevel: 'all',
-    worstOffenders: false,
+    dataQuality: 'all',  // New data quality filter
     country: 'all',
     geo_region: 'all',
     townSearch: '',
@@ -155,20 +162,81 @@ const TownsManager = () => {
   // Search suggestions state
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  
+  // Google search popup state
+  const [googleSearchPopup, setGoogleSearchPopup] = useState({
+    isOpen: false,
+    query: ''
+  });
 
-  // Auth check
+  // Auth check - FIXED to use actual Supabase authentication
   useEffect(() => {
     const checkAuth = async () => {
-      // TODO: Replace with actual auth check
-      const currentUserEmail = 'Tilman.Rumpf@gmail.com';
-      console.log('Auth check - current email:', currentUserEmail);
-      console.log('Auth check - admin email:', ADMIN_EMAIL);
-      if (currentUserEmail.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
-        console.log('Auth failed, redirecting to home');
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error) {
+        console.error('❌ Auth error:', error);
+        alert('Authentication error. Please log in again.');
+        navigate('/welcome');
+        return;
+      }
+      
+      if (!user) {
+        console.error('❌ No user logged in');
+        alert('You must be logged in to access the admin panel.');
+        navigate('/welcome');
+        return;
+      }
+      
+      console.log('✅ User authenticated:', user.email);
+      console.log('User metadata:', user.user_metadata);
+      
+      // Check if user is admin
+      if (user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+        console.error('❌ Not authorized - user is not admin');
+        alert('You are not authorized to access the admin panel.');
         navigate('/');
         return;
       }
-      console.log('Auth passed');
+      
+      // Try to get avatar from different sources
+      let avatarUrl = null;
+      
+      // Check user_metadata first
+      if (user.user_metadata?.avatar_url) {
+        avatarUrl = user.user_metadata.avatar_url;
+      } 
+      // Check if there's a picture field
+      else if (user.user_metadata?.picture) {
+        avatarUrl = user.user_metadata.picture;
+      }
+      // Check raw_user_meta_data
+      else if (user.raw_user_meta_data?.avatar_url) {
+        avatarUrl = user.raw_user_meta_data.avatar_url;
+      }
+      
+      // Also check the users table for profile data
+      if (!avatarUrl) {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('avatar_url, full_name')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile?.avatar_url) {
+          avatarUrl = profile.avatar_url;
+          // Update user object with profile data
+          user.user_metadata = {
+            ...user.user_metadata,
+            avatar_url: profile.avatar_url,
+            full_name: profile.full_name || user.user_metadata?.full_name
+          };
+        }
+      }
+      
+      console.log('✅ Admin access granted');
+      console.log('Avatar URL:', avatarUrl);
+      setCurrentUser(user); // Store the current user with updated metadata
       setIsLoading(false);
     };
     checkAuth();
@@ -232,10 +300,31 @@ const TownsManager = () => {
       filtered = [...filtered].sort((a, b) => a._completion - b._completion).slice(0, 50);
     }
     
-    // Worst offenders filter
-    if (filters.worstOffenders) {
+    // Data quality filter
+    if (filters.dataQuality === 'has_errors') {
       filtered = filtered.filter(t => t._errors.length > 0);
       filtered.sort((a, b) => b._errors.length - a._errors.length);
+    } else if (filters.dataQuality === 'missing_photos') {
+      filtered = filtered.filter(t => !t.image_url_1 || t.image_url_1 === 'NULL');
+    } else if (filters.dataQuality === 'low_completion') {
+      filtered = filtered.filter(t => t._completion < 50);
+    } else if (filters.dataQuality === 'needs_review') {
+      // Towns not updated in 6+ months
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+      filtered = filtered.filter(t => {
+        const lastUpdate = t.updated_at ? new Date(t.updated_at) : new Date(t.created_at);
+        return lastUpdate < sixMonthsAgo;
+      });
+    } else if (filters.dataQuality === 'missing_match_data') {
+      // Towns missing critical match fields
+      const criticalFields = getCriticalMatchFields();
+      filtered = filtered.filter(t => {
+        const missingCount = criticalFields.filter(field => 
+          !t[field] || t[field] === '' || t[field] === 'NULL' || t[field] === null
+        ).length;
+        return missingCount > (criticalFields.length * 0.3);
+      });
     }
     
     // Country filter
@@ -243,9 +332,25 @@ const TownsManager = () => {
       filtered = filtered.filter(t => t.country === filters.country);
     }
     
-    // Geo_region filter
+    // Geo_region filter (handles arrays)
     if (filters.geo_region !== 'all') {
-      filtered = filtered.filter(t => t.geo_region === filters.geo_region);
+      filtered = filtered.filter(t => {
+        if (!t.geo_region) return false;
+        
+        // Handle array values
+        if (Array.isArray(t.geo_region)) {
+          return t.geo_region.includes(filters.geo_region);
+        }
+        // Handle PostgreSQL array strings
+        else if (typeof t.geo_region === 'string' && t.geo_region.startsWith('{')) {
+          const parsed = t.geo_region.slice(1, -1).split(',').map(r => r.replace(/"/g, '').trim());
+          return parsed.includes(filters.geo_region);
+        }
+        // Handle single string values (legacy)
+        else {
+          return t.geo_region === filters.geo_region;
+        }
+      });
     }
     
     // Town name search filter
@@ -362,7 +467,7 @@ const TownsManager = () => {
     setFilters({
       hasPhoto: 'all',  // Reset to 'all' so town is visible regardless of photo status
       completionLevel: 'all',
-      worstOffenders: false,
+      dataQuality: 'all',
       country: 'all',
       geo_region: 'all',
       townSearch: townName,
@@ -379,10 +484,268 @@ const TownsManager = () => {
     }
   };
   
-  // Get unique values for geo_region column
+  // Get unique values for geo_region column (handles both arrays and single values)
   const getUniqueGeoRegion = () => {
-    const geoRegionValues = [...new Set(towns.map(t => t.geo_region))].filter(Boolean);
-    return geoRegionValues.sort();
+    const allRegions = new Set();
+    
+    towns.forEach(town => {
+      if (town.geo_region) {
+        // Handle array values
+        if (Array.isArray(town.geo_region)) {
+          town.geo_region.forEach(region => allRegions.add(region));
+        } 
+        // Handle PostgreSQL array strings like {"Mediterranean","Southern Europe"}
+        else if (typeof town.geo_region === 'string' && town.geo_region.startsWith('{')) {
+          const parsed = town.geo_region.slice(1, -1).split(',').map(r => r.replace(/"/g, '').trim());
+          parsed.forEach(region => allRegions.add(region));
+        }
+        // Handle single string values (legacy data)
+        else if (typeof town.geo_region === 'string') {
+          allRegions.add(town.geo_region);
+        }
+      }
+    });
+    
+    return Array.from(allRegions).sort();
+  };
+  
+  // Get all critical match fields
+  const getCriticalMatchFields = () => {
+    const criticalFields = [];
+    
+    // Collect all "used" columns from all categories
+    Object.values(COLUMN_CATEGORIES).forEach(category => {
+      Object.values(category.subcategories).forEach(subcategory => {
+        criticalFields.push(...subcategory.used);
+      });
+    });
+    
+    // Add metadata columns
+    criticalFields.push(...OTHER_COLUMNS.used);
+    
+    return criticalFields;
+  };
+  
+  // Helper to check if a field has actual data (not empty)
+  const fieldHasData = (value) => {
+    if (!value || value === 'NULL' || value === null) return false;
+    
+    // Check for array fields (could be actual array or string representation)
+    if (Array.isArray(value)) {
+      return value.length > 0;
+    }
+    
+    // Check for PostgreSQL array strings like ["value1","value2"] or {}
+    if (typeof value === 'string') {
+      // Empty PostgreSQL arrays
+      if (value === '{}' || value === '[]') return false;
+      // Check if it looks like a non-empty array string
+      if (value.startsWith('[') && value.endsWith(']')) {
+        return value.length > 2; // More than just "[]"
+      }
+      if (value.startsWith('{') && value.endsWith('}')) {
+        return value.length > 2; // More than just "{}"
+      }
+    }
+    
+    // For regular values, check if not empty
+    return value !== '';
+  };
+  
+  // Handle audit approval
+  const handleAudit = (townId, fieldName) => {
+    setShowAuditDialog({ townId, fieldName });
+  };
+  
+  const confirmAudit = async () => {
+    if (showAuditDialog) {
+      // Refresh user data to get latest avatar
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Try to get latest avatar from users table
+      let avatarUrl = user?.user_metadata?.avatar_url;
+      let fullName = user?.user_metadata?.full_name;
+      
+      if (user) {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('avatar_url, full_name')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile) {
+          avatarUrl = profile.avatar_url || avatarUrl;
+          fullName = profile.full_name || fullName;
+        }
+      }
+      
+      const { townId, fieldName } = showAuditDialog;
+      const key = `${townId}-${fieldName}`;
+      setAuditedFields(prev => ({
+        ...prev,
+        [key]: {
+          approved: true,
+          approvedBy: user?.email || currentUser?.email,
+          approvedByName: fullName || user?.email?.split('@')[0] || 'Admin',
+          approvedByAvatar: avatarUrl,
+          approvedAt: new Date().toISOString()
+        }
+      }));
+      setShowAuditDialog(null);
+    }
+  };
+  
+  const isFieldAudited = (townId, fieldName) => {
+    const key = `${townId}-${fieldName}`;
+    return auditedFields[key]?.approved;
+  };
+  
+  // Format field name to human readable text
+  const formatFieldName = (fieldName) => {
+    const fieldMappings = {
+      'distance_to_ocean_km': 'distance to ocean',
+      'avg_temp_summer': 'average summer temperature',
+      'avg_temp_winter': 'average winter temperature',
+      'sunshine_hours': 'annual sunshine hours',
+      'annual_rainfall': 'annual rainfall',
+      'humidity_level_actual': 'humidity level',
+      'summer_climate_actual': 'summer climate',
+      'winter_climate_actual': 'winter climate',
+      'precipitation_level_actual': 'precipitation level',
+      'sunshine_level_actual': 'sunshine level',
+      'vegetation_type_actual': 'vegetation type',
+      'geographic_features_actual': 'geographic features',
+      'healthcare_score': 'healthcare quality score',
+      'safety_score': 'safety score',
+      'walkability': 'walkability score',
+      'air_quality_index': 'air quality index',
+      'airport_distance': 'distance to nearest airport',
+      'cost_of_living_usd': 'cost of living in USD',
+      'typical_monthly_living_cost': 'typical monthly living cost',
+      'rent_1bed': 'one bedroom apartment rent',
+      'english_proficiency': 'English proficiency level',
+      'expat_rating': 'expat community rating',
+      'expat_friendly': 'expat friendliness',
+      'outdoor_activities': 'outdoor activities',
+      'hiking_trails': 'hiking trails',
+      'beaches_nearby': 'beaches nearby',
+      'golf_courses': 'golf courses',
+      'cultural_attractions': 'cultural attractions',
+      'english_speaking_doctors': 'English speaking doctors',
+      'visa_requirements': 'visa requirements',
+      'geo_region': 'geographic region',
+      'elevation_meters': 'elevation',
+      'latitude': 'latitude coordinates',
+      'longitude': 'longitude coordinates',
+      'water_bodies': 'nearest body of water',
+      'population': 'population',
+      'climate_description': 'climate description',
+      'appealStatement': 'appeal statement',
+      'matchScore': 'match score'
+    };
+    
+    return fieldMappings[fieldName] || fieldName.replace(/_/g, ' ').toLowerCase();
+  };
+  
+  // Generate smart Google search query
+  const generateSearchQuery = (town, fieldName, isVerification = false) => {
+    const formattedField = formatFieldName(fieldName);
+    const location = `${town.name}, ${town.country}`;
+    
+    // Check if this field has dropdown options
+    const fieldOptions = getFieldOptions(fieldName);
+    const isMultiSelect = isMultiSelectField(fieldName);
+    const hasOptions = fieldOptions && Array.isArray(fieldOptions) && fieldOptions.length > 0;
+    
+    // If this is a verification query, create a different format
+    if (isVerification) {
+      const currentValue = town[fieldName];
+      
+      // Handle fields with dropdown options
+      if (hasOptions && fieldHasData(currentValue)) {
+        if (isMultiSelect || Array.isArray(currentValue)) {
+          const values = Array.isArray(currentValue) ? currentValue.join(', ') : currentValue;
+          return `Is ${location} ${formattedField} really "${values}"? Are there other options that apply?`;
+        } else {
+          return `Is ${location} ${formattedField} really "${currentValue}"? Check if this is the best match`;
+        }
+      }
+      
+      // Handle different field types for verification
+      if (fieldName === 'water_bodies' && Array.isArray(currentValue)) {
+        const bodies = currentValue.join(', ');
+        return `Are the ${location} water bodies really ${bodies}? Am I missing something critical?`;
+      } else if (fieldName.includes('distance')) {
+        return `Is ${location} really ${currentValue}km ${formattedField}? Verify distance`;
+      } else if (fieldName.includes('temp')) {
+        return `Is ${location} ${formattedField} really ${currentValue}°C? Climate verification`;
+      } else if (fieldName.includes('cost') || fieldName.includes('rent')) {
+        return `Is ${location} ${formattedField} really $${currentValue}? ${new Date().getFullYear()} prices accurate?`;
+      } else if (typeof currentValue === 'boolean') {
+        return `Is it true that ${location} ${formattedField} is ${currentValue ? 'yes' : 'no'}? Verify`;
+      } else {
+        // Generic verification format
+        return `Verify: ${location} ${formattedField} is "${currentValue}" - is this accurate and complete?`;
+      }
+    }
+    
+    // Regular search query (for empty fields)
+    
+    // For fields with dropdown options, ask which options match best
+    if (hasOptions) {
+      if (isMultiSelect) {
+        // For multiselect, ask which options apply
+        const sampleOptions = fieldOptions.slice(0, 5).join(', ');
+        return `What ${formattedField} best describe ${location}? Options include: ${sampleOptions}... Which apply?`;
+      } else {
+        // For single select, ask for the best match
+        const sampleOptions = fieldOptions.slice(0, 5).join(', ');
+        return `What is the best ${formattedField} for ${location}? Options: ${sampleOptions}...`;
+      }
+    }
+    
+    // Special handling for certain field types
+    if (fieldName.includes('visa')) {
+      return `${town.country} retirement visa requirements for US citizens`;
+    } else if (fieldName.includes('cost') || fieldName.includes('rent')) {
+      return `${location} ${formattedField} ${new Date().getFullYear()}`;
+    } else if (fieldName.includes('english_speaking')) {
+      return `${location} English speaking doctors hospitals`;
+    } else if (fieldName.includes('expat')) {
+      return `${location} expat community retirees`;
+    } else if (fieldName.includes('climate') || fieldName.includes('temp')) {
+      return `${location} ${formattedField} weather`;
+    } else if (fieldName.includes('activities') || fieldName.includes('attractions')) {
+      return `${location} ${formattedField} things to do`;
+    }
+    
+    // Default format
+    return `${location} ${formattedField}`;
+  };
+  
+  // Calculate data quality counts
+  const getDataQualityCounts = () => {
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const criticalFields = getCriticalMatchFields();
+    
+    return {
+      has_errors: towns.filter(t => t._errors && t._errors.length > 0).length,
+      missing_photos: towns.filter(t => !t.image_url_1 || t.image_url_1 === 'NULL').length,
+      low_completion: towns.filter(t => t._completion < 50).length,
+      needs_review: towns.filter(t => {
+        const lastUpdate = t.updated_at ? new Date(t.updated_at) : new Date(t.created_at);
+        return lastUpdate < sixMonthsAgo;
+      }).length,
+      missing_match_data: towns.filter(t => {
+        // Count missing critical fields
+        const missingCount = criticalFields.filter(field => 
+          !t[field] || t[field] === '' || t[field] === 'NULL' || t[field] === null
+        ).length;
+        // Flag if missing more than 30% of critical fields
+        return missingCount > (criticalFields.length * 0.3);
+      }).length
+    };
   };
   
 
@@ -449,13 +812,16 @@ const TownsManager = () => {
 
   // Render field row helper
   const renderFieldRow = (column, town) => (
-    <div key={column} className="flex items-center py-1">
+    <div key={column} className="flex items-center py-1 group">
       <div className="w-64 text-sm font-medium text-gray-600">{column}:</div>
       {editingCell?.townId === town.id && editingCell?.column === column ? (
         <SmartFieldEditor
           fieldName={column}
           currentValue={town[column]}
+          townData={town}
           onSave={async (newValue) => {
+            console.log(`Updating ${column} for town ${town.id} to:`, newValue);
+            
             const { data, error } = await supabase
               .from('towns')
               .update({ [column]: newValue })
@@ -463,10 +829,18 @@ const TownsManager = () => {
               .select();
             
             if (error) {
-              console.error('Error updating:', error);
-              alert(`Error saving changes: ${error.message || 'Unknown error'}`);
+              console.error('❌ Supabase update error:', error);
+              alert(`Error saving changes: ${error.message || 'Unknown error'}\n\nThis is likely a permission issue. Check:\n1. Are you logged in as admin?\n2. Does the towns table have Row Level Security policies?\n3. Check browser console for details.`);
               return;
             }
+            
+            if (!data || data.length === 0) {
+              console.error('❌ No data returned from update - possible RLS issue');
+              alert('Update may have failed - no data returned. Check Row Level Security policies.');
+              return;
+            }
+            
+            console.log('✅ Successfully updated in Supabase:', data);
             
             const updatedTowns = towns.map(t => {
               if (t.id === town.id) {
@@ -488,16 +862,109 @@ const TownsManager = () => {
           onCancel={cancelEdit}
         />
       ) : (
-        <div 
-          onClick={() => startEdit(town.id, column, town[column])}
-          className="flex-1 px-2 py-1 hover:bg-gray-100 cursor-pointer rounded"
-        >
-          <span className={town[column] ? 'text-gray-800' : 'text-gray-400'}>
-            {typeof town[column] === 'object' && town[column] !== null
-              ? JSON.stringify(town[column])
-              : (town[column] || '(empty)')}
-          </span>
-        </div>
+        <>
+          <div 
+            onClick={() => startEdit(town.id, column, town[column])}
+            className="flex-1 px-2 py-1 hover:bg-gray-100 cursor-pointer rounded"
+          >
+            <span className={town[column] ? 'text-gray-800' : 'text-gray-400'}>
+              {(column === 'water_bodies' || column === 'geo_region' || column === 'regions') && Array.isArray(town[column])
+                ? town[column].length > 0 
+                  ? town[column].join(', ')
+                  : '(empty)'
+                : (column === 'geo_region' || column === 'regions') && typeof town[column] === 'string' && town[column].startsWith('{')
+                ? town[column].slice(1, -1).replace(/"/g, '').replace(/,/g, ', ')
+                : typeof town[column] === 'object' && town[column] !== null
+                ? JSON.stringify(town[column])
+                : (town[column] || '(empty)')}
+            </span>
+          </div>
+          {/* Google Search Button - Vibrant for missing data, subtle for existing data */}
+          <button
+            onClick={() => {
+              const searchQuery = generateSearchQuery(town, column);
+              setGoogleSearchPopup({ isOpen: true, query: searchQuery });
+            }}
+            className={`ml-2 p-1.5 rounded hover:bg-gray-100 transition-all ${
+              !fieldHasData(town[column])
+                ? 'opacity-100 hover:scale-110' 
+                : 'opacity-30 group-hover:opacity-60 hover:opacity-100'
+            }`}
+            title={`Search Google for ${formatFieldName(column)}`}
+          >
+            {/* Google Logo SVG - Always vibrant colors */}
+            <svg className="w-4 h-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+          </button>
+          
+          {/* Verification Button - Only shows when field has data */}
+          {fieldHasData(town[column]) && (
+            <button
+              onClick={() => {
+                const verificationQuery = generateSearchQuery(town, column, true);
+                setGoogleSearchPopup({ isOpen: true, query: verificationQuery });
+              }}
+              className="ml-1 p-1.5 rounded hover:bg-green-50 transition-all opacity-60 group-hover:opacity-100 hover:scale-110"
+              title={`Verify ${formatFieldName(column)} data`}
+            >
+              {/* Checkmark Shield Icon - Green verification badge */}
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L4 7V12C4 16.5 6.84 20.74 11 21.94C15.16 20.74 20 16.5 20 12V7L12 2Z" fill="#4CAF50" fillOpacity="0.9"/>
+                <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          )}
+          
+          {/* Audit Button - Shows for all fields */}
+          <button
+            onClick={() => handleAudit(town.id, column)}
+            className={`ml-1 p-1.5 rounded hover:bg-blue-50 transition-all ${
+              isFieldAudited(town.id, column)
+                ? 'opacity-100'
+                : 'opacity-60 group-hover:opacity-100'
+            } hover:scale-110`}
+            title={isFieldAudited(town.id, column) ? 'Field audited ✓' : `Audit ${formatFieldName(column)}`}
+          >
+            {/* Audit Badge - Blue circle with "AUDIT" text */}
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" fill="#2196F3" fillOpacity="0.9"/>
+              {isFieldAudited(town.id, column) ? (
+                // Checkmark for audited fields
+                <path d="M8 12L11 15L16 9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              ) : (
+                // "A" for audit
+                <text x="12" y="16" fontSize="10" fill="white" textAnchor="middle" fontWeight="bold">A</text>
+              )}
+            </svg>
+          </button>
+          
+          {/* Show auditor avatar if field is audited - Clickable to re-audit */}
+          {isFieldAudited(town.id, column) && (
+            <button
+              onClick={() => handleAudit(town.id, column)}
+              className="ml-1 inline-flex items-center hover:scale-110 transition-transform cursor-pointer"
+              title={`Audited by ${auditedFields[`${town.id}-${column}`].approvedByName || 'Admin'} - Click to re-audit`}
+            >
+              {auditedFields[`${town.id}-${column}`]?.approvedByAvatar ? (
+                <img 
+                  src={auditedFields[`${town.id}-${column}`].approvedByAvatar}
+                  alt={auditedFields[`${town.id}-${column}`].approvedByName}
+                  className="w-5 h-5 rounded-full border-2 border-green-500 hover:border-blue-500 transition-colors"
+                />
+              ) : (
+                <div 
+                  className="w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold hover:bg-blue-500 transition-colors"
+                >
+                  {(auditedFields[`${town.id}-${column}`]?.approvedByName || 'A')[0].toUpperCase()}
+                </div>
+              )}
+            </button>
+          )}
+        </>
       )}
     </div>
   );
@@ -524,7 +991,7 @@ const TownsManager = () => {
       {/* Filters */}
       <div className="bg-white shadow-sm border-b px-4 py-3">
         <div className="max-w-7xl mx-auto flex gap-4 flex-wrap items-center">
-          {/* Town Search */}
+          {/* Town Search - First */}
           <div className="relative">
             <input
               type="text"
@@ -549,16 +1016,18 @@ const TownsManager = () => {
             )}
           </div>
           
+          {/* Has Photos - Second */}
           <select 
             value={filters.hasPhoto} 
             onChange={(e) => setFilters({...filters, hasPhoto: e.target.value})}
             className="border rounded px-3 py-1"
           >
-            <option value="all">All Photos</option>
+            <option value="all">Has Photo</option>
             <option value="yes">Has Photo</option>
             <option value="no">No Photo</option>
           </select>
           
+          {/* Completion - Third */}
           <select 
             value={filters.completionLevel} 
             onChange={(e) => setFilters({...filters, completionLevel: e.target.value})}
@@ -574,26 +1043,7 @@ const TownsManager = () => {
             <option value="worst50">Worst 50</option>
           </select>
           
-          <label className="flex items-center gap-2">
-            <input 
-              type="checkbox" 
-              checked={filters.worstOffenders}
-              onChange={(e) => setFilters({...filters, worstOffenders: e.target.checked})}
-            />
-            Worst Offenders
-          </label>
-          
-          <select 
-            value={filters.country} 
-            onChange={(e) => setFilters({...filters, country: e.target.value})}
-            className="border rounded px-3 py-1"
-          >
-            <option value="all">All Countries</option>
-            {getUniqueCountries().map(country => (
-              <option key={country} value={country}>{country}</option>
-            ))}
-          </select>
-          
+          {/* Geo Regions - Fourth */}
           <select 
             value={filters.geo_region} 
             onChange={(e) => setFilters({...filters, geo_region: e.target.value})}
@@ -604,6 +1054,46 @@ const TownsManager = () => {
             {getUniqueGeoRegion().map(region => (
               <option key={region} value={region}>{region}</option>
             ))}
+          </select>
+          
+          {/* All Countries - Fifth */}
+          <select 
+            value={filters.country} 
+            onChange={(e) => setFilters({...filters, country: e.target.value})}
+            className="border rounded px-3 py-1"
+          >
+            <option value="all">Countries (All)</option>
+            {getUniqueCountries().map(country => (
+              <option key={country} value={country}>{country}</option>
+            ))}
+          </select>
+          
+          {/* Data Quality - Last */}
+          <select 
+            value={filters.dataQuality} 
+            onChange={(e) => {
+              const newQuality = e.target.value;
+              const updatedFilters = {...filters, dataQuality: newQuality};
+              
+              // Smart filter reset: Clear conflicting filters when selecting data quality options
+              if (newQuality === 'missing_photos') {
+                // Reset hasPhoto to 'all' to show towns without photos
+                updatedFilters.hasPhoto = 'all';
+              } else if (newQuality === 'low_completion') {
+                // Reset completionLevel to 'all' to show all completion levels
+                updatedFilters.completionLevel = 'all';
+              }
+              
+              setFilters(updatedFilters);
+            }}
+            className="border rounded px-3 py-1"
+          >
+            <option value="all">Data Quality</option>
+            <option value="has_errors">Has data errors ({getDataQualityCounts().has_errors})</option>
+            <option value="missing_photos">Missing photos ({getDataQualityCounts().missing_photos})</option>
+            <option value="missing_match_data">Missing match data ({getDataQualityCounts().missing_match_data})</option>
+            <option value="low_completion">Low completion &lt; 50% ({getDataQualityCounts().low_completion})</option>
+            <option value="needs_review">Needs review 6+ months ({getDataQualityCounts().needs_review})</option>
           </select>
         </div>
       </div>
@@ -784,6 +1274,67 @@ const TownsManager = () => {
           </div>
         </div>
       </div>
+      
+      {/* Google Search Popup */}
+      <GoogleSearchPopup
+        searchQuery={googleSearchPopup.query}
+        isOpen={googleSearchPopup.isOpen}
+        onClose={() => setGoogleSearchPopup({ isOpen: false, query: '' })}
+      />
+      
+      {/* Audit Confirmation Dialog */}
+      {showAuditDialog && (
+        <>
+          <div className="fixed inset-0 bg-black/30 z-50" onClick={() => setShowAuditDialog(null)} />
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl z-50 p-6 max-w-md w-full">
+            <div className="flex items-center mb-4">
+              <svg className="w-8 h-8 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" fill="#2196F3"/>
+                <text x="12" y="16" fontSize="10" fill="white" textAnchor="middle" fontWeight="bold">A</text>
+              </svg>
+              <h3 className="text-lg font-semibold">Audit Field Data</h3>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-gray-600">
+                {isFieldAudited(showAuditDialog.townId, showAuditDialog.fieldName) 
+                  ? 'Re-audit this field to update the approval status.'
+                  : 'Do you approve the data in this field as accurate and complete?'}
+              </p>
+              <div className="mt-2 p-3 bg-gray-50 rounded">
+                <p className="text-sm font-medium text-gray-700">
+                  Field: {formatFieldName(showAuditDialog.fieldName)}
+                </p>
+                <p className="text-sm text-gray-600 mt-1">
+                  Town: {towns.find(t => t.id === showAuditDialog.townId)?.name}
+                </p>
+                {isFieldAudited(showAuditDialog.townId, showAuditDialog.fieldName) && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Previously audited by {auditedFields[`${showAuditDialog.townId}-${showAuditDialog.fieldName}`]?.approvedByName} 
+                    {auditedFields[`${showAuditDialog.townId}-${showAuditDialog.fieldName}`]?.approvedAt && 
+                      ` on ${new Date(auditedFields[`${showAuditDialog.townId}-${showAuditDialog.fieldName}`].approvedAt).toLocaleDateString()}`}
+                  </p>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowAuditDialog(null)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmAudit}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              >
+                Approve Data
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

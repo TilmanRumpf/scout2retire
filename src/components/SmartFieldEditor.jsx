@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { getFieldOptions, isMultiSelectField } from '../utils/townDataOptions';
+import { getSortedWaterBodies } from '../utils/waterBodyMappings';
+import { getSortedRegions, getSortedGeoRegions } from '../utils/geographicMappings';
 
 const SmartFieldEditor = ({ 
   fieldName, 
   currentValue, 
   onSave, 
-  onCancel 
+  onCancel,
+  townData // Added to provide context for intelligent filtering
 }) => {
   const [value, setValue] = useState(currentValue || '');
   const [options, setOptions] = useState([]);
@@ -16,6 +19,53 @@ const SmartFieldEditor = ({
   }, [fieldName]);
 
   const loadFieldOptions = () => {
+    // Special handling for water_bodies field with intelligent filtering
+    if (fieldName === 'water_bodies' && townData) {
+      const { relevant, other } = getSortedWaterBodies(townData.country, townData.geo_region);
+      
+      // Create options with grouping
+      const waterBodyOptions = [
+        ...relevant.map(body => ({ value: body, group: 'Relevant for this location' })),
+        ...other.map(body => ({ value: body, group: 'Other water bodies' }))
+      ];
+      
+      setOptions(waterBodyOptions);
+      setFieldType('multiselect-grouped');
+      return;
+    }
+    
+    // Special handling for regions field with intelligent filtering
+    if (fieldName === 'regions' && townData && townData.country) {
+      const allRegions = getFieldOptions('regions') || [];
+      const { relevant, other } = getSortedRegions(townData.country, allRegions);
+      
+      // Create options with grouping
+      const regionOptions = [
+        ...relevant.map(region => ({ value: region, group: 'Relevant for this location' })),
+        ...other.map(region => ({ value: region, group: 'Other regions' }))
+      ];
+      
+      setOptions(regionOptions);
+      setFieldType('multiselect-grouped');
+      return;
+    }
+    
+    // Special handling for geo_region field with intelligent filtering
+    if (fieldName === 'geo_region' && townData && townData.country) {
+      const allGeoRegions = getFieldOptions('geo_region') || [];
+      const { relevant, other } = getSortedGeoRegions(townData.country, allGeoRegions);
+      
+      // Create options with grouping
+      const geoRegionOptions = [
+        ...relevant.map(region => ({ value: region, group: 'Relevant for this location' })),
+        ...other.map(region => ({ value: region, group: 'Other geo regions' }))
+      ];
+      
+      setOptions(geoRegionOptions);
+      setFieldType('multiselect-grouped');
+      return;
+    }
+    
     // Get options from townDataOptions.js
     const fieldOptions = getFieldOptions(fieldName);
     
@@ -143,6 +193,50 @@ const SmartFieldEditor = ({
             </div>
             <div className="text-xs text-gray-500">
               Selected: {currentArray.join(', ') || 'None'}
+            </div>
+          </div>
+        );
+      
+      case 'multiselect-grouped':
+        const currentGroupedArray = Array.isArray(value) ? value : [];
+        const grouped = {};
+        
+        // Group options
+        options.forEach(opt => {
+          const group = opt.group || 'Other';
+          if (!grouped[group]) grouped[group] = [];
+          grouped[group].push(opt.value);
+        });
+        
+        return (
+          <div className="space-y-2">
+            <div className="max-h-48 overflow-y-auto border rounded p-2">
+              {Object.entries(grouped).map(([groupName, items]) => (
+                <div key={groupName} className="mb-3">
+                  <div className="text-xs font-semibold text-gray-600 mb-1 px-1 py-0.5 bg-gray-100 rounded">
+                    {groupName}
+                  </div>
+                  {items.map(item => (
+                    <label key={item} className="flex items-center gap-2 hover:bg-gray-50 p-1">
+                      <input
+                        type="checkbox"
+                        checked={currentGroupedArray.includes(item)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setValue([...currentGroupedArray, item]);
+                          } else {
+                            setValue(currentGroupedArray.filter(v => v !== item));
+                          }
+                        }}
+                      />
+                      <span className="text-sm">{item}</span>
+                    </label>
+                  ))}
+                </div>
+              ))}
+            </div>
+            <div className="text-xs text-gray-500">
+              Selected: {currentGroupedArray.join(', ') || 'None'}
             </div>
           </div>
         );
