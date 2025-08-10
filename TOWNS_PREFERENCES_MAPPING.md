@@ -96,7 +96,6 @@ This document provides a comprehensive mapping between the `towns` table columns
 - `lifestyle_preferences`: Object with:
   - `urban_rural`: Array (e.g., ["urban", "suburban"])
   - `pace_of_life`: Array (e.g., ["fast", "moderate", "slow"])
-  - `social_preference`: String (e.g., "private", "social")
   - `traditional_progressive`: String
 - `cultural_importance`: Object with ratings for:
   - `museums`: Number (1-5)
