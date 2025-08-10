@@ -82,6 +82,18 @@ export const TOWN_DATA_OPTIONS = {
     'Grassland', 'Desert', 'Tundra', 'Savanna', 'Scrubland', 'Wetlands', 'Alpine'
   ],
   
+  // Water bodies (nearest body of water)
+  water_bodies: [
+    'Atlantic Ocean', 'Pacific Ocean', 'Indian Ocean', 'Arctic Ocean', 'Southern Ocean',
+    'Mediterranean Sea', 'Caribbean Sea', 'Baltic Sea', 'North Sea', 'Black Sea',
+    'Red Sea', 'Arabian Sea', 'South China Sea', 'East China Sea', 'Coral Sea',
+    'Tasman Sea', 'Adriatic Sea', 'Aegean Sea', 'Ionian Sea', 'Tyrrhenian Sea',
+    'Andaman Sea', 'Arabian Gulf', 'Bay of Bengal', 'Bay of Biscay', 'Gulf of Mexico', 
+    'Gulf of Thailand', 'English Channel', 'Irish Sea', 'Java Sea', 'Sea of Japan', 
+    'Yellow Sea', 'Amazon River', 'Danube River', 'Rhine River', 'Thames River', 
+    'Seine River', 'Lake Geneva', 'Lake Como', 'Lake Garda', 'Lake Constance', 'Lake Balaton'
+  ],
+  
   // Languages (common ones)
   languages: [
     'Arabic', 'Chinese', 'Croatian', 'Czech', 'Danish', 'Dutch', 'English',
@@ -224,7 +236,8 @@ export function getFieldOptions(fieldName) {
     'cost_of_living_usd': TOWN_DATA_OPTIONS.cost_ranges,
     'airport_distance': TOWN_DATA_OPTIONS.distance_ranges,
     'nearest_major_hospital_km': TOWN_DATA_OPTIONS.distance_ranges,
-    'distance_to_ocean_km': TOWN_DATA_OPTIONS.distance_ranges
+    'distance_to_ocean_km': TOWN_DATA_OPTIONS.distance_ranges,
+    'water_bodies': TOWN_DATA_OPTIONS.water_bodies
   };
   
   return fieldMappings[fieldName] || null;
@@ -238,7 +251,7 @@ export function isDropdownField(fieldName) {
 // Check if field is multi-select (array)
 export function isMultiSelectField(fieldName) {
   const multiSelectFields = [
-    'regions', 'geographic_features_actual', 'vegetation_type_actual',
+    'regions', 'geo_region', 'geographic_features_actual', 'vegetation_type_actual', 'water_bodies',
     'languages_spoken', 'cultural_landmark_1', 'cultural_landmark_2', 'cultural_landmark_3'
   ];
   return multiSelectFields.includes(fieldName);
