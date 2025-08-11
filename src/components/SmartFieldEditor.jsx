@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getFieldOptions, isMultiSelectField } from '../utils/townDataOptions';
 import { getSortedWaterBodies } from '../utils/waterBodyMappings';
 import { getSortedRegions, getSortedGeoRegions } from '../utils/geographicMappings';
+import supabase from '../utils/supabaseClient';
 
 const SmartFieldEditor = ({ 
   fieldName, 
@@ -16,9 +17,38 @@ const SmartFieldEditor = ({
 
   useEffect(() => {
     loadFieldOptions();
-  }, [fieldName]);
+  }, [fieldName, townData?.country]); // Re-load when country changes
 
-  const loadFieldOptions = () => {
+  const loadFieldOptions = async () => {
+    // Special handling for region field - fetch from database based on country
+    if (fieldName === 'region' && townData?.country) {
+      try {
+        // Fetch all distinct regions for this country from the database
+        const { data, error } = await supabase
+          .from('towns')
+          .select('region')
+          .eq('country', townData.country)
+          .not('region', 'is', null);
+        
+        if (error) throw error;
+        
+        // Get unique regions and sort them
+        const uniqueRegions = [...new Set(data.map(d => d.region))].sort();
+        
+        if (uniqueRegions.length > 0) {
+          setOptions(uniqueRegions);
+          setFieldType('select');
+        } else {
+          // If no regions found for this country, allow free text entry
+          setOptions([]);
+          setFieldType('text');
+        }
+      } catch (error) {
+        console.error('Error fetching regions:', error);
+        setFieldType('text');
+      }
+      return;
+    }
     // Special handling for water_bodies field with intelligent filtering
     if (fieldName === 'water_bodies' && townData) {
       const { relevant, other } = getSortedWaterBodies(townData.country, townData.geo_region);
@@ -100,11 +130,7 @@ const SmartFieldEditor = ({
           setFieldType('currency');
           break;
         
-        case 'airport_distance':
-        case 'nearest_major_hospital_km':
-        case 'distance_to_ocean_km':
-          setFieldType('distance');
-          break;
+        // Distance fields now use dropdown ranges from townDataOptions
         
         case 'population':
           setFieldType('population');
@@ -123,9 +149,7 @@ const SmartFieldEditor = ({
           setFieldType('coordinate');
           break;
         
-        case 'elevation_meters':
-          setFieldType('elevation');
-          break;
+        // elevation_meters now uses dropdown ranges from townDataOptions
         
         case 'air_quality_index':
           setFieldType('aqi');
@@ -301,21 +325,6 @@ const SmartFieldEditor = ({
           </div>
         );
       
-      case 'elevation':
-        return (
-          <div className="flex items-center gap-1">
-            <input
-              type="number"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              className="border rounded px-2 py-1 w-24"
-              min="-500"
-              max="9000"
-              step="10"
-            />
-            <span className="text-sm text-gray-500">meters</span>
-          </div>
-        );
       
       case 'coordinate':
         return (
@@ -436,7 +445,7 @@ const SmartFieldEditor = ({
     }
     
     // Convert numeric strings to numbers for numeric fields
-    if (['number', 'score', 'currency', 'distance', 'elevation', 'coordinate', 'population', 'aqi'].includes(fieldType)) {
+    if (['number', 'score', 'currency', 'distance', 'coordinate', 'population', 'aqi'].includes(fieldType)) {
       valueToSave = value === '' ? null : Number(value);
     }
     

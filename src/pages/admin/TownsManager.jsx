@@ -4,8 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import supabase from '../../utils/supabaseClient';
 import SmartFieldEditor from '../../components/SmartFieldEditor';
 import QuickNav from '../../components/QuickNav';
-import GoogleSearchPopup from '../../components/GoogleSearchPopup';
+import SmartVerificationPopup from '../../components/SmartVerificationPopup';
+import FieldDefinitionEditor from '../../components/FieldDefinitionEditor';
+import GoogleSearchPanel from '../../components/GoogleSearchPanel';
 import { getFieldOptions, isMultiSelectField } from '../../utils/townDataOptions';
+import { useFieldDefinitions } from '../../hooks/useFieldDefinitions';
+import autoFixService from '../../services/autoFixService';
 
 // Admin email check
 const ADMIN_EMAIL = 'tilman.rumpf@gmail.com';
@@ -163,11 +167,28 @@ const TownsManager = () => {
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   
-  // Google search popup state
-  const [googleSearchPopup, setGoogleSearchPopup] = useState({
+  // Smart verification popup state
+  const [verificationPopup, setVerificationPopup] = useState({
     isOpen: false,
-    query: ''
+    town: null,
+    fieldName: null
   });
+  
+  // Field definition editor state
+  const [fieldDefEditor, setFieldDefEditor] = useState({
+    isOpen: false,
+    fieldName: ''
+  });
+  
+  // Google search panel state
+  const [googleSearchPanel, setGoogleSearchPanel] = useState({ 
+    isOpen: false, 
+    searchQuery: '', 
+    fieldName: null 
+  });
+  
+  // Get field definitions for audit questions
+  const { getAuditQuestion, getSearchQuery, getFieldDefinition } = useFieldDefinitions();
 
   // Auth check - FIXED to use actual Supabase authentication
   useEffect(() => {
@@ -263,12 +284,25 @@ const TownsManager = () => {
       });
       
       setTowns(townsWithMetrics);
+      
+      // Load audit data from towns
+      const auditFields = {};
+      data.forEach(town => {
+        if (town.audit_data && Object.keys(town.audit_data).length > 0) {
+          Object.entries(town.audit_data).forEach(([fieldName, auditInfo]) => {
+            const key = `${town.id}-${fieldName}`;
+            auditFields[key] = auditInfo;
+          });
+        }
+      });
+      setAuditedFields(auditFields);
     };
     
-    if (!isLoading) {
+    // Load towns when we have a current user
+    if (currentUser) {
       loadTowns();
     }
-  }, [isLoading]);
+  }, [currentUser]);
 
   // Apply filters
   useEffect(() => {
@@ -581,15 +615,64 @@ const TownsManager = () => {
       
       const { townId, fieldName } = showAuditDialog;
       const key = `${townId}-${fieldName}`;
+      
+      // Create audit data object
+      const auditData = {
+        approved: true,
+        approvedBy: user?.email || currentUser?.email,
+        approvedByName: fullName || user?.email?.split('@')[0] || 'Admin',
+        approvedByAvatar: avatarUrl,
+        approvedAt: new Date().toISOString()
+      };
+      
+      // Get existing town data to preserve audit_data
+      const { data: townData, error: fetchError } = await supabase
+        .from('towns')
+        .select('audit_data')
+        .eq('id', townId)
+        .single();
+      
+      if (fetchError) {
+        console.error('Error fetching town data:', fetchError);
+        alert('Error fetching town data. Please try again.');
+        return;
+      }
+      
+      // Merge with existing audit data
+      const existingAuditData = townData?.audit_data || {};
+      const updatedAuditData = {
+        ...existingAuditData,
+        [fieldName]: auditData
+      };
+      
+      // Save to Supabase
+      const { data: updateResult, error: updateError } = await supabase
+        .from('towns')
+        .update({ audit_data: updatedAuditData })
+        .eq('id', townId)
+        .select();
+      
+      if (updateError) {
+        console.error('Error saving audit data:', updateError);
+        alert(`Error saving audit approval: ${updateError.message}\n\nThis might be an RLS issue.`);
+        return;
+      }
+      
+      // Verify the update actually worked
+      const { data: verifyData, error: verifyError } = await supabase
+        .from('towns')
+        .select('audit_data')
+        .eq('id', townId)
+        .single();
+      
+      if (verifyError) {
+        console.error('Error verifying update:', verifyError);
+      }
+      
+      // Update local state only after successful save
       setAuditedFields(prev => ({
         ...prev,
-        [key]: {
-          approved: true,
-          approvedBy: user?.email || currentUser?.email,
-          approvedByName: fullName || user?.email?.split('@')[0] || 'Admin',
-          approvedByAvatar: avatarUrl,
-          approvedAt: new Date().toISOString()
-        }
+        [key]: auditData
       }));
       setShowAuditDialog(null);
     }
@@ -650,7 +733,10 @@ const TownsManager = () => {
   // Generate smart Google search query
   const generateSearchQuery = (town, fieldName, isVerification = false) => {
     const formattedField = formatFieldName(fieldName);
-    const location = `${town.name}, ${town.country}`;
+    // CRITICAL: Don't use stored country when searching for country field itself!
+    const location = fieldName === 'country' 
+      ? town.name  // Just town name for country searches
+      : `${town.name}, ${town.country}`;  // Include country for other fields
     
     // Check if this field has dropdown options
     const fieldOptions = getFieldOptions(fieldName);
@@ -660,32 +746,42 @@ const TownsManager = () => {
     // If this is a verification query, create a different format
     if (isVerification) {
       const currentValue = town[fieldName];
+      // For country field verification, don't include the stored country in the search!
+      const verifyLocation = fieldName === 'country' ? town.name : location;
       
       // Handle fields with dropdown options
       if (hasOptions && fieldHasData(currentValue)) {
         if (isMultiSelect || Array.isArray(currentValue)) {
           const values = Array.isArray(currentValue) ? currentValue.join(', ') : currentValue;
-          return `Is ${location} ${formattedField} really "${values}"? Are there other options that apply?`;
+          // Special case for country field
+          if (fieldName === 'country') {
+            return `Is ${town.name} really in ${currentValue}? Which country is ${town.name} located in?`;
+          }
+          return `Is ${verifyLocation} ${formattedField} really "${values}"? Are there other options that apply?`;
         } else {
-          return `Is ${location} ${formattedField} really "${currentValue}"? Check if this is the best match`;
+          // Special case for country field
+          if (fieldName === 'country') {
+            return `Is ${town.name} really in ${currentValue}? Which country is ${town.name} located in?`;
+          }
+          return `Is ${verifyLocation} ${formattedField} really "${currentValue}"? Check if this is the best match`;
         }
       }
       
       // Handle different field types for verification
       if (fieldName === 'water_bodies' && Array.isArray(currentValue)) {
         const bodies = currentValue.join(', ');
-        return `Are the ${location} water bodies really ${bodies}? Am I missing something critical?`;
+        return `Are the ${verifyLocation} water bodies really ${bodies}? Am I missing something critical?`;
       } else if (fieldName.includes('distance')) {
-        return `Is ${location} really ${currentValue}km ${formattedField}? Verify distance`;
+        return `Is ${verifyLocation} really ${currentValue}km ${formattedField}? Verify distance`;
       } else if (fieldName.includes('temp')) {
-        return `Is ${location} ${formattedField} really ${currentValue}°C? Climate verification`;
+        return `Is ${verifyLocation} ${formattedField} really ${currentValue}°C? Climate verification`;
       } else if (fieldName.includes('cost') || fieldName.includes('rent')) {
-        return `Is ${location} ${formattedField} really $${currentValue}? ${new Date().getFullYear()} prices accurate?`;
+        return `Is ${verifyLocation} ${formattedField} really $${currentValue}? ${new Date().getFullYear()} prices accurate?`;
       } else if (typeof currentValue === 'boolean') {
-        return `Is it true that ${location} ${formattedField} is ${currentValue ? 'yes' : 'no'}? Verify`;
+        return `Is it true that ${verifyLocation} ${formattedField} is ${currentValue ? 'yes' : 'no'}? Verify`;
       } else {
         // Generic verification format
-        return `Verify: ${location} ${formattedField} is "${currentValue}" - is this accurate and complete?`;
+        return `Verify: ${verifyLocation} ${formattedField} is "${currentValue}" - is this accurate and complete?`;
       }
     }
     
@@ -696,11 +792,15 @@ const TownsManager = () => {
       if (isMultiSelect) {
         // For multiselect, ask which options apply
         const sampleOptions = fieldOptions.slice(0, 5).join(', ');
-        return `What ${formattedField} best describe ${location}? Options include: ${sampleOptions}... Which apply?`;
+        // Don't include country in search when searching for the country field itself!
+        const searchLocation = fieldName === 'country' ? town.name : location;
+        return `What ${formattedField} best describe ${searchLocation}? Options include: ${sampleOptions}... Which apply?`;
       } else {
         // For single select, ask for the best match
         const sampleOptions = fieldOptions.slice(0, 5).join(', ');
-        return `What is the best ${formattedField} for ${location}? Options: ${sampleOptions}...`;
+        // Don't include country in search when searching for the country field itself!
+        const searchLocation = fieldName === 'country' ? town.name : location;
+        return `What is the best ${formattedField} for ${searchLocation}? Options: ${sampleOptions}...`;
       }
     }
     
@@ -811,9 +911,28 @@ const TownsManager = () => {
   };
 
   // Render field row helper
-  const renderFieldRow = (column, town) => (
+  const renderFieldRow = (column, town) => {
+    const auditQuestion = getAuditQuestion(column, town);
+    const fieldSearchQuery = getSearchQuery(column, town);
+    
+    return (
     <div key={column} className="flex items-center py-1 group">
-      <div className="w-64 text-sm font-medium text-gray-600">{column}:</div>
+      <div className="w-64 text-sm font-medium text-gray-600 flex items-center gap-1">
+        {column}:
+        <button
+          onClick={() => {
+            // Open the field definition editor to edit the TEMPLATE
+            setFieldDefEditor({
+              isOpen: true,
+              fieldName: column
+            });
+          }}
+          className="text-blue-500 text-sm font-bold cursor-pointer hover:text-blue-700 ml-1"
+          title="Edit field definition template (affects ALL towns)"
+        >
+          ⓘ
+        </button>
+      </div>
       {editingCell?.townId === town.id && editingCell?.column === column ? (
         <SmartFieldEditor
           fieldName={column}
@@ -882,8 +1001,13 @@ const TownsManager = () => {
           {/* Google Search Button - Vibrant for missing data, subtle for existing data */}
           <button
             onClick={() => {
-              const searchQuery = generateSearchQuery(town, column);
-              setGoogleSearchPopup({ isOpen: true, query: searchQuery });
+              // Open Google search in side panel
+              const searchQuery = getSearchQuery(column, town);
+              setGoogleSearchPanel({ 
+                isOpen: true, 
+                searchQuery: searchQuery,
+                fieldName: formatFieldName(column)
+              });
             }}
             className={`ml-2 p-1.5 rounded hover:bg-gray-100 transition-all ${
               !fieldHasData(town[column])
@@ -905,8 +1029,12 @@ const TownsManager = () => {
           {fieldHasData(town[column]) && (
             <button
               onClick={() => {
-                const verificationQuery = generateSearchQuery(town, column, true);
-                setGoogleSearchPopup({ isOpen: true, query: verificationQuery });
+                // Open smart verification popup
+                setVerificationPopup({ 
+                  isOpen: true, 
+                  town: town,
+                  fieldName: column
+                });
               }}
               className="ml-1 p-1.5 rounded hover:bg-green-50 transition-all opacity-60 group-hover:opacity-100 hover:scale-110"
               title={`Verify ${formatFieldName(column)} data`}
@@ -967,7 +1095,8 @@ const TownsManager = () => {
         </>
       )}
     </div>
-  );
+    );
+  };
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Checking access...</div>;
@@ -1195,7 +1324,77 @@ const TownsManager = () => {
               <div className="bg-white rounded-lg shadow">
                 {/* Town Header */}
                 <div className="px-6 py-4 border-b">
-                  <h2 className="text-xl font-bold">{selectedTown.name}, {selectedTown.country}</h2>
+                  <div className="flex justify-between items-start">
+                    <h2 className="text-xl font-bold">{selectedTown.name}, {selectedTown.country}</h2>
+                    <button
+                      onClick={async () => {
+                        if (!confirm(`This will intelligently fix ALL fields for ${selectedTown.name} based on its location. Continue?`)) {
+                          return;
+                        }
+                        
+                        try {
+                          // Get suggested fixes for all fields
+                          const suggestedFixes = await autoFixService.fixAllFields(selectedTown);
+                          
+                          const fixCount = Object.keys(suggestedFixes).length;
+                          if (fixCount === 0) {
+                            alert('No fields need fixing - town data looks good!');
+                            return;
+                          }
+                          
+                          // Show what will be updated
+                          const changes = Object.entries(suggestedFixes)
+                            .map(([field, value]) => `• ${field}: ${JSON.stringify(value)}`)
+                            .join('\n');
+                          
+                          if (!confirm(`Will update ${fixCount} fields:\n\n${changes}\n\nApply these changes?`)) {
+                            return;
+                          }
+                          
+                          // Apply all fixes to database
+                          const { data, error } = await supabase
+                            .from('towns')
+                            .update(suggestedFixes)
+                            .eq('id', selectedTown.id)
+                            .select();
+                          
+                          if (error) {
+                            console.error('Update error:', error);
+                            alert(`Error updating: ${error.message}`);
+                          } else {
+                            console.log('Successfully updated town:', data);
+                            
+                            // Update local state
+                            const updatedTowns = towns.map(t => {
+                              if (t.id === selectedTown.id) {
+                                const updatedTown = { ...t, ...suggestedFixes };
+                                // Recalculate metrics
+                                updatedTown._errors = detectErrors(updatedTown);
+                                updatedTown._completion = calculateCompletion(updatedTown);
+                                return updatedTown;
+                              }
+                              return t;
+                            });
+                            
+                            setTowns(updatedTowns);
+                            
+                            // Update selectedTown
+                            const updatedSelectedTown = updatedTowns.find(t => t.id === selectedTown.id);
+                            setSelectedTown(updatedSelectedTown);
+                            
+                            alert(`✅ Successfully fixed ${fixCount} fields for ${selectedTown.name}!`);
+                          }
+                        } catch (err) {
+                          console.error('Error in auto-fix:', err);
+                          alert(`Error: ${err.message}`);
+                        }
+                      }}
+                      className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors font-medium flex items-center gap-2"
+                      title="Intelligently fix all fields based on location"
+                    >
+                      🔧 Fix All Fields
+                    </button>
+                  </div>
                   {selectedTown._errors.length > 0 && (
                     <div className="mt-2 p-3 bg-red-50 rounded border border-red-200">
                       <h3 className="font-semibold text-red-800 mb-1">Detected Errors:</h3>
@@ -1275,11 +1474,76 @@ const TownsManager = () => {
         </div>
       </div>
       
-      {/* Google Search Popup */}
-      <GoogleSearchPopup
-        searchQuery={googleSearchPopup.query}
-        isOpen={googleSearchPopup.isOpen}
-        onClose={() => setGoogleSearchPopup({ isOpen: false, query: '' })}
+      {/* Smart Verification Popup */}
+      <SmartVerificationPopup
+        isOpen={verificationPopup.isOpen}
+        onClose={() => {
+          // Just close the popup without changing anything else
+          setVerificationPopup({ isOpen: false, town: null, fieldName: null });
+          // Do NOT change filters or selected town - user wants to stay where they are
+        }}
+        town={verificationPopup.town}
+        fieldName={verificationPopup.fieldName}
+        fieldDefinition={verificationPopup.fieldName ? getFieldDefinition(verificationPopup.fieldName) : null}
+        onUpdateField={async (fieldName, newValue) => {
+          console.log('Updating field:', fieldName, 'to:', newValue);
+          
+          // Update the field value in database
+          const { data, error } = await supabase
+            .from('towns')
+            .update({ [fieldName]: newValue })
+            .eq('id', verificationPopup.town.id)
+            .select();
+          
+          if (error) {
+            console.error('Update error:', error);
+            alert(`Error updating: ${error.message}`);
+          } else {
+            console.log('Update successful:', data);
+            
+            // Update local state
+            const updatedTowns = towns.map(t => {
+              if (t.id === verificationPopup.town.id) {
+                const updatedTown = { ...t, [fieldName]: newValue };
+                // Recalculate metrics
+                updatedTown._errors = detectErrors(updatedTown);
+                updatedTown._completion = calculateCompletion(updatedTown);
+                return updatedTown;
+              }
+              return t;
+            });
+            
+            setTowns(updatedTowns);
+            
+            // Update selectedTown if it's the same town
+            if (selectedTown && selectedTown.id === verificationPopup.town.id) {
+              const updatedSelectedTown = updatedTowns.find(t => t.id === verificationPopup.town.id);
+              setSelectedTown(updatedSelectedTown);
+            }
+            
+            alert(`✅ Updated ${fieldName} to "${newValue}"`);
+          }
+        }}
+      />
+      
+      {/* Field Definition Editor */}
+      {fieldDefEditor.isOpen && (
+        <FieldDefinitionEditor
+          fieldName={fieldDefEditor.fieldName}
+          onClose={() => {
+            setFieldDefEditor({ isOpen: false, fieldName: '' });
+            // Reload field definitions after editing
+            window.location.reload();
+          }}
+        />
+      )}
+      
+      {/* Google Search Panel - 1/4 width side panel */}
+      <GoogleSearchPanel
+        isOpen={googleSearchPanel.isOpen}
+        onClose={() => setGoogleSearchPanel({ isOpen: false, searchQuery: '', fieldName: null })}
+        searchQuery={googleSearchPanel.searchQuery}
+        fieldName={googleSearchPanel.fieldName}
       />
       
       {/* Audit Confirmation Dialog */}
