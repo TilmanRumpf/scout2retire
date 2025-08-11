@@ -40,7 +40,7 @@ export const TOWN_DATA_OPTIONS = {
     'Alpine', 'Amazon Basin', 'Andes', 'Atlantic Coast', 'Balkans',
     'Baltic', 'British Isles', 'Caribbean Islands', 'Central Africa',
     'Central America', 'Central Europe', 'East Africa', 'East Asia',
-    'Eastern Europe', 'Gulf States', 'Himalayas', 'Iberian Peninsula',
+    'Eastern Europe', 'Gulf Coast', 'Gulf States', 'Himalayas', 'Iberian Peninsula',
     'Indian Subcontinent', 'Mediterranean', 'Middle East', 'Nordic',
     'North Africa', 'North America', 'Northern Europe', 'Pacific Coast',
     'Pacific Islands', 'Scandinavia', 'South America', 'South Asia',
@@ -152,6 +152,15 @@ export const TOWN_DATA_OPTIONS = {
     '100-200 km', '200-500 km', '> 500 km'
   ],
   
+  // Elevation ranges (meters)
+  elevation_ranges: [
+    '0-50m',
+    '0-300m',
+    '200-600m',
+    '500-1000m',
+    '> 1000m'
+  ],
+  
   // Tax treaty status
   tax_treaty: ['Yes', 'No', 'Partial', 'Under Negotiation'],
   
@@ -190,7 +199,7 @@ export function getFieldOptions(fieldName) {
     'country': TOWN_DATA_OPTIONS.countries,
     'geo_region': TOWN_DATA_OPTIONS.geo_regions,
     'regions': TOWN_DATA_OPTIONS.regions,
-    'region': TOWN_DATA_OPTIONS.countries, // This will need to be dynamic based on country
+    // 'region' is handled dynamically in SmartFieldEditor based on selected country
     'climate': TOWN_DATA_OPTIONS.climate_types,
     'summer_climate_actual': TOWN_DATA_OPTIONS.summer_climate,
     'winter_climate_actual': TOWN_DATA_OPTIONS.winter_climate,
@@ -237,6 +246,7 @@ export function getFieldOptions(fieldName) {
     'airport_distance': TOWN_DATA_OPTIONS.distance_ranges,
     'nearest_major_hospital_km': TOWN_DATA_OPTIONS.distance_ranges,
     'distance_to_ocean_km': TOWN_DATA_OPTIONS.distance_ranges,
+    'elevation_meters': TOWN_DATA_OPTIONS.elevation_ranges,
     'water_bodies': TOWN_DATA_OPTIONS.water_bodies
   };
   

@@ -8,6 +8,16 @@ const GoogleSearchPopup = ({ searchQuery, isOpen, onClose }) => {
       setIsLoading(true);
       // Give iframe time to load
       const timer = setTimeout(() => setIsLoading(false), 2000);
+      
+      // Add a one-time console message about expected errors
+      if (process.env.NODE_ENV === 'development') {
+        console.info(
+          '%c⚠️ Expected Google iframe errors:',
+          'color: #FFA500; font-weight: bold;',
+          '\nYou may see 404/401 errors from google.com domains - these are normal and don\'t affect functionality.'
+        );
+      }
+      
       return () => clearTimeout(timer);
     }
   }, [isOpen, searchQuery]);
@@ -68,8 +78,13 @@ const GoogleSearchPopup = ({ searchQuery, isOpen, onClose }) => {
           src={googleSearchUrl}
           className={`flex-1 w-full ${isLoading ? 'hidden' : ''}`}
           title="Google Search Results"
-          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+          sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-popups-to-escape-sandbox"
+          referrerPolicy="no-referrer-when-downgrade"
           onLoad={() => setIsLoading(false)}
+          onError={(e) => {
+            // Silently handle iframe errors
+            e.preventDefault();
+          }}
         />
         
         {/* Note about iframe limitations */}

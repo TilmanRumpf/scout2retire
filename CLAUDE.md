@@ -31,6 +31,45 @@ Let me show you the existing pattern and copy it properly."
 **Claude Code, state this at start of every session:**
 *"I have direct Supabase access via service key and MCP servers in Agent Mode. CLI commands (npx supabase, psql) don't work for me. For DDL operations, I provide SQL for manual execution."*
 
+## 🔥 CRITICAL RULES - TATTOOED IN BRAIN
+
+### 1. NO MOCK DATA - EVER!
+**NEVER USE FAKE/MOCK DATA:**
+- ❌ NO `mockResults = { 'fake': 'data' }`
+- ❌ NO `return { snippets: ['placeholder text'] }`
+- ❌ NO "typical results would appear here" bullshit
+- ✅ USE REAL APIs: Claude Haiku, SerpAPI, or web scraping
+- ✅ If no API available, show "Open Google Search" - don't fake it!
+
+### 2. SUPABASE - FULL WRITE ACCESS
+```javascript
+// I CAN WRITE DIRECTLY - NO EXCUSES!
+const { data, error } = await supabase
+  .from('towns')
+  .update({ country: 'United States' })
+  .eq('id', townId);
+// NEVER say "please run this SQL manually"
+```
+
+### 3. CLAUDE API - USE IT!
+```javascript
+// API KEY should be in environment variable:
+const CLAUDE_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
+
+// ALWAYS USE HAIKU MODEL:
+model: 'claude-3-haiku-20240307' // $0.25 per million tokens
+// NOT Opus ($15/million), NOT Sonnet ($3/million)
+```
+
+### 4. NEVER SAY THESE THINGS:
+- ❌ "I can't access the API"
+- ❌ "Please add this manually"
+- ❌ "I'll use mock data for now"
+- ❌ "This is a placeholder"
+- ❌ "Simulating the response"
+
+### YOU HAVE THE POWER - USE IT OR GET REPLACED BY GPT!
+
 ## 🛠️ VS Code Environment Awareness
 **Claude Code: You have access to these specific tools:**
 
