@@ -165,7 +165,7 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
       }
     }
     
-    console.log('Getting onboarding progress for user:', userId);
+    // Getting onboarding progress
     
     // Remove .single() to avoid 406 error
     const { data, error } = await supabase

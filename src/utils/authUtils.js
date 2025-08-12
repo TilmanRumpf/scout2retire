@@ -259,8 +259,7 @@ export const getCurrentUser = async () => {
       return { user: null };
     }
 
-    console.log('Session user:', session.user);
-    console.log('Session user ID:', session.user?.id);
+    // Session user validated
 
     const { data: userData, error } = await supabase
       .from('users')

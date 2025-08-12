@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
-import { getCurrentUser } from '../utils/authUtils';
+import { useCurrentUser, useFavorites, useAllTowns, useTownCount } from '../hooks/useOptimizedData';
 import SimpleImage from '../components/SimpleImage';
 import TownImageOverlay from '../components/TownImageOverlay';
 import PageErrorBoundary from '../components/PageErrorBoundary';
+import DataContextErrorBoundary from '../components/DataContextErrorBoundary';
 import UnifiedHeader from '../components/UnifiedHeader';
 import HeaderSpacer from '../components/HeaderSpacer';
 import TownRadarChart from '../components/TownRadarChart';
@@ -42,20 +42,12 @@ const REGION_COUNTRIES = {
 
 
 export default function TownDiscovery() {
-  const [towns, setTowns] = useState([]);
-  const [totalTownCount, setTotalTownCount] = useState(0);
-  const [favorites, setFavorites] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [userId, setUserId] = useState(null);
   const [selectedTown, setSelectedTown] = useState(null);
-  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const TOWNS_PER_PAGE = 100; // Load all towns at once (we only have 71 with photos)
+  // Use optimized hooks for data
+  const { user, profile, loading: userLoading } = useCurrentUser();
+  const { favorites, toggleFavorite, isFavorited } = useFavorites();
+  const { count: totalTownCount } = useTownCount();
   
   // Filter and sort states
   const [sortBy, setSortBy] = useState('match');
@@ -67,6 +59,23 @@ export default function TownDiscovery() {
   
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Build filters for useAllTowns hook
+  const filters = {
+    country: filterCountry !== 'all' ? filterCountry : undefined,
+    region: filterRegion !== 'all' ? filterRegion : undefined,
+    regionCountries: filterRegion !== 'all' ? REGION_COUNTRIES[filterRegion] : undefined,
+    limit: 200, // Load more towns initially
+  };
+  
+  const { towns: allTowns, loading: townsLoading } = useAllTowns(filters);
+  const loading = userLoading || townsLoading;
+  const error = null; // Will be handled by hooks
+  const onboardingCompleted = profile?.onboarding_completed || false;
+  const userId = user?.id;
+  
+  // Use allTowns as the main towns array
+  const towns = allTowns;
 
   // Parse URL parameters
   useEffect(() => {
@@ -84,213 +93,19 @@ export default function TownDiscovery() {
     }
   }, [location.search]);
 
-  // Load data
+  // Navigate to welcome if not authenticated
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        
-        // Get current user and their profile
-        const { user, profile } = await getCurrentUser();
-        if (!user) {
-          navigate('/welcome');
-          return;
-        }
-        setUserId(user.id);
-        
-        
-        // Check onboarding status from the profile
-        setOnboardingCompleted(profile?.onboarding_completed || false);
-
-        // Get user's favorites
-        const { success: favSuccess, favorites: userFavorites } = await fetchFavorites(user.id);
-        if (favSuccess) {
-          setFavorites(userFavorites);
-        }
-
-        // Fetch towns with personalization
-        const { 
-          success: townSuccess, 
-          towns: allTowns, 
-          isPersonalized: isPersonalizedResult,
-          userPreferences: userPrefs
-        } = await fetchTowns({ 
-          limit: TOWNS_PER_PAGE,
-          offset: 0,
-          userId: user.id,
-          usePersonalization: true  // Enable personalization with enhanced algorithm
-        });
-
-        if (townSuccess) {
-          setTowns(allTowns);
-          // Check if there are more towns to load
-          setHasMore(allTowns.length === TOWNS_PER_PAGE);
-          
-          // If a town is selected in URL, make sure it's in our data
-          if (selectedTown) {
-            const found = allTowns.find(t => String(t.id) === String(selectedTown));
-            if (!found) {
-              // Fetch the specific town if not in main list
-              const { success: singleSuccess, towns: singleTown } = 
-                await fetchTowns({ townIds: [selectedTown] });
-              if (singleSuccess && singleTown.length > 0) {
-                setTowns(prev => [...prev, singleTown[0]]);
-              }
-            }
-          }
-        } else {
-          setError("Failed to load towns");
-        }
-      } catch (err) {
-        console.error("Error loading town discovery data:", err);
-        setError("An unexpected error occurred");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadData();
-  }, [navigate, selectedTown]);
-
-  // Fetch total town count separately
-  useEffect(() => {
-    const fetchTotalCount = async () => {
-      const { count } = await supabase
-        .from('towns')
-        .select('*', { count: 'exact', head: true })
-        .not('image_url_1', 'is', null)
-        .not('image_url_1', 'eq', '')
-        .not('image_url_1', 'ilike', 'NULL')
-        .not('image_url_1', 'eq', 'null');  // CRITICAL: Only count towns with photos (exclude 'NULL' string)
-      
-      if (count !== null) {
-        setTotalTownCount(count);
-      }
-    };
-
-    fetchTotalCount();
-
-    // Set up real-time subscription for count updates
-    const subscription = supabase
-      .channel('towns-count')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'towns' }, 
-        () => {
-          fetchTotalCount();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  // Infinite scroll detection
-  useEffect(() => {
-    let scrollTimeout;
-    
-    const handleScroll = () => {
-      // Clear any existing timeout
-      if (scrollTimeout) {
-        clearTimeout(scrollTimeout);
-      }
-      
-      // Debounce the scroll check
-      scrollTimeout = setTimeout(() => {
-        // Check if we're near the bottom of the page
-        const scrollHeight = document.documentElement.scrollHeight;
-        const scrollTop = window.scrollY;
-        const clientHeight = window.innerHeight;
-        
-        // Load more when user is 300px from the bottom
-        if (scrollHeight - scrollTop - clientHeight < 300) {
-          if (!loadingMore && hasMore && !loading && towns.length > 0) {
-            loadMoreTowns();
-          }
-        }
-      }, 100); // 100ms debounce
-    };
-
-    // Add scroll event listener
-    window.addEventListener('scroll', handleScroll);
-    
-    // Initial check in case content doesn't fill the screen
-    const checkAndLoadMore = () => {
-      const scrollHeight = document.documentElement.scrollHeight;
-      const clientHeight = window.innerHeight;
-      // If page isn't scrollable and we have more towns, load them
-      if (scrollHeight <= clientHeight + 100 && hasMore && !loadingMore && !loading) {
-        loadMoreTowns();
-      }
-    };
-    
-    // Check initially and after a delay
-    setTimeout(checkAndLoadMore, 500);
-    setTimeout(checkAndLoadMore, 1500); // Check again in case images loaded
-    
-    // Cleanup
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      if (scrollTimeout) {
-        clearTimeout(scrollTimeout);
-      }
-    };
-  }, [loadingMore, hasMore, loading, towns.length, currentPage]); // Dependencies for the scroll handler
-
-  // Auto-load more if page still isn't scrollable after loading
-  useEffect(() => {
-    if (towns.length > 0 && !loadingMore && hasMore) {
-      const checkScrollable = () => {
-        const scrollHeight = document.documentElement.scrollHeight;
-        const clientHeight = window.innerHeight;
-        
-        if (scrollHeight <= clientHeight + 100) {
-          loadMoreTowns();
-        }
-      };
-      
-      // Check after images might have loaded
-      setTimeout(checkScrollable, 1000);
+    if (!userLoading && !user) {
+      navigate('/welcome');
     }
-  }, [towns.length, hasMore, loadingMore]);
+  }, [user, userLoading, navigate]);
 
-  // Load more towns function
-  const loadMoreTowns = async () => {
-    if (loadingMore || !hasMore) return;
-    
-    setLoadingMore(true);
-    try {
-      const nextPage = currentPage + 1;
-      
-      const { 
-        success: townSuccess, 
-        towns: moreTowns 
-      } = await fetchTowns({ 
-        limit: TOWNS_PER_PAGE,
-        offset: nextPage * TOWNS_PER_PAGE,
-        userId: userId,
-        usePersonalization: true
-      });
+  // Town count is now managed by DataContext via useTownCount hook
 
-      if (townSuccess) {
-        setTowns(prev => [...prev, ...moreTowns]);
-        setCurrentPage(nextPage);
-        // If we got fewer towns than requested, we've reached the end
-        setHasMore(moreTowns.length === TOWNS_PER_PAGE);
-      }
-    } catch (err) {
-      console.error("Error loading more towns:", err);
-      toast.error("Failed to load more towns");
-    } finally {
-      setLoadingMore(false);
-    }
-  };
+  // Infinite scroll is now handled by DataContext via loadAllTowns
+  // All towns are loaded in batches by the useAllTowns hook
 
-  // Check if a town is favorited
-  const isFavorited = (townId) => {
-    return favorites.some(fav => String(fav.town_id) === String(townId));
-  };
+  // isFavorited is now provided by the useFavorites hook
 
   // Get unique countries from towns, filtered by region if selected
   const getUniqueCountries = () => {
@@ -431,24 +246,7 @@ export default function TownDiscovery() {
     return filtered;
   };
 
-  // IMPORTANT: Remove toast calls from here since they're handled in the LikeButton component
-  const handleLikeToggle = (isLiked, action, townId) => {
-    
-    // Update local favorites state without showing toasts
-    if (action === 'added') {
-      const town = towns.find(t => String(t.id) === String(townId));
-      if (town) {
-        setFavorites(prev => [...prev, {
-          user_id: userId,
-          town_id: townId,
-          towns: town,
-          created_at: new Date().toISOString()
-        }]);
-      }
-    } else {
-      setFavorites(prev => prev.filter(fav => String(fav.town_id) !== String(townId)));
-    }
-  };
+  // Favorite toggle is now handled by DataContext optimisticToggleFavorite
 
   // Render loading state
   if (loading) {
@@ -483,7 +281,7 @@ export default function TownDiscovery() {
       <UnifiedHeader
         variant="compact"
         title="Discover"
-        totalCount={totalTownCount || towns.length}
+        totalCount={totalTownCount}
         filteredCount={sortedAndFilteredTowns.length}
         showFilters={true}
         filterProps={{
@@ -512,11 +310,12 @@ export default function TownDiscovery() {
       {/* Spacer for fixed header with filters */}
       <HeaderSpacer hasFilters={true} />
 
-      <PageErrorBoundary
-        fallbackTitle="Discovery Error"
-        fallbackMessage="We're having trouble loading town recommendations. Please try refreshing the page."
-        onReset={() => window.location.reload()}
-      >
+      <DataContextErrorBoundary>
+        <PageErrorBoundary
+          fallbackTitle="Discovery Error"
+          fallbackMessage="We're having trouble loading town recommendations. Please try refreshing the page."
+          onReset={() => window.location.reload()}
+        >
         {/* Main content - no top padding since HeaderSpacer handles it */}
         <main className="max-w-7xl mx-auto px-4 py-3">
         {error && (
@@ -564,13 +363,7 @@ export default function TownDiscovery() {
                     isFavorited={isFavorited(selectedTownData.id)}
                     isUpdating={false}
                     onFavoriteClick={async () => {
-                      const { success, action, error } = await toggleFavorite(userId, selectedTownData.id);
-                      if (success) {
-                        handleLikeToggle(action === 'added', action, selectedTownData.id);
-                        toast.success(action === 'added' ? 'Added to favorites' : 'Removed from favorites');
-                      } else {
-                        toast.error(`Failed to update favorite: ${error?.message}`);
-                      }
+                      await toggleFavorite(selectedTownData.id, selectedTownData.name, selectedTownData.country);
                     }}
                     appealStatement={
                       selectedTownData.cost_index <= 1500 ? "Budget-friendly" :
@@ -791,13 +584,7 @@ export default function TownDiscovery() {
                     isFavorited={isFavorited(town.id)}
                     isUpdating={false}
                     onFavoriteClick={async () => {
-                      const { success, action, error } = await toggleFavorite(userId, town.id);
-                      if (success) {
-                        handleLikeToggle(action === 'added', action, town.id);
-                        toast.success(action === 'added' ? 'Added to favorites' : 'Removed from favorites');
-                      } else {
-                        toast.error(`Failed to update favorite: ${error?.message}`);
-                      }
+                      await toggleFavorite(town.id, town.name, town.country);
                     }}
                     appealStatement={
                       town.cost_index <= 1500 ? "Budget-friendly" :
@@ -904,30 +691,19 @@ export default function TownDiscovery() {
           </div>
         )}
         
-        {/* Loading indicator for infinite scroll */}
-        {loadingMore && (
+        {/* All towns are now loaded via DataContext useAllTowns hook */}
+        {townsLoading && sortedAndFilteredTowns.length === 0 && (
           <div className="flex justify-center py-8">
             <div className="flex items-center gap-3">
               <div className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full"></div>
-              <span className={`${uiConfig.colors.body}`}>Loading more towns...</span>
+              <span className={`${uiConfig.colors.body}`}>Loading towns...</span>
             </div>
           </div>
         )}
         
-        {/* Manual load more button as fallback */}
-        {!loadingMore && hasMore && towns.length > 0 && (
-          <div className="flex justify-center py-8">
-            <button
-              onClick={() => loadMoreTowns()}
-              className={`px-6 py-3 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md} hover:opacity-90 transition-opacity`}
-            >
-              Load More Towns (showing {sortedAndFilteredTowns.length} of {towns.length} loaded, {totalTownCount || '71'} total)
-            </button>
-          </div>
-        )}
-        
         </main>
-      </PageErrorBoundary>
+        </PageErrorBoundary>
+      </DataContextErrorBoundary>
 
     </div>
   );

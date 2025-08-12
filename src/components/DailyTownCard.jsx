@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SimpleImage from './SimpleImage';
 import TownImageOverlay from './TownImageOverlay';
-import { getTownOfTheDay, fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
-import { getCurrentUser } from '../utils/authUtils';
+import { getTownOfTheDay } from '../utils/townUtils.jsx';
+import { useCurrentUser, useFavorites } from '../hooks/useOptimizedData';
 import { MapPin } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
 import toast from 'react-hot-toast';
@@ -12,22 +12,25 @@ export default function DailyTownCard() {
   const [town, setTown] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [isFavorited, setIsFavorited] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const navigate = useNavigate();
+  
+  // Use optimized hooks
+  const { user, loading: userLoading } = useCurrentUser();
+  const { favorites, toggleFavorite: optimizedToggle, isFavorited: checkFavorited } = useFavorites();
+  const userId = user?.id;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Get current user
-        const { user } = await getCurrentUser();
-        if (!user) {
-          setError("User not found");
-          setLoading(false);
+        // Check if user is loaded
+        if (!user || userLoading) {
+          if (!userLoading) {
+            setError("User not found");
+            setLoading(false);
+          }
           return;
         }
-        setUserId(user.id);
         
         // Get town of the day
         const { success, town: dailyTown, error: townError } = await getTownOfTheDay(user.id);
@@ -38,28 +41,12 @@ export default function DailyTownCard() {
           return;
         }
         
-        // Log detailed town information for debugging
-        console.log("Daily Town Data:", {
-          id: dailyTown.id,
-          idType: typeof dailyTown.id,
-          name: dailyTown.name,
-          country: dailyTown.country,
-          cost: dailyTown.cost_index
-        });
+        // Town data loaded successfully
         
         setTown(dailyTown);
         
-        // Check if this town is favorited
-        if (dailyTown) {
-          const { success: favSuccess, favorites } = await fetchFavorites(user.id);
-          if (favSuccess && favorites) {
-            const isTownFavorited = favorites.some(fav => 
-              fav.town_id.toLowerCase() === dailyTown.id.toLowerCase()
-            );
-            setIsFavorited(isTownFavorited);
-            console.log(`Town ${dailyTown.name} (${dailyTown.id}) is ${isTownFavorited ? 'favorited' : 'not favorited'}`);
-          }
-        }
+        // Favorite status is now checked via the hook
+        // No need to fetch favorites separately
       } catch (err) {
         setError("An unexpected error occurred");
         console.error(err);
@@ -69,29 +56,23 @@ export default function DailyTownCard() {
     };
     
     fetchData();
-  }, []);
+  }, [user?.id]); // Only re-run when user ID changes
 
   const handleFavoriteToggle = async () => {
     if (!userId || isUpdating || !town) return;
     
     setIsUpdating(true);
     try {
-      const { success, action, error } = await toggleFavorite(userId, town.id);
-      
-      if (success) {
-        const newFavoriteState = action === 'added';
-        setIsFavorited(newFavoriteState);
-        toast.success(action === 'added' ? 'Added to favorites' : 'Removed from favorites');
-      } else {
-        toast.error(`Failed to update favorite: ${error?.message}`);
-      }
+      await optimizedToggle(town.id, town.name, town.country);
     } catch (err) {
       console.error("Error toggling favorite:", err);
-      toast.error("Failed to update favorite");
     } finally {
       setIsUpdating(false);
     }
   };
+  
+  // Check if current town is favorited
+  const isFavorited = town ? checkFavorited(town.id) : false;
 
   const handleExploreClick = () => {
     if (town) {
