@@ -133,7 +133,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       console.log('No onboarding data found, using sensible defaults for matching');
     }
 
-    console.log('User preferences loaded:', finalUserPreferences);
+    // User preferences loaded successfully
 
     // Check cache first for performance
     const cacheKey = `personalized_${userId}_${JSON.stringify(options)}`;
@@ -141,7 +141,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     if (cachedResult) {
       const parsed = JSON.parse(cachedResult);
       if (Date.now() - parsed.timestamp < 3600000) { // 1 hour cache
-        console.log('Returning cached personalized results');
+        // Returning cached results for performance
         return parsed.data;
       }
     }

@@ -15,8 +15,8 @@ if (typeof window !== 'undefined') {
   });
 }
 
+// Disabled StrictMode to prevent double-rendering in development
+// This was causing the constant flashing issue
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+  <App />
 )

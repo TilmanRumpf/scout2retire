@@ -1,13 +1,13 @@
-// pages/Favorites.jsx
+// pages/Favorites.jsx - Optimized with centralized data caching
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { fetchFavorites, toggleFavorite, fetchTowns } from '../utils/townUtils.jsx';
-import { getCurrentUser } from '../utils/authUtils';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useCurrentUser, useFavoriteTowns, useFavorites } from '../hooks/useOptimizedData';
 import SimpleImage from '../components/SimpleImage';
 import TownImageOverlay from '../components/TownImageOverlay';
 import { MapPin } from 'lucide-react';
 import UnifiedHeader from '../components/UnifiedHeader';
 import HeaderSpacer from '../components/HeaderSpacer';
+import DataContextErrorBoundary from '../components/DataContextErrorBoundary';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 
@@ -39,89 +39,42 @@ const REGION_COUNTRIES = {
 };
 
 export default function Favorites() {
-  const [favorites, setFavorites] = useState([]);
-  // Note: totalFavoriteCount was removed as it was unused
-  const [userId, setUserId] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Use optimized hooks instead of direct API calls
+  const { user, loading: userLoading } = useCurrentUser();
+  const { favorites, toggleFavorite } = useFavorites();
+  const { favoriteTowns, loading: townsLoading } = useFavoriteTowns();
+  
+  const loading = userLoading || townsLoading;
   const [sortBy, setSortBy] = useState('match'); // Changed default to 'match'
   const [filterCountry, setFilterCountry] = useState('all');
   const [filterRegion, setFilterRegion] = useState('all');
   const [filterCostRange, setFilterCostRange] = useState('all');
   const [filterMatchRange, setFilterMatchRange] = useState('all');
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Selection mode state
+  const [selectedTowns, setSelectedTowns] = useState([]);
+  const params = new URLSearchParams(location.search);
+  const selectMode = params.get('selectMode');
+  const returnUrl = params.get('returnUrl');
+  const isSelectionMode = selectMode === 'compare';
 
+  // Navigate to welcome if not authenticated
   useEffect(() => {
-    loadFavorites();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  // loadFavorites is only called on mount and doesn't need to be in dependencies
-
-  const loadFavorites = async () => {
-    try {
-      const { user } = await getCurrentUser();
-      if (!user) {
-        navigate('/welcome');
-        return;
-      }
-      
-      setUserId(user.id);
-      
-      const { success, favorites: userFavorites, error } = await fetchFavorites(user.id);
-      if (success) {
-        // Get personalized scores for favorited towns
-        const townIds = userFavorites.map(fav => fav.town_id).filter(Boolean);
-        if (townIds.length > 0) {
-          // Fetch towns with personalization to get match scores
-          console.log('Fetching personalized data for towns:', townIds);
-          const { success: townSuccess, towns: personalizedTowns } = await fetchTowns({
-            townIds,
-            userId: user.id,
-            usePersonalization: true
-          });
-          console.log('Personalized fetch result:', { townSuccess, personalizedTowns });
-          
-          if (townSuccess && personalizedTowns) {
-            // Map personalized data back to favorites
-            const favoritesWithScores = userFavorites.map(fav => {
-              const personalizedTown = personalizedTowns.find(t => String(t.id) === String(fav.town_id));
-              if (personalizedTown) {
-                return {
-                  ...fav,
-                  towns: personalizedTown
-                };
-              }
-              return fav;
-            });
-            setFavorites(favoritesWithScores);
-          } else {
-            // Fallback to original favorites without scores
-            setFavorites(userFavorites);
-          }
-        } else {
-          setFavorites(userFavorites);
-        }
-      } else {
-        console.error("Error loading favorites:", error);
-        toast.error("Failed to load favorites");
-      }
-    } catch (err) {
-      console.error("Error loading favorites:", err);
-      toast.error("An unexpected error occurred");
-    } finally {
-      setLoading(false);
+    if (!userLoading && !user) {
+      navigate('/welcome');
     }
+  }, [user, userLoading, navigate]);
+
+  const handleFavoriteChange = async (townId, townName, townCountry) => {
+    // Use optimistic toggle from context
+    await toggleFavorite(townId, townName, townCountry);
   };
 
-  const handleFavoriteChange = (townId, isFavorited) => {
-    if (!isFavorited) {
-      // Remove from favorites list when unfavorited
-      setFavorites(prev => prev.filter(fav => fav.town_id !== townId));
-      toast.success("Removed from favorites");
-    }
-  };
-
-  // Get unique values for filters
+  // Get unique values for filters (using favoriteTowns instead of favorites.towns)
   const getUniqueCountries = () => {
-    const allCountries = [...new Set(favorites.map(fav => fav.towns?.country).filter(Boolean))];
+    const allCountries = [...new Set(favoriteTowns.map(town => town?.country).filter(Boolean))];
     
     // If a region is selected, filter countries to only show those in that region
     if (filterRegion !== 'all' && REGION_COUNTRIES[filterRegion]) {
@@ -246,12 +199,34 @@ export default function Favorites() {
   };
 
   const handleCompareSelected = () => {
-    const selectedTowns = favorites.slice(0, 3).map(f => f.town_id);
-    if (selectedTowns.length >= 2) {
-      navigate(`/compare?towns=${selectedTowns.join(',')}`);
+    if (isSelectionMode && selectedTowns.length > 0) {
+      // In selection mode, use the selected towns
+      navigate(`${returnUrl || '/compare'}?towns=${selectedTowns.join(',')}`);
     } else {
-      toast.error("You need at least 2 favorites to compare");
+      // Regular mode - use top 3 favorites
+      const selectedTownIds = favorites.slice(0, 3).map(f => f.town_id);
+      if (selectedTownIds.length >= 2) {
+        navigate(`/compare?towns=${selectedTownIds.join(',')}`);
+      } else {
+        toast.error("You need at least 2 favorites to compare");
+      }
     }
+  };
+  
+  // Toggle town selection in selection mode
+  const handleToggleSelection = (townId) => {
+    setSelectedTowns(prev => {
+      const isSelected = prev.includes(townId);
+      if (isSelected) {
+        return prev.filter(id => id !== townId);
+      } else {
+        if (prev.length >= 3) {
+          toast.error('Maximum 3 towns can be compared');
+          return prev;
+        }
+        return [...prev, townId];
+      }
+    });
   };
 
   if (loading) {
@@ -267,14 +242,15 @@ export default function Favorites() {
   const filterCount = activeFilterCount();
 
   return (
-    <div className={`min-h-screen ${uiConfig.colors.page}`}>
-      {/* Unified Header with integrated filters and menu */}
+    <DataContextErrorBoundary>
+      <div className={`min-h-screen ${uiConfig.colors.page}`}>
+        {/* Unified Header with integrated filters and menu */}
       <UnifiedHeader
         variant="compact"
-        title="Favorites"
+        title={isSelectionMode ? "Select Towns to Compare" : "Favorites"}
         totalCount={favorites.length}
         filteredCount={sortedFavorites.length}
-        showFilters={favorites.length > 0} // Only show filters if there are favorites
+        showFilters={favorites.length > 0 && !isSelectionMode} // Hide filters in selection mode
         filterProps={{
           variant: "integrated",
           sortBy: sortBy,
@@ -323,8 +299,35 @@ export default function Favorites() {
         ) : (
           <>
 
-            {/* Compare Button - Show separately when there are enough favorites */}
-            {favorites.length >= 2 && (
+            {/* Selection mode header */}
+            {isSelectionMode && (
+              <div className="mb-4 p-4 bg-blue-50 rounded-lg flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Select up to 3 towns to compare
+                    {selectedTowns.length > 0 && ` (${selectedTowns.length} selected)`}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => navigate(returnUrl || '/compare')}
+                    className={`px-4 py-2 ${uiConfig.colors.btnSecondary} ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.md}`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCompareSelected}
+                    disabled={selectedTowns.length === 0}
+                    className={`px-4 py-2 ${selectedTowns.length > 0 ? uiConfig.colors.btnPrimary : 'bg-gray-300 text-gray-500 cursor-not-allowed'} ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.md}`}
+                  >
+                    Compare {selectedTowns.length > 0 ? `(${selectedTowns.length})` : ''}
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Regular Compare Button - Show when not in selection mode */}
+            {!isSelectionMode && favorites.length >= 2 && (
               <div className="mb-4 flex justify-end">
                 <button
                   onClick={handleCompareSelected}
@@ -353,13 +356,15 @@ export default function Favorites() {
                 {sortedFavorites.map((favorite) => {
                   const town = favorite.towns;
                   if (!town) {
-                    console.error('No town data for favorite:', favorite);
+                    // Skip favorites without town data
                     return null;
                   }
+                  const isSelected = selectedTowns.includes(town.id);
                   return (
                     <div
                       key={favorite.town_id}
-                      className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden ${uiConfig.animation.transition} hover:${uiConfig.layout.shadow.lg}`}
+                      className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden ${uiConfig.animation.transition} hover:${uiConfig.layout.shadow.lg} ${isSelectionMode ? 'cursor-pointer' : ''} ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
+                      onClick={isSelectionMode ? () => handleToggleSelection(town.id) : undefined}
                     >
                       <div className="relative h-40">
                         <SimpleImage
@@ -370,22 +375,28 @@ export default function Favorites() {
                           fallbackIconSize={48}
                         />
                         
-                        {userId && (
+                        {/* Selection mode indicator */}
+                        {isSelectionMode && (
+                          <div className="absolute top-2 right-2 z-10">
+                            <div className={`w-6 h-6 rounded-full border-2 ${isSelected ? 'bg-blue-500 border-blue-500' : 'bg-white border-gray-400'} flex items-center justify-center`}>
+                              {isSelected && (
+                                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {user && !isSelectionMode && (
                           <>
-                          {console.log(`MATCHSCORE DEBUG: ${town.name} = ${town.matchScore}`)}
                           <TownImageOverlay
                             town={town}
                             matchScore={town.matchScore}
                             isFavorited={true}
                             isUpdating={false}
                             onFavoriteClick={async () => {
-                              const { success, action, error } = await toggleFavorite(userId, town.id);
-                              if (success) {
-                                handleFavoriteChange(town.id, action === 'added');
-                                toast.success(action === 'added' ? 'Added to favorites' : 'Removed from favorites');
-                              } else {
-                                toast.error(`Failed to update favorite: ${error?.message}`);
-                              }
+                              await handleFavoriteChange(town.id, town.name, town.country);
                             }}
                             appealStatement={
                               town.cost_index <= 1500 ? "Budget-friendly" :
@@ -469,22 +480,36 @@ export default function Favorites() {
                         </p>
                         
                         <div className="flex justify-between items-center">
-                          <button
-                            onClick={() => navigate(`/discover?town=${town.id}`)}
-                            className={`px-3 py-1.5 text-xs ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md}`}
-                          >
-                            Explore
-                          </button>
-                          <button
-                            onClick={() => {
-                              const otherFavorites = favorites.filter(f => String(f.town_id) !== String(town.id))
-                                                              .map(f => f.town_id);
-                              navigate(`/compare?towns=${[town.id, ...otherFavorites].slice(0, 3).join(',')}`);
-                            }}
-                            className={`px-3 py-1.5 text-xs ${uiConfig.colors.success} hover:underline`}
-                          >
-                            Compare
-                          </button>
+                          {isSelectionMode ? (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleSelection(town.id);
+                              }}
+                              className={`px-3 py-1.5 text-xs ${isSelected ? 'bg-blue-500 text-white' : uiConfig.colors.btnSecondary} ${uiConfig.layout.radius.md}`}
+                            >
+                              {isSelected ? 'Selected' : 'Select'}
+                            </button>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => navigate(`/discover?town=${town.id}`)}
+                                className={`px-3 py-1.5 text-xs ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md}`}
+                              >
+                                Explore
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const otherFavorites = favorites.filter(f => String(f.town_id) !== String(town.id))
+                                                                  .map(f => f.town_id);
+                                  navigate(`/compare?towns=${[town.id, ...otherFavorites].slice(0, 3).join(',')}`);
+                                }}
+                                className={`px-3 py-1.5 text-xs ${uiConfig.colors.success} hover:underline`}
+                              >
+                                Compare
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -511,6 +536,7 @@ export default function Favorites() {
         )}
       </main>
 
-    </div>
+      </div>
+    </DataContextErrorBoundary>
   );
 }

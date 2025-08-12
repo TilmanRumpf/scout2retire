@@ -21,17 +21,7 @@ export default function LikeButton({
     setError(null);
   }, [initialState, townId, userId]);
 
-  // Debug log for props changes
-  useEffect(() => {
-    console.log('LikeButton props updated:', {
-      townId,
-      userId,
-      initialState,
-      currentState: isLiked,
-      townName,        // Added to debug log
-      townCountry      // Added to debug log
-    });
-  }, [townId, userId, initialState, isLiked, townName, townCountry]);
+  // Props are tracked for changes
 
   const handleToggle = async () => {
     // Don't proceed if already loading or missing required data
@@ -61,11 +51,11 @@ export default function LikeButton({
         townCountry    // Added
       );
       
-      console.log(`Toggle response:`, { success, action, error });
+      // Process toggle response
       
       if (success) {
         const newLikedState = action === 'added';
-        console.log(`Setting liked state to ${newLikedState} based on action: ${action}`);
+        // Update state based on action
         
         // Update local state
         setIsLiked(newLikedState);

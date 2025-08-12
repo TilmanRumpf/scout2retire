@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getCurrentUser } from '../utils/authUtils';
+import { useCurrentUser, useFavorites } from '../hooks/useOptimizedData';
 import DailyTownCard from '../components/DailyTownCard';
-import { fetchFavorites } from '../utils/townUtils.jsx';
 import { saveJournalEntry } from '../utils/journalUtils';
 import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
 import PageErrorBoundary from '../components/PageErrorBoundary';
@@ -20,10 +19,14 @@ import {
 } from 'lucide-react';
 
 export default function DailyRedesignV2() {
-  const [user, setUser] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [favorites, setFavorites] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Use optimized hooks for user and favorites
+  const { user: authUser, profile, loading: userLoading } = useCurrentUser();
+  const { favorites, toggleFavorite } = useFavorites();
+  
+  const userId = authUser?.id;
+  const user = profile;
+  const [dataLoading, setDataLoading] = useState(true);
+  const loading = userLoading || dataLoading;
   const [journalEntry, setJournalEntry] = useState('');
   const [savingJournal, setSavingJournal] = useState(false);
   const [recentTowns, setRecentTowns] = useState([]);
@@ -32,28 +35,18 @@ export default function DailyRedesignV2() {
   const [inspirationTowns, setInspirationTowns] = useState([]);
   const [dailyTip, setDailyTip] = useState(null);
   
-  // Debug
-  console.log('DailyRedesignV2 rendering');
+  // Component renders
 
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        const { user: currentUser, profile } = await getCurrentUser();
-        if (currentUser && profile) {
-          setUser(profile);
-          setUserId(currentUser.id);
-          
-          // Fetch favorites
-          const { success, favorites: userFavorites } = await fetchFavorites(currentUser.id);
-          if (success) {
-            setFavorites(userFavorites);
-            // Mock saved locations updates for now
-            if (userFavorites.length > 0) {
-              setSavedLocationsUpdates(userFavorites.slice(0, 3).map(fav => ({
-                ...fav,
-                update: getRandomUpdate()
-              })));
-            }
+        if (authUser && profile) {
+          // Mock saved locations updates for now
+          if (favorites.length > 0) {
+            setSavedLocationsUpdates(favorites.slice(0, 3).map(fav => ({
+              ...fav,
+              update: getRandomUpdate()
+            })));
           }
           
           // Fetch recently added towns (mock for now - would come from API)
@@ -74,12 +67,12 @@ export default function DailyRedesignV2() {
       } catch (err) {
         console.error("Error loading user data:", err);
       } finally {
-        setLoading(false);
+        setDataLoading(false);
       }
     };
 
     loadUserData();
-  }, []);
+  }, [authUser?.id]); // Only re-run when user ID changes
 
   // Mock function to get random updates for saved locations
   const getRandomUpdate = () => {
@@ -206,7 +199,7 @@ export default function DailyRedesignV2() {
         console.error("Error fetching inspiration towns:", error);
         console.error("Query was for:", regionName, "isRegion:", isRegion);
       } else if (data) {
-        console.log(`Fetched ${data.length} towns for ${regionName}:`, data.map(t => `${t.name} (${t.country})`));
+        // Successfully fetched towns for inspiration
         // For regions, try to get variety by selecting from different countries
         if (isRegion && data.length > 6) {
           const townsByCountry = {};
