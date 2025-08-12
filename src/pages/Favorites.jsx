@@ -88,20 +88,29 @@ export default function Favorites() {
             const townsResult = await fetchTowns({ 
               townIds,
               userId: user.id,
-              component: 'Favorites'
+              component: 'Favorites',
+              usePersonalization: false  // CRITICAL: Don't use personalization for favorites!
             });
             if (townsResult.success) {
+              console.log('Loaded favorite towns:', townsResult.towns.length, 'towns for', townIds.length, 'favorite IDs');
               setFavoriteTowns(townsResult.towns);
             }
+          } else {
+            // No favorites - make sure to set empty array
+            console.log('No favorites, setting favoriteTowns to empty array');
+            setFavoriteTowns([]);
           }
         }
         
         // Load ALL towns for search functionality
         const allTownsResult = await fetchTowns({ 
           userId: user.id,
-          component: 'Favorites-Search'
+          component: 'Favorites-Search',
+          usePersonalization: false,  // CRITICAL: Get ALL towns, not personalized subset
+          limit: 500  // Get all towns, not just default limit
         });
         if (allTownsResult.success) {
+          console.log('Loaded all towns for search:', allTownsResult.towns.length);
           setAllTowns(allTownsResult.towns);
         }
         
@@ -227,7 +236,8 @@ export default function Favorites() {
     let filtered;
     
     // If there's a search term, search ALL towns
-    if (searchTerm.trim()) {
+    if (searchTerm && searchTerm.trim().length > 0) {
+      console.log('Searching all towns with term:', searchTerm);
       filtered = allTowns.filter(town => 
         town.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         town.country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -235,6 +245,7 @@ export default function Favorites() {
       );
     } else {
       // Otherwise, show only favorites
+      console.log('No search term, showing favorites only:', favoriteTowns.length, 'towns');
       filtered = favoriteTowns;
     }
     
@@ -378,23 +389,6 @@ export default function Favorites() {
       <HeaderSpacer hasFilters={true} />
 
       <main className="max-w-7xl mx-auto px-4 py-3">
-        {/* Search box */}
-        <div className="mb-4">
-          <input
-            type="text"
-            placeholder="Search all towns by name, country, or region..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={`w-full px-4 py-2 ${uiConfig.colors.card} border ${uiConfig.borders.color} ${uiConfig.layout.radius.md} focus:outline-none focus:ring-2 focus:ring-blue-500`}
-          />
-          {searchTerm && (
-            <p className="mt-2 text-sm ${uiConfig.colors.body}">
-              Showing {sortedTowns.length} {sortedTowns.length === 1 ? 'town' : 'towns'} 
-              {searchTerm && ` matching "${searchTerm}"`}
-              {sortedTowns.some(t => !isFavorited(t.id)) && ' (including non-favorites)'}
-            </p>
-          )}
-        </div>
         {favorites.length === 0 ? (
           <div className="text-center py-12">
             <svg xmlns="http://www.w3.org/2000/svg" className={`mx-auto h-24 w-24 ${uiConfig.colors.muted} mb-6`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -519,6 +513,8 @@ export default function Favorites() {
                               await handleFavoriteChange(town.id, town.name, town.country);
                             }}
                             appealStatement={
+                              isFav ? "Saved favorite" :
+                              searchTerm ? "Add to favorites" :
                               town.cost_index <= 1500 ? "Budget-friendly" :
                               town.matchScore >= 80 ? "Strong match" :
                               town.healthcare_score >= 8 ? "Great healthcare" :
