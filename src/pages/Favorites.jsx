@@ -43,6 +43,8 @@ export default function Favorites() {
   const [userLoading, setUserLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
   const [favoriteTowns, setFavoriteTowns] = useState([]);
+  const [allTowns, setAllTowns] = useState([]); // All towns for search
+  const [searchTerm, setSearchTerm] = useState(''); // Search term
   const [townsLoading, setTownsLoading] = useState(false);
   
   const loading = userLoading || townsLoading;
@@ -69,7 +71,7 @@ export default function Favorites() {
     loadUser();
   }, []);
   
-  // Load favorites and favorite towns when user is loaded
+  // Load favorites and all towns when user is loaded
   useEffect(() => {
     if (user?.id) {
       const loadFavoritesData = async () => {
@@ -93,6 +95,16 @@ export default function Favorites() {
             }
           }
         }
+        
+        // Load ALL towns for search functionality
+        const allTownsResult = await fetchTowns({ 
+          userId: user.id,
+          component: 'Favorites-Search'
+        });
+        if (allTownsResult.success) {
+          setAllTowns(allTownsResult.towns);
+        }
+        
         setTownsLoading(false);
       };
       loadFavoritesData();
@@ -205,61 +217,78 @@ export default function Favorites() {
     setFilterMatchRange('all');
   };
 
-  // Sort and filter favorites
-  const getSortedAndFilteredFavorites = () => {
-    let filtered = [...favorites];
+  // Check if a town is favorited
+  const isFavorited = (townId) => {
+    return favorites.some(fav => fav.town_id === townId);
+  };
+
+  // Sort and filter towns (both favorites and search results)
+  const getSortedAndFilteredTowns = () => {
+    let filtered;
     
-    // Apply region filter - filter by countries in the selected region
+    // If there's a search term, search ALL towns
+    if (searchTerm.trim()) {
+      filtered = allTowns.filter(town => 
+        town.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        town.country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        town.region?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    } else {
+      // Otherwise, show only favorites
+      filtered = favoriteTowns;
+    }
+    
+    // Apply region filter
     if (filterRegion !== 'all' && REGION_COUNTRIES[filterRegion]) {
-      filtered = filtered.filter(fav => 
-        REGION_COUNTRIES[filterRegion].includes(fav.towns?.country)
+      filtered = filtered.filter(town => 
+        REGION_COUNTRIES[filterRegion].includes(town.country)
       );
     }
     
     // Apply country filter
     if (filterCountry !== 'all') {
-      filtered = filtered.filter(fav => fav.towns?.country === filterCountry);
+      filtered = filtered.filter(town => town.country === filterCountry);
     }
     
     if (filterCostRange !== 'all') {
-      filtered = filtered.filter(fav => getCostRange(fav.towns?.cost_index) === filterCostRange);
+      filtered = filtered.filter(town => getCostRange(town.cost_index) === filterCostRange);
     }
     
     if (filterMatchRange !== 'all') {
-      filtered = filtered.filter(fav => getMatchRange(fav.towns?.matchScore) === filterMatchRange);
+      filtered = filtered.filter(town => getMatchRange(town.matchScore) === filterMatchRange);
     }
     
-    // Apply sorting
+    // Apply sorting (now working directly with town objects)
     switch (sortBy) {
       case 'match':
-        filtered.sort((a, b) => (b.towns?.matchScore || 0) - (a.towns?.matchScore || 0));
+        filtered.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
         break;
       case 'name':
-        filtered.sort((a, b) => (a.towns?.name || '').localeCompare(b.towns?.name || ''));
+        filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         break;
       case 'cost-low':
-        filtered.sort((a, b) => (a.towns?.cost_index || 0) - (b.towns?.cost_index || 0));
+        filtered.sort((a, b) => (a.cost_index || 0) - (b.cost_index || 0));
         break;
       case 'cost-high':
-        filtered.sort((a, b) => (b.towns?.cost_index || 0) - (a.towns?.cost_index || 0));
+        filtered.sort((a, b) => (b.cost_index || 0) - (a.cost_index || 0));
         break;
       case 'region':
-        filtered.sort((a, b) => ((b.towns?.categoryScores?.region || 0) - (a.towns?.categoryScores?.region || 0)));
+        filtered.sort((a, b) => ((b.categoryScores?.region || 0) - (a.categoryScores?.region || 0)));
         break;
       case 'climate':
-        filtered.sort((a, b) => ((b.towns?.categoryScores?.climate || 0) - (a.towns?.categoryScores?.climate || 0)));
+        filtered.sort((a, b) => ((b.categoryScores?.climate || 0) - (a.categoryScores?.climate || 0)));
         break;
       case 'culture':
-        filtered.sort((a, b) => ((b.towns?.categoryScores?.culture || 0) - (a.towns?.categoryScores?.culture || 0)));
+        filtered.sort((a, b) => ((b.categoryScores?.culture || 0) - (a.categoryScores?.culture || 0)));
         break;
       case 'hobbies':
-        filtered.sort((a, b) => ((b.towns?.categoryScores?.hobbies || 0) - (a.towns?.categoryScores?.hobbies || 0)));
+        filtered.sort((a, b) => ((b.categoryScores?.hobbies || 0) - (a.categoryScores?.hobbies || 0)));
         break;
       case 'administration':
-        filtered.sort((a, b) => ((b.towns?.categoryScores?.administration || 0) - (a.towns?.categoryScores?.administration || 0)));
+        filtered.sort((a, b) => ((b.categoryScores?.administration || 0) - (a.categoryScores?.administration || 0)));
         break;
       case 'budget':
-        filtered.sort((a, b) => ((b.towns?.categoryScores?.budget || 0) - (a.towns?.categoryScores?.budget || 0)));
+        filtered.sort((a, b) => ((b.categoryScores?.budget || 0) - (a.categoryScores?.budget || 0)));
         break;
       case 'date':
       default:
@@ -309,7 +338,7 @@ export default function Favorites() {
     );
   }
 
-  const sortedFavorites = getSortedAndFilteredFavorites();
+  const sortedTowns = getSortedAndFilteredTowns();
   const countries = getUniqueCountries();
   const filterCount = activeFilterCount();
 
@@ -319,9 +348,9 @@ export default function Favorites() {
       <UnifiedHeader
         variant="compact"
         title={isSelectionMode ? "Select Towns to Compare" : "Favorites"}
-        totalCount={favorites.length}
-        filteredCount={sortedFavorites.length}
-        showFilters={favorites.length > 0 && !isSelectionMode} // Hide filters in selection mode
+        totalCount={searchTerm ? allTowns.length : favorites.length}
+        filteredCount={sortedTowns.length}
+        showFilters={!isSelectionMode} // Show filters when not in selection mode
         filterProps={{
           variant: "integrated",
           sortBy: sortBy,
@@ -338,7 +367,10 @@ export default function Favorites() {
           countries: countries,
           filterCount: filterCount,
           clearFilters: clearFilters,
-          resultsCount: sortedFavorites.length
+          resultsCount: sortedTowns.length,
+          searchTerm: searchTerm,
+          setSearchTerm: setSearchTerm,
+          searchPlaceholder: "Search all towns..."
         }}
       />
       
@@ -346,6 +378,23 @@ export default function Favorites() {
       <HeaderSpacer hasFilters={true} />
 
       <main className="max-w-7xl mx-auto px-4 py-3">
+        {/* Search box */}
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Search all towns by name, country, or region..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={`w-full px-4 py-2 ${uiConfig.colors.card} border ${uiConfig.borders.color} ${uiConfig.layout.radius.md} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          />
+          {searchTerm && (
+            <p className="mt-2 text-sm ${uiConfig.colors.body}">
+              Showing {sortedTowns.length} {sortedTowns.length === 1 ? 'town' : 'towns'} 
+              {searchTerm && ` matching "${searchTerm}"`}
+              {sortedTowns.some(t => !isFavorited(t.id)) && ' (including non-favorites)'}
+            </p>
+          )}
+        </div>
         {favorites.length === 0 ? (
           <div className="text-center py-12">
             <svg xmlns="http://www.w3.org/2000/svg" className={`mx-auto h-24 w-24 ${uiConfig.colors.muted} mb-6`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -410,7 +459,7 @@ export default function Favorites() {
             )}
 
             {/* Favorites Grid */}
-            {sortedFavorites.length === 0 ? (
+            {sortedTowns.length === 0 ? (
               <div className={`text-center py-12 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg}`}>
                 <p className={`${uiConfig.colors.body} mb-4`}>
                   No towns match your current filters.
@@ -424,16 +473,16 @@ export default function Favorites() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {sortedFavorites.map((favorite) => {
-                  const town = favorite.towns;
+                {sortedTowns.map((town) => {
                   if (!town) {
-                    // Skip favorites without town data
+                    // Skip null entries
                     return null;
                   }
                   const isSelected = selectedTowns.includes(town.id);
+                  const isFav = isFavorited(town.id);
                   return (
                     <div
-                      key={favorite.town_id}
+                      key={town.id}
                       className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden ${uiConfig.animation.transition} hover:${uiConfig.layout.shadow.lg} ${isSelectionMode ? 'cursor-pointer' : ''} ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
                       onClick={isSelectionMode ? () => handleToggleSelection(town.id) : undefined}
                     >
@@ -464,7 +513,7 @@ export default function Favorites() {
                           <TownImageOverlay
                             town={town}
                             matchScore={town.matchScore}
-                            isFavorited={true}
+                            isFavorited={isFav}
                             isUpdating={false}
                             onFavoriteClick={async () => {
                               await handleFavoriteChange(town.id, town.name, town.country);
@@ -590,7 +639,7 @@ export default function Favorites() {
             )}
 
             {/* Bottom Actions */}
-            {sortedFavorites.length > 6 && (
+            {sortedTowns.length > 6 && (
               <div className="mt-8 text-center">
                 <Link
                   to="/discover"
