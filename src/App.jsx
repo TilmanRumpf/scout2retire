@@ -4,8 +4,6 @@ import { RouterProvider, createBrowserRouter, Routes, Route, Navigate, useNaviga
 import { Toaster } from 'react-hot-toast';
 import toast from 'react-hot-toast';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { DataProvider } from './contexts/DataContext';
-import DataContextErrorBoundary from './components/DataContextErrorBoundary';
 import supabase from './utils/supabaseClient';
 import AuthenticatedLayout from './components/AuthenticatedLayout';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -328,11 +326,7 @@ const router = createBrowserRouter([
 function App() {
   return (
     <ErrorBoundary>
-      <DataContextErrorBoundary>
-        <DataProvider>
-          <RouterProvider router={router} />
-        </DataProvider>
-      </DataContextErrorBoundary>
+      <RouterProvider router={router} />
     </ErrorBoundary>
   );
 }

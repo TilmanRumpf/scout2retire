@@ -1324,6 +1324,74 @@ const TownsManager = () => {
                 <div className="px-6 py-4 border-b">
                   <div className="flex justify-between items-start">
                     <h2 className="text-xl font-bold">{selectedTown.name}, {selectedTown.country}</h2>
+                    <button
+                      onClick={async () => {
+                        if (!confirm(`This will intelligently fix ALL fields for ${selectedTown.name} based on its location. Continue?`)) {
+                          return;
+                        }
+                        
+                        try {
+                          // Get suggested fixes for all fields
+                          const suggestedFixes = await autoFixService.fixAllFields(selectedTown);
+                          
+                          const fixCount = Object.keys(suggestedFixes).length;
+                          if (fixCount === 0) {
+                            alert('No fields need fixing - town data looks good!');
+                            return;
+                          }
+                          
+                          // Show what will be updated
+                          const changes = Object.entries(suggestedFixes)
+                            .map(([field, value]) => `• ${field}: ${JSON.stringify(value)}`)
+                            .join('\n');
+                          
+                          if (!confirm(`Will update ${fixCount} fields:\n\n${changes}\n\nApply these changes?`)) {
+                            return;
+                          }
+                          
+                          // Apply all fixes to database
+                          const { data, error } = await supabase
+                            .from('towns')
+                            .update(suggestedFixes)
+                            .eq('id', selectedTown.id)
+                            .select();
+                          
+                          if (error) {
+                            console.error('Update error:', error);
+                            alert(`Error updating: ${error.message}`);
+                          } else {
+                            console.log('Successfully updated town:', data);
+                            
+                            // Update local state
+                            const updatedTowns = towns.map(t => {
+                              if (t.id === selectedTown.id) {
+                                const updatedTown = { ...t, ...suggestedFixes };
+                                // Recalculate metrics
+                                updatedTown._errors = detectErrors(updatedTown);
+                                updatedTown._completion = calculateCompletion(updatedTown);
+                                return updatedTown;
+                              }
+                              return t;
+                            });
+                            
+                            setTowns(updatedTowns);
+                            
+                            // Update selectedTown
+                            const updatedSelectedTown = updatedTowns.find(t => t.id === selectedTown.id);
+                            setSelectedTown(updatedSelectedTown);
+                            
+                            alert(`✅ Successfully fixed ${fixCount} fields for ${selectedTown.name}!`);
+                          }
+                        } catch (err) {
+                          console.error('Error in auto-fix:', err);
+                          alert(`Error: ${err.message}`);
+                        }
+                      }}
+                      className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors font-medium flex items-center gap-2"
+                      title="Intelligently fix all fields based on location"
+                    >
+                      🔧 Fix All Fields
+                    </button>
                   </div>
                   {selectedTown._errors.length > 0 && (
                     <div className="mt-2 p-3 bg-red-50 rounded border border-red-200">
