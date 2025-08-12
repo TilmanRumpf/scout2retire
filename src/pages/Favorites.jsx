@@ -314,7 +314,6 @@ export default function Favorites() {
   const filterCount = activeFilterCount();
 
   return (
-    <DataContextErrorBoundary>
       <div className={`min-h-screen ${uiConfig.colors.page}`}>
         {/* Unified Header with integrated filters and menu */}
       <UnifiedHeader
@@ -609,6 +608,5 @@ export default function Favorites() {
       </main>
 
       </div>
-    </DataContextErrorBoundary>
   );
 }
