@@ -293,7 +293,6 @@ export default function TownDiscovery() {
     return filtered;
   };
 
-  // Favorite toggle is now handled by DataContext optimisticToggleFavorite
 
   // Render loading state
   if (loading) {
