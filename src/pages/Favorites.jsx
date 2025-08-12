@@ -1,13 +1,13 @@
 // pages/Favorites.jsx - Optimized with centralized data caching
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useCurrentUser, useFavoriteTowns, useFavorites } from '../hooks/useOptimizedData';
+import { getCurrentUser } from '../utils/authUtils';
+import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
 import SimpleImage from '../components/SimpleImage';
 import TownImageOverlay from '../components/TownImageOverlay';
 import { MapPin } from 'lucide-react';
 import UnifiedHeader from '../components/UnifiedHeader';
 import HeaderSpacer from '../components/HeaderSpacer';
-import DataContextErrorBoundary from '../components/DataContextErrorBoundary';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 

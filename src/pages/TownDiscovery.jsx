@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useCurrentUser, useFavorites, useAllTowns, useTownCount } from '../hooks/useOptimizedData';
+import { getCurrentUser } from '../utils/authUtils';
+import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
 import SimpleImage from '../components/SimpleImage';
 import TownImageOverlay from '../components/TownImageOverlay';
 import PageErrorBoundary from '../components/PageErrorBoundary';
-import DataContextErrorBoundary from '../components/DataContextErrorBoundary';
 import UnifiedHeader from '../components/UnifiedHeader';
 import HeaderSpacer from '../components/HeaderSpacer';
 import TownRadarChart from '../components/TownRadarChart';
@@ -310,7 +310,6 @@ export default function TownDiscovery() {
       {/* Spacer for fixed header with filters */}
       <HeaderSpacer hasFilters={true} />
 
-      <DataContextErrorBoundary>
         <PageErrorBoundary
           fallbackTitle="Discovery Error"
           fallbackMessage="We're having trouble loading town recommendations. Please try refreshing the page."
@@ -703,7 +702,6 @@ export default function TownDiscovery() {
         
         </main>
         </PageErrorBoundary>
-      </DataContextErrorBoundary>
 
     </div>
   );
