@@ -180,8 +180,8 @@ export function DataProvider({ children }) {
       
       // Auto-load favorites after user loads
       if (result.user) {
-        // Use setTimeout to avoid nested callback issues
-        setTimeout(() => loadFavorites(result.user.id), 0);
+        // Load favorites directly without setTimeout
+        loadFavorites(result.user.id);
       }
       
       return result;
