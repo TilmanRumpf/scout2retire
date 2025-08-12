@@ -39,10 +39,11 @@ const REGION_COUNTRIES = {
 };
 
 export default function Favorites() {
-  // Use optimized hooks instead of direct API calls
-  const { user, loading: userLoading } = useCurrentUser();
-  const { favorites, toggleFavorite } = useFavorites();
-  const { favoriteTowns, loading: townsLoading } = useFavoriteTowns();
+  const [user, setUser] = useState(null);
+  const [userLoading, setUserLoading] = useState(true);
+  const [favorites, setFavorites] = useState([]);
+  const [favoriteTowns, setFavoriteTowns] = useState([]);
+  const [townsLoading, setTownsLoading] = useState(false);
   
   const loading = userLoading || townsLoading;
   const [sortBy, setSortBy] = useState('match'); // Changed default to 'match'
@@ -57,6 +58,78 @@ export default function Favorites() {
   const [selectedTowns, setSelectedTowns] = useState([]);
   const params = new URLSearchParams(location.search);
   const selectMode = params.get('selectMode');
+  
+  // Load user data on mount
+  useEffect(() => {
+    const loadUser = async () => {
+      const result = await getCurrentUser();
+      setUser(result.user);
+      setUserLoading(false);
+    };
+    loadUser();
+  }, []);
+  
+  // Load favorites and favorite towns when user is loaded
+  useEffect(() => {
+    if (user?.id) {
+      const loadFavoritesData = async () => {
+        setTownsLoading(true);
+        
+        // Load favorites
+        const favResult = await fetchFavorites(user.id, 'Favorites');
+        if (favResult.success) {
+          setFavorites(favResult.favorites);
+          
+          // Load town data for favorites
+          if (favResult.favorites.length > 0) {
+            const townIds = favResult.favorites.map(f => f.town_id);
+            const townsResult = await fetchTowns({ 
+              townIds,
+              userId: user.id,
+              component: 'Favorites'
+            });
+            if (townsResult.success) {
+              setFavoriteTowns(townsResult.towns);
+            }
+          }
+        }
+        setTownsLoading(false);
+      };
+      loadFavoritesData();
+    }
+  }, [user]);
+  
+  // Handle toggle favorite
+  const handleToggleFavorite = async (townId, townName, townCountry) => {
+    if (!user?.id) {
+      toast.error('Please log in to save favorites');
+      return;
+    }
+    
+    const result = await toggleFavorite(user.id, townId, townName, townCountry);
+    if (result.success) {
+      // Reload favorites
+      const favResult = await fetchFavorites(user.id, 'Favorites');
+      if (favResult.success) {
+        setFavorites(favResult.favorites);
+        
+        // Reload town data
+        if (favResult.favorites.length > 0) {
+          const townIds = favResult.favorites.map(f => f.town_id);
+          const townsResult = await fetchTowns({ 
+            townIds,
+            userId: user.id,
+            component: 'Favorites'
+          });
+          if (townsResult.success) {
+            setFavoriteTowns(townsResult.towns);
+          }
+        } else {
+          setFavoriteTowns([]);
+        }
+      }
+    }
+  };
   const returnUrl = params.get('returnUrl');
   const isSelectionMode = selectMode === 'compare';
 
@@ -68,8 +141,7 @@ export default function Favorites() {
   }, [user, userLoading, navigate]);
 
   const handleFavoriteChange = async (townId, townName, townCountry) => {
-    // Use optimistic toggle from context
-    await toggleFavorite(townId, townName, townCountry);
+    await handleToggleFavorite(townId, townName, townCountry);
   };
 
   // Get unique values for filters (using favoriteTowns instead of favorites.towns)

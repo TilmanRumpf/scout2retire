@@ -14,12 +14,40 @@ export default function DailyTownCard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [user, setUser] = useState(null);
+  const [userLoading, setUserLoading] = useState(true);
+  const [favorites, setFavorites] = useState([]);
   const navigate = useNavigate();
   
-  // Use optimized hooks
-  const { user, loading: userLoading } = useCurrentUser();
-  const { favorites, toggleFavorite: optimizedToggle, isFavorited: checkFavorited } = useFavorites();
   const userId = user?.id;
+  
+  // Helper function to check if favorited
+  const checkFavorited = (townId) => {
+    return favorites.some(fav => fav.town_id === townId);
+  };
+  
+  // Load user data on mount
+  useEffect(() => {
+    const loadUser = async () => {
+      const result = await getCurrentUser();
+      setUser(result.user);
+      setUserLoading(false);
+    };
+    loadUser();
+  }, []);
+  
+  // Load favorites when user is loaded
+  useEffect(() => {
+    if (user?.id) {
+      const loadFavorites = async () => {
+        const result = await fetchFavorites(user.id, 'DailyTownCard');
+        if (result.success) {
+          setFavorites(result.favorites);
+        }
+      };
+      loadFavorites();
+    }
+  }, [user]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,7 +92,15 @@ export default function DailyTownCard() {
     
     setIsUpdating(true);
     try {
-      await optimizedToggle(town.id, town.name, town.country);
+      // Toggle favorite
+      const result = await toggleFavorite(user.id, town.id, town.name, town.country);
+      if (result.success) {
+        // Reload favorites
+        const favResult = await fetchFavorites(user.id, 'DailyTownCard');
+        if (favResult.success) {
+          setFavorites(favResult.favorites);
+        }
+      }
     } catch (err) {
       console.error("Error toggling favorite:", err);
     } finally {

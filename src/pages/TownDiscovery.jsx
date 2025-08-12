@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
+import toast from 'react-hot-toast';
 import SimpleImage from '../components/SimpleImage';
 import TownImageOverlay from '../components/TownImageOverlay';
 import PageErrorBoundary from '../components/PageErrorBoundary';
@@ -11,7 +12,6 @@ import TownRadarChart from '../components/TownRadarChart';
 import { uiConfig } from '../styles/uiConfig';
 import { Sparkles, MapPin } from 'lucide-react';
 import supabase from '../utils/supabaseClient';
-import toast from 'react-hot-toast';
 
 // Predefined regions and their countries from onboarding
 const REGIONS = [
@@ -43,11 +43,13 @@ const REGION_COUNTRIES = {
 
 export default function TownDiscovery() {
   const [selectedTown, setSelectedTown] = useState(null);
-  
-  // Use optimized hooks for data
-  const { user, profile, loading: userLoading } = useCurrentUser();
-  const { favorites, toggleFavorite, isFavorited } = useFavorites();
-  const { count: totalTownCount } = useTownCount();
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [userLoading, setUserLoading] = useState(true);
+  const [favorites, setFavorites] = useState([]);
+  const [towns, setTowns] = useState([]);
+  const [townsLoading, setTownsLoading] = useState(false);
+  const [totalTownCount, setTotalTownCount] = useState(0);
   
   // Filter and sort states
   const [sortBy, setSortBy] = useState('match');
@@ -60,23 +62,75 @@ export default function TownDiscovery() {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Build filters for useAllTowns hook
-  const filters = {
-    country: filterCountry !== 'all' ? filterCountry : undefined,
-    region: filterRegion !== 'all' ? filterRegion : undefined,
-    regionCountries: filterRegion !== 'all' ? REGION_COUNTRIES[filterRegion] : undefined,
-    limit: 200, // Load more towns initially
-  };
-  
-  const { towns: allTowns, loading: townsLoading } = useAllTowns(filters);
   const loading = userLoading || townsLoading;
-  const error = null; // Will be handled by hooks
+  const error = null;
   const onboardingCompleted = profile?.onboarding_completed || false;
   const userId = user?.id;
   
-  // Use allTowns as the main towns array
-  const towns = allTowns;
+  // Helper function to check if favorited
+  const isFavorited = (townId) => {
+    return favorites.some(fav => fav.town_id === townId);
+  };
+  
+  // Handle favorite toggle
+  const handleToggleFavorite = async (townId, townName, townCountry) => {
+    if (!user?.id) {
+      toast.error('Please log in to save favorites');
+      return;
+    }
+    
+    const result = await toggleFavorite(user.id, townId, townName, townCountry);
+    if (result.success) {
+      // Reload favorites
+      const favResult = await fetchFavorites(user.id, 'TownDiscovery');
+      if (favResult.success) {
+        setFavorites(favResult.favorites);
+      }
+    }
+  };
 
+  // Load user data on mount
+  useEffect(() => {
+    const loadUser = async () => {
+      const result = await getCurrentUser();
+      setUser(result.user);
+      setProfile(result.profile);
+      setUserLoading(false);
+    };
+    loadUser();
+  }, []);
+  
+  // Load favorites when user is loaded
+  useEffect(() => {
+    if (user?.id) {
+      const loadFavorites = async () => {
+        const result = await fetchFavorites(user.id, 'TownDiscovery');
+        if (result.success) {
+          setFavorites(result.favorites);
+        }
+      };
+      loadFavorites();
+    }
+  }, [user]);
+  
+  // Load towns
+  useEffect(() => {
+    const loadTowns = async () => {
+      setTownsLoading(true);
+      const result = await fetchTowns({ 
+        component: 'TownDiscovery',
+        userId: user?.id,
+        usePersonalization: !!user?.id
+      });
+      if (result.success) {
+        setTowns(result.towns);
+        setTotalTownCount(result.towns.length);
+      }
+      setTownsLoading(false);
+    };
+    loadTowns();
+  }, [user]);
+  
   // Parse URL parameters
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -99,13 +153,6 @@ export default function TownDiscovery() {
       navigate('/welcome');
     }
   }, [user, userLoading, navigate]);
-
-  // Town count is now managed by DataContext via useTownCount hook
-
-  // Infinite scroll is now handled by DataContext via loadAllTowns
-  // All towns are loaded in batches by the useAllTowns hook
-
-  // isFavorited is now provided by the useFavorites hook
 
   // Get unique countries from towns, filtered by region if selected
   const getUniqueCountries = () => {
@@ -362,7 +409,7 @@ export default function TownDiscovery() {
                     isFavorited={isFavorited(selectedTownData.id)}
                     isUpdating={false}
                     onFavoriteClick={async () => {
-                      await toggleFavorite(selectedTownData.id, selectedTownData.name, selectedTownData.country);
+                      await handleToggleFavorite(selectedTownData.id, selectedTownData.name, selectedTownData.country);
                     }}
                     appealStatement={
                       selectedTownData.cost_index <= 1500 ? "Budget-friendly" :
@@ -583,7 +630,7 @@ export default function TownDiscovery() {
                     isFavorited={isFavorited(town.id)}
                     isUpdating={false}
                     onFavoriteClick={async () => {
-                      await toggleFavorite(town.id, town.name, town.country);
+                      await handleToggleFavorite(town.id, town.name, town.country);
                     }}
                     appealStatement={
                       town.cost_index <= 1500 ? "Budget-friendly" :
@@ -690,7 +737,6 @@ export default function TownDiscovery() {
           </div>
         )}
         
-        {/* All towns are now loaded via DataContext useAllTowns hook */}
         {townsLoading && sortedAndFilteredTowns.length === 0 && (
           <div className="flex justify-center py-8">
             <div className="flex items-center gap-3">

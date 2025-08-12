@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchFavorites } from '../utils/townUtils.jsx';
 import DailyTownCard from '../components/DailyTownCard';
@@ -20,9 +20,10 @@ import {
 } from 'lucide-react';
 
 export default function DailyRedesignV2() {
-  // Use optimized hooks for user and favorites
-  const { user: authUser, profile, loading: userLoading } = useCurrentUser();
-  const { favorites, toggleFavorite } = useFavorites();
+  const [authUser, setAuthUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [userLoading, setUserLoading] = useState(true);
+  const [favorites, setFavorites] = useState([]);
   
   const userId = authUser?.id;
   const user = profile;
@@ -35,6 +36,31 @@ export default function DailyRedesignV2() {
   const [todaysInspiration, setTodaysInspiration] = useState(null);
   const [inspirationTowns, setInspirationTowns] = useState([]);
   const [dailyTip, setDailyTip] = useState(null);
+  const navigate = useNavigate();
+  
+  // Load user data on mount
+  useEffect(() => {
+    const loadUser = async () => {
+      const result = await getCurrentUser();
+      setAuthUser(result.user);
+      setProfile(result.profile);
+      setUserLoading(false);
+    };
+    loadUser();
+  }, []);
+  
+  // Load favorites when user is loaded
+  useEffect(() => {
+    if (authUser?.id) {
+      const loadFavorites = async () => {
+        const result = await fetchFavorites(authUser.id, 'DailyRedesignV2');
+        if (result.success) {
+          setFavorites(result.favorites);
+        }
+      };
+      loadFavorites();
+    }
+  }, [authUser]);
   
   // Component renders
 
