@@ -11,6 +11,7 @@ import { uiConfig } from '../../styles/uiConfig';
 import { getLoadingBackgroundClass, getLoadingTextClass } from '../../utils/themeUtils';
 import supabase from '../../utils/supabaseClient';
 import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
+import { CustomDropdown } from '../../components/CustomDropdown';
 
 const OnboardingRegion = () => {
   const navigate = useNavigate();
@@ -501,49 +502,41 @@ const OnboardingRegion = () => {
               </div>
               
               {/* Expandable dropdown section below the cards */}
-              {[0, 1].map(index => (
-                <div key={`dropdown-${index}`}>
-                  {expandedPreference === index && (
-                    <div className={`mt-3 p-4 sm:p-5 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition}`}>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                {[0, 1].map(index => (
+                  <div key={`dropdown-${index}`}>
+                    {expandedPreference === index && (
+                      <div className={`mt-3 p-4 sm:p-5 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition}`}>
                       {/* Region dropdown */}
                       <div>
                         <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 sm:mb-1.5 block`}>
                           Select Region
                         </label>
-                        <div className="relative">
-                          <select
-                        value={selectedRegions[index]}
-                        onChange={(e) => handleRegionChange(index, e.target.value)}
-                        onFocus={() => {
-                          // When user clicks dropdown, if they have made selections, reset them to allow re-selection
-                          if (selectedCountries[index] !== '' || selectedProvinces[index] !== '') {
-                            const newCountries = [...selectedCountries];
-                            const newProvinces = [...selectedProvinces];
-                            newCountries[index] = '';
-                            newProvinces[index] = '';
-                            setSelectedCountries(newCountries);
-                            setSelectedProvinces(newProvinces);
-                          }
-                        }}
-                        className={`w-full px-3 sm:px-4 ${uiConfig.layout.radius.md} appearance-none cursor-pointer focus:ring-2 focus:ring-scout-accent-300 ${uiConfig.animation.transition} h-[44px] sm:h-[48px] border-2 ${
-                          selectedRegions[index] 
-                            ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 font-medium'
-                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
-                        }`}
-                      >
-                        <option value="">{regionsLoading ? 'Loading regions...' : 'Select region'}</option>
-                        {!regionsLoading && getAvailableRegions().map(region => (
-                          <option key={region} value={region}>
-                            {region}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown 
-                        size={20} 
-                        className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.muted} pointer-events-none z-10`}
-                      />
-                    </div>
-                  </div>
+                        <CustomDropdown
+                          value={selectedRegions[index]}
+                          onChange={(value) => {
+                            // Reset dependent selections when region changes
+                            if (selectedCountries[index] !== '' || selectedProvinces[index] !== '') {
+                              const newCountries = [...selectedCountries];
+                              const newProvinces = [...selectedProvinces];
+                              newCountries[index] = '';
+                              newProvinces[index] = '';
+                              setSelectedCountries(newCountries);
+                              setSelectedProvinces(newProvinces);
+                            }
+                            handleRegionChange(index, value);
+                          }}
+                          options={[
+                            { value: '', label: regionsLoading ? 'Loading regions...' : 'Select region' },
+                            ...(!regionsLoading ? getAvailableRegions().map(region => ({
+                              value: region,
+                              label: region
+                            })) : [])
+                          ]}
+                          placeholder={regionsLoading ? 'Loading regions...' : 'Select region'}
+                          disabled={regionsLoading}
+                        />
+                      </div>
 
                   {/* Country/State dropdown - only show when country dropdown should be visible */}
                   <div 
@@ -620,6 +613,7 @@ const OnboardingRegion = () => {
                   )}
                 </div>
               ))}
+            </div>
             </div>
           </div>
 
