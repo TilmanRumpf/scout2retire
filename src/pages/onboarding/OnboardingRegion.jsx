@@ -334,14 +334,24 @@ const OnboardingRegion = () => {
     newProvinces[index] = '';
     setSelectedProvinces(newProvinces);
     
-    // If a country is selected and it has no provinces, close the panel
+    // Show or hide province dropdown based on whether provinces are available
     if (value !== '') {
       const provincesAvailable = countryProvinces[value] && countryProvinces[value].length > 0;
+      const newShowProvinceDropdowns = [...showProvinceDropdowns];
+      newShowProvinceDropdowns[index] = provincesAvailable;
+      setShowProvinceDropdowns(newShowProvinceDropdowns);
+      
+      // If no provinces available, close the panel
       if (!provincesAvailable) {
         setTimeout(() => {
           setExpandedPreference(-1);
         }, 300); // Small delay so user sees their selection
       }
+    } else {
+      // If country is deselected, hide province dropdown
+      const newShowProvinceDropdowns = [...showProvinceDropdowns];
+      newShowProvinceDropdowns[index] = false;
+      setShowProvinceDropdowns(newShowProvinceDropdowns);
     }
   };
 
@@ -522,8 +532,8 @@ const OnboardingRegion = () => {
           </div>
           
           {/* Geographical Preferences section */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 sm:mb-3 flex items-center`}>
+          <div className="mb-6">
+            <label className={`${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-3 sm:mb-4 flex items-center`}>
               <Globe size={16} className="mr-1.5 sm:mr-2" />
               Geographical Preferences
             </label>
@@ -538,7 +548,26 @@ const OnboardingRegion = () => {
                     description={getDisplayValue(index) || "Select region"}
                     icon={Globe}
                     isSelected={selectedRegions[index] !== ''}
-                    onClick={() => setExpandedPreference(expandedPreference === index ? -1 : index)}
+                    onClick={() => {
+                      // Toggle expanded state
+                      if (expandedPreference === index) {
+                        setExpandedPreference(-1);
+                      } else {
+                        setExpandedPreference(index);
+                        // When re-opening, show all relevant dropdowns based on current selections
+                        if (selectedRegions[index] && selectedRegions[index] !== '' && selectedRegions[index] !== 'Recommended') {
+                          const newShowCountryDropdowns = [...showCountryDropdowns];
+                          newShowCountryDropdowns[index] = true;
+                          setShowCountryDropdowns(newShowCountryDropdowns);
+                          
+                          if (selectedCountries[index] && selectedCountries[index] !== '') {
+                            const newShowProvinceDropdowns = [...showProvinceDropdowns];
+                            newShowProvinceDropdowns[index] = true;
+                            setShowProvinceDropdowns(newShowProvinceDropdowns);
+                          }
+                        }
+                      }
+                    }}
                     showCheckmark={selectedRegions[index] !== ''}
                   />
                 ))}
@@ -581,10 +610,10 @@ const OnboardingRegion = () => {
                         />
                       </div>
 
-                  {/* Country/State dropdown - only show when country dropdown should be visible */}
+                  {/* Country/State dropdown - show when region is selected (not Recommended) */}
                   <div 
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      showCountryDropdowns[index] && selectedCountries[index] === '' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                      showCountryDropdowns[index] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     }`}
                   >
                     <div>
@@ -617,10 +646,10 @@ const OnboardingRegion = () => {
                     </div>
                   </div>
 
-                  {/* Province dropdown - only show if provinces are available for the selected country AND country dropdown is still visible */}
+                  {/* Province dropdown - show when country is selected and has provinces */}
                   <div 
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      showCountryDropdowns[index] && selectedCountries[index] !== '' && hasProvinces(index) && selectedProvinces[index] === '' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                      showProvinceDropdowns[index] && hasProvinces(index) ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     }`}
                   >
                     <div>
