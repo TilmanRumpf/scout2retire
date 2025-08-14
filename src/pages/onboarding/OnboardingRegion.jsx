@@ -619,7 +619,7 @@ const OnboardingRegion = () => {
                           onChange={(value) => handleCountryChange(0, value)}
                           options={[
                             { value: '', label: 'Select country' },
-                            ...getFilteredCountries(0).filter(c => c !== '').map(country => ({
+                            ...getFilteredCountries(0).filter(c => c && c !== '').map(country => ({
                               value: country,
                               label: country
                             }))
@@ -654,7 +654,7 @@ const OnboardingRegion = () => {
                           onChange={(value) => handleProvinceChange(0, value)}
                           options={[
                             { value: '', label: 'Select province' },
-                            ...getFilteredProvinces(0).filter(p => p !== '').map(province => ({
+                            ...getFilteredProvinces(0).filter(p => p && p !== '').map(province => ({
                               value: province,
                               label: province
                             }))
@@ -746,7 +746,7 @@ const OnboardingRegion = () => {
                           onChange={(value) => handleCountryChange(1, value)}
                           options={[
                             { value: '', label: 'Select country' },
-                            ...getFilteredCountries(1).filter(c => c !== '').map(country => ({
+                            ...getFilteredCountries(1).filter(c => c && c !== '').map(country => ({
                               value: country,
                               label: country
                             }))
@@ -781,7 +781,7 @@ const OnboardingRegion = () => {
                           onChange={(value) => handleProvinceChange(1, value)}
                           options={[
                             { value: '', label: 'Select province' },
-                            ...getFilteredProvinces(1).filter(p => p !== '').map(province => ({
+                            ...getFilteredProvinces(1).filter(p => p && p !== '').map(province => ({
                               value: province,
                               label: province
                             }))
