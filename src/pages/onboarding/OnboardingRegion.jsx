@@ -125,7 +125,9 @@ const OnboardingRegion = () => {
     'Central America': ['Mexico', 'Colombia', 'Venezuela', 'Cuba', 'Jamaica'],
     'Caribbean': ['Florida', 'Venezuela', 'Colombia', 'Guyana', 'Suriname'],
     'South America': ['Panama', 'Trinidad and Tobago', 'Barbados'],
-    'Europe': ['Morocco', 'Algeria', 'Tunisia', 'Turkey', 'Russia', 'Greenland'],
+    'Northern Europe': ['Russia', 'Greenland'],
+    'Western Europe': ['Morocco', 'Algeria', 'Tunisia'],
+    'Southern Europe': ['Turkey', 'Morocco', 'Algeria', 'Tunisia'],
     'Mediterranean': ['Portugal', 'Switzerland', 'Austria', 'Bulgaria', 'Romania'],
     'Asia': ['Australia', 'New Zealand', 'Papua New Guinea', 'Russia', 'Egypt'],
     'Africa': ['Spain', 'Italy', 'Greece', 'Cyprus', 'Yemen', 'Madagascar'],
@@ -190,7 +192,14 @@ const OnboardingRegion = () => {
           if (regionData.regions && regionData.regions.length > 0) {
             const newRegions = [...selectedRegions];
             regionData.regions.forEach((region, index) => {
-              if (index < 2) newRegions[index] = region;
+              if (index < 2) {
+                // Fix old "Europe" data - reset to empty if invalid region
+                if (region === 'Europe') {
+                  newRegions[index] = ''; // Clear invalid "Europe" entry
+                } else {
+                  newRegions[index] = region;
+                }
+              }
             });
             setSelectedRegions(newRegions);
             
