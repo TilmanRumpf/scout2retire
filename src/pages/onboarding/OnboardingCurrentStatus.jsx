@@ -8,22 +8,7 @@ import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
-
-// Option Button Component - Responsive for mobile and desktop
-const OptionButton = ({ label, description, isSelected, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`${uiConfig.components.buttonSizes.default} lg:py-3 lg:px-4 xl:py-4 xl:px-5 ${uiConfig.layout.radius.md} lg:rounded-lg border-2 ${uiConfig.animation.transition} text-center ${
-      isSelected
-        ? uiConfig.components.buttonVariants.selected
-        : uiConfig.components.buttonVariants.unselected
-    }`}
-  >
-    <div className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${isSelected ? 'text-white' : uiConfig.colors.body}`}>{label}</div>
-    {description && <div className={`${uiConfig.font.size.xs} lg:text-sm mt-0.5 lg:mt-1 ${isSelected ? 'text-white' : uiConfig.colors.hint}`}>{description}</div>}
-  </button>
-);
+import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
 
 export default function OnboardingCurrentStatus() {
   const [touchedFields, setTouchedFields] = useState({});
@@ -359,35 +344,31 @@ export default function OnboardingCurrentStatus() {
           </div>
           
           {/* Retirement Status */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Calendar size={16} className="mr-1.5 lg:mr-2" />
-              Retirement Timeline
-            </label>
-            <p className={`${uiConfig.font.size.xs} lg:text-sm ${uiConfig.colors.hint} mb-3 lg:mb-4`}>
+          <SelectionSection icon={Calendar} title="Retirement Timeline">
+            <p className={`${uiConfig.font.size.xs} lg:text-sm ${uiConfig.colors.hint} mb-3 lg:mb-4 -mt-2`}>
               Where are you in your retirement journey?
             </p>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
-              <OptionButton
-                label="Planning"
+            <SelectionGrid>
+              <SelectionCard
+                title="Planning"
                 description="5+ years away"
                 isSelected={formData.retirement_timeline.status === 'planning'}
                 onClick={() => handleRetirementStatusChange('planning')}
               />
-              <OptionButton
-                label="Retiring Soon"
+              <SelectionCard
+                title="Retiring Soon"
                 description="Within 5 years"
                 isSelected={formData.retirement_timeline.status === 'retiring_soon'}
                 onClick={() => handleRetirementStatusChange('retiring_soon')}
               />
-              <OptionButton
-                label="Retired"
+              <SelectionCard
+                title="Retired"
                 description="Living the dream"
                 isSelected={formData.retirement_timeline.status === 'already_retired'}
                 onClick={() => handleRetirementStatusChange('already_retired')}
               />
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Target Date */}
           {formData.retirement_timeline.status !== 'already_retired' && (
@@ -440,35 +421,31 @@ export default function OnboardingCurrentStatus() {
           )}
 
           {/* Family Situation */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Users size={16} className="mr-1.5 lg:mr-2" />
-              Family Situation
-            </label>
-            <p className={`${uiConfig.font.size.xs} lg:text-sm ${uiConfig.colors.hint} mb-3 lg:mb-4`}>
+          <SelectionSection icon={Users} title="Family Situation">
+            <p className={`${uiConfig.font.size.xs} lg:text-sm ${uiConfig.colors.hint} mb-3 lg:mb-4 -mt-2`}>
               Who's joining you on this adventure? *
             </p>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
-              <OptionButton
-                label="Solo"
+            <SelectionGrid>
+              <SelectionCard
+                title="Solo"
                 description="Just me"
                 isSelected={formData.family_situation === 'solo'}
                 onClick={() => handleFamilyStatusChange('solo')}
               />
-              <OptionButton
-                label="Couple"
+              <SelectionCard
+                title="Couple"
                 description="Me & partner"
                 isSelected={formData.family_situation === 'couple'}
                 onClick={() => handleFamilyStatusChange('couple')}
               />
-              <OptionButton
-                label="Family"
+              <SelectionCard
+                title="Family"
                 description="With dependents"
                 isSelected={formData.family_situation === 'family'}
                 onClick={() => handleFamilyStatusChange('family')}
               />
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Citizenship */}
           <div className="mb-4 lg:mb-6" key={`citizenship-section-${formData.family_situation}`}>
@@ -709,29 +686,25 @@ export default function OnboardingCurrentStatus() {
           </div>
 
           {/* Pet Owner */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <PawPrint size={16} className="mr-1.5 lg:mr-2" />
-              Pet Owner
-            </label>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
-              <OptionButton
-                label="Cat"
+          <SelectionSection icon={PawPrint} title="Pet Owner">
+            <SelectionGrid>
+              <SelectionCard
+                title="Cat"
                 isSelected={formData.pet_owner?.includes('cat') || false}
                 onClick={() => handlePetChange('cat')}
               />
-              <OptionButton
-                label="Dog"
+              <SelectionCard
+                title="Dog"
                 isSelected={formData.pet_owner?.includes('dog') || false}
                 onClick={() => handlePetChange('dog')}
               />
-              <OptionButton
-                label="Other"
+              <SelectionCard
+                title="Other"
                 isSelected={formData.pet_owner?.includes('other') || false}
                 onClick={() => handlePetChange('other')}
               />
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Summary Section */}
           {(formData.retirement_timeline.status || formData.family_situation) && (

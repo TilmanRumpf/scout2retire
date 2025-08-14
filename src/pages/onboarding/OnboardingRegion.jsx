@@ -10,22 +10,7 @@ import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 import { getLoadingBackgroundClass, getLoadingTextClass } from '../../utils/themeUtils';
 import supabase from '../../utils/supabaseClient';
-
-// Option Button Component - Responsive for mobile and desktop
-const OptionButton = ({ label, description, isSelected, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`${uiConfig.components.buttonSizes.default} lg:py-3 lg:px-4 xl:py-4 xl:px-5 ${uiConfig.layout.radius.md} lg:rounded-lg border-2 ${uiConfig.animation.transition} text-center ${
-      isSelected
-        ? uiConfig.components.buttonVariants.selected
-        : uiConfig.components.buttonVariants.unselected
-    }`}
-  >
-    <div className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium}`}>{label}</div>
-    {description && <div className={`${uiConfig.font.size.xs} lg:text-sm mt-0.5 lg:mt-1`}>{description}</div>}
-  </button>
-);
+import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
 
 const OnboardingRegion = () => {
   const navigate = useNavigate();
@@ -612,48 +597,40 @@ const OnboardingRegion = () => {
           </div>
 
           {/* Geographic Features section */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 sm:mb-3 flex items-center`}>
-              <MapPin size={16} className="mr-1.5 sm:mr-2" />
-              Geographic Features
-            </label>
-            <p className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.colors.hint} mb-2 sm:mb-3`}>
+          <SelectionSection icon={MapPin} title="Geographic Features">
+            <p className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.colors.hint} mb-2 sm:mb-3 -mt-2`}>
               Select preferred geographic features (optional)
             </p>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 gap-2 sm:gap-2.5">
+            <SelectionGrid>
               {geographicFeatures.map(feature => (
-                <OptionButton
+                <SelectionCard
                   key={feature}
-                  label={feature}
+                  title={feature}
                   isSelected={selectedFeatures.includes(feature)}
                   onClick={() => handleFeatureToggle(feature)}
+                  size="small"
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Vegetation section */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} sm:${uiConfig.font.size.base} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 sm:mb-3 flex items-center`}>
-              <Trees size={16} className="mr-1.5 sm:mr-2" />
-              Vegetation Types
-            </label>
-            <p className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.colors.hint} mb-2 sm:mb-3`}>
+          <SelectionSection icon={Trees} title="Vegetation Types">
+            <p className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.colors.hint} mb-2 sm:mb-3 -mt-2`}>
               Select preferred vegetation types (optional)
             </p>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
+            <SelectionGrid>
               {vegetationTypes.map(vegetation => (
-                <OptionButton
+                <SelectionCard
                   key={vegetation}
-                  label={vegetation}
+                  title={vegetation}
                   isSelected={selectedVegetation.includes(vegetation)}
                   onClick={() => handleVegetationToggle(vegetation)}
+                  size="small"
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Summary section */}
           <div className={`mb-4 p-3 sm:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg}`}>

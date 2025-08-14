@@ -8,21 +8,7 @@ import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
-
-// Option Button Component - Responsive for mobile and desktop
-const OptionButton = ({ label, isSelected, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`${uiConfig.components.buttonSizes.default} lg:py-3 lg:px-4 xl:py-4 xl:px-5 ${uiConfig.layout.radius.md} lg:rounded-lg border-2 ${uiConfig.animation.transition} text-center ${
-      isSelected
-        ? uiConfig.components.buttonVariants.selected
-        : uiConfig.components.buttonVariants.unselected
-    }`}
-  >
-    <div className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${isSelected ? 'text-white' : uiConfig.colors.body}`}>{label}</div>
-  </button>
-);
+import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
 
 // Language Select Component - styled like OptionButton
 const LanguageSelect = ({ value, onChange, label, languages }) => (
@@ -360,76 +346,64 @@ export default function OnboardingCulture() {
           </div>
           
           {/* Living Environment - moved to first position */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Home size={16} className="mr-1.5 lg:mr-2" />
-              Living Environment
-            </label>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
+          <SelectionSection icon={Home} title="Living Environment">
+            <SelectionGrid>
               {urbanOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.lifestyle_preferences.urban_rural.includes(option.value)}
                   onClick={() => handleMultiSelect('lifestyle_preferences.urban_rural', option.value, true)}
+                  size="small"
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Pace of Life - moved to second position */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Gauge size={16} className="mr-1.5 lg:mr-2" />
-              Pace of Life
-            </label>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
+          <SelectionSection icon={Gauge} title="Pace of Life">
+            <SelectionGrid>
               {paceOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.lifestyle_preferences.pace_of_life.includes(option.value)}
                   onClick={() => handleMultiSelect('lifestyle_preferences.pace_of_life', option.value, true)}
+                  size="small"
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Expat Community */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Users size={16} className="mr-1.5 lg:mr-2" />
-              Expat Community
-            </label>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
+          <SelectionSection icon={Users} title="Expat Community">
+            <SelectionGrid>
               {expatOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.expat_community_preference.includes(option.value)}
                   onClick={() => handleMultiSelect('expat_community_preference', option.value)}
+                  size="small"
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Language Preferences - moved to fourth position */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Languages size={16} className="mr-1.5 lg:mr-2" />
-              Language Preference
-            </label>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
+          <SelectionSection icon={Languages} title="Language Preference">
+            <SelectionGrid>
               {languageOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.language_comfort.preferences.includes(option.value)}
                   onClick={() => handleMultiSelect('language_comfort.preferences', option.value, true)}
+                  size="small"
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Languages you speak - after Language Preference */}
           <div className="mb-4">

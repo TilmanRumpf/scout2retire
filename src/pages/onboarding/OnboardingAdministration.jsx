@@ -8,22 +8,7 @@ import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
-
-// Option Button Component - Responsive for mobile and desktop
-const OptionButton = ({ label, description, isSelected, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`${uiConfig.components.buttonSizes.default} lg:py-3 lg:px-4 xl:py-4 xl:px-5 ${uiConfig.layout.radius.md} lg:rounded-lg border-2 ${uiConfig.animation.transition} text-center ${
-      isSelected
-        ? uiConfig.components.buttonVariants.selected
-        : uiConfig.components.buttonVariants.unselected
-    }`}
-  >
-    <div className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${isSelected ? 'text-white' : uiConfig.colors.body}`}>{label}</div>
-    {description && <div className={`${uiConfig.font.size.xs} lg:text-sm mt-0.5 lg:mt-1 ${isSelected ? 'text-white' : uiConfig.colors.hint}`}>{description}</div>}
-  </button>
-);
+import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
 
 // Health Select Component - styled like Language Select
 const HealthSelect = ({ value, onChange, label, options }) => (
@@ -317,24 +302,20 @@ export default function OnboardingAdministration() {
           </div>
           
           {/* Health & Medical */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Heart size={16} className="mr-1.5 lg:mr-2" />
-              Healthcare Preferences
-            </label>
-            
+          <SelectionSection icon={Heart} title="Healthcare Preferences">
             {/* Healthcare */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Healthcare</p>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 mb-2.5">
+            <SelectionGrid>
               {qualityOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.healthcare_quality.includes(option.value)}
                   onClick={() => handleToggle('healthcare_quality', option.value)}
+                  size="small"
                 />
               ))}
-            </div>
+            </SelectionGrid>
 
             {/* Health Considerations - using dropdowns */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Health Considerations</p>
@@ -365,146 +346,140 @@ export default function OnboardingAdministration() {
             </div>
 
             {/* Health Insurance */}
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Health Insurance</p>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 mb-2.5">
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-4`}>Health Insurance</p>
+            <SelectionGrid>
               {qualityOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.insurance_importance.includes(option.value)}
                   onClick={() => handleToggle('insurance_importance', option.value)}
+                  size="small"
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Safety & Security */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Shield size={16} className="mr-1.5 lg:mr-2" />
-              Safety & Security
-            </label>
-            
+          <SelectionSection icon={Shield} title="Safety & Security">
             {/* Safety */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Safety</p>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 mb-2.5">
+            <SelectionGrid>
               {qualityOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.safety_importance.includes(option.value)}
                   onClick={() => handleToggle('safety_importance', option.value)}
+                  size="small"
                 />
               ))}
-            </div>
+            </SelectionGrid>
 
             {/* Emergency Services */}
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Emergency Services</p>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 mb-2.5">
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-4`}>Emergency Services</p>
+            <SelectionGrid>
               {qualityOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.emergency_services.includes(option.value)}
                   onClick={() => handleToggle('emergency_services', option.value)}
+                  size="small"
                 />
               ))}
-            </div>
+            </SelectionGrid>
 
             {/* Political Stability */}
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Political Stability</p>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-4`}>Political Stability</p>
+            <SelectionGrid>
               {qualityOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.political_stability.includes(option.value)}
                   onClick={() => handleToggle('political_stability', option.value)}
+                  size="small"
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Governance & Legal */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Building size={16} className="mr-1.5 lg:mr-2" />
-              Government & Taxes
-            </label>
-            
+          <SelectionSection icon={Building} title="Government & Taxes">
             {/* Tax System */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Tax System</p>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 mb-2.5">
+            <SelectionGrid>
               {qualityOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.tax_preference.includes(option.value)}
                   onClick={() => handleToggle('tax_preference', option.value)}
+                  size="small"
                 />
               ))}
-            </div>
+            </SelectionGrid>
 
             {/* Government Efficiency */}
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Government Efficiency</p>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-4`}>Government Efficiency</p>
+            <SelectionGrid>
               {qualityOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.government_efficiency.includes(option.value)}
                   onClick={() => handleToggle('government_efficiency', option.value)}
+                  size="small"
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Immigration & Residency */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <FileText size={16} className="mr-1.5 lg:mr-2" />
-              Visa & Residency
-            </label>
-            
+          <SelectionSection icon={FileText} title="Visa & Residency">
             {/* Visa Process */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Visa Process</p>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 mb-2.5">
+            <SelectionGrid>
               {qualityOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.visa_preference.includes(option.value)}
                   onClick={() => handleToggle('visa_preference', option.value)}
+                  size="small"
                 />
               ))}
-            </div>
+            </SelectionGrid>
 
             {/* Stay Duration */}
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>How long do you plan to stay?</p>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 mb-2.5">
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-4`}>How long do you plan to stay?</p>
+            <SelectionGrid>
               {stayDurationOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.stay_duration.includes(option.value)}
                   onClick={() => handleToggle('stay_duration', option.value)}
+                  size="small"
                 />
               ))}
-            </div>
+            </SelectionGrid>
 
             {/* Residency Path */}
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Residency goals</p>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-4`}>Residency goals</p>
+            <SelectionGrid>
               {residencyPathOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.residency_path.includes(option.value)}
                   onClick={() => handleToggle('residency_path', option.value)}
+                  size="small"
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Summary Section */}
           <div className={`mb-4 p-3 lg:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
