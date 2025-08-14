@@ -574,30 +574,28 @@ const OnboardingRegion = () => {
                 ))}
               </div>
               
-              {/* Expandable dropdown section below the cards */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
-                {[0, 1].map(index => (
-                  <div key={`dropdown-${index}`} className={`relative ${index === 0 ? 'z-20' : 'z-10'}`}>
-                    {expandedPreference === index && (
-                      <div className={`mt-3 p-4 sm:p-5 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition}`}>
+              {/* Expandable dropdown section - positioned absolutely to avoid overlap */}
+              {expandedPreference !== -1 && (
+                <div className="relative">
+                  <div className={`absolute top-0 left-0 right-0 z-50 mt-2 p-4 sm:p-5 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-xl space-y-3 ${uiConfig.animation.transition}`}>
                       {/* Region dropdown */}
                       <div>
                         <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 sm:mb-1.5 block`}>
                           Select Region
                         </label>
                         <CustomDropdown
-                          value={selectedRegions[index]}
+                          value={selectedRegions[expandedPreference]}
                           onChange={(value) => {
                             // Reset dependent selections when region changes
-                            if (selectedCountries[index] !== '' || selectedProvinces[index] !== '') {
+                            if (selectedCountries[expandedPreference] !== '' || selectedProvinces[expandedPreference] !== '') {
                               const newCountries = [...selectedCountries];
                               const newProvinces = [...selectedProvinces];
-                              newCountries[index] = '';
-                              newProvinces[index] = '';
+                              newCountries[expandedPreference] = '';
+                              newProvinces[expandedPreference] = '';
                               setSelectedCountries(newCountries);
                               setSelectedProvinces(newProvinces);
                             }
-                            handleRegionChange(index, value);
+                            handleRegionChange(expandedPreference, value);
                           }}
                           options={[
                             { value: '', label: regionsLoading ? 'Loading regions...' : 'Select region' },
@@ -614,7 +612,7 @@ const OnboardingRegion = () => {
                   {/* Country/State dropdown - show when region is selected (not Recommended) */}
                   <div 
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      showCountryDropdowns[index] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                      showCountryDropdowns[expandedPreference] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     }`}
                   >
                     <div>
@@ -623,17 +621,17 @@ const OnboardingRegion = () => {
                       </label>
                       <div className="relative">
                         <select
-                          value={selectedCountries[index]}
-                          onChange={(e) => handleCountryChange(index, e.target.value)}
-                          onBlur={() => handleCountryBlur(index)}
+                          value={selectedCountries[expandedPreference]}
+                          onChange={(e) => handleCountryChange(expandedPreference, e.target.value)}
+                          onBlur={() => handleCountryBlur(expandedPreference)}
                           className={`w-full px-3 sm:px-4 ${uiConfig.layout.radius.md} appearance-none cursor-pointer focus:ring-2 focus:ring-scout-accent-300 ${uiConfig.animation.transition} h-[44px] sm:h-[48px] border-2 ${
-                          selectedCountries[index] 
+                          selectedCountries[expandedPreference] 
                             ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 font-medium'
                             : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
                         }`}
                         >
                           <option value="">Select country</option>
-                          {getFilteredCountries(index).filter(c => c !== '').map(country => (
+                          {getFilteredCountries(expandedPreference).filter(c => c !== '').map(country => (
                             <option key={country} value={country}>
                               {country}
                             </option>
@@ -650,7 +648,7 @@ const OnboardingRegion = () => {
                   {/* Province dropdown - show when country is selected and has provinces */}
                   <div 
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      showProvinceDropdowns[index] && hasProvinces(index) ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                      showProvinceDropdowns[expandedPreference] && hasProvinces(expandedPreference) ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     }`}
                   >
                     <div>
@@ -669,17 +667,17 @@ const OnboardingRegion = () => {
                       </label>
                       <div className="relative">
                         <select
-                          value={selectedProvinces[index]}
-                          onChange={(e) => handleProvinceChange(index, e.target.value)}
-                          onBlur={() => handleProvinceBlur(index)}
+                          value={selectedProvinces[expandedPreference]}
+                          onChange={(e) => handleProvinceChange(expandedPreference, e.target.value)}
+                          onBlur={() => handleProvinceBlur(expandedPreference)}
                           className={`w-full px-3 sm:px-4 ${uiConfig.layout.radius.md} appearance-none cursor-pointer focus:ring-2 focus:ring-scout-accent-300 ${uiConfig.animation.transition} h-[44px] sm:h-[48px] border-2 ${
-                          selectedProvinces[index] 
+                          selectedProvinces[expandedPreference] 
                             ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 font-medium'
                             : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
                         }`}
                         >
                           <option value="">Select province</option>
-                          {getFilteredProvinces(index).filter(p => p !== '').map(province => (
+                          {getFilteredProvinces(expandedPreference).filter(p => p !== '').map(province => (
                             <option key={province} value={province}>
                               {province}
                             </option>
@@ -693,10 +691,8 @@ const OnboardingRegion = () => {
                     </div>
                   </div>
                     </div>
-                  )}
                 </div>
-              ))}
-            </div>
+              )}
             </div>
           </div>
 
@@ -736,12 +732,17 @@ const OnboardingRegion = () => {
             </SelectionGrid>
           </SelectionSection>
 
-          {/* Summary section */}
-          <div className={`mb-4 p-3 sm:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg}`}>
-            <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} mb-2 sm:mb-3 ${uiConfig.font.size.sm} sm:${uiConfig.font.size.base}`}>
+          {/* Summary section - matching hobbies page styling */}
+          {(selectedRegions.filter(r => r && r !== '').length > 0 ||
+            selectedCountries.filter(c => c && c !== '').length > 0 ||
+            selectedProvinces.filter(p => p && p !== '').length > 0 ||
+            selectedFeatures.length > 0 ||
+            selectedVegetation.length > 0) && (
+          <div className={`mb-3 p-2.5 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg}`}>
+            <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} mb-1.5 ${uiConfig.font.size.sm}`}>
               Your Geographical Preferences:
             </h3>
-            <div className={`space-y-1 sm:space-y-1.5 ${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
+            <div className={`space-y-0.5 ${uiConfig.font.size.xs} ${uiConfig.colors.body}`}>
               <div>
                 <span className={`${uiConfig.font.weight.medium}`}>Regions:</span>{' '}
                 {selectedRegions.filter(region => region !== 'Recommended').length > 0 
@@ -774,6 +775,7 @@ const OnboardingRegion = () => {
               </div>
             </div>
           </div>
+          )}
         </form>
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
