@@ -336,7 +336,7 @@ const OnboardingRegion = () => {
     
     // If a country is selected and it has no provinces, close the panel
     if (value !== '') {
-      const provincesAvailable = provincesByCountry[value] && provincesByCountry[value].length > 0;
+      const provincesAvailable = countryProvinces[value] && countryProvinces[value].length > 0;
       if (!provincesAvailable) {
         setTimeout(() => {
           setExpandedPreference(-1);
@@ -406,8 +406,8 @@ const OnboardingRegion = () => {
     }
     if (selectedCountries[index] && selectedCountries[index] !== '') {
       // Check if this country has provinces available
-      const provincesAvailable = provincesByCountry[selectedCountries[index]] && 
-                                 provincesByCountry[selectedCountries[index]].length > 0;
+      const provincesAvailable = countryProvinces[selectedCountries[index]] && 
+                                 countryProvinces[selectedCountries[index]].length > 0;
       if (provincesAvailable) {
         // User selected a country with provinces but didn't select a specific province
         // Show "Region, Country, Any Province"
