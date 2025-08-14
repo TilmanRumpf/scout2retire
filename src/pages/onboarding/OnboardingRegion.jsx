@@ -617,13 +617,12 @@ const OnboardingRegion = () => {
                         <CustomDropdown
                           value={selectedCountries[0]}
                           onChange={(value) => handleCountryChange(0, value)}
-                          options={[
-                            { value: '', label: 'Select country' },
-                            ...getFilteredCountries(0).filter(c => c && c !== '').map(country => ({
+                          options={
+                            getFilteredCountries(0).map(country => ({
                               value: country,
-                              label: country
+                              label: country === '' ? 'Select country' : country
                             }))
-                          ]}
+                          }
                           placeholder="Select country"
                         />
                       </div>
@@ -652,13 +651,12 @@ const OnboardingRegion = () => {
                         <CustomDropdown
                           value={selectedProvinces[0]}
                           onChange={(value) => handleProvinceChange(0, value)}
-                          options={[
-                            { value: '', label: 'Select province' },
-                            ...getFilteredProvinces(0).filter(p => p && p !== '').map(province => ({
+                          options={
+                            getFilteredProvinces(0).map(province => ({
                               value: province,
-                              label: province
+                              label: province === '' ? 'Select province' : province
                             }))
-                          ]}
+                          }
                           placeholder="Select province"
                         />
                       </div>
@@ -744,13 +742,12 @@ const OnboardingRegion = () => {
                         <CustomDropdown
                           value={selectedCountries[1]}
                           onChange={(value) => handleCountryChange(1, value)}
-                          options={[
-                            { value: '', label: 'Select country' },
-                            ...getFilteredCountries(1).filter(c => c && c !== '').map(country => ({
+                          options={
+                            getFilteredCountries(1).map(country => ({
                               value: country,
-                              label: country
+                              label: country === '' ? 'Select country' : country
                             }))
-                          ]}
+                          }
                           placeholder="Select country"
                         />
                       </div>
@@ -779,13 +776,12 @@ const OnboardingRegion = () => {
                         <CustomDropdown
                           value={selectedProvinces[1]}
                           onChange={(value) => handleProvinceChange(1, value)}
-                          options={[
-                            { value: '', label: 'Select province' },
-                            ...getFilteredProvinces(1).filter(p => p && p !== '').map(province => ({
+                          options={
+                            getFilteredProvinces(1).map(province => ({
                               value: province,
-                              label: province
+                              label: province === '' ? 'Select province' : province
                             }))
-                          ]}
+                          }
                           placeholder="Select province"
                         />
                       </div>
