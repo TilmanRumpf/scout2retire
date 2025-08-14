@@ -306,6 +306,13 @@ const OnboardingRegion = () => {
     newProvinces[index] = '';
     setSelectedCountries(newCountries);
     setSelectedProvinces(newProvinces);
+    
+    // If "Recommended" is selected, close the panel immediately
+    if (value === 'Recommended') {
+      setTimeout(() => {
+        setExpandedPreference(-1);
+      }, 300); // Small delay so user sees their selection
+    }
   };
 
   const handleCountryChange = (index, value) => {
@@ -317,6 +324,16 @@ const OnboardingRegion = () => {
     const newProvinces = [...selectedProvinces];
     newProvinces[index] = '';
     setSelectedProvinces(newProvinces);
+    
+    // If a country is selected and it has no provinces, close the panel
+    if (value !== '') {
+      const provincesAvailable = provincesByCountry[value] && provincesByCountry[value].length > 0;
+      if (!provincesAvailable) {
+        setTimeout(() => {
+          setExpandedPreference(-1);
+        }, 300); // Small delay so user sees their selection
+      }
+    }
   };
 
   const handleCountryBlur = (index) => {
@@ -332,6 +349,13 @@ const OnboardingRegion = () => {
     const newProvinces = [...selectedProvinces];
     newProvinces[index] = value;
     setSelectedProvinces(newProvinces);
+    
+    // If a province is selected, close the entire expanded panel
+    if (value !== '') {
+      setTimeout(() => {
+        setExpandedPreference(-1);
+      }, 300); // Small delay so user sees their selection
+    }
   };
 
   const handleProvinceBlur = (index) => {
