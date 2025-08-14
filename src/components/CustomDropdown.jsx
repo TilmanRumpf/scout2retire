@@ -8,7 +8,8 @@ export const CustomDropdown = ({
   options, 
   placeholder = "Select an option",
   className = "",
-  disabled = false 
+  disabled = false,
+  showSearch = true 
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,11 +30,11 @@ export const CustomDropdown = ({
   }, []);
 
   // Filter options based on search
-  const filteredOptions = options.filter(option => 
-    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOptions = (options || []).filter(option => 
+    option && option.label && option.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const selectedOption = options.find(opt => opt.value === value);
+  const selectedOption = (options || []).find(opt => opt && opt.value === value);
 
   return (
     <div ref={dropdownRef} className="relative">
@@ -68,7 +69,7 @@ export const CustomDropdown = ({
       {isOpen && (
         <div className={`absolute z-50 w-full mt-1 ${uiConfig.layout.radius.md} bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200`}>
           {/* Search input for long lists */}
-          {options.length > 10 && (
+          {showSearch && options.length > 10 && (
             <div className="p-2 border-b border-gray-200 dark:border-gray-700">
               <input
                 ref={inputRef}
@@ -88,9 +89,9 @@ export const CustomDropdown = ({
                 No options found
               </div>
             ) : (
-              filteredOptions.map((option) => (
+              filteredOptions.map((option, index) => (
                 <button
-                  key={option.value}
+                  key={option.value || `empty-${index}`}
                   type="button"
                   onClick={() => {
                     onChange(option.value);

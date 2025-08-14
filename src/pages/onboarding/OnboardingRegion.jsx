@@ -605,47 +605,31 @@ const OnboardingRegion = () => {
                     </div>
 
                     {/* Country/State dropdown - show when region is selected (not Recommended) */}
-                    <div 
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        showCountryDropdowns[0] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                      }`}
-                    >
-                      <div>
+                    {showCountryDropdowns[0] && (
+                      <div className="animate-in fade-in slide-in-from-top-1 duration-200">
+                        <div>
                         <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 sm:mb-1.5 block`}>
                           Country/State
                         </label>
-                        <div className="relative">
-                          <select
-                            value={selectedCountries[0]}
-                            onChange={(e) => handleCountryChange(0, e.target.value)}
-                            onBlur={() => handleCountryBlur(0)}
-                            className={`w-full px-3 sm:px-4 text-left ${uiConfig.layout.radius.md} appearance-none cursor-pointer focus:ring-2 focus:ring-scout-accent-300 ${uiConfig.animation.transition} h-[44px] sm:h-[48px] border-2 ${
-                            selectedCountries[0] 
-                              ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 font-medium'
-                              : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
-                          }`}
-                          >
-                            <option value="">Select country</option>
-                            {getFilteredCountries(0).filter(c => c !== '').map(country => (
-                              <option key={country} value={country}>
-                                {country}
-                              </option>
-                            ))}
-                          </select>
-                          <ChevronDown 
-                            size={20} 
-                            className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.muted} pointer-events-none`}
-                          />
-                        </div>
+                        <CustomDropdown
+                          value={selectedCountries[0]}
+                          onChange={(value) => handleCountryChange(0, value)}
+                          options={
+                            getFilteredCountries(0).map(country => ({
+                              value: country,
+                              label: country === '' ? 'Select country' : country
+                            }))
+                          }
+                          placeholder="Select country"
+                          showSearch={false}
+                        />
                       </div>
                     </div>
+                    )}
 
                     {/* Province dropdown - show when country is selected and has provinces */}
-                    <div 
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        showProvinceDropdowns[0] && hasProvinces(0) ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                      }`}
-                    >
+                    {showProvinceDropdowns[0] && hasProvinces(0) && (
+                      <div className="animate-in fade-in slide-in-from-top-1 duration-200">
                       <div>
                         <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 sm:mb-1.5 block flex items-center justify-between`}>
                           <span>Province (Optional)</span>
@@ -660,31 +644,21 @@ const OnboardingRegion = () => {
                             Skip Province
                           </button>
                         </label>
-                        <div className="relative">
-                          <select
-                            value={selectedProvinces[0]}
-                            onChange={(e) => handleProvinceChange(0, e.target.value)}
-                            onBlur={() => handleProvinceBlur(0)}
-                            className={`w-full px-3 sm:px-4 ${uiConfig.layout.radius.md} appearance-none cursor-pointer focus:ring-2 focus:ring-scout-accent-300 ${uiConfig.animation.transition} h-[44px] sm:h-[48px] border-2 ${
-                            selectedProvinces[0] 
-                              ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 font-medium'
-                              : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
-                          }`}
-                          >
-                            <option value="">Select province</option>
-                            {getFilteredProvinces(0).filter(p => p !== '').map(province => (
-                              <option key={province} value={province}>
-                                {province}
-                              </option>
-                            ))}
-                          </select>
-                          <ChevronDown 
-                            size={20} 
-                            className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.muted} pointer-events-none`}
-                          />
-                        </div>
+                        <CustomDropdown
+                          value={selectedProvinces[0]}
+                          onChange={(value) => handleProvinceChange(0, value)}
+                          options={
+                            getFilteredProvinces(0).map(province => ({
+                              value: province,
+                              label: province === '' ? 'Select province' : province
+                            }))
+                          }
+                          placeholder="Select province"
+                          showSearch={false}
+                        />
                       </div>
                     </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -754,47 +728,31 @@ const OnboardingRegion = () => {
                     </div>
 
                     {/* Country/State dropdown - show when region is selected (not Recommended) */}
-                    <div 
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        showCountryDropdowns[1] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                      }`}
-                    >
-                      <div>
+                    {showCountryDropdowns[1] && (
+                      <div className="animate-in fade-in slide-in-from-top-1 duration-200">
+                        <div>
                         <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 sm:mb-1.5 block`}>
                           Country/State
                         </label>
-                        <div className="relative">
-                          <select
-                            value={selectedCountries[1]}
-                            onChange={(e) => handleCountryChange(1, e.target.value)}
-                            onBlur={() => handleCountryBlur(1)}
-                            className={`w-full px-3 sm:px-4 ${uiConfig.layout.radius.md} appearance-none cursor-pointer focus:ring-2 focus:ring-scout-accent-300 ${uiConfig.animation.transition} h-[44px] sm:h-[48px] border-2 ${
-                            selectedCountries[1] 
-                              ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 font-medium'
-                              : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
-                          }`}
-                          >
-                            <option value="">Select country</option>
-                            {getFilteredCountries(1).filter(c => c !== '').map(country => (
-                              <option key={country} value={country}>
-                                {country}
-                              </option>
-                            ))}
-                          </select>
-                          <ChevronDown 
-                            size={20} 
-                            className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.muted} pointer-events-none`}
-                          />
-                        </div>
+                        <CustomDropdown
+                          value={selectedCountries[1]}
+                          onChange={(value) => handleCountryChange(1, value)}
+                          options={
+                            getFilteredCountries(1).map(country => ({
+                              value: country,
+                              label: country === '' ? 'Select country' : country
+                            }))
+                          }
+                          placeholder="Select country"
+                          showSearch={false}
+                        />
                       </div>
                     </div>
+                    )}
 
                     {/* Province dropdown - show when country is selected and has provinces */}
-                    <div 
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        showProvinceDropdowns[1] && hasProvinces(1) ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                      }`}
-                    >
+                    {showProvinceDropdowns[1] && hasProvinces(1) && (
+                      <div className="animate-in fade-in slide-in-from-top-1 duration-200">
                       <div>
                         <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 sm:mb-1.5 block flex items-center justify-between`}>
                           <span>Province (Optional)</span>
@@ -809,31 +767,21 @@ const OnboardingRegion = () => {
                             Skip Province
                           </button>
                         </label>
-                        <div className="relative">
-                          <select
-                            value={selectedProvinces[1]}
-                            onChange={(e) => handleProvinceChange(1, e.target.value)}
-                            onBlur={() => handleProvinceBlur(1)}
-                            className={`w-full px-3 sm:px-4 ${uiConfig.layout.radius.md} appearance-none cursor-pointer focus:ring-2 focus:ring-scout-accent-300 ${uiConfig.animation.transition} h-[44px] sm:h-[48px] border-2 ${
-                            selectedProvinces[1] 
-                              ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 font-medium'
-                              : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
-                          }`}
-                          >
-                            <option value="">Select province</option>
-                            {getFilteredProvinces(1).filter(p => p !== '').map(province => (
-                              <option key={province} value={province}>
-                                {province}
-                              </option>
-                            ))}
-                          </select>
-                          <ChevronDown 
-                            size={20} 
-                            className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.muted} pointer-events-none`}
-                          />
-                        </div>
+                        <CustomDropdown
+                          value={selectedProvinces[1]}
+                          onChange={(value) => handleProvinceChange(1, value)}
+                          options={
+                            getFilteredProvinces(1).map(province => ({
+                              value: province,
+                              label: province === '' ? 'Select province' : province
+                            }))
+                          }
+                          placeholder="Select province"
+                          showSearch={false}
+                        />
                       </div>
                     </div>
+                    )}
                   </div>
                 )}
               </div>
