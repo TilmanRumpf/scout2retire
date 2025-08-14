@@ -361,11 +361,6 @@ const OnboardingRegion = () => {
     
     // If a province is selected (including "Any Province"), close the entire expanded panel
     if (value !== '') {
-      // If "Any Province" is selected, treat it as no specific province
-      if (value === 'Any Province') {
-        newProvinces[index] = '';
-        setSelectedProvinces(newProvinces);
-      }
       setTimeout(() => {
         setExpandedPreference(-1);
       }, 300); // Small delay so user sees their selection
@@ -406,11 +401,21 @@ const OnboardingRegion = () => {
   const getDisplayValue = (index) => {
     if (selectedProvinces[index] && selectedProvinces[index] !== '') {
       // Show full breadcrumb: "Region, Country, Province"
+      // "Any Province" is already stored as the value, so it will display correctly
       return `${selectedRegions[index]}, ${selectedCountries[index]}, ${selectedProvinces[index]}`;
     }
     if (selectedCountries[index] && selectedCountries[index] !== '') {
-      // Show "Region, Country"
-      return `${selectedRegions[index]}, ${selectedCountries[index]}`;
+      // Check if this country has provinces available
+      const provincesAvailable = provincesByCountry[selectedCountries[index]] && 
+                                 provincesByCountry[selectedCountries[index]].length > 0;
+      if (provincesAvailable) {
+        // User selected a country with provinces but didn't select a specific province
+        // Show "Region, Country, Any Province"
+        return `${selectedRegions[index]}, ${selectedCountries[index]}, Any Province`;
+      } else {
+        // Country has no provinces, just show "Region, Country"
+        return `${selectedRegions[index]}, ${selectedCountries[index]}`;
+      }
     }
     // Show just "Region"
     return selectedRegions[index];
