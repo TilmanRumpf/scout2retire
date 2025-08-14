@@ -504,7 +504,7 @@ const OnboardingRegion = () => {
               {[0, 1].map(index => (
                 <div key={`dropdown-${index}`}>
                   {expandedPreference === index && (
-                    <div className={`mt-2 p-4 border-2 ${uiConfig.layout.radius.lg} ${uiConfig.colors.borderLight} ${uiConfig.colors.input} space-y-2 ${uiConfig.animation.transition}`}>
+                    <div className={`mt-3 p-4 sm:p-5 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition}`}>
                       {/* Region dropdown */}
                       <div>
                         <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 sm:mb-1.5 block`}>
@@ -525,7 +525,11 @@ const OnboardingRegion = () => {
                             setSelectedProvinces(newProvinces);
                           }
                         }}
-                        className={`${uiConfig.components.select} appearance-none cursor-pointer focus:ring-0 focus:${uiConfig.colors.borderActive} ${uiConfig.animation.transition} h-[44px] sm:h-[48px]`}
+                        className={`w-full px-3 sm:px-4 ${uiConfig.layout.radius.md} appearance-none cursor-pointer focus:ring-2 focus:ring-scout-accent-300 ${uiConfig.animation.transition} h-[44px] sm:h-[48px] border-2 ${
+                          selectedRegions[index] 
+                            ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 font-medium'
+                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
+                        }`}
                       >
                         <option value="">{regionsLoading ? 'Loading regions...' : 'Select region'}</option>
                         {!regionsLoading && getAvailableRegions().map(region => (
@@ -562,7 +566,11 @@ const OnboardingRegion = () => {
                           value={selectedCountries[index]}
                           onChange={(e) => handleCountryChange(index, e.target.value)}
                           onBlur={() => handleCountryBlur(index)}
-                          className={`${uiConfig.components.select} appearance-none cursor-pointer focus:ring-0 focus:${uiConfig.colors.borderActive} ${uiConfig.animation.transition} h-[44px] sm:h-[48px]`}
+                          className={`w-full px-3 sm:px-4 ${uiConfig.layout.radius.md} appearance-none cursor-pointer focus:ring-2 focus:ring-scout-accent-300 ${uiConfig.animation.transition} h-[44px] sm:h-[48px] border-2 ${
+                          selectedCountries[index] 
+                            ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 font-medium'
+                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
+                        }`}
                         >
                           <option value="">Select country</option>
                           {getFilteredCountries(index).filter(c => c !== '').map(country => (
@@ -594,7 +602,11 @@ const OnboardingRegion = () => {
                           value={selectedProvinces[index]}
                           onChange={(e) => handleProvinceChange(index, e.target.value)}
                           onBlur={() => handleProvinceBlur(index)}
-                          className={`${uiConfig.components.select} appearance-none cursor-pointer focus:ring-0 focus:${uiConfig.colors.borderActive} ${uiConfig.animation.transition} h-[44px] sm:h-[48px]`}
+                          className={`w-full px-3 sm:px-4 ${uiConfig.layout.radius.md} appearance-none cursor-pointer focus:ring-2 focus:ring-scout-accent-300 ${uiConfig.animation.transition} h-[44px] sm:h-[48px] border-2 ${
+                          selectedProvinces[index] 
+                            ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 font-medium'
+                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
+                        }`}
                         >
                           <option value="">Select province</option>
                           {getFilteredProvinces(index).filter(p => p !== '').map(province => (
