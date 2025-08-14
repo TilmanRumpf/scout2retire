@@ -29,6 +29,7 @@ const OnboardingRegion = () => {
   // Added state to control visibility of dependent dropdowns
   const [showDependentDropdowns, setShowDependentDropdowns] = useState([false, false]);
   const [showCountryDropdowns, setShowCountryDropdowns] = useState([false, false]);
+  const [showProvinceDropdowns, setShowProvinceDropdowns] = useState([false, false]);
   
   // NEW: Dynamic regions from database
   const [regions, setRegions] = useState(['Recommended']); // Start with just Recommended
