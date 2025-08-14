@@ -396,8 +396,8 @@ const OnboardingRegion = () => {
   // Function to get the hierarchical display value
   const getDisplayValue = (index) => {
     if (selectedProvinces[index] && selectedProvinces[index] !== '') {
-      // Show "Country, Province"
-      return `${selectedCountries[index]}, ${selectedProvinces[index]}`;
+      // Show full breadcrumb: "Region, Country, Province"
+      return `${selectedRegions[index]}, ${selectedCountries[index]}, ${selectedProvinces[index]}`;
     }
     if (selectedCountries[index] && selectedCountries[index] !== '') {
       // Show "Region, Country"
