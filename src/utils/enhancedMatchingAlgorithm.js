@@ -3,6 +3,7 @@
 
 import supabase from './supabaseClient.js'
 import { mapToStandardValue } from './climateInference.js'
+import { calculateHobbiesScore as calculateNormalizedHobbiesScore } from './hobbiesMatching.js'
 
 // Weights optimized for 55+ retirees: equal emphasis on location preference, budget constraints, and healthcare/safety (60% combined), with climate and culture as secondary factors
 // Score weights for each category (total = 100)
@@ -1100,7 +1101,15 @@ export function calculateCultureScore(preferences, town) {
 }
 
 // 4. HOBBIES MATCHING (20% of total)
-export function calculateHobbiesScore(preferences, town) {
+// Now uses normalized hobbies database with universal vs location-specific hobbies
+export async function calculateHobbiesScore(preferences, town) {
+  // Use the new normalized hobbies matching
+  const result = await calculateNormalizedHobbiesScore(preferences, town)
+  return result
+}
+
+// Legacy hobbies scoring for backward compatibility (if needed)
+export function calculateHobbiesScoreLegacy(preferences, town) {
   let score = 0
   let factors = []
   
@@ -1664,7 +1673,7 @@ export async function calculateEnhancedMatch(userPreferences, town) {
   const regionResult = calculateRegionScore(userPreferences.region_preferences || {}, town)
   const climateResult = calculateClimateScore(userPreferences.climate_preferences || {}, town)
   const cultureResult = calculateCultureScore(userPreferences.culture_preferences || {}, town)
-  const hobbiesResult = calculateHobbiesScore(userPreferences.hobbies_preferences || {}, town)
+  const hobbiesResult = await calculateHobbiesScore(userPreferences.hobbies_preferences || userPreferences.hobbies || {}, town)
   const adminResult = calculateAdminScore({
     ...userPreferences.admin_preferences || {},
     citizenship: userPreferences.current_status?.citizenship

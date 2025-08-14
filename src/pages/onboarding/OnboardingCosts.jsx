@@ -8,22 +8,7 @@ import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
-
-// Option Button Component - Responsive for mobile and desktop
-const OptionButton = ({ label, description, isSelected, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`${uiConfig.components.buttonSizes.default} lg:py-3 lg:px-4 xl:py-4 xl:px-5 ${uiConfig.layout.radius.md} lg:rounded-lg border-2 ${uiConfig.animation.transition} text-center ${
-      isSelected
-        ? uiConfig.components.buttonVariants.selected
-        : uiConfig.components.buttonVariants.unselected
-    }`}
-  >
-    <div className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${isSelected ? 'text-white' : uiConfig.colors.body}`}>{label}</div>
-    {description && <div className={`${uiConfig.font.size.xs} lg:text-sm mt-0.5 lg:mt-1 ${isSelected ? 'text-white' : uiConfig.colors.hint}`}>{description}</div>}
-  </button>
-);
+import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
 
 // Mobility Select Component - styled like dropdowns in other pages
 const MobilitySelect = ({ value, onChange, label, options }) => (
@@ -391,11 +376,7 @@ export default function OnboardingCosts() {
           </div>
 
           {/* Mobility Preferences */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Car size={16} className="mr-1.5 lg:mr-2" />
-              Mobility Preferences
-            </label>
+          <SelectionSection icon={Car} title="Mobility Preferences">
             <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
               {/* Local Mobility */}
               <MobilitySelect
@@ -421,7 +402,7 @@ export default function OnboardingCosts() {
                 options={intlMobilityOptions}
               />
             </div>
-          </div>
+          </SelectionSection>
 
           {/* Tax Sensitivity */}
           <div className="mb-4">

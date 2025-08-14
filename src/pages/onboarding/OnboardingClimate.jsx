@@ -8,21 +8,7 @@ import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
-
-// Option Button Component - Responsive for mobile and desktop
-const OptionButton = ({ label, isSelected, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`${uiConfig.components.buttonSizes.default} lg:py-3 lg:px-4 xl:py-4 xl:px-5 ${uiConfig.layout.radius.md} lg:rounded-lg border-2 ${uiConfig.animation.transition} text-center ${
-      isSelected
-        ? uiConfig.components.buttonVariants.selected
-        : uiConfig.components.buttonVariants.unselected
-    }`}
-  >
-    <div className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${isSelected ? 'text-white' : uiConfig.colors.body}`}>{label}</div>
-  </button>
-);
+import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
 
 export default function OnboardingClimate() {
   const [formData, setFormData] = useState({
@@ -244,94 +230,79 @@ export default function OnboardingClimate() {
           </div>
           
           {/* Summer Climate */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Sun size={16} className="mr-1.5 lg:mr-2" />
-              Summer Climate
-            </label>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
+          <SelectionSection icon={Sun} title="Summer Climate">
+            <SelectionGrid>
               {summerOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.summer_climate_preference?.includes(option.value)}
                   onClick={() => handleClimateToggle('summer', option.value)}
+                  size="small"
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Winter Climate */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Snowflake size={16} className="mr-1.5 lg:mr-2" />
-              Winter Climate
-            </label>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
+          <SelectionSection icon={Snowflake} title="Winter Climate">
+            <SelectionGrid>
               {winterOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.winter_climate_preference?.includes(option.value)}
                   onClick={() => handleClimateToggle('winter', option.value)}
+                  size="small"
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Humidity */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Droplets size={16} className="mr-1.5 lg:mr-2" />
-              Humidity
-            </label>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
+          <SelectionSection icon={Droplets} title="Humidity">
+            <SelectionGrid>
               {humidityOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.humidity_level?.includes(option.value)}
                   onClick={() => handleMultiChoiceToggle('humidity_level', option.value)}
+                  size="small"
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Sunshine */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Sun size={16} className="mr-1.5 lg:mr-2" />
-              Sunshine
-            </label>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
+          <SelectionSection icon={Sun} title="Sunshine">
+            <SelectionGrid>
               {sunshineOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.sunshine?.includes(option.value)}
                   onClick={() => handleMultiChoiceToggle('sunshine', option.value)}
+                  size="small"
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Precipitation */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <CloudRain size={16} className="mr-1.5 lg:mr-2" />
-              Precipitation
-            </label>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
+          <SelectionSection icon={CloudRain} title="Precipitation">
+            <SelectionGrid>
               {precipitationOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.value}
-                  label={option.label}
+                  title={option.label}
                   isSelected={formData.precipitation?.includes(option.value)}
                   onClick={() => handleMultiChoiceToggle('precipitation', option.value)}
+                  size="small"
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Seasonal Preference */}
           <div className="mb-4">

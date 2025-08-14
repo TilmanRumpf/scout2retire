@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Plane, Activity, ShoppingBag, Sparkles, Lightbulb } from 'lucide-react';
+import { Heart, Plane, Activity, ShoppingBag, Sparkles, Lightbulb, Search, X, Snowflake } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import { saveUserPreferences } from '../../utils/userPreferences';
@@ -8,86 +8,84 @@ import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
-
-// Option Button Component
-const OptionButton = ({ label, description, isSelected, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`p-2.5 sm:p-3 lg:p-4 ${uiConfig.layout.radius.md} border-2 ${uiConfig.animation.transition} text-center min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] ${
-      isSelected
-        ? uiConfig.components.buttonVariants.selected
-        : uiConfig.components.buttonVariants.unselected
-    }`}
-  >
-    <div className={`text-xs sm:text-sm lg:text-base ${uiConfig.font.weight.medium} ${isSelected ? 'text-scout-accent-300 dark:text-scout-accent-300' : ''}`}>{label}</div>
-    {description && <div className={`text-[10px] sm:text-xs mt-0.5 ${isSelected ? 'text-scout-accent-300 dark:text-scout-accent-300' : uiConfig.colors.hint}`}>{description}</div>}
-  </button>
-);
+import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
 
 export default function OnboardingHobbies() {
   const [formData, setFormData] = useState({
     activities: [],
     interests: [],
-    travel_frequency: '',
-    lifestyle_importance: {
-      outdoor_activities: 1,
-      cultural_events: 1,
-      shopping: 1,
-      wellness: 1
-    }
+    custom_activities: [],
+    travel_frequency: ''
   });
   
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [showCustomModal, setShowCustomModal] = useState(false);
+  const [customSearch, setCustomSearch] = useState('');
   
   const navigate = useNavigate();
   
   // Enable auto-save for this page
   const autoSave = useOnboardingAutoSave(formData, 'hobbies');
 
-  // Activity options - removed fitness, yoga, dancing
+  // Activity options with descriptions and Winter Sports added
   const activityOptions = [
-    { id: 'walking', label: 'Walking' },
-    { id: 'swimming', label: 'Swimming' },
-    { id: 'cycling', label: 'Cycling' },
-    { id: 'golf', label: 'Golf' },
-    { id: 'tennis', label: 'Tennis' },
-    { id: 'water_sports', label: 'Water Sports' },
-    { id: 'winter_sports', label: 'Winter Sports' },
-    { id: 'fishing', label: 'Fishing' },
-    { id: 'gardening', label: 'Gardening' }
+    { id: 'walking', title: 'Walking', description: 'trails • beaches • parks' },
+    { id: 'swimming', title: 'Swimming', description: 'pools • ocean • lakes' },
+    { id: 'cycling', title: 'Cycling', description: 'road • mountain • trails' },
+    { id: 'golf', title: 'Golf', description: 'courses • driving range' },
+    { id: 'tennis', title: 'Tennis', description: 'courts • clubs • leagues' },
+    { id: 'water_sports', title: 'Water Sports', description: 'kayak • sail • paddle' },
+    { id: 'winter_sports', title: 'Winter Sports', description: 'ski • snowboard • ice skate', icon: Snowflake },
+    { id: 'fishing', title: 'Fishing', description: 'ocean • lake • river' },
+    { id: 'gardening', title: 'Gardening', description: 'vegetables • flowers • herbs' }
   ];
 
-  // Interest options - removed games, technology, language
+  // Interest options with descriptions
   const interestOptions = [
-    { id: 'arts', label: 'Arts & Crafts' },
-    { id: 'music', label: 'Music' },
-    { id: 'theater', label: 'Theater' },
-    { id: 'reading', label: 'Reading' },
-    { id: 'cooking', label: 'Cooking' },
-    { id: 'wine', label: 'Wine' },
-    { id: 'history', label: 'History' },
-    { id: 'photography', label: 'Photography' },
-    { id: 'volunteering', label: 'Volunteering' }
+    { id: 'arts', title: 'Arts & Crafts', description: 'painting • pottery • crafts' },
+    { id: 'music', title: 'Music', description: 'concerts • instruments • choir' },
+    { id: 'theater', title: 'Theater', description: 'plays • musicals • opera' },
+    { id: 'reading', title: 'Reading', description: 'book clubs • libraries' },
+    { id: 'cooking', title: 'Cooking', description: 'classes • cuisines • baking' },
+    { id: 'wine', title: 'Wine', description: 'tasting • tours • collecting' },
+    { id: 'history', title: 'History', description: 'museums • tours • lectures' },
+    { id: 'photography', title: 'Photography', description: 'nature • travel • portraits' },
+    { id: 'volunteering', title: 'Volunteering', description: 'community • charity • causes' }
   ];
 
-
+  // Comprehensive list of hobbies for custom selector (114+ options)
+  const allHobbies = [
+    'Antique collecting', 'Aquarium keeping', 'Archery', 'Astronomy', 'Baking', 'Ballet',
+    'Ballroom dancing', 'Basketball', 'Beekeeping', 'Bird watching', 'Blogging', 'Board games',
+    'Boating', 'Book clubs', 'Bowling', 'Bridge', 'Calligraphy', 'Camping', 'Canoeing',
+    'Card games', 'Chess', 'Choir singing', 'Collecting coins', 'Collecting stamps', 'Community theater',
+    'Cooking classes', 'Creative writing', 'Crochet', 'Cross-country skiing', 'Crossword puzzles',
+    'Dancing', 'Darts', 'Digital photography', 'Dog training', 'Drawing', 'Embroidery',
+    'Fencing', 'Film appreciation', 'Fitness classes', 'Flower arranging', 'Flying', 'Genealogy',
+    'Geocaching', 'Glass blowing', 'Golfing', 'Grandchildren activities', 'Greenhouse gardening',
+    'Hiking', 'Home brewing', 'Horseback riding', 'Hot air ballooning', 'Ice skating', 'Jazz appreciation',
+    'Jewelry making', 'Jigsaw puzzles', 'Jogging', 'Journaling', 'Kayaking', 'Knitting',
+    'Language learning', 'Leather crafting', 'Line dancing', 'Mahjong', 'Martial arts', 'Meditation',
+    'Metal detecting', 'Model building', 'Motorcycling', 'Mountain biking', 'Museums', 'Nature walks',
+    'Needlepoint', 'Opera', 'Orchid growing', 'Orienteering', 'Painting', 'Paragliding',
+    'Petanque', 'Pickleball', 'Pilates', 'Ping pong', 'Poetry', 'Poker', 'Pottery',
+    'Quilting', 'Racing', 'Radio amateur', 'RV traveling', 'Sailing', 'Salsa dancing',
+    'Scrapbooking', 'Scuba diving', 'Sculpting', 'Sewing', 'Shuffleboard', 'Singing',
+    'Sketching', 'Snorkeling', 'Snowshoeing', 'Square dancing', 'Stained glass', 'Stand-up paddleboarding',
+    'Stargazing', 'Sudoku', 'Surfing', 'Swimming laps', 'Tai chi', 'Tango', 'Tennis',
+    'Train spotting', 'Travel planning', 'Trivia nights', 'Ukulele', 'Video gaming', 'Walking clubs',
+    'Water aerobics', 'Watercolor painting', 'Wildlife photography', 'Wine tasting', 'Wood carving',
+    'Woodworking', 'Writing memoirs', 'Yacht racing', 'Yoga', 'Zumba'
+  ].sort();
 
   // Travel frequency options
   const travelOptions = [
-    { id: 'rare', label: 'Rare' },
-    { id: 'occasional', label: 'Occasional' },
-    { id: 'frequent', label: 'Frequent' }
+    { id: 'rare', title: 'Rare', description: '< 2 trips/year' },
+    { id: 'occasional', title: 'Occasional', description: '3-5 trips/year' },
+    { id: 'frequent', title: 'Frequent', description: '6+ trips/year' }
   ];
 
-  // Updated lifestyle categories to match database
-  const lifestyleCategories = [
-    { id: 'outdoor_activities', label: 'Outdoor Activities', icon: Activity },
-    { id: 'cultural_events', label: 'Cultural Events', icon: Heart },
-    { id: 'shopping', label: 'Shopping', icon: ShoppingBag },
-    { id: 'wellness', label: 'Wellness & Spas', icon: Sparkles }
-  ];
 
   // Load existing data if available
   useEffect(() => {
@@ -112,15 +110,10 @@ export default function OnboardingHobbies() {
         if (progressResult.data && progressResult.data.hobbies) {
           setFormData(prev => ({
             ...prev,
-            ...progressResult.data.hobbies,
-            // Ensure all fields have default values if not present
-            lifestyle_importance: {
-              outdoor_activities: 1,
-              cultural_events: 1,
-              shopping: 1,
-              wellness: 1,
-              ...progressResult.data.hobbies.lifestyle_importance
-            }
+            activities: progressResult.data.hobbies.activities || [],
+            interests: progressResult.data.hobbies.interests || [],
+            custom_activities: progressResult.data.hobbies.custom_activities || [],
+            travel_frequency: progressResult.data.hobbies.travel_frequency || ''
           }));
         }
       } catch (err) {
@@ -151,14 +144,12 @@ export default function OnboardingHobbies() {
     }));
   };
 
-
-    const handleImportanceChange = (category, value) => {
+  const handleCustomActivityToggle = (activity) => {
     setFormData(prev => ({
       ...prev,
-      lifestyle_importance: {
-        ...prev.lifestyle_importance,
-        [category]: value
-      }
+      custom_activities: prev.custom_activities.includes(activity)
+        ? prev.custom_activities.filter(item => item !== activity)
+        : [...prev.custom_activities, activity]
     }));
   };
 
@@ -184,8 +175,8 @@ export default function OnboardingHobbies() {
       const dataToSave = {
         activities: formData.activities,
         interests: formData.interests,
-        travel_frequency: formData.travel_frequency,
-        lifestyle_importance: formData.lifestyle_importance
+        custom_activities: formData.custom_activities,
+        travel_frequency: formData.travel_frequency
       };
       
       const { success, error } = await saveOnboardingStep(
@@ -238,40 +229,85 @@ export default function OnboardingHobbies() {
     );
   }
 
-  // Simple slider component - matching culture page exactly
-  const ImportanceSlider = ({ category, icon }) => {
-    const value = formData.lifestyle_importance[category.id];
-    
+  // Custom Activities Modal Component
+  const CustomActivityModal = () => {
+    const filteredHobbies = allHobbies.filter(hobby =>
+      hobby.toLowerCase().includes(customSearch.toLowerCase())
+    );
+
     return (
-      <div className="mb-2">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center">
-            {React.createElement(icon, { size: 16, className: `mr-1.5 lg:mr-2 ${uiConfig.colors.body}` })}
-            <span className={`${uiConfig.font.size.xs} lg:text-sm ${uiConfig.colors.body}`}>
-              {category.label}
-            </span>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.xl} max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col`}>
+          {/* Modal Header */}
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
+                Select Custom Activities
+              </h3>
+              <button
+                onClick={() => setShowCustomModal(false)}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <X size={20} className={uiConfig.colors.body} />
+              </button>
+            </div>
+            
+            {/* Search Input */}
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={customSearch}
+                onChange={(e) => setCustomSearch(e.target.value)}
+                placeholder="Search activities..."
+                className={`${uiConfig.components.input} pl-10`}
+                autoFocus
+              />
+            </div>
           </div>
-          <span className={`${uiConfig.font.size.xs} lg:text-sm ${uiConfig.font.weight.medium} text-scout-accent-300 dark:text-scout-accent-300`}>
-            {((value - 1) * 25)}%
-          </span>
+          
+          {/* Scrollable Activity List */}
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {filteredHobbies.map((hobby) => (
+                <button
+                  key={hobby}
+                  type="button"
+                  onClick={() => handleCustomActivityToggle(hobby)}
+                  className={`p-2 ${uiConfig.layout.radius.md} border ${uiConfig.animation.transition} text-left ${
+                    formData.custom_activities.includes(hobby)
+                      ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-600 dark:text-scout-accent-400'
+                      : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-300'
+                  } ${uiConfig.font.size.sm}`}
+                >
+                  {hobby}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Modal Footer */}
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center">
+              <span className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint}`}>
+                {formData.custom_activities.length} selected
+              </span>
+              <button
+                onClick={() => setShowCustomModal(false)}
+                className={uiConfig.components.buttonPrimary}
+              >
+                Done
+              </button>
+            </div>
+          </div>
         </div>
-        <input
-          type="range"
-          min="1"
-          max="5"
-          step="1"
-          value={value}
-          onChange={(e) => handleImportanceChange(category.id, parseInt(e.target.value))}
-          className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
-          style={{
-            background: `linear-gradient(to right, rgb(var(--scout-accent-300)) 0%, rgb(var(--scout-accent-300)) ${(value - 1) * 25}%, rgb(var(--gray-200)) ${(value - 1) * 25}%, rgb(var(--gray-200)) 100%)`
-          }}
-        />
       </div>
     );
   };
 
   return (
+    <>
+      {showCustomModal && <CustomActivityModal />}
       <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         
         <form onSubmit={handleSubmit} className="py-6">
@@ -284,80 +320,69 @@ export default function OnboardingHobbies() {
           </div>
           
           {/* Physical Activities */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
-              <Activity size={16} className="mr-1.5" />
-              Physical Activities
-            </label>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
+          <SelectionSection icon={Activity} title="Physical Activities">
+            <SelectionGrid>
               {activityOptions.map((activity) => (
-                <OptionButton
+                <SelectionCard
                   key={activity.id}
-                  label={activity.label}
+                  title={activity.title}
+                  description={activity.description}
+                  icon={activity.icon}
                   isSelected={formData.activities.includes(activity.id)}
                   onClick={() => handleActivityToggle(activity.id)}
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Hobbies & Interests */}
-          <div className="mb-3">
-            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
-              <Heart size={16} className="mr-1.5" />
-              Hobbies & Interests
-            </label>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
+          <SelectionSection icon={Heart} title="Hobbies & Interests">
+            <SelectionGrid>
               {interestOptions.map((interest) => (
-                <OptionButton
+                <SelectionCard
                   key={interest.id}
-                  label={interest.label}
+                  title={interest.title}
+                  description={interest.description}
                   isSelected={formData.interests.includes(interest.id)}
                   onClick={() => handleInterestToggle(interest.id)}
                 />
               ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
+          {/* Custom Activities */}
+          <SelectionSection icon={Sparkles} title="Custom Activities">
+            <SelectionCard
+              title="Add Custom Activities"
+              description={formData.custom_activities.length > 0 
+                ? `${formData.custom_activities.length} selected: ${formData.custom_activities.slice(0, 3).join(', ')}${formData.custom_activities.length > 3 ? '...' : ''}`
+                : 'Choose from 100+ activities'
+              }
+              isSelected={formData.custom_activities.length > 0}
+              onClick={() => setShowCustomModal(true)}
+              icon={Search}
+            />
+          </SelectionSection>
 
           {/* Travel Frequency */}
-          <div className="mb-3">
-            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
-              <Plane size={16} className="mr-1.5" />
-              Travel Frequency
-            </label>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
+          <SelectionSection icon={Plane} title="Travel Frequency">
+            <SelectionGrid>
               {travelOptions.map((option) => (
-                <OptionButton
+                <SelectionCard
                   key={option.id}
-                  label={option.label}
+                  title={option.title}
+                  description={option.description}
                   isSelected={formData.travel_frequency === option.id}
                   onClick={() => setFormData(prev => ({ ...prev, travel_frequency: option.id }))}
                 />
               ))}
-            </div>
-          </div>
-
-
-          {/* Lifestyle Importance */}
-          <div className="mb-3">
-            <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 block`}>
-              Lifestyle Importance
-            </label>
-            <div className="space-y-1.5">
-              {lifestyleCategories.map((category) => (
-                <ImportanceSlider 
-                  key={category.id} 
-                  category={category} 
-                  icon={category.icon}
-                />
-              ))}
-            </div>
-          </div>
+            </SelectionGrid>
+          </SelectionSection>
 
           {/* Summary Section */}
           {(formData.activities.length > 0 || 
-            formData.interests.length > 0) && (
+            formData.interests.length > 0 ||
+            formData.custom_activities.length > 0) && (
             <div className={`mb-3 p-2.5 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg}`}>
               <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} mb-1.5 ${uiConfig.font.size.sm}`}>
                 Your Activities & Preferences:
@@ -365,15 +390,20 @@ export default function OnboardingHobbies() {
               <div className={`space-y-0.5 ${uiConfig.font.size.xs} ${uiConfig.colors.body}`}>
                 {formData.activities.length > 0 && (
                   <div><span className={`${uiConfig.font.weight.medium}`}>Activities:</span> {formData.activities.map(id => 
-                    activityOptions.find(a => a.id === id)?.label
+                    activityOptions.find(a => a.id === id)?.title
                   ).filter(Boolean).join(', ')}</div>
                 )}
                 {formData.interests.length > 0 && (
                   <div><span className={`${uiConfig.font.weight.medium}`}>Interests:</span> {formData.interests.map(id => 
-                    interestOptions.find(i => i.id === id)?.label
+                    interestOptions.find(i => i.id === id)?.title
                   ).filter(Boolean).join(', ')}</div>
                 )}
-                <div><span className={`${uiConfig.font.weight.medium}`}>Travel:</span> {formData.travel_frequency}</div>
+                {formData.custom_activities.length > 0 && (
+                  <div><span className={`${uiConfig.font.weight.medium}`}>Custom:</span> {formData.custom_activities.join(', ')}</div>
+                )}
+                {formData.travel_frequency && (
+                  <div><span className={`${uiConfig.font.weight.medium}`}>Travel:</span> {travelOptions.find(t => t.id === formData.travel_frequency)?.title || formData.travel_frequency}</div>
+                )}
               </div>
             </div>
           )}
@@ -418,5 +448,6 @@ export default function OnboardingHobbies() {
           </div>
         </div>
       </main>
+    </>
   );
 }
