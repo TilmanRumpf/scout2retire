@@ -538,12 +538,6 @@ const OnboardingRegion = () => {
                           </option>
                         ))}
                       </select>
-                      {/* Show hierarchical selection as overlay text when selections are made */}
-                      {(selectedCountries[index] !== '' || selectedProvinces[index] !== '') && (
-                        <div className={`absolute inset-0 px-3 py-2 sm:py-2.5 ${uiConfig.font.size.sm} ${uiConfig.colors.heading} ${uiConfig.colors.badge} border ${uiConfig.colors.borderActive} ${uiConfig.layout.radius.lg} pointer-events-none flex items-center`}>
-                          {getDisplayValue(index)}
-                        </div>
-                      )}
                       <ChevronDown 
                         size={20} 
                         className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.muted} pointer-events-none z-10`}
