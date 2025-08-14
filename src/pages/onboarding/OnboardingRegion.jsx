@@ -280,7 +280,7 @@ const OnboardingRegion = () => {
       return [];
     }
 
-    return ['', ...countryProvinces[selectedCountry]];
+    return ['', 'Any Province', ...countryProvinces[selectedCountry]];
   };
 
   // Updated event handlers to always reset dependent selections
@@ -350,8 +350,13 @@ const OnboardingRegion = () => {
     newProvinces[index] = value;
     setSelectedProvinces(newProvinces);
     
-    // If a province is selected, close the entire expanded panel
+    // If a province is selected (including "Any Province"), close the entire expanded panel
     if (value !== '') {
+      // If "Any Province" is selected, treat it as no specific province
+      if (value === 'Any Province') {
+        newProvinces[index] = '';
+        setSelectedProvinces(newProvinces);
+      }
       setTimeout(() => {
         setExpandedPreference(-1);
       }, 300); // Small delay so user sees their selection
@@ -605,8 +610,18 @@ const OnboardingRegion = () => {
                     }`}
                   >
                     <div>
-                      <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 sm:mb-1.5 block`}>
-                        Province
+                      <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 sm:mb-1.5 block flex items-center justify-between`}>
+                        <span>Province (Optional)</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Close the panel without selecting a province
+                            setExpandedPreference(-1);
+                          }}
+                          className="text-xs text-scout-accent-600 hover:text-scout-accent-700 dark:text-scout-accent-400 dark:hover:text-scout-accent-300 underline"
+                        >
+                          Skip Province
+                        </button>
                       </label>
                       <div className="relative">
                         <select
