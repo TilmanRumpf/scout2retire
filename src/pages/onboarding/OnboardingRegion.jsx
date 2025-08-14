@@ -577,7 +577,7 @@ const OnboardingRegion = () => {
               {/* Expandable dropdown section below the cards */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
                 {[0, 1].map(index => (
-                  <div key={`dropdown-${index}`}>
+                  <div key={`dropdown-${index}`} className={`relative ${index === 0 ? 'z-20' : 'z-10'}`}>
                     {expandedPreference === index && (
                       <div className={`mt-3 p-4 sm:p-5 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition}`}>
                       {/* Region dropdown */}
