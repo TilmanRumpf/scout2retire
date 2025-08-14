@@ -485,10 +485,11 @@ const OnboardingRegion = () => {
             </label>
             
             <div className="space-y-3 sm:space-y-4">
-              {[0, 1].map(index => (
-                <div key={index} className="space-y-2">
-                  {/* SelectionCard wrapper for each preference */}
+              {/* SelectionCard buttons - side by side on large screens */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                {[0, 1].map(index => (
                   <SelectionCard
+                    key={`card-${index}`}
                     title={getPreferenceLabel(index)}
                     description={getDisplayValue(index) || "Select region"}
                     icon={Globe}
@@ -496,8 +497,12 @@ const OnboardingRegion = () => {
                     onClick={() => setExpandedPreference(expandedPreference === index ? -1 : index)}
                     showCheckmark={selectedRegions[index] !== ''}
                   />
-                  
-                  {/* Expandable dropdown section */}
+                ))}
+              </div>
+              
+              {/* Expandable dropdown section below the cards */}
+              {[0, 1].map(index => (
+                <div key={`dropdown-${index}`}>
                   {expandedPreference === index && (
                     <div className={`mt-2 p-4 border-2 ${uiConfig.layout.radius.lg} ${uiConfig.colors.borderLight} ${uiConfig.colors.input} space-y-2 ${uiConfig.animation.transition}`}>
                       {/* Region dropdown */}
