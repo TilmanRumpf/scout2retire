@@ -32,7 +32,7 @@ export const SelectionCard = ({
         text-left relative overflow-hidden cursor-pointer w-full
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         ${isSelected 
-          ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 shadow-md transform scale-[1.02]' 
+          ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 shadow-md' 
           : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/30 hover:border-scout-accent-300 hover:shadow-md'
         }
         ${!disabled && !isSelected && 'hover:-translate-y-0.5 active:scale-[0.98]'}
