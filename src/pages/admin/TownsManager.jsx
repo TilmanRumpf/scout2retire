@@ -6,6 +6,7 @@ import SmartFieldEditor from '../../components/SmartFieldEditor';
 import QuickNav from '../../components/QuickNav';
 import FieldDefinitionEditor from '../../components/FieldDefinitionEditor';
 import GoogleSearchPanel from '../../components/GoogleSearchPanel';
+import HobbiesDisplay from '../../components/admin/HobbiesDisplay';
 import { getFieldOptions, isMultiSelectField } from '../../utils/townDataOptions';
 import { useFieldDefinitions } from '../../hooks/useFieldDefinitions';
 
@@ -76,17 +77,14 @@ const COLUMN_CATEGORIES = {
   },
   Hobbies: {
     subcategories: {
-      'Outdoor Activities': {
-        used: ['outdoor_activities', 'hiking_trails', 'beaches_nearby'],
-        unused: []
+      'Enhanced Hobbies Data': {
+        used: [],  // We'll render a custom component instead
+        unused: [],
+        customComponent: true  // Flag to use custom component
       },
-      'Sports & Recreation': {
-        used: ['golf_courses'],
-        unused: ['ski_resorts_nearby']
-      },
-      'Cultural Attractions': {
-        used: ['cultural_attractions'],
-        unused: []
+      'Legacy Data (for reference)': {
+        used: [],
+        unused: ['outdoor_activities', 'hiking_trails', 'beaches_nearby', 'golf_courses', 'ski_resorts_nearby', 'cultural_attractions']
       }
     }
   },
@@ -1358,41 +1356,67 @@ const TownsManager = () => {
 
                 {/* Category Content with Subcategories */}
                 <div className="p-6">
-                  {Object.entries(COLUMN_CATEGORIES[activeCategory].subcategories).map(([subcategoryName, subcategory]) => {
-                    const hasUsedFields = subcategory.used.length > 0;
-                    const hasUnusedFields = subcategory.unused.length > 0;
-                    
-                    if (!hasUsedFields && !hasUnusedFields) return null;
-                    
-                    return (
-                      <div key={subcategoryName} className="mb-8">
-                        {/* Subcategory Title */}
+                  {activeCategory === 'Hobbies' ? (
+                    // Special handling for Hobbies tab with enhanced display
+                    <div>
+                      <HobbiesDisplay 
+                        townId={selectedTown.id} 
+                        townName={selectedTown.name}
+                      />
+                      
+                      {/* Show legacy fields for reference */}
+                      <div className="mt-8 pt-6 border-t">
                         <h3 className="text-lg font-semibold text-gray-700 mb-3 border-b pb-1">
-                          {subcategoryName}
+                          Legacy Data (for reference)
                         </h3>
-                        
-                        {/* Used Fields (Towns Data for Matching) */}
-                        {hasUsedFields && (
-                          <div className="mb-4">
-                            <h4 className="text-sm font-medium text-gray-600 mb-2">Towns Data for Matching</h4>
-                            <div className="space-y-1 pl-4">
-                              {subcategory.used.map(column => renderFieldRow(column, selectedTown))}
-                            </div>
+                        <div className="opacity-60">
+                          <h4 className="text-sm font-medium text-gray-600 mb-2">Old JSON format (being phased out)</h4>
+                          <div className="space-y-1 pl-4">
+                            {['outdoor_activities', 'hiking_trails', 'beaches_nearby', 'golf_courses', 'ski_resorts_nearby', 'cultural_attractions'].map(column => 
+                              renderFieldRow(column, selectedTown)
+                            )}
                           </div>
-                        )}
-                        
-                        {/* Unused Fields (Towns Data for Context) */}
-                        {hasUnusedFields && (
-                          <div className="opacity-60">
-                            <h4 className="text-sm font-medium text-gray-600 mb-2">Towns Data for Context</h4>
-                            <div className="space-y-1 pl-4">
-                              {subcategory.unused.map(column => renderFieldRow(column, selectedTown))}
-                            </div>
-                          </div>
-                        )}
+                        </div>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ) : (
+                    // Default rendering for other categories
+                    Object.entries(COLUMN_CATEGORIES[activeCategory].subcategories).map(([subcategoryName, subcategory]) => {
+                      const hasUsedFields = subcategory.used.length > 0;
+                      const hasUnusedFields = subcategory.unused.length > 0;
+                      
+                      if (!hasUsedFields && !hasUnusedFields) return null;
+                      
+                      return (
+                        <div key={subcategoryName} className="mb-8">
+                          {/* Subcategory Title */}
+                          <h3 className="text-lg font-semibold text-gray-700 mb-3 border-b pb-1">
+                            {subcategoryName}
+                          </h3>
+                          
+                          {/* Used Fields (Towns Data for Matching) */}
+                          {hasUsedFields && (
+                            <div className="mb-4">
+                              <h4 className="text-sm font-medium text-gray-600 mb-2">Towns Data for Matching</h4>
+                              <div className="space-y-1 pl-4">
+                                {subcategory.used.map(column => renderFieldRow(column, selectedTown))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Unused Fields (Towns Data for Context) */}
+                          {hasUnusedFields && (
+                            <div className="opacity-60">
+                              <h4 className="text-sm font-medium text-gray-600 mb-2">Towns Data for Context</h4>
+                              <div className="space-y-1 pl-4">
+                                {subcategory.unused.map(column => renderFieldRow(column, selectedTown))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             ) : (
