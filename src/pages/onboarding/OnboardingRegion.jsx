@@ -129,7 +129,7 @@ const OnboardingRegion = () => {
     'Northern Europe': ['Russia', 'Greenland'],
     'Western Europe': ['Morocco', 'Algeria', 'Tunisia'],
     'Southern Europe': ['Turkey', 'Morocco', 'Algeria', 'Tunisia'],
-    'Mediterranean': ['Portugal', 'Switzerland', 'Austria', 'Bulgaria', 'Romania'],
+    'Mediterranean': [],
     'Asia': ['Australia', 'New Zealand', 'Papua New Guinea', 'Russia', 'Egypt'],
     'Africa': ['Spain', 'Italy', 'Greece', 'Cyprus', 'Yemen', 'Madagascar'],
     'Australia & New Zealand': ['Indonesia', 'Papua New Guinea', 'Fiji', 'New Caledonia', 'Vanuatu'],
@@ -619,7 +619,7 @@ const OnboardingRegion = () => {
                             value={selectedCountries[0]}
                             onChange={(e) => handleCountryChange(0, e.target.value)}
                             onBlur={() => handleCountryBlur(0)}
-                            className={`w-full px-3 sm:px-4 ${uiConfig.layout.radius.md} appearance-none cursor-pointer focus:ring-2 focus:ring-scout-accent-300 ${uiConfig.animation.transition} h-[44px] sm:h-[48px] border-2 ${
+                            className={`w-full px-3 sm:px-4 text-left ${uiConfig.layout.radius.md} appearance-none cursor-pointer focus:ring-2 focus:ring-scout-accent-300 ${uiConfig.animation.transition} h-[44px] sm:h-[48px] border-2 ${
                             selectedCountries[0] 
                               ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 font-medium'
                               : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
