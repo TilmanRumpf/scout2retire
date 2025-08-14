@@ -33,9 +33,6 @@ const OnboardingRegion = () => {
   const [regions, setRegions] = useState(['Recommended']); // Start with just Recommended
   const [regionsLoading, setRegionsLoading] = useState(true);
   
-  // State to track which preference card is expanded
-  const [expandedPreference, setExpandedPreference] = useState(-1); // -1 means none expanded
-  
   // Create formData object for auto-save
   const formData = {
     regions: selectedRegions.filter(region => region && region !== ''),
@@ -487,26 +484,13 @@ const OnboardingRegion = () => {
             <div className="space-y-3 sm:space-y-4">
               {[0, 1].map(index => (
                 <div key={index} className="space-y-2">
-                  {/* SelectionCard wrapper for each preference */}
-                  <SelectionCard
-                    title={getPreferenceLabel(index)}
-                    description={getDisplayValue(index) || "Select region"}
-                    icon={Globe}
-                    isSelected={selectedRegions[index] !== ''}
-                    onClick={() => setExpandedPreference(expandedPreference === index ? -1 : index)}
-                    showCheckmark={selectedRegions[index] !== ''}
-                  />
-                  
-                  {/* Expandable dropdown section */}
-                  {expandedPreference === index && (
-                    <div className={`mt-2 p-4 border-2 ${uiConfig.layout.radius.lg} ${uiConfig.colors.borderLight} ${uiConfig.colors.input} space-y-2 ${uiConfig.animation.transition}`}>
-                      {/* Region dropdown */}
-                      <div>
-                        <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 sm:mb-1.5 block`}>
-                          Select Region
-                        </label>
-                        <div className="relative">
-                          <select
+                  {/* Region dropdown */}
+                  <div>
+                    <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 sm:mb-1.5 block`}>
+                      {getPreferenceLabel(index)}
+                    </label>
+                    <div className="relative">
+                      <select
                         value={selectedRegions[index]}
                         onChange={(e) => handleRegionChange(index, e.target.value)}
                         onFocus={() => {
@@ -605,8 +589,8 @@ const OnboardingRegion = () => {
                       </div>
                     </div>
                   </div>
-                    </div>
-                  )}
+
+                  {index === 0 && <div className={`border-t ${uiConfig.colors.borderLight} my-2 sm:my-3`}></div>}
                 </div>
               ))}
             </div>
