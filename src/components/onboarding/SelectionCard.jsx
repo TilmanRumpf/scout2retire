@@ -58,7 +58,7 @@ export const SelectionCard = ({
           <div className="flex-1">
             <h3 className={`${uiConfig.font.weight.semibold} ${
               isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : uiConfig.colors.heading
-            } text-sm sm:text-base mb-1`}>
+            } text-sm sm:text-base mb-1 whitespace-nowrap`}>
               {title}
             </h3>
             {description && (

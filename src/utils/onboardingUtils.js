@@ -306,10 +306,14 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
       },
       costs: {
         total_monthly_budget: data.total_monthly_budget,
+        housing_preference: data.housing_preference || 'both',
         max_monthly_rent: data.max_monthly_rent,
         max_home_price: data.max_home_price,
         monthly_healthcare_budget: data.monthly_healthcare_budget,
-        mobility: data.mobility || {}
+        mobility: data.mobility || {},
+        property_tax_sensitive: data.property_tax_sensitive,
+        sales_tax_sensitive: data.sales_tax_sensitive,
+        income_tax_sensitive: data.income_tax_sensitive
       }
     };
     

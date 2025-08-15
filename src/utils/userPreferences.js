@@ -15,6 +15,18 @@ export const saveUserPreferences = async (userId, stepName, stepData) => {
       .eq('user_id', userId)
       .single();
     
+    // For costs step, ensure mobility is properly formatted as JSON
+    let dataToSave = { ...stepData };
+    if (stepName === 'costs' && stepData.mobility) {
+      // Ensure mobility is saved with proper array structure
+      dataToSave.mobility = {
+        local: Array.isArray(stepData.mobility.local) ? stepData.mobility.local : [],
+        regional: Array.isArray(stepData.mobility.regional) ? stepData.mobility.regional : [],
+        international: Array.isArray(stepData.mobility.international) ? stepData.mobility.international : []
+      };
+      console.log('Mobility data being saved to user_preferences:', dataToSave.mobility);
+    }
+    
     let result;
     
     if (existing) {
@@ -22,7 +34,7 @@ export const saveUserPreferences = async (userId, stepName, stepData) => {
       result = await supabase
         .from('user_preferences')
         .update({
-          ...stepData,
+          ...dataToSave,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', userId)
@@ -33,7 +45,7 @@ export const saveUserPreferences = async (userId, stepName, stepData) => {
         .from('user_preferences')
         .insert({
           user_id: userId,
-          ...stepData
+          ...dataToSave
         })
         .select();
     }
