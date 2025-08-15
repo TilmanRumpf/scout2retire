@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Users, Globe, PawPrint, Lightbulb } from 'lucide-react';
+import { Calendar, Users, Globe, PawPrint, Lightbulb, Check } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import { saveUserPreferences } from '../../utils/userPreferences';
@@ -9,9 +9,95 @@ import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
+import { CustomDropdown } from '../../components/CustomDropdown';
+
+// Date Select Component - styled to match SelectionCard
+const DateSelect = ({ value, onChange, name, label, options, getOptionLabel }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectedOption = options.find(opt => 
+    typeof opt === 'object' ? opt.value === value : opt === value
+  );
+  
+  const displayLabel = selectedOption ? 
+    (getOptionLabel ? getOptionLabel(selectedOption) : 
+     (typeof selectedOption === 'object' ? selectedOption.label : selectedOption)) : 
+    'Select...';
+  
+  return (
+    <div className="relative">
+      <label className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} block mb-1`}>
+        {label}
+      </label>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`
+          w-full p-4 sm:p-5 min-h-[80px] sm:min-h-[90px] ${uiConfig.layout.radius.lg} 
+          border-2 ${uiConfig.animation.transition} text-left relative overflow-hidden cursor-pointer
+          ${value 
+            ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 shadow-md' 
+            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/30 hover:border-scout-accent-300 hover:shadow-md'
+          }
+          hover:-translate-y-0.5 active:scale-[0.98]
+        `}
+      >
+        {/* Checkmark indicator */}
+        {value && (
+          <div className="absolute top-2 right-2">
+            <div className="w-6 h-6 bg-scout-accent-500 rounded-full flex items-center justify-center">
+              <Check className="w-4 h-4 text-white" />
+            </div>
+          </div>
+        )}
+        
+        <div className={value ? 'pr-10' : 'pr-2'}>
+          <div className={`${uiConfig.font.weight.medium} ${
+            value ? 'text-scout-accent-700 dark:text-scout-accent-300' : 'text-gray-500 dark:text-gray-400'
+          } text-sm sm:text-base`}>
+            {displayLabel}
+          </div>
+        </div>
+      </button>
+      
+      {/* Dropdown menu */}
+      {isOpen && (
+        <>
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => setIsOpen(false)}
+          />
+          <div className={`absolute top-full left-0 right-0 mt-1 z-50 bg-white dark:bg-gray-800 
+            ${uiConfig.layout.radius.lg} border-2 border-gray-300 dark:border-gray-600 shadow-lg 
+            max-h-60 overflow-y-auto`}>
+            {options.map((option, index) => {
+              const optValue = typeof option === 'object' ? option.value : option;
+              const optLabel = getOptionLabel ? getOptionLabel(option) : 
+                             (typeof option === 'object' ? option.label : option);
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => {
+                    onChange({ target: { name, value: optValue } });
+                    setIsOpen(false);
+                  }}
+                  className={`w-full p-3 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700/30 
+                    ${uiConfig.animation.transition} ${value === optValue ? 'bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300' : ''}`}
+                >
+                  {optLabel}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
 
 export default function OnboardingCurrentStatus() {
   const [touchedFields, setTouchedFields] = useState({});
+  const [expandedCitizenship, setExpandedCitizenship] = useState(-1); // -1 none, 0 yours, 1 partner's, 2 children's
   const [hasLoadedData, setHasLoadedData] = useState(false);
   const defaultYear = new Date().getFullYear() + 5;
   const [formData, setFormData] = useState({
@@ -30,6 +116,11 @@ export default function OnboardingCurrentStatus() {
       secondary_citizenship: ''
     },
     partner_citizenship: {
+      primary_citizenship: '',
+      dual_citizenship: false,
+      secondary_citizenship: ''
+    },
+    children_citizenship: {
       primary_citizenship: '',
       dual_citizenship: false,
       secondary_citizenship: ''
@@ -89,6 +180,7 @@ export default function OnboardingCurrentStatus() {
         // Progress is now managed by OnboardingLayout
         
         if (data && data.current_status) {
+          console.log('Loading current_status data:', data.current_status); // DEBUG
           setHasLoadedData(true);
           setFormData(prev => ({
             ...prev,
@@ -97,6 +189,11 @@ export default function OnboardingCurrentStatus() {
             pet_owner: data.current_status.pet_owner || [],
             citizenship: data.current_status.citizenship || prev.citizenship,
             partner_citizenship: data.current_status.partner_citizenship || prev.partner_citizenship,
+            children_citizenship: data.current_status.children_citizenship || {
+              primary_citizenship: '',
+              dual_citizenship: false,
+              secondary_citizenship: ''
+            },
             partner_agreement: data.current_status.partner_agreement,
             bringing_children: data.current_status.bringing_children || false,
             current_location: data.current_status.current_location || '',
@@ -134,7 +231,7 @@ export default function OnboardingCurrentStatus() {
             secondary_citizenship: checked ? prev[parent].secondary_citizenship : ''
           }
         }));
-      } else if ((parent === 'citizenship' || parent === 'partner_citizenship') && child === 'primary_citizenship') {
+      } else if ((parent === 'citizenship' || parent === 'partner_citizenship' || parent === 'children_citizenship') && child === 'primary_citizenship') {
         setFormData(prev => ({
           ...prev,
           [parent]: {
@@ -175,7 +272,12 @@ export default function OnboardingCurrentStatus() {
     setFormData(prev => ({
       ...prev,
       family_situation: status,
-      partner_citizenship: status === 'couple' ? prev.partner_citizenship : {
+      partner_citizenship: (status === 'couple' || status === 'family') ? prev.partner_citizenship : {
+        primary_citizenship: '',
+        dual_citizenship: false,
+        secondary_citizenship: ''
+      },
+      children_citizenship: status === 'family' ? prev.children_citizenship : {
         primary_citizenship: '',
         dual_citizenship: false,
         secondary_citizenship: ''
@@ -218,10 +320,17 @@ export default function OnboardingCurrentStatus() {
       return;
     }
     
-    if (formData.family_situation === 'couple' &&
+    if ((formData.family_situation === 'couple' || formData.family_situation === 'family') &&
         formData.partner_citizenship.dual_citizenship && 
         formData.partner_citizenship.secondary_citizenship === formData.partner_citizenship.primary_citizenship) {
       toast.error("Partner's secondary citizenship must be different from their primary citizenship");
+      return;
+    }
+    
+    if (formData.family_situation === 'family' &&
+        formData.children_citizenship.dual_citizenship && 
+        formData.children_citizenship.secondary_citizenship === formData.children_citizenship.primary_citizenship) {
+      toast.error("Children's secondary citizenship must be different from their primary citizenship");
       return;
     }
     
@@ -233,6 +342,8 @@ export default function OnboardingCurrentStatus() {
         navigate('/welcome');
         return;
       }
+      
+      console.log('Saving formData with children_citizenship:', formData.children_citizenship); // DEBUG
       
       const cleanedFormData = {
         ...formData,
@@ -248,6 +359,12 @@ export default function OnboardingCurrentStatus() {
           secondary_citizenship: formData.partner_citizenship.secondary_citizenship === formData.partner_citizenship.primary_citizenship 
             ? '' 
             : formData.partner_citizenship.secondary_citizenship
+        } : undefined,
+        children_citizenship: formData.family_situation === 'family' ? {
+          ...formData.children_citizenship,
+          secondary_citizenship: formData.children_citizenship.secondary_citizenship === formData.children_citizenship.primary_citizenship 
+            ? '' 
+            : formData.children_citizenship.secondary_citizenship
         } : undefined
       };
       
@@ -273,6 +390,8 @@ export default function OnboardingCurrentStatus() {
           {
             retirement_status: formData.retirement_timeline.status,
             target_retirement_year: formData.retirement_timeline.target_year,
+            target_retirement_month: formData.retirement_timeline.target_month,
+            target_retirement_day: formData.retirement_timeline.target_day,
             timeline_flexibility: formData.retirement_timeline.flexibility,
             primary_citizenship: formData.citizenship.primary_citizenship,
             secondary_citizenship: formData.citizenship.secondary_citizenship || null,
@@ -290,6 +409,13 @@ export default function OnboardingCurrentStatus() {
               : null,
             partner_secondary_citizenship: (formData.family_situation === 'couple' || formData.family_situation === 'family') && formData.partner_citizenship
               ? formData.partner_citizenship.secondary_citizenship || null
+              : null,
+            // Add children citizenship fields when applicable
+            children_primary_citizenship: formData.family_situation === 'family' && formData.children_citizenship
+              ? formData.children_citizenship.primary_citizenship 
+              : null,
+            children_secondary_citizenship: formData.family_situation === 'family' && formData.children_citizenship
+              ? formData.children_citizenship.secondary_citizenship || null
               : null
           }
         );
@@ -376,46 +502,46 @@ export default function OnboardingCurrentStatus() {
               <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 block`}>
                 Target Retirement Date
               </label>
+              {formData.retirement_timeline.status === 'retiring_soon' && (
+                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-2`}>
+                  Enter any date that works for you - even if it's coming up soon!
+                </p>
+              )}
               <div className="grid grid-cols-3 gap-2 lg:gap-3 xl:gap-4">
-                <select
+                <DateSelect
                   name="retirement_timeline.target_month"
                   value={formData.retirement_timeline.target_month}
                   onChange={handleInputChange}
-                  className={isRetirementDateActive('retirement_timeline.target_month', formData.retirement_timeline.target_month, 1) ? uiConfig.components.selectActive : uiConfig.components.select}
-                >
-                  <option value={1}>January</option>
-                  <option value={2}>February</option>
-                  <option value={3}>March</option>
-                  <option value={4}>April</option>
-                  <option value={5}>May</option>
-                  <option value={6}>June</option>
-                  <option value={7}>July</option>
-                  <option value={8}>August</option>
-                  <option value={9}>September</option>
-                  <option value={10}>October</option>
-                  <option value={11}>November</option>
-                  <option value={12}>December</option>
-                </select>
-                <select
+                  label="Month"
+                  options={[
+                    { value: 1, label: 'January' },
+                    { value: 2, label: 'February' },
+                    { value: 3, label: 'March' },
+                    { value: 4, label: 'April' },
+                    { value: 5, label: 'May' },
+                    { value: 6, label: 'June' },
+                    { value: 7, label: 'July' },
+                    { value: 8, label: 'August' },
+                    { value: 9, label: 'September' },
+                    { value: 10, label: 'October' },
+                    { value: 11, label: 'November' },
+                    { value: 12, label: 'December' }
+                  ]}
+                />
+                <DateSelect
                   name="retirement_timeline.target_day"
                   value={formData.retirement_timeline.target_day}
                   onChange={handleInputChange}
-                  className={isRetirementDateActive('retirement_timeline.target_day', formData.retirement_timeline.target_day, 1) ? uiConfig.components.selectActive : uiConfig.components.select}
-                >
-                  {Array.from({length: 31}, (_, i) => i + 1).map(day => (
-                    <option key={day} value={day}>{day}</option>
-                  ))}
-                </select>
-                <select
+                  label="Day"
+                  options={Array.from({length: 31}, (_, i) => i + 1)}
+                />
+                <DateSelect
                   name="retirement_timeline.target_year"
                   value={formData.retirement_timeline.target_year}
                   onChange={handleInputChange}
-                  className={isRetirementDateActive('retirement_timeline.target_year', formData.retirement_timeline.target_year, defaultYear) ? uiConfig.components.selectActive : uiConfig.components.select}
-                >
-                  {retirementYearOptions.map(year => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </select>
+                  label="Year"
+                  options={retirementYearOptions}
+                />
               </div>
             </div>
           )}
@@ -448,42 +574,66 @@ export default function OnboardingCurrentStatus() {
           </SelectionSection>
 
           {/* Citizenship */}
-          <div className="mb-4 lg:mb-6" key={`citizenship-section-${formData.family_situation}`}>
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Globe size={16} className="mr-1.5 lg:mr-2" />
-              Citizenship
-            </label>
-            
-            {isCouple ? (
-              <>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4 xl:gap-6">
-                  <div>
-                    <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>
-                      Your Citizenship *
-                    </p>
-                    <select
-                      name="citizenship.primary_citizenship"
-                      value={formData.citizenship.primary_citizenship}
-                      onChange={handleInputChange}
-                      className={isCitizenshipActive(formData.citizenship.primary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
-                    >
-                      <option value="">Select citizenship</option>
-                      {countries.map(country => (
-                        <option key={country.id} value={country.id}>
-                          {country.label}
-                        </option>
-                      ))}
-                    </select>
+          <SelectionSection icon={Globe} title="Citizenship">
+            <div className={`${
+              formData.family_situation === 'family' 
+                ? 'grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4' 
+                : formData.family_situation === 'couple' 
+                  ? 'grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4' 
+                  : 'space-y-3 sm:space-y-4'
+            }`}>
+              {/* Your Citizenship Card */}
+              <div>
+                <SelectionCard
+                  title="Your Citizenship"
+                  description={
+                    formData.citizenship.primary_citizenship 
+                      ? `${countries.find(c => c.id === formData.citizenship.primary_citizenship)?.label || formData.citizenship.primary_citizenship}${
+                          formData.citizenship.dual_citizenship && formData.citizenship.secondary_citizenship 
+                            ? ` + ${countries.find(c => c.id === formData.citizenship.secondary_citizenship)?.label || formData.citizenship.secondary_citizenship}`
+                            : ''
+                        }`
+                      : "Select your citizenship"
+                  }
+                  icon={Globe}
+                  isSelected={formData.citizenship.primary_citizenship !== ''}
+                  onClick={() => setExpandedCitizenship(expandedCitizenship === 0 ? -1 : 0)}
+                  showCheckmark={formData.citizenship.primary_citizenship !== ''}
+                />
+                
+                {/* Your Citizenship Dropdown */}
+                {expandedCitizenship === 0 && (
+                  <div className={`mt-3 p-4 sm:p-5 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition}`}>
+                    <div>
+                      <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 block`}>
+                        Primary Citizenship *
+                      </label>
+                      <CustomDropdown
+                        value={formData.citizenship.primary_citizenship}
+                        onChange={(value) => {
+                          handleInputChange({ target: { name: 'citizenship.primary_citizenship', value } });
+                        }}
+                        options={[
+                          { value: '', label: 'Select citizenship' },
+                          ...countries.map(country => ({
+                            value: country.id,
+                            label: country.label
+                          }))
+                        ]}
+                        placeholder="Select citizenship"
+                        showSearch={true}
+                      />
+                    </div>
                     
-                    <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-3`}>
-                      Dual Citizenship
+                    {/* Dual Citizenship Checkbox */}
+                    <div className="flex items-center">
                       <input
                         id="dual_citizenship"
                         name="citizenship.dual_citizenship"
                         type="checkbox"
                         checked={formData.citizenship.dual_citizenship}
                         onChange={handleInputChange}
-                        className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer ml-2"
+                        className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
                         style={{ 
                           accentColor: '#8fbc8f',
                           WebkitAppearance: 'none',
@@ -500,190 +650,255 @@ export default function OnboardingCurrentStatus() {
                           transition: 'all 0.15s ease-in-out'
                         }}
                       />
-                    </p>
+                      <label htmlFor="dual_citizenship" className={`ml-2 ${uiConfig.font.size.sm} ${uiConfig.colors.body} cursor-pointer`}>
+                        I have dual citizenship
+                      </label>
+                    </div>
                     
+                    {/* Secondary Citizenship - cascading */}
                     {formData.citizenship.dual_citizenship && (
-                      <select
-                        name="citizenship.secondary_citizenship"
-                        value={formData.citizenship.secondary_citizenship === formData.citizenship.primary_citizenship ? '' : formData.citizenship.secondary_citizenship}
-                        onChange={(e) => {
-                          if (e.target.value !== formData.citizenship.primary_citizenship) {
-                            handleInputChange(e);
-                          }
-                        }}
-                        className={isCitizenshipActive(formData.citizenship.secondary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
-                      >
-                        <option value="">Select citizenship</option>
-                        {countries
-                          .filter(country => country.id !== formData.citizenship.primary_citizenship)
-                          .map(country => (
-                            <option key={`secondary-${country.id}`} value={country.id}>
-                              {country.label}
-                            </option>
-                          ))}
-                        <option value="other">Other</option>
-                      </select>
+                      <div className={`${uiConfig.animation.transition}`}>
+                        <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 block`}>
+                          Secondary Citizenship
+                        </label>
+                        <CustomDropdown
+                          value={formData.citizenship.secondary_citizenship}
+                          onChange={(value) => {
+                            if (value !== formData.citizenship.primary_citizenship) {
+                              handleInputChange({ target: { name: 'citizenship.secondary_citizenship', value } });
+                            }
+                          }}
+                          options={[
+                            { value: '', label: 'Select citizenship' },
+                            ...countries
+                              .filter(country => country.id !== formData.citizenship.primary_citizenship)
+                              .map(country => ({
+                                value: country.id,
+                                label: country.label
+                              }))
+                          ]}
+                          placeholder="Select secondary citizenship"
+                          showSearch={true}
+                        />
+                      </div>
                     )}
-                  </div>
-                  
-                  <div>
-                    <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>
-                      Partner's Citizenship *
-                    </p>
-                    <select
-                      key={`partner-primary-${formData.family_situation}`}
-                      name="partner_citizenship.primary_citizenship"
-                      value={formData.partner_citizenship.primary_citizenship}
-                      onChange={handleInputChange}
-                      className={isCitizenshipActive(formData.partner_citizenship.primary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
-                    >
-                      <option value="">Select citizenship</option>
-                      {countries.map(country => (
-                        <option key={`partner-${country.id}`} value={country.id}>
-                          {country.label}
-                        </option>
-                      ))}
-                    </select>
-                    
-                    <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-3`}>
-                      Dual Citizenship
-                      <input
-                        id="partner_dual_citizenship"
-                        name="partner_citizenship.dual_citizenship"
-                        type="checkbox"
-                        checked={formData.partner_citizenship.dual_citizenship}
-                        onChange={handleInputChange}
-                        className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer ml-2"
-                        style={{ 
-                          accentColor: '#8fbc8f',
-                          WebkitAppearance: 'none',
-                          appearance: 'none',
-                          backgroundColor: formData.partner_citizenship.dual_citizenship ? '#8fbc8f' : 'transparent',
-                          border: formData.partner_citizenship.dual_citizenship ? '1px solid #8fbc8f' : '1px solid #d1d5db',
-                          borderRadius: '0.25rem',
-                          backgroundImage: formData.partner_citizenship.dual_citizenship 
-                            ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
-                            : 'none',
-                          backgroundSize: '100% 100%',
-                          backgroundPosition: 'center',
-                          backgroundRepeat: 'no-repeat',
-                          transition: 'all 0.15s ease-in-out'
-                        }}
-                      />
-                    </p>
-                    
-                    {formData.partner_citizenship.dual_citizenship && (
-                      <select
-                        key={`partner-secondary-${formData.family_situation}`}
-                        name="partner_citizenship.secondary_citizenship"
-                        value={formData.partner_citizenship.secondary_citizenship === formData.partner_citizenship.primary_citizenship ? '' : formData.partner_citizenship.secondary_citizenship}
-                        onChange={(e) => {
-                          if (e.target.value !== formData.partner_citizenship.primary_citizenship) {
-                            handleInputChange(e);
-                          }
-                        }}
-                        className={isCitizenshipActive(formData.partner_citizenship.secondary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
-                      >
-                        <option value="">Select citizenship</option>
-                        {countries
-                          .filter(country => country.id !== formData.partner_citizenship.primary_citizenship)
-                          .map(country => (
-                            <option key={`partner-secondary-${country.id}`} value={country.id}>
-                              {country.label}
-                            </option>
-                          ))}
-                        <option value="other">Other</option>
-                      </select>
-                    )}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>
-                  Your Citizenship *
-                </p>
-                <select
-                  name="citizenship.primary_citizenship"
-                  value={formData.citizenship.primary_citizenship}
-                  onChange={handleInputChange}
-                  className={isCitizenshipActive(formData.citizenship.primary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
-                >
-                  <option value="">Select citizenship</option>
-                  {countries.map(country => (
-                    <option key={country.id} value={country.id}>
-                      {country.label}
-                    </option>
-                  ))}
-                </select>
-                
-                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-3`}>
-                  Dual Citizenship
-                  <input
-                    id="dual_citizenship_single"
-                    name="citizenship.dual_citizenship"
-                    type="checkbox"
-                    checked={formData.citizenship.dual_citizenship}
-                    onChange={handleInputChange}
-                    className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer ml-2"
-                    style={{ 
-                      accentColor: '#8fbc8f',
-                      WebkitAppearance: 'none',
-                      appearance: 'none',
-                      backgroundColor: formData.citizenship.dual_citizenship ? '#8fbc8f' : 'transparent',
-                      border: formData.citizenship.dual_citizenship ? '1px solid #8fbc8f' : '1px solid #d1d5db',
-                      borderRadius: '0.25rem',
-                      backgroundImage: formData.citizenship.dual_citizenship 
-                        ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
-                        : 'none',
-                      backgroundSize: '100% 100%',
-                      backgroundPosition: 'center',
-                      backgroundRepeat: 'no-repeat',
-                      transition: 'all 0.15s ease-in-out'
-                    }}
-                  />
-                </p>
-                
-                {formData.citizenship.dual_citizenship && (
-                  <div className="mt-2">
-                    <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 flex items-center`}>
-                      <Globe size={16} className="mr-1.5" />
-                      Secondary Citizenship
-                    </label>
-                    {formData.citizenship.secondary_citizenship === formData.citizenship.primary_citizenship && (
-                      <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.error} mb-1.5`}>
-                        Secondary citizenship cannot be the same as primary. Please select a different country.
-                      </p>
-                    )}
-                    <select
-                      name="citizenship.secondary_citizenship"
-                      value={
-                        formData.citizenship.secondary_citizenship === formData.citizenship.primary_citizenship 
-                          ? '' 
-                          : formData.citizenship.secondary_citizenship
-                      }
-                      onChange={(e) => {
-                        if (e.target.value !== formData.citizenship.primary_citizenship) {
-                          handleInputChange(e);
-                        }
-                      }}
-                      className={isCitizenshipActive(formData.citizenship.secondary_citizenship) ? uiConfig.components.selectActive : uiConfig.components.select}
-                    >
-                      <option value="">Select citizenship</option>
-                      {countries
-                        .filter(country => country.id !== formData.citizenship.primary_citizenship)
-                        .map(country => (
-                          <option key={`secondary-${country.id}`} value={country.id}>
-                            {country.label}
-                          </option>
-                        ))}
-                      <option value="other">Other</option>
-                    </select>
                   </div>
                 )}
-              </>
-            )}
-          </div>
+              </div>
+              
+              {/* Partner's Citizenship Card - only show for couple/family */}
+              {(formData.family_situation === 'couple' || formData.family_situation === 'family') && (
+                <div>
+                  <SelectionCard
+                    title="Partner's Citizenship"
+                    description={
+                      formData.partner_citizenship.primary_citizenship 
+                        ? `${countries.find(c => c.id === formData.partner_citizenship.primary_citizenship)?.label || formData.partner_citizenship.primary_citizenship}${
+                            formData.partner_citizenship.dual_citizenship && formData.partner_citizenship.secondary_citizenship 
+                              ? ` + ${countries.find(c => c.id === formData.partner_citizenship.secondary_citizenship)?.label || formData.partner_citizenship.secondary_citizenship}`
+                              : ''
+                          }`
+                        : "Select partner's citizenship"
+                    }
+                    icon={Globe}
+                    isSelected={formData.partner_citizenship.primary_citizenship !== ''}
+                    onClick={() => setExpandedCitizenship(expandedCitizenship === 1 ? -1 : 1)}
+                    showCheckmark={formData.partner_citizenship.primary_citizenship !== ''}
+                  />
+                  
+                  {/* Partner's Citizenship Dropdown */}
+                  {expandedCitizenship === 1 && (
+                    <div className={`mt-3 p-4 sm:p-5 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition}`}>
+                      <div>
+                        <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 block`}>
+                          Partner's Primary Citizenship *
+                        </label>
+                        <CustomDropdown
+                          value={formData.partner_citizenship.primary_citizenship}
+                          onChange={(value) => {
+                            handleInputChange({ target: { name: 'partner_citizenship.primary_citizenship', value } });
+                          }}
+                          options={[
+                            { value: '', label: 'Select citizenship' },
+                            ...countries.map(country => ({
+                              value: country.id,
+                              label: country.label
+                            }))
+                          ]}
+                          placeholder="Select citizenship"
+                          showSearch={true}
+                        />
+                      </div>
+                      
+                      {/* Dual Citizenship Checkbox */}
+                      <div className="flex items-center">
+                        <input
+                          id="partner_dual_citizenship"
+                          name="partner_citizenship.dual_citizenship"
+                          type="checkbox"
+                          checked={formData.partner_citizenship.dual_citizenship}
+                          onChange={handleInputChange}
+                          className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
+                          style={{ 
+                            accentColor: '#8fbc8f',
+                            WebkitAppearance: 'none',
+                            appearance: 'none',
+                            backgroundColor: formData.partner_citizenship.dual_citizenship ? '#8fbc8f' : 'transparent',
+                            border: formData.partner_citizenship.dual_citizenship ? '1px solid #8fbc8f' : '1px solid #d1d5db',
+                            borderRadius: '0.25rem',
+                            backgroundImage: formData.partner_citizenship.dual_citizenship 
+                              ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
+                              : 'none',
+                            backgroundSize: '100% 100%',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat',
+                            transition: 'all 0.15s ease-in-out'
+                          }}
+                        />
+                        <label htmlFor="partner_dual_citizenship" className={`ml-2 ${uiConfig.font.size.sm} ${uiConfig.colors.body} cursor-pointer`}>
+                          Partner has dual citizenship
+                        </label>
+                      </div>
+                      
+                      {/* Secondary Citizenship - cascading */}
+                      {formData.partner_citizenship.dual_citizenship && (
+                        <div className={`${uiConfig.animation.transition}`}>
+                          <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 block`}>
+                            Partner's Secondary Citizenship
+                          </label>
+                          <CustomDropdown
+                            value={formData.partner_citizenship.secondary_citizenship}
+                            onChange={(value) => {
+                              if (value !== formData.partner_citizenship.primary_citizenship) {
+                                handleInputChange({ target: { name: 'partner_citizenship.secondary_citizenship', value } });
+                              }
+                            }}
+                            options={[
+                              { value: '', label: 'Select citizenship' },
+                              ...countries
+                                .filter(country => country.id !== formData.partner_citizenship.primary_citizenship)
+                                .map(country => ({
+                                  value: country.id,
+                                  label: country.label
+                                }))
+                            ]}
+                            placeholder="Select secondary citizenship"
+                            showSearch={true}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Children's Citizenship Card - only show for family */}
+              {formData.family_situation === 'family' && (
+                <div>
+                  <SelectionCard
+                    title="Children's Citizenship"
+                    description={
+                      formData.children_citizenship.primary_citizenship 
+                        ? `${countries.find(c => c.id === formData.children_citizenship.primary_citizenship)?.label || formData.children_citizenship.primary_citizenship}${
+                            formData.children_citizenship.dual_citizenship && formData.children_citizenship.secondary_citizenship 
+                              ? ` + ${countries.find(c => c.id === formData.children_citizenship.secondary_citizenship)?.label || formData.children_citizenship.secondary_citizenship}`
+                              : ''
+                          }`
+                        : "Select children's citizenship"
+                    }
+                    icon={Globe}
+                    isSelected={formData.children_citizenship.primary_citizenship !== ''}
+                    onClick={() => setExpandedCitizenship(expandedCitizenship === 2 ? -1 : 2)}
+                    showCheckmark={formData.children_citizenship.primary_citizenship !== ''}
+                  />
+                  
+                  {/* Children's Citizenship Dropdown */}
+                  {expandedCitizenship === 2 && (
+                    <div className={`mt-3 p-4 sm:p-5 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition}`}>
+                      <div>
+                        <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 block`}>
+                          Children's Primary Citizenship *
+                        </label>
+                        <CustomDropdown
+                          value={formData.children_citizenship.primary_citizenship}
+                          onChange={(value) => {
+                            handleInputChange({ target: { name: 'children_citizenship.primary_citizenship', value } });
+                          }}
+                          options={[
+                            { value: '', label: 'Select citizenship' },
+                            ...countries.map(country => ({
+                              value: country.id,
+                              label: country.label
+                            }))
+                          ]}
+                          placeholder="Select citizenship"
+                          showSearch={true}
+                        />
+                      </div>
+                      
+                      {/* Dual Citizenship Checkbox */}
+                      <div className="flex items-center">
+                        <input
+                          id="children_dual_citizenship"
+                          name="children_citizenship.dual_citizenship"
+                          type="checkbox"
+                          checked={formData.children_citizenship.dual_citizenship}
+                          onChange={handleInputChange}
+                          className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
+                          style={{ 
+                            accentColor: '#8fbc8f',
+                            WebkitAppearance: 'none',
+                            appearance: 'none',
+                            backgroundColor: formData.children_citizenship.dual_citizenship ? '#8fbc8f' : 'transparent',
+                            border: formData.children_citizenship.dual_citizenship ? '1px solid #8fbc8f' : '1px solid #d1d5db',
+                            borderRadius: '0.25rem',
+                            backgroundImage: formData.children_citizenship.dual_citizenship 
+                              ? `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`
+                              : 'none',
+                            backgroundSize: '100% 100%',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat',
+                            transition: 'all 0.15s ease-in-out'
+                          }}
+                        />
+                        <label htmlFor="children_dual_citizenship" className={`ml-2 ${uiConfig.font.size.sm} ${uiConfig.colors.body} cursor-pointer`}>
+                          Children have dual citizenship
+                        </label>
+                      </div>
+                      
+                      {/* Secondary Citizenship - cascading */}
+                      {formData.children_citizenship.dual_citizenship && (
+                        <div className={`${uiConfig.animation.transition}`}>
+                          <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 block`}>
+                            Children's Secondary Citizenship
+                          </label>
+                          <CustomDropdown
+                            value={formData.children_citizenship.secondary_citizenship}
+                            onChange={(value) => {
+                              if (value !== formData.children_citizenship.primary_citizenship) {
+                                handleInputChange({ target: { name: 'children_citizenship.secondary_citizenship', value } });
+                              }
+                            }}
+                            options={[
+                              { value: '', label: 'Select citizenship' },
+                              ...countries
+                                .filter(country => country.id !== formData.children_citizenship.primary_citizenship)
+                                .map(country => ({
+                                  value: country.id,
+                                  label: country.label
+                                }))
+                            ]}
+                            placeholder="Select secondary citizenship"
+                            showSearch={true}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </SelectionSection>
 
           {/* Pet Owner */}
           <SelectionSection icon={PawPrint} title="Pet Owner">
@@ -725,11 +940,18 @@ export default function OnboardingCurrentStatus() {
                   {' • '}
                   {countries.find(c => c.id === formData.citizenship.primary_citizenship)?.label || 'US'} citizen
                   {formData.citizenship.dual_citizenship && ` + ${countries.find(c => c.id === formData.citizenship.secondary_citizenship && c.id !== formData.citizenship.primary_citizenship)?.label || ''}`}
-                  {formData.family_situation === 'couple' && (
+                  {(formData.family_situation === 'couple' || formData.family_situation === 'family') && (
                     <>
                       {' • Partner: '}
                       {countries.find(c => c.id === formData.partner_citizenship.primary_citizenship)?.label || 'US'} citizen
                       {formData.partner_citizenship.dual_citizenship && ` + ${countries.find(c => c.id === formData.partner_citizenship.secondary_citizenship && c.id !== formData.partner_citizenship.primary_citizenship)?.label || ''}`}
+                    </>
+                  )}
+                  {formData.family_situation === 'family' && (
+                    <>
+                      {' • Children: '}
+                      {countries.find(c => c.id === formData.children_citizenship.primary_citizenship)?.label || 'US'} citizen
+                      {formData.children_citizenship.dual_citizenship && ` + ${countries.find(c => c.id === formData.children_citizenship.secondary_citizenship && c.id !== formData.children_citizenship.primary_citizenship)?.label || ''}`}
                     </>
                   )}
                 </div>

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Heart, Building, FileText, Stethoscope, Lightbulb } from 'lucide-react';
+import { Shield, Heart, Building, FileText, Stethoscope, Lightbulb, Check } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import { saveUserPreferences } from '../../utils/userPreferences';
@@ -10,29 +10,88 @@ import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
 
-// Health Select Component - styled like Language Select
-const HealthSelect = ({ value, onChange, label, options }) => (
-  <div>
-    <label className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} block mb-0.5`}>{label}</label>
-    <select
-      value={value}
-      onChange={onChange}
-      className={`w-full px-3 text-xs sm:text-sm lg:text-base ${uiConfig.layout.radius.md} appearance-none cursor-pointer focus:ring-0 ${uiConfig.animation.transition} h-[44px] sm:h-[48px] lg:h-[52px] border-2 flex items-center text-center ${
-        value 
-          ? 'border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-300 dark:text-scout-accent-300 font-medium'
-          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 text-gray-700 dark:text-gray-200 hover:border-scout-accent-200 dark:hover:border-scout-accent-400'
-      }`}
-      style={{ lineHeight: '44px', paddingTop: '0', paddingBottom: '0' }}
-    >
-      <option value="">None</option>
-      {options.map(opt => (
-        <option key={opt.id} value={opt.id}>
-          {opt.label}
-        </option>
-      ))}
-    </select>
-  </div>
-);
+// Health Select Component - styled to match DateSelect from current-status
+const HealthSelect = ({ value, onChange, name, label, options }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectedOption = options.find(opt => opt.id === value);
+  
+  return (
+    <div className="relative">
+      <label className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} block mb-1`}>
+        {label}
+      </label>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`
+          w-full p-3 sm:p-4 min-h-[60px] sm:min-h-[70px] ${uiConfig.layout.radius.lg} 
+          border-2 ${uiConfig.animation.transition} text-left relative overflow-hidden cursor-pointer
+          ${value && value !== '' 
+            ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 shadow-md' 
+            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/30 hover:border-scout-accent-300 hover:shadow-md'
+          }
+          hover:-translate-y-0.5 active:scale-[0.98]
+        `}
+      >
+        {/* Checkmark indicator */}
+        {value && value !== '' && (
+          <div className="absolute top-2 right-2">
+            <div className="w-6 h-6 bg-scout-accent-500 rounded-full flex items-center justify-center">
+              <Check className="w-4 h-4 text-white" />
+            </div>
+          </div>
+        )}
+        
+        <div className={value && value !== '' ? 'pr-10' : 'pr-2'}>
+          <div className={`${uiConfig.font.weight.medium} ${
+            value && value !== '' ? 'text-scout-accent-700 dark:text-scout-accent-300' : 'text-gray-500 dark:text-gray-400'
+          } text-sm sm:text-base`}>
+            {selectedOption ? selectedOption.label : 'None'}
+          </div>
+        </div>
+      </button>
+      
+      {/* Dropdown menu */}
+      {isOpen && (
+        <>
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => setIsOpen(false)}
+          />
+          <div className={`absolute top-full left-0 right-0 mt-1 z-50 bg-white dark:bg-gray-800 
+            ${uiConfig.layout.radius.lg} border-2 border-gray-300 dark:border-gray-600 shadow-lg 
+            max-h-60 overflow-y-auto`}>
+            <button
+              type="button"
+              onClick={() => {
+                onChange({ target: { value: '' } });
+                setIsOpen(false);
+              }}
+              className={`w-full p-3 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700/30 
+                ${uiConfig.animation.transition} ${!value ? 'bg-gray-50 dark:bg-gray-700/30' : ''}`}
+            >
+              None
+            </button>
+            {options.map(opt => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => {
+                  onChange({ target: { value: opt.id } });
+                  setIsOpen(false);
+                }}
+                className={`w-full p-3 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700/30 
+                  ${uiConfig.animation.transition} ${value === opt.id ? 'bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300' : ''}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
 
 export default function OnboardingAdministration() {
   const [formData, setFormData] = useState({
@@ -318,8 +377,8 @@ export default function OnboardingAdministration() {
             </SelectionGrid>
 
             {/* Health Considerations - using dropdowns */}
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5`}>Health Considerations</p>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 mb-2.5">
+            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-4`}>Health Considerations</p>
+            <SelectionGrid>
               {/* Healthcare Access */}
               <HealthSelect
                 value={formData.health_considerations.healthcare_access || ''}
@@ -343,7 +402,7 @@ export default function OnboardingAdministration() {
                 label="Environmental Health"
                 options={environmentalHealthOptions}
               />
-            </div>
+            </SelectionGrid>
 
             {/* Health Insurance */}
             <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-1.5 mt-4`}>Health Insurance</p>

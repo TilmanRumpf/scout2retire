@@ -249,6 +249,11 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
           secondary_citizenship: data.partner_secondary_citizenship,
           dual_citizenship: !!data.partner_secondary_citizenship
         } : undefined,
+        children_citizenship: data.family_status === 'family' ? {
+          primary_citizenship: data.children_primary_citizenship,
+          secondary_citizenship: data.children_secondary_citizenship,
+          dual_citizenship: !!data.children_secondary_citizenship
+        } : undefined,
         pet_owner: data.pet_types || [],  // Use actual saved pet types
         partner_agreement: data.partner_agreement,
         bringing_children: data.bringing_children,
