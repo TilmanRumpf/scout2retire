@@ -108,9 +108,12 @@ export function calculateRegionScore(preferences, town) {
       }
     }
     
-    // If nothing matched and user had preferences, score is 0
+    // If nothing matched and user had preferences, give partial credit
+    // This prevents good towns from being penalized too heavily for location mismatch
     if (regionCountryScore === 0 && (hasCountryPrefs || hasRegionPrefs)) {
-      factors.push({ factor: 'No country/region match', score: 0 })
+      // Give 25% credit (10 points) for being in a different but viable location
+      regionCountryScore = 10
+      factors.push({ factor: 'Different region (but viable)', score: 10 })
     }
   }
   
@@ -315,40 +318,57 @@ export function calculateClimateScore(preferences, town) {
   }
   
   // Note: Points adjusted to accommodate seasonal preference (was 100, now 100 with seasonal)
-  // Summer climate match (21 points, was 25)
+  // Summer climate match (25 points)
   if (town.avg_temp_summer !== null && town.avg_temp_summer !== undefined) {
     // Use numeric temperature data when available
-    const summerPref = preferences.summer_climate_preference
-    if (summerPref && TEMP_RANGES.summer[summerPref]) {
-      const tempScore = calculateTemperatureScore(town.avg_temp_summer, TEMP_RANGES.summer[summerPref])
-      const points = Math.round(tempScore * 21 / 100)
+    // Handle array preferences - use first value or check all
+    const summerPrefs = Array.isArray(preferences.summer_climate_preference) 
+      ? preferences.summer_climate_preference 
+      : [preferences.summer_climate_preference].filter(Boolean)
+    
+    let bestScore = 0
+    let bestPref = null
+    
+    for (const pref of summerPrefs) {
+      if (TEMP_RANGES.summer[pref]) {
+        const tempScore = calculateTemperatureScore(town.avg_temp_summer, TEMP_RANGES.summer[pref])
+        if (tempScore > bestScore) {
+          bestScore = tempScore
+          bestPref = pref
+        }
+      }
+    }
+    
+    if (bestScore > 0) {
+      const points = Math.round(bestScore * 25 / 100)
       score += points
       
-      if (tempScore === 100) {
-        factors.push({ factor: `Perfect summer temperature (${town.avg_temp_summer}°C)`, score: points })
-      } else if (tempScore >= 80) {
-        factors.push({ factor: `Good summer temperature (${town.avg_temp_summer}°C)`, score: points })
-      } else if (tempScore >= 50) {
+      if (bestScore === 100) {
+        factors.push({ factor: `Perfect summer temperature (${town.avg_temp_summer}°C matches ${bestPref})`, score: points })
+      } else if (bestScore >= 80) {
+        factors.push({ factor: `Good summer temperature (${town.avg_temp_summer}°C near ${bestPref})`, score: points })
+      } else if (bestScore >= 50) {
         factors.push({ factor: `Acceptable summer temperature (${town.avg_temp_summer}°C)`, score: points })
-      } else if (tempScore > 0) {
+      } else if (bestScore > 0) {
         factors.push({ factor: `Summer temperature outside preference (${town.avg_temp_summer}°C)`, score: points })
       }
     }
-  } else if (town.summer_climate_actual && preferences.summer_climate_preference === town.summer_climate_actual) {
-    // Fall back to string matching
-    score += 21
-    factors.push({ factor: 'Perfect summer climate match', score: 21 })
-  } else if (town.summer_climate_actual && (
-    (preferences.summer_climate_preference === 'warm' && town.summer_climate_actual === 'hot') ||
-    (preferences.summer_climate_preference === 'warm' && town.summer_climate_actual === 'mild')
-  )) {
-    // Hot is BETTER than warm for someone wanting warm!
-    if (town.summer_climate_actual === 'hot') {
-      score += 21  // Full points - they want warm, got warmer!
-      factors.push({ factor: 'Even warmer than requested', score: 21 })
-    } else {
-      score += 13
-      factors.push({ factor: 'Acceptable summer climate', score: 13 })
+  } else if (town.summer_climate_actual) {
+    // Fall back to string matching with array handling
+    const summerPrefs = Array.isArray(preferences.summer_climate_preference) 
+      ? preferences.summer_climate_preference 
+      : [preferences.summer_climate_preference].filter(Boolean)
+    
+    if (summerPrefs.includes(town.summer_climate_actual)) {
+      score += 25
+      factors.push({ factor: 'Perfect summer climate match', score: 25 })
+    } else if (summerPrefs.includes('warm') && town.summer_climate_actual === 'hot') {
+      // Hot is BETTER than warm for someone wanting warm!
+      score += 25
+      factors.push({ factor: 'Even warmer than requested', score: 25 })
+    } else if (summerPrefs.includes('warm') && town.summer_climate_actual === 'mild') {
+      score += 15
+      factors.push({ factor: 'Acceptable summer climate', score: 15 })
     }
   } else if (!town.summer_climate_actual && !town.avg_temp_summer && town.climate_description) {
     // Last fallback: parse climate description
@@ -362,41 +382,58 @@ export function calculateClimateScore(preferences, town) {
     }
   }
   
-  // Winter climate match (21 points, was 25)
+  // Winter climate match (25 points)
   if (town.avg_temp_winter !== null && town.avg_temp_winter !== undefined) {
     // Use numeric temperature data when available
-    const winterPref = preferences.winter_climate_preference
-    if (winterPref && TEMP_RANGES.winter[winterPref]) {
-      const tempScore = calculateTemperatureScore(town.avg_temp_winter, TEMP_RANGES.winter[winterPref])
-      const points = Math.round(tempScore * 21 / 100)
+    // Handle array preferences
+    const winterPrefs = Array.isArray(preferences.winter_climate_preference) 
+      ? preferences.winter_climate_preference 
+      : [preferences.winter_climate_preference].filter(Boolean)
+    
+    let bestScore = 0
+    let bestPref = null
+    
+    for (const pref of winterPrefs) {
+      if (TEMP_RANGES.winter[pref]) {
+        const tempScore = calculateTemperatureScore(town.avg_temp_winter, TEMP_RANGES.winter[pref])
+        if (tempScore > bestScore) {
+          bestScore = tempScore
+          bestPref = pref
+        }
+      }
+    }
+    
+    if (bestScore > 0) {
+      const points = Math.round(bestScore * 25 / 100)
       score += points
       
-      if (tempScore === 100) {
-        factors.push({ factor: `Perfect winter temperature (${town.avg_temp_winter}°C)`, score: points })
-      } else if (tempScore >= 80) {
-        factors.push({ factor: `Good winter temperature (${town.avg_temp_winter}°C)`, score: points })
-      } else if (tempScore >= 50) {
+      if (bestScore === 100) {
+        factors.push({ factor: `Perfect winter temperature (${town.avg_temp_winter}°C matches ${bestPref})`, score: points })
+      } else if (bestScore >= 80) {
+        factors.push({ factor: `Good winter temperature (${town.avg_temp_winter}°C near ${bestPref})`, score: points })
+      } else if (bestScore >= 50) {
         factors.push({ factor: `Acceptable winter temperature (${town.avg_temp_winter}°C)`, score: points })
-      } else if (tempScore > 0) {
+      } else if (bestScore > 0) {
         factors.push({ factor: `Winter temperature outside preference (${town.avg_temp_winter}°C)`, score: points })
       }
     }
   } else if (town.winter_climate_actual) {
-    // Fall back to string matching with standardization
+    // Fall back to string matching with array handling
+    const winterPrefs = Array.isArray(preferences.winter_climate_preference) 
+      ? preferences.winter_climate_preference 
+      : [preferences.winter_climate_preference].filter(Boolean)
+    
     const standardizedWinter = mapToStandardValue(town.winter_climate_actual, 'winter')
-    if (preferences.winter_climate_preference === standardizedWinter) {
-      score += 21
-      if (town.winter_climate_actual !== standardizedWinter) {
-        factors.push({ factor: `Perfect winter climate match [${town.winter_climate_actual} = ${standardizedWinter}]`, score: 21 })
-      } else {
-        factors.push({ factor: 'Perfect winter climate match', score: 21 })
-      }
+    
+    if (winterPrefs.includes(standardizedWinter) || winterPrefs.includes(town.winter_climate_actual)) {
+      score += 25
+      factors.push({ factor: `Perfect winter climate match (${town.winter_climate_actual})`, score: 25 })
     } else if (
-      (preferences.winter_climate_preference === 'mild' && standardizedWinter === 'cool') ||
-      (preferences.winter_climate_preference === 'cool' && standardizedWinter === 'mild')
+      (winterPrefs.includes('mild') && (standardizedWinter === 'cool' || town.winter_climate_actual === 'warm')) ||
+      (winterPrefs.includes('cool') && standardizedWinter === 'mild')
     ) {
-      score += 13
-      factors.push({ factor: 'Acceptable winter climate', score: 13 })
+      score += 15
+      factors.push({ factor: 'Acceptable winter climate', score: 15 })
     }
   } else if (!town.winter_climate_actual && !town.avg_temp_winter && town.climate_description) {
     // Last fallback: parse climate description
@@ -407,7 +444,7 @@ export function calculateClimateScore(preferences, town) {
     }
   }
   
-  // Humidity match (17 points, was 20) - now with gradual scoring
+  // Humidity match (20 points) - now with gradual scoring
   const humidityAdjacency = {
     'dry': ['balanced'],
     'balanced': ['dry', 'humid'],
@@ -420,7 +457,7 @@ export function calculateClimateScore(preferences, town) {
     const humidityResult = calculateGradualClimateScoreForArray(
       preferences.humidity_level, 
       standardizedHumidity, 
-      17, 
+      20, 
       humidityAdjacency
     )
     
@@ -467,7 +504,7 @@ export function calculateClimateScore(preferences, town) {
     }
   }
   
-  // Sunshine match (17 points, was 20) - now with gradual scoring
+  // Sunshine match (20 points) - now with gradual scoring
   const sunshineAdjacency = {
     // User preferences (what they can select)
     'often_sunny': ['balanced', 'mostly_sunny', 'sunny', 'abundant'],
@@ -488,7 +525,7 @@ export function calculateClimateScore(preferences, town) {
     const sunshineResult = calculateGradualClimateScoreForArray(
       preferences.sunshine, 
       standardizedSunshine, 
-      17, 
+      20, 
       sunshineAdjacency
     )
     
@@ -563,7 +600,7 @@ export function calculateClimateScore(preferences, town) {
     }
   }
   
-  // Precipitation match (9 points, was 10) - now with gradual scoring
+  // Precipitation match (10 points) - now with gradual scoring
   const precipitationAdjacency = {
     'mostly_dry': ['balanced'],
     'dry': ['balanced'],           // Alternative spelling
@@ -578,7 +615,7 @@ export function calculateClimateScore(preferences, town) {
     const precipitationResult = calculateGradualClimateScoreForArray(
       preferences.precipitation, 
       standardizedPrecipitation, 
-      9, 
+      10, 
       precipitationAdjacency
     )
     
@@ -1251,22 +1288,34 @@ function calculateGradualAdminScore(actualScore, userPref, maxPoints) {
       return { score: 0, description: 'inadequate quality' }
     }
   } else if (userPref === 'functional') {
-    // User wants adequate quality (ideal 7+)
-    if (actualScore >= 7.0) {
-      return { score: maxPoints, description: 'meets requirements' }
+    // User wants adequate quality (ideal 6+, but reward exceeding)
+    if (actualScore >= 9.0) {
+      return { score: maxPoints, description: 'far exceeds requirements' }
+    } else if (actualScore >= 8.0) {
+      return { score: maxPoints, description: 'exceeds requirements' }
+    } else if (actualScore >= 7.0) {
+      return { score: maxPoints, description: 'exceeds requirements' }
     } else if (actualScore >= 6.0) {
-      return { score: Math.round(maxPoints * 0.8), description: 'nearly meets requirements' }
+      return { score: Math.round(maxPoints * 0.9), description: 'meets requirements' }
     } else if (actualScore >= 5.0) {
-      return { score: Math.round(maxPoints * 0.6), description: 'basic but functional' }
+      return { score: Math.round(maxPoints * 0.7), description: 'nearly meets requirements' }
+    } else if (actualScore >= 4.0) {
+      return { score: Math.round(maxPoints * 0.5), description: 'basic but functional' }
     } else {
       return { score: 0, description: 'below functional level' }
     }
   } else if (userPref === 'basic') {
-    // User wants minimal quality (ideal 5+)
-    if (actualScore >= 5.0) {
-      return { score: maxPoints, description: 'meets basic requirements' }
+    // User wants minimal quality (ideal 4+, but reward exceeding)
+    if (actualScore >= 8.0) {
+      return { score: maxPoints, description: 'far exceeds requirements' }
+    } else if (actualScore >= 6.0) {
+      return { score: maxPoints, description: 'exceeds requirements' }
+    } else if (actualScore >= 5.0) {
+      return { score: maxPoints, description: 'meets requirements' }
     } else if (actualScore >= 4.0) {
-      return { score: Math.round(maxPoints * 0.67), description: 'marginal but acceptable' }
+      return { score: Math.round(maxPoints * 0.9), description: 'meets basic requirements' }
+    } else if (actualScore >= 3.0) {
+      return { score: Math.round(maxPoints * 0.7), description: 'nearly meets basic requirements' }
     } else {
       return { score: 0, description: 'below minimum standards' }
     }
@@ -1437,10 +1486,13 @@ export function calculateAdminScore(preferences, town) {
   let score = 0
   let factors = []
   
+  // Debug logs removed - too verbose for production
+  
   // If user has NO admin preferences at all, they're flexible - give perfect score
   if (!preferences.healthcare_quality?.length && 
-      !preferences.safety_priority?.length &&
-      !preferences.visa_requirements) {
+      !preferences.safety_importance?.length &&
+      !preferences.government_efficiency?.length &&
+      !preferences.visa_preference?.length) {
     score = 100
     factors.push({ factor: 'Open to any administrative situation', score: 100 })
     return { score, factors, category: 'Admin' }
@@ -1450,59 +1502,80 @@ export function calculateAdminScore(preferences, town) {
   const healthcareArray = preferences.healthcare_quality || []
   const healthcarePref = Array.isArray(healthcareArray) ? healthcareArray[0] : healthcareArray
   
-  if (town.healthcare_score && healthcarePref) {
+  // Always score healthcare if town has data, even if no preference
+  if (town.healthcare_score) {
+    const prefToUse = healthcarePref || 'functional' // Default to functional if no preference
     const healthcareResult = calculateGradualAdminScore(
       town.healthcare_score, 
-      healthcarePref, 
+      prefToUse, 
       30
     )
     
-    if (healthcareResult.score > 0) {
-      score += healthcareResult.score
-      factors.push({ 
-        factor: `Healthcare ${healthcareResult.description} (score: ${town.healthcare_score})`, 
-        score: healthcareResult.score 
-      })
-    }
-  } else if (town.healthcare_score && !healthcarePref) {
-    // Fallback if no preference specified - assume functional
-    const healthcareResult = calculateGradualAdminScore(town.healthcare_score, 'functional', 30)
     score += healthcareResult.score
     factors.push({ 
       factor: `Healthcare ${healthcareResult.description} (score: ${town.healthcare_score})`, 
       score: healthcareResult.score 
     })
+  } else {
+    // No healthcare data - penalize for missing critical data
+    score += 5
+    factors.push({ factor: 'Healthcare data not available', score: 5 })
   }
   
   // Safety match (25 points) - now with gradual scoring
   const safetyArray = preferences.safety_importance || []
   const safetyPref = Array.isArray(safetyArray) ? safetyArray[0] : safetyArray
   
-  if (town.safety_score && safetyPref) {
+  // Always score safety if town has data, even if no preference
+  if (town.safety_score) {
+    const prefToUse = safetyPref || 'functional' // Default to functional if no preference
     const safetyResult = calculateGradualAdminScore(
       town.safety_score, 
-      safetyPref, 
+      prefToUse, 
       25
     )
     
-    if (safetyResult.score > 0) {
-      score += safetyResult.score
-      factors.push({ 
-        factor: `Safety ${safetyResult.description} (score: ${town.safety_score})`, 
-        score: safetyResult.score 
-      })
-    }
-  } else if (town.safety_score && !safetyPref) {
-    // Fallback if no preference specified - assume functional
-    const safetyResult = calculateGradualAdminScore(town.safety_score, 'functional', 25)
     score += safetyResult.score
     factors.push({ 
       factor: `Safety ${safetyResult.description} (score: ${town.safety_score})`, 
       score: safetyResult.score 
     })
+  } else {
+    // No safety data - penalize for missing critical data
+    score += 5
+    factors.push({ factor: 'Safety data not available', score: 5 })
   }
   
-  // Visa/residency match (20 points) - handle array format
+  // Government efficiency match (15 points)
+  const govArray = preferences.government_efficiency || []
+  const govPref = Array.isArray(govArray) ? govArray[0] : govArray
+  
+  if (town.government_efficiency_rating && govPref) {
+    // Government rating is 0-100, convert to 0-10 scale for scoring
+    const govScore = town.government_efficiency_rating / 10
+    const govResult = calculateGradualAdminScore(govScore, govPref, 15)
+    
+    score += govResult.score
+    factors.push({ 
+      factor: `Government efficiency ${govResult.description} (rating: ${town.government_efficiency_rating})`, 
+      score: govResult.score 
+    })
+  } else if (town.government_efficiency_rating && !govPref) {
+    // No preference but data exists - give partial credit
+    const govScore = town.government_efficiency_rating / 10
+    const govResult = calculateGradualAdminScore(govScore, 'functional', 15)
+    score += govResult.score
+    factors.push({ 
+      factor: `Government efficiency rating: ${town.government_efficiency_rating}`, 
+      score: govResult.score 
+    })
+  } else if (!town.government_efficiency_rating) {
+    // No data available - minimal credit
+    score += 3
+    factors.push({ factor: 'Government efficiency data not available', score: 3 })
+  }
+  
+  // Visa/residency match (10 points) - handle array format
   const visaArray = preferences.visa_preference || []
   const visaPref = Array.isArray(visaArray) ? visaArray[0] : visaArray
   
@@ -1511,14 +1584,14 @@ export function calculateAdminScore(preferences, town) {
     const citizenship = preferences.citizenship || preferences.current_status?.citizenship || 'USA'
     if (town.visa_on_arrival_countries?.includes(citizenship) ||
         town.easy_residency_countries?.includes(citizenship)) {
-      score += 20
-      factors.push({ factor: 'Easy visa/residency access', score: 20 })
+      score += 10
+      factors.push({ factor: 'Easy visa/residency access', score: 10 })
     } else if (town.retirement_visa_available) {
-      score += 15
-      factors.push({ factor: 'Retirement visa available', score: 15 })
+      score += 8
+      factors.push({ factor: 'Retirement visa available', score: 8 })
     }
   } else {
-    score += 10 // Basic visa access
+    score += 5 // Basic visa access
   }
   
   // Environmental health for sensitive users (15 points)
@@ -1529,13 +1602,32 @@ export function calculateAdminScore(preferences, town) {
   }
   
   // Political stability bonus (10 points)
-  if (preferences.political_stability >= 3 && town.political_stability_rating >= 80) {
-    score += 10
-    factors.push({ factor: 'Politically stable', score: 10 })
+  const stabilityArray = preferences.political_stability || []
+  const stabilityPref = Array.isArray(stabilityArray) ? stabilityArray[0] : stabilityArray
+  
+  if (town.political_stability_rating) {
+    if ((stabilityPref === 'good' && town.political_stability_rating >= 80) ||
+        (stabilityPref === 'functional' && town.political_stability_rating >= 60) ||
+        (stabilityPref === 'basic' && town.political_stability_rating >= 40)) {
+      score += 10
+      factors.push({ factor: `Political stability matches preference (rating: ${town.political_stability_rating})`, score: 10 })
+    } else if (!stabilityPref && town.political_stability_rating >= 60) {
+      // No preference - give credit for decent stability
+      score += 5
+      factors.push({ factor: `Political stability rating: ${town.political_stability_rating}`, score: 5 })
+    } else if (stabilityPref && town.political_stability_rating < 60) {
+      // Has preference but stability is poor
+      factors.push({ factor: `Political stability below requirements (${town.political_stability_rating})`, score: 0 })
+    }
+  } else if (stabilityPref) {
+    // User wants stability data but it's missing
+    factors.push({ factor: 'Political stability data not available', score: 0 })
   }
   
+  const finalScore = Math.min(score, 100);
+  
   return {
-    score: Math.min(score, 100),
+    score: finalScore,
     factors,
     category: 'Administration'
   }
@@ -1547,9 +1639,11 @@ export function calculateBudgetScore(preferences, town) {
   let factors = []
   
   // If user has NO budget preferences at all, they're flexible - give perfect score
-  if (!preferences.total_monthly_budget && 
-      !preferences.housing_budget &&
-      !preferences.other_expenses) {
+  const hasBudgetPrefs = preferences.total_monthly_budget || 
+                         preferences.max_monthly_rent ||
+                         preferences.monthly_healthcare_budget
+  
+  if (!hasBudgetPrefs) {
     score = 100
     factors.push({ factor: 'Open to any budget situation', score: 100 })
     return { score, factors, category: 'Budget' }
@@ -1558,43 +1652,77 @@ export function calculateBudgetScore(preferences, town) {
   // Overall budget fit (40 points)
   // Use cost_of_living_usd (actual USD amount), NOT cost_index (relative scale)
   const townCost = town.cost_of_living_usd || town.typical_monthly_living_cost
-  if (!townCost || !preferences.total_monthly_budget) {
+  
+  // Extract budget value from array (use max value as upper limit)
+  const userBudget = Array.isArray(preferences.total_monthly_budget) 
+    ? Math.max(...preferences.total_monthly_budget)
+    : preferences.total_monthly_budget
+  
+  if (!townCost || !userBudget) {
     // If we don't have cost data, give neutral score
     score += 20
     factors.push({ factor: 'Cost data not available', score: 20 })
     return { score, factors, category: 'Budget' }
   }
   
-  const budgetRatio = preferences.total_monthly_budget / townCost
+  const budgetRatio = userBudget / townCost
   
-  if (budgetRatio >= 1.5) {
+  if (budgetRatio >= 2.0) {
+    // User budget is 2x or more than cost - excellent value
     score += 40
-    factors.push({ factor: 'Comfortable budget margin', score: 40 })
+    factors.push({ factor: `Excellent value (budget $${userBudget} vs cost $${townCost})`, score: 40 })
+  } else if (budgetRatio >= 1.5) {
+    // User budget is 1.5x cost - comfortable margin
+    score += 35
+    factors.push({ factor: `Comfortable budget margin (budget $${userBudget} vs cost $${townCost})`, score: 35 })
   } else if (budgetRatio >= 1.2) {
+    // User budget is 1.2x cost - good fit
     score += 30
-    factors.push({ factor: 'Good budget fit', score: 30 })
+    factors.push({ factor: `Good budget fit (budget $${userBudget} vs cost $${townCost})`, score: 30 })
   } else if (budgetRatio >= 1.0) {
+    // User budget meets cost - adequate
+    score += 25
+    factors.push({ factor: `Budget adequate (budget $${userBudget} vs cost $${townCost})`, score: 25 })
+  } else if (budgetRatio >= 0.9) {
+    // User budget is 90% of cost - slightly tight
     score += 20
-    factors.push({ factor: 'Budget adequate', score: 20 })
+    factors.push({ factor: `Budget slightly tight (budget $${userBudget} vs cost $${townCost})`, score: 20 })
   } else if (budgetRatio >= 0.8) {
+    // User budget is 80% of cost - challenging but possible
+    score += 15
+    factors.push({ factor: `Budget challenging (budget $${userBudget} vs cost $${townCost})`, score: 15 })
+  } else if (budgetRatio >= 0.7) {
+    // User budget is 70% of cost - very tight
     score += 10
-    factors.push({ factor: 'Budget tight but possible', score: 10 })
+    factors.push({ factor: `Budget very tight (budget $${userBudget} vs cost $${townCost})`, score: 10 })
+  } else {
+    // Budget too low
+    score += 5
+    factors.push({ factor: `Over budget (budget $${userBudget} vs cost $${townCost})`, score: 5 })
   }
   
   // Rent budget match (30 points)
-  if (preferences.max_monthly_rent && town.typical_rent_1bed) {
-    if (preferences.max_monthly_rent >= town.typical_rent_1bed) {
+  const userRentBudget = Array.isArray(preferences.max_monthly_rent)
+    ? Math.max(...preferences.max_monthly_rent)
+    : preferences.max_monthly_rent
+    
+  if (userRentBudget && town.typical_rent_1bed) {
+    if (userRentBudget >= town.typical_rent_1bed) {
       score += 30
       factors.push({ factor: 'Rent within budget', score: 30 })
-    } else if (preferences.max_monthly_rent >= town.typical_rent_1bed * 0.8) {
+    } else if (userRentBudget >= town.typical_rent_1bed * 0.8) {
       score += 15
       factors.push({ factor: 'Rent slightly over budget', score: 15 })
     }
   }
   
   // Healthcare budget match (20 points)
-  if (preferences.monthly_healthcare_budget && town.healthcare_cost_monthly) {
-    if (preferences.monthly_healthcare_budget >= town.healthcare_cost_monthly) {
+  const userHealthcareBudget = Array.isArray(preferences.monthly_healthcare_budget)
+    ? Math.max(...preferences.monthly_healthcare_budget)
+    : preferences.monthly_healthcare_budget
+    
+  if (userHealthcareBudget && town.healthcare_cost_monthly) {
+    if (userHealthcareBudget >= town.healthcare_cost_monthly) {
       score += 20
       factors.push({ factor: 'Healthcare affordable', score: 20 })
     }
@@ -1680,6 +1808,7 @@ export async function calculateEnhancedMatch(userPreferences, town) {
   }, town)
   const budgetResult = calculateBudgetScore(userPreferences.budget_preferences || {}, town)
   
+  
   // Calculate weighted total score
   let totalScore = (
     (regionResult.score * CATEGORY_WEIGHTS.region / 100) +
@@ -1690,9 +1819,10 @@ export async function calculateEnhancedMatch(userPreferences, town) {
     (budgetResult.score * CATEGORY_WEIGHTS.budget / 100)
   )
   
-  // Add data completeness bonus (0-5 points)
-  const dataBonus = calculateDataCompleteness(town)
-  totalScore += dataBonus
+  // No bonuses - pure weighted scoring only
+  
+  // Cap the total score at 100
+  totalScore = Math.min(totalScore, 100)
   
   // Compile all factors
   const allFactors = [
@@ -1704,12 +1834,7 @@ export async function calculateEnhancedMatch(userPreferences, town) {
     ...budgetResult.factors
   ]
   
-  // Add data completeness factor if significant
-  if (dataBonus >= 3) {
-    allFactors.push({ factor: 'Comprehensive data available', score: dataBonus })
-  } else if (dataBonus <= 1) {
-    allFactors.push({ factor: 'Limited data available', score: -2 })
-  }
+  // No data completeness factors
   
   // Determine match quality
   let matchQuality = 'Poor'
@@ -1722,7 +1847,7 @@ export async function calculateEnhancedMatch(userPreferences, town) {
     town_id: town.id,
     town_name: town.name,
     town_country: town.country,
-    match_score: Math.round(totalScore),
+    match_score: Math.min(100, Math.round(totalScore)),
     match_quality: matchQuality,
     category_scores: {
       region: Math.round(regionResult.score),
@@ -1738,8 +1863,7 @@ export async function calculateEnhancedMatch(userPreferences, town) {
       .slice(0, 5),
     warnings: allFactors
       .filter(f => f.score < 0)
-      .map(f => f.factor),
-    data_completeness: Math.round(dataBonus)
+      .map(f => f.factor)
   }
 }
 

@@ -335,72 +335,11 @@ export const getTownOfTheDay = async (userId) => {
     // If we have preferences, enhance the town with match scores
     if (preferences) {
       try {
-        // Import the enhanced matching algorithm and helpers
-        const { calculateEnhancedMatch } = await import('./enhancedMatchingAlgorithm');
-        const { 
-          generateEnhancedInsights, 
-          generateEnhancedWarnings, 
-          generateEnhancedHighlights 
-        } = await import('./enhancedMatchingHelpers');
+        // Use unified scoring function
+        const { scoreTown } = await import('./unifiedScoring');
         
-        // Convert preferences to enhanced algorithm format
-        const convertedPreferences = {
-          region_preferences: preferences.region || preferences.region_preferences || {},
-          climate_preferences: preferences.climate || preferences.climate_preferences || {},
-          culture_preferences: preferences.culture || preferences.culture_preferences || {},
-          hobbies_preferences: preferences.hobbies || preferences.hobbies_preferences || {},
-          admin_preferences: preferences.administration || preferences.admin_preferences || {},
-          budget_preferences: preferences.costs || preferences.budget_preferences || {},
-          current_status: preferences.current_status || {}
-        };
-        
-        // Calculate match score and category scores
-        const enhancedResult = await calculateEnhancedMatch(convertedPreferences, selectedTown);
-        
-        // Generate additional insights
-        const insights = generateEnhancedInsights(selectedTown, convertedPreferences, enhancedResult.category_scores);
-        const warnings = generateEnhancedWarnings(selectedTown, convertedPreferences);
-        const highlights = generateEnhancedHighlights(selectedTown, enhancedResult.category_scores);
-        
-        // Convert match factors to match reasons
-        const matchReasons = enhancedResult.top_factors
-          .filter(f => f.score > 0)
-          .map(f => f.factor);
-        
-        // Determine confidence
-        let confidence = 'Low';
-        if (enhancedResult.match_score >= 85) confidence = 'Very High';
-        else if (enhancedResult.match_score >= 70) confidence = 'High';
-        else if (enhancedResult.match_score >= 55) confidence = 'Medium';
-        
-        // Calculate value rating
-        const valueRating = enhancedResult.category_scores.budget >= 80 ? 5 : 
-                           enhancedResult.category_scores.budget >= 60 ? 4 :
-                           enhancedResult.category_scores.budget >= 40 ? 3 : 2;
-        
-        const matchResult = {
-          score: enhancedResult.match_score,
-          matchReasons: matchReasons,
-          insights: insights,
-          highlights: highlights,
-          warnings: warnings,
-          breakdown: enhancedResult.category_scores,
-          confidence: confidence,
-          value_rating: valueRating
-        };
-        
-        // Enhance the town with scores
-        selectedTown = {
-          ...selectedTown,
-          matchScore: matchResult.score,
-          matchReasons: matchResult.matchReasons || [],
-          insights: matchResult.insights || [],
-          highlights: matchResult.highlights || [],
-          warnings: matchResult.warnings || [],
-          categoryScores: matchResult.breakdown || {},
-          confidence: matchResult.confidence || 'Medium',
-          valueRating: matchResult.value_rating
-        };
+        // Score the town using unified function
+        selectedTown = await scoreTown(selectedTown, preferences);
         
         console.log("Enhanced daily town with scores:", {
           name: selectedTown.name,
