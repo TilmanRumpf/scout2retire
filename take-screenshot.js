@@ -16,9 +16,9 @@ import { chromium } from 'playwright';
     // Set viewport for a consistent screenshot
     await page.setViewportSize({ width: 1280, height: 800 });
     
-    console.log('Navigating to favorites page...');
-    // Navigate to the favorites page
-    await page.goto('https://scout2retire.vercel.app/favorites', {
+    console.log('Navigating to localhost...');
+    // Navigate to the local development server
+    await page.goto('http://localhost:5173/', {
       waitUntil: 'domcontentloaded',
       timeout: 30000
     });
@@ -30,11 +30,11 @@ import { chromium } from 'playwright';
     // Take screenshot
     console.log('Taking screenshot...');
     await page.screenshot({ 
-      path: 'favorites-page-screenshot.png',
+      path: 'localhost-screenshot.png',
       fullPage: true 
     });
     
-    console.log('Screenshot saved as favorites-page-screenshot.png');
+    console.log('Screenshot saved as localhost-screenshot.png');
     
   } catch (error) {
     console.error('Error:', error.message);
