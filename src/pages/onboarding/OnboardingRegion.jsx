@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, Globe, MapPin, Trees, Lightbulb } from 'lucide-react';
+import { ChevronDown, Globe, MapPin, Trees, Lightbulb, Car, Train, Plane, Check } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import { saveUserPreferences } from '../../utils/userPreferences';
@@ -12,6 +12,139 @@ import { getLoadingBackgroundClass, getLoadingTextClass } from '../../utils/them
 import supabase from '../../utils/supabaseClient';
 import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
 import { CustomDropdown } from '../../components/CustomDropdown';
+
+// Multi-Select Mobility Dropdown Component - moved from costs page
+const MobilityDropdown = ({ values = [], onChange, label, options, icon: Icon }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  // Handle toggling individual options
+  const handleToggle = (optionId) => {
+    if (values.includes(optionId)) {
+      onChange(values.filter(v => v !== optionId));
+    } else {
+      onChange([...values, optionId]);
+    }
+  };
+  
+  // Clear all selections
+  const handleClearAll = () => {
+    onChange([]);
+  };
+  
+  // Get display text for button
+  const getDisplayText = () => {
+    if (values.length === 0) return 'Select your preferences';
+    const labels = values.map(v => options.find(opt => opt.id === v)?.label).filter(Boolean);
+    if (labels.length <= 2) {
+      return labels.join(', ');
+    }
+    // Show first two items and "..." for more
+    return `${labels.slice(0, 2).join(', ')}...`;
+  };
+  
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`
+          w-full p-3 sm:p-4 min-h-[70px] sm:min-h-[80px] ${uiConfig.layout.radius.lg} 
+          border-2 ${uiConfig.animation.transition} text-left relative overflow-hidden cursor-pointer
+          ${values.length > 0
+            ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 shadow-md' 
+            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/30 hover:border-scout-accent-300 hover:shadow-md'
+          }
+          hover:-translate-y-0.5 active:scale-[0.98]
+        `}
+      >
+        {/* Checkmark indicator like SelectionCard */}
+        {values.length > 0 && (
+          <div className="absolute top-2 right-2">
+            <div className="w-6 h-6 bg-scout-accent-500 rounded-full flex items-center justify-center">
+              <Check className="w-4 h-4 text-white" />
+            </div>
+          </div>
+        )}
+        
+        <div className={values.length > 0 ? 'pr-10' : 'pr-2'}>
+          {/* Title with icon and label */}
+          <div className={`${uiConfig.font.weight.medium} ${
+            values.length > 0 ? 'text-scout-accent-700 dark:text-scout-accent-300' : uiConfig.colors.heading
+          } text-sm sm:text-base flex items-center`}>
+            {Icon && <Icon size={16} className="mr-2 flex-shrink-0" />}
+            {label}
+          </div>
+          {/* Subtitle with selected items or prompt */}
+          <div className={`text-xs mt-0.5 ${uiConfig.colors.hint} truncate`}>
+            {values.length === 0 ? 'Select your preferences' : getDisplayText()}
+          </div>
+        </div>
+      </button>
+      
+      {/* Dropdown menu with checkboxes */}
+      {isOpen && (
+        <>
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => setIsOpen(false)}
+          />
+          <div className={`absolute top-full left-0 right-0 mt-1 z-50 bg-white dark:bg-gray-800 
+            ${uiConfig.layout.radius.lg} border-2 border-gray-300 dark:border-gray-600 shadow-lg 
+            max-h-60 overflow-y-auto`}>
+            
+            {/* Clear all option */}
+            {values.length > 0 && (
+              <button
+                type="button"
+                onClick={handleClearAll}
+                className={`w-full p-3 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700/30 
+                  ${uiConfig.animation.transition} border-b border-gray-200 dark:border-gray-700`}
+              >
+                <div className="text-gray-500 dark:text-gray-400">Clear all</div>
+              </button>
+            )}
+            
+            {/* Options with checkboxes */}
+            {options.map(opt => {
+              const isSelected = values.includes(opt.id);
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => handleToggle(opt.id)}
+                  className={`w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/30 
+                    ${uiConfig.animation.transition} ${isSelected ? 'bg-scout-accent-50 dark:bg-scout-accent-900/20' : ''}`}
+                >
+                  <div className="flex items-start">
+                    <div className={`w-5 h-5 mt-0.5 mr-3 border-2 rounded flex-shrink-0 ${uiConfig.animation.transition}
+                      ${isSelected 
+                        ? 'bg-scout-accent-500 border-scout-accent-500' 
+                        : 'border-gray-300 dark:border-gray-600'
+                      }`}>
+                      {isSelected && (
+                        <Check className="w-3 h-3 text-white m-auto" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className={`text-sm ${isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300 font-medium' : ''}`}>
+                        {opt.label}
+                      </div>
+                      {opt.description && (
+                        <div className={`text-xs mt-0.5 ${uiConfig.colors.hint}`}>
+                          {opt.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
 
 const OnboardingRegion = () => {
   const navigate = useNavigate();
@@ -25,6 +158,13 @@ const OnboardingRegion = () => {
   const [selectedProvinces, setSelectedProvinces] = useState(['', '']);
   const [selectedFeatures, setSelectedFeatures] = useState([]);
   const [selectedVegetation, setSelectedVegetation] = useState([]);
+  
+  // Mobility state - moved from costs page
+  const [mobility, setMobility] = useState({
+    local: [],
+    regional: [],
+    international: []
+  });
   
   // Added state to control visibility of dependent dropdowns
   const [showDependentDropdowns, setShowDependentDropdowns] = useState([false, false]);
@@ -44,11 +184,37 @@ const OnboardingRegion = () => {
     countries: selectedCountries.filter(country => country && country !== ''),
     provinces: selectedProvinces.filter(province => province && province !== ''),
     geographic_features: selectedFeatures,
-    vegetation_types: selectedVegetation
+    vegetation_types: selectedVegetation,
+    mobility: mobility // Add mobility to formData
   };
   
   // Enable auto-save for this page
   const autoSave = useOnboardingAutoSave(formData, 'region_preferences');
+
+  // Mobility options - moved from costs page
+  const localMobilityOptions = [
+    { id: 'walk_bike', label: 'Walk/Bike', description: 'Walkable neighborhoods' },
+    { id: 'public_transit', label: 'Public Transit', description: 'Bus/metro access' },
+    { id: 'need_car', label: 'Own Vehicle', description: 'Car required' },
+    { id: 'taxi_rideshare', label: 'Taxi/Rideshare', description: 'On-demand transport' },
+    { id: 'flexible', label: 'Flexible', description: 'Open to any option' }
+  ];
+
+  const regionalMobilityOptions = [
+    { id: 'train_access', label: 'Train Access', description: 'Rail connections' },
+    { id: 'bus_network', label: 'Bus Network', description: 'Regional buses' },
+    { id: 'need_car', label: 'Own Vehicle', description: 'Car required' },
+    { id: 'not_important', label: 'Not Important', description: 'Rarely travel regionally' },
+    { id: 'flexible', label: 'Flexible', description: 'Open to any option' }
+  ];
+
+  const intlMobilityOptions = [
+    { id: 'major_airport', label: 'Major Airport', description: 'International hub nearby' },
+    { id: 'regional_airport', label: 'Regional Airport', description: 'Domestic flights' },
+    { id: 'train_connections', label: 'Train Connections', description: 'Cross-border rail' },
+    { id: 'not_important', label: 'Not Important', description: 'Rarely travel internationally' },
+    { id: 'flexible', label: 'Flexible', description: 'Open to any option' }
+  ];
 
   const geographicFeatures = [
     'Coastal',
@@ -239,6 +405,20 @@ const OnboardingRegion = () => {
           if (regionData.vegetation_types && regionData.vegetation_types.length > 0) {
             setSelectedVegetation(regionData.vegetation_types);
           }
+          
+          // Handle mobility - moved from costs
+          console.log('Loading mobility data from regionData:', regionData.mobility);
+          if (regionData.mobility) {
+            const mobilityToSet = {
+              local: Array.isArray(regionData.mobility.local) ? regionData.mobility.local : [],
+              regional: Array.isArray(regionData.mobility.regional) ? regionData.mobility.regional : [],
+              international: Array.isArray(regionData.mobility.international) ? regionData.mobility.international : []
+            };
+            console.log('Setting mobility state to:', mobilityToSet);
+            setMobility(mobilityToSet);
+          } else {
+            console.log('No mobility data found in regionData');
+          }
         }
       } catch (err) {
         console.error("Unexpected error loading data:", err);
@@ -401,6 +581,13 @@ const OnboardingRegion = () => {
     );
   };
 
+  const handleMobilityUpdate = (field, values) => {
+    setMobility(prev => ({
+      ...prev,
+      [field]: values
+    }));
+  };
+
   const handleSkip = async () => {
     setLoading(true);
     await autoSave();
@@ -467,8 +654,12 @@ const OnboardingRegion = () => {
         countries: selectedCountries.filter(country => country && country !== ''),
         provinces: selectedProvinces.filter(province => province && province !== ''),
         geographic_features: selectedFeatures,
-        vegetation_types: selectedVegetation
+        vegetation_types: selectedVegetation,
+        mobility: mobility // Include mobility preferences in save
       };
+      
+      console.log('Saving region data with mobility:', formData);
+      console.log('Mobility being saved:', mobility);
       
       const { success, error } = await saveOnboardingStep(
         userResult.user.id,
@@ -824,12 +1015,47 @@ const OnboardingRegion = () => {
             </SelectionGrid>
           </SelectionSection>
 
+          {/* Transportation Preferences - moved from costs page */}
+          <SelectionSection icon={Car} title="Transportation Preferences">
+            <p className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.colors.hint} mb-2 sm:mb-3 -mt-2`}>
+              How do you prefer to get around? (optional)
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <MobilityDropdown
+                values={mobility.local || []}
+                onChange={(values) => handleMobilityUpdate('local', values)}
+                label="Local Mobility"
+                options={localMobilityOptions}
+                icon={MapPin}
+              />
+              
+              <MobilityDropdown
+                values={mobility.regional || []}
+                onChange={(values) => handleMobilityUpdate('regional', values)}
+                label="Regional Mobility"
+                options={regionalMobilityOptions}
+                icon={Train}
+              />
+              
+              <MobilityDropdown
+                values={mobility.international || []}
+                onChange={(values) => handleMobilityUpdate('international', values)}
+                label="International Travel"
+                options={intlMobilityOptions}
+                icon={Plane}
+              />
+            </div>
+          </SelectionSection>
+
           {/* Summary section - matching hobbies page styling */}
           {(selectedRegions.filter(r => r && r !== '').length > 0 ||
             selectedCountries.filter(c => c && c !== '').length > 0 ||
             selectedProvinces.filter(p => p && p !== '').length > 0 ||
             selectedFeatures.length > 0 ||
-            selectedVegetation.length > 0) && (
+            selectedVegetation.length > 0 ||
+            mobility.local.length > 0 ||
+            mobility.regional.length > 0 ||
+            mobility.international.length > 0) && (
           <div className={`mb-3 p-2.5 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg}`}>
             <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} mb-1.5 ${uiConfig.font.size.sm}`}>
               Your Geographical Preferences:
@@ -864,6 +1090,18 @@ const OnboardingRegion = () => {
                 <div>
                   <span className={`${uiConfig.font.weight.medium}`}>Vegetation Types:</span>{' '}
                   {selectedVegetation.join(', ')}
+                </div>
+              )}
+              
+              {/* Transportation */}
+              {(mobility.local.length > 0 || mobility.regional.length > 0 || mobility.international.length > 0) && (
+                <div>
+                  <span className={`${uiConfig.font.weight.medium}`}>Transportation:</span>{' '}
+                  {[
+                    mobility.local.length > 0 && `Local: ${mobility.local.map(id => localMobilityOptions.find(o => o.id === id)?.label).filter(Boolean).join(', ')}`,
+                    mobility.regional.length > 0 && `Regional: ${mobility.regional.map(id => regionalMobilityOptions.find(o => o.id === id)?.label).filter(Boolean).join(', ')}`,
+                    mobility.international.length > 0 && `Int'l: ${mobility.international.map(id => intlMobilityOptions.find(o => o.id === id)?.label).filter(Boolean).join(', ')}`
+                  ].filter(Boolean).join('; ')}
                 </div>
               )}
             </div>

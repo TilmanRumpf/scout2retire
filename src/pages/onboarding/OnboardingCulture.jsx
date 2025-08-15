@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Globe2, Languages, Utensils, Building, Music, Calendar, Gauge, Home, Lightbulb, Check } from 'lucide-react';
+import { Users, Globe2, Languages, Utensils, Building, Music, Calendar, Gauge, Home, Lightbulb, Check, Plus } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import { saveUserPreferences } from '../../utils/userPreferences';
@@ -10,48 +10,96 @@ import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
 
-// Language Select Component - styled to match SelectionCard
-const LanguageSelect = ({ value, onChange, label, languages }) => {
+// Add Language Dropdown Component - multi-select with checkboxes
+const AddLanguageDropdown = ({ selectedLanguages = [], onChange, additionalLanguages, topLanguages }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const selectedLanguage = languages.find(lang => lang.id === value);
+  
+  // Toggle language - can add or remove from main selection
+  const handleToggle = (langId) => {
+    // Check if it's already in the main selected languages
+    if (selectedLanguages.includes(langId)) {
+      // Remove from main selection
+      onChange(selectedLanguages.filter(id => id !== langId));
+    } else {
+      // Add to main selection
+      onChange([...selectedLanguages, langId]);
+    }
+  };
+  
+  // Get display text for button - show all additional selected languages
+  const getButtonContent = () => {
+    // Get all additional languages that are selected (not in top 5)
+    const additionalSelected = selectedLanguages
+      .filter(langId => !topLanguages.some(t => t.id === langId))
+      .map(id => additionalLanguages.find(lang => lang.id === id)?.label)
+      .filter(Boolean);
+    
+    if (additionalSelected.length > 0) {
+      if (additionalSelected.length <= 2) {
+        return additionalSelected.join(', ');
+      } else {
+        return `${additionalSelected[0]}, ${additionalSelected[1]}...`;
+      }
+    }
+    return 'Add More';
+  };
+  
+  // Check if any additional languages are selected
+  const hasAdditionalLanguages = selectedLanguages.some(
+    langId => !topLanguages.some(t => t.id === langId)
+  );
+  
+  // Clear all additional languages (keep only top 5 if selected)
+  const handleClearAdditional = (e) => {
+    e.stopPropagation(); // Prevent opening dropdown
+    const topLanguagesOnly = selectedLanguages.filter(
+      langId => topLanguages.some(t => t.id === langId)
+    );
+    onChange(topLanguagesOnly);
+  };
   
   return (
     <div className="relative">
-      <label className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} block mb-1`}>
-        {label}
-      </label>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`
           w-full p-3 sm:p-4 min-h-[60px] sm:min-h-[70px] ${uiConfig.layout.radius.lg} 
           border-2 ${uiConfig.animation.transition} text-left relative overflow-hidden cursor-pointer
-          ${value 
+          ${hasAdditionalLanguages
             ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 shadow-md' 
             : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/30 hover:border-scout-accent-300 hover:shadow-md'
           }
           hover:-translate-y-0.5 active:scale-[0.98]
         `}
       >
-        {/* Checkmark indicator */}
-        {value && (
-          <div className="absolute top-2 right-2">
+        {/* Checkmark indicator - clickable to clear all */}
+        {hasAdditionalLanguages && (
+          <button
+            type="button"
+            onClick={handleClearAdditional}
+            className="absolute top-2 right-2 hover:scale-110 transition-transform"
+            title="Clear all additional languages"
+          >
             <div className="w-6 h-6 bg-scout-accent-500 rounded-full flex items-center justify-center">
               <Check className="w-4 h-4 text-white" />
             </div>
-          </div>
+          </button>
         )}
         
-        <div className={value ? 'pr-10' : 'pr-2'}>
-          <div className={`${uiConfig.font.weight.medium} ${
-            value ? 'text-scout-accent-700 dark:text-scout-accent-300' : 'text-gray-500 dark:text-gray-400'
-          } text-sm sm:text-base`}>
-            {selectedLanguage ? selectedLanguage.label : 'Select...'}
+        {/* Match SelectionCard layout exactly */}
+        <div className={hasAdditionalLanguages ? 'pr-10' : 'pr-2'}>
+          <div className="flex-1">
+            <h3 className={`${uiConfig.font.weight.semibold} ${
+              hasAdditionalLanguages ? 'text-scout-accent-700 dark:text-scout-accent-300' : uiConfig.colors.heading
+            } text-sm sm:text-base mb-1 whitespace-nowrap`}>
+              {getButtonContent()}
+            </h3>
           </div>
         </div>
       </button>
       
-      {/* Dropdown menu */}
+      {/* Dropdown menu with checkboxes */}
       {isOpen && (
         <>
           <div 
@@ -60,32 +108,48 @@ const LanguageSelect = ({ value, onChange, label, languages }) => {
           />
           <div className={`absolute top-full left-0 right-0 mt-1 z-50 bg-white dark:bg-gray-800 
             ${uiConfig.layout.radius.lg} border-2 border-gray-300 dark:border-gray-600 shadow-lg 
-            max-h-60 overflow-y-auto`}>
-            <button
-              type="button"
-              onClick={() => {
-                onChange({ target: { value: '' } });
-                setIsOpen(false);
-              }}
-              className={`w-full p-3 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700/30 
-                ${uiConfig.animation.transition} ${!value ? 'bg-gray-50 dark:bg-gray-700/30' : ''}`}
-            >
-              None
-            </button>
-            {languages.map(lang => (
+            max-h-72 overflow-y-auto`}>
+            
+            {/* Clear all option if any are selected */}
+            {hasAdditionalLanguages && (
               <button
-                key={lang.id}
                 type="button"
-                onClick={() => {
-                  onChange({ target: { value: lang.id } });
-                  setIsOpen(false);
-                }}
+                onClick={handleClearAdditional}
                 className={`w-full p-3 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700/30 
-                  ${uiConfig.animation.transition} ${value === lang.id ? 'bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300' : ''}`}
+                  ${uiConfig.animation.transition} border-b border-gray-200 dark:border-gray-700`}
               >
-                {lang.label}
+                <div className="text-gray-500 dark:text-gray-400">Clear all</div>
               </button>
-            ))}
+            )}
+            
+            {/* Language options with checkboxes - show all additional languages */}
+            {additionalLanguages.map(lang => {
+              const isChecked = selectedLanguages.includes(lang.id);
+              return (
+                <button
+                  key={lang.id}
+                  type="button"
+                  onClick={() => handleToggle(lang.id)}
+                  className={`w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/30 
+                    ${uiConfig.animation.transition} ${isChecked ? 'bg-scout-accent-50 dark:bg-scout-accent-900/20' : ''}`}
+                >
+                  <div className="flex items-center">
+                    <div className={`w-5 h-5 mr-3 border-2 rounded flex-shrink-0 ${uiConfig.animation.transition}
+                      ${isChecked 
+                        ? 'bg-scout-accent-500 border-scout-accent-500' 
+                        : 'border-gray-300 dark:border-gray-600'
+                      }`}>
+                      {isChecked && (
+                        <Check className="w-3 h-3 text-white m-auto" />
+                      )}
+                    </div>
+                    <span className={`text-sm ${isChecked ? 'text-scout-accent-700 dark:text-scout-accent-300 font-medium' : ''}`}>
+                      {lang.label}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </>
       )}
@@ -120,24 +184,60 @@ export default function OnboardingCulture() {
   // Enable auto-save for this page
   const autoSave = useOnboardingAutoSave(formData, 'culture_preferences');
 
-  // Common languages options
-  const languages = [
+  // Top 5 languages to show as cards
+  const topLanguages = [
     { id: 'english', label: 'English' },
     { id: 'spanish', label: 'Spanish' },
     { id: 'german', label: 'German' },
     { id: 'french', label: 'French' },
+    { id: 'chinese', label: 'Chinese' }
+  ];
+  
+  // Additional languages for dropdown (extensive list)
+  const additionalLanguages = [
     { id: 'arabic', label: 'Arabic' },
+    { id: 'bengali', label: 'Bengali' },
+    { id: 'bulgarian', label: 'Bulgarian' },
+    { id: 'catalan', label: 'Catalan' },
     { id: 'croatian', label: 'Croatian' },
+    { id: 'czech', label: 'Czech' },
+    { id: 'danish', label: 'Danish' },
     { id: 'dutch', label: 'Dutch' },
+    { id: 'estonian', label: 'Estonian' },
+    { id: 'farsi', label: 'Farsi' },
+    { id: 'finnish', label: 'Finnish' },
     { id: 'greek', label: 'Greek' },
+    { id: 'hebrew', label: 'Hebrew' },
+    { id: 'hindi', label: 'Hindi' },
+    { id: 'hungarian', label: 'Hungarian' },
+    { id: 'indonesian', label: 'Indonesian' },
     { id: 'italian', label: 'Italian' },
     { id: 'japanese', label: 'Japanese' },
+    { id: 'korean', label: 'Korean' },
     { id: 'latvian', label: 'Latvian' },
+    { id: 'lithuanian', label: 'Lithuanian' },
+    { id: 'malay', label: 'Malay' },
+    { id: 'maltese', label: 'Maltese' },
     { id: 'mandarin', label: 'Mandarin' },
+    { id: 'norwegian', label: 'Norwegian' },
+    { id: 'polish', label: 'Polish' },
     { id: 'portuguese', label: 'Portuguese' },
+    { id: 'romanian', label: 'Romanian' },
+    { id: 'russian', label: 'Russian' },
+    { id: 'serbian', label: 'Serbian' },
+    { id: 'slovak', label: 'Slovak' },
+    { id: 'slovenian', label: 'Slovenian' },
+    { id: 'swedish', label: 'Swedish' },
+    { id: 'tagalog', label: 'Tagalog' },
     { id: 'thai', label: 'Thai' },
-    { id: 'turkish', label: 'Turkish' }
+    { id: 'turkish', label: 'Turkish' },
+    { id: 'ukrainian', label: 'Ukrainian' },
+    { id: 'urdu', label: 'Urdu' },
+    { id: 'vietnamese', label: 'Vietnamese' }
   ];
+  
+  // All languages combined for displaying selected ones
+  const allLanguages = [...topLanguages, ...additionalLanguages];
 
   // Load existing data if available
   useEffect(() => {
@@ -346,9 +446,9 @@ export default function OnboardingCulture() {
 
   // Language preference options
   const languageOptions = [
-    { value: 'english_only', label: 'English Only' },
-    { value: 'willing_to_learn', label: 'Will Learn' },
-    { value: 'comfortable', label: 'Flexible' }
+    { value: 'languages_i_speak', label: 'Languages I Speak' },
+    { value: 'basic_english', label: 'Basic English' },
+    { value: 'will_learn', label: 'Will Learn' }
   ];
 
   // Urban/Rural options
@@ -359,38 +459,6 @@ export default function OnboardingCulture() {
   ];
 
 
-  // Simple slider component with consistent icon colors
-  const ImportanceSlider = ({ category, icon }) => {
-    const value = formData.cultural_importance[category.id];
-    
-    return (
-      <div className="mb-2">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center">
-            {React.createElement(icon, { size: 16, className: `mr-1.5 lg:mr-2 ${uiConfig.colors.body}` })}
-            <span className={`text-xs sm:text-sm lg:text-base ${uiConfig.colors.body}`}>
-              {category.label}
-            </span>
-          </div>
-          <span className={`text-xs sm:text-sm lg:text-base ${uiConfig.font.weight.medium} text-scout-accent-300 dark:text-scout-accent-300`}>
-            {((value - 1) * 25)}%
-          </span>
-        </div>
-        <input
-          type="range"
-          min="1"
-          max="5"
-          step="1"
-          value={value}
-          onChange={(e) => handleImportanceChange(category.id, parseInt(e.target.value))}
-          className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-scout-accent-300 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
-          style={{
-            background: `linear-gradient(to right, rgb(var(--scout-accent-300)) 0%, rgb(var(--scout-accent-300)) ${(value - 1) * 25}%, rgb(var(--gray-200)) ${(value - 1) * 25}%, rgb(var(--gray-200)) 100%)`
-          }}
-        />
-      </div>
-    );
-  };
 
   return (
       <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -449,7 +517,39 @@ export default function OnboardingCulture() {
             </SelectionGrid>
           </SelectionSection>
 
-          {/* Language Preferences - moved to fourth position */}
+          {/* Languages You Speak - moved above Language Preference */}
+          <SelectionSection icon={Globe2} title="Languages You Speak">
+            <SelectionGrid>
+              {/* Top 5 language cards */}
+              {topLanguages.map((lang) => (
+                <SelectionCard
+                  key={lang.id}
+                  title={lang.label}
+                  isSelected={formData.language_comfort.already_speak.includes(lang.id)}
+                  onClick={() => {
+                    const currentLanguages = formData.language_comfort.already_speak || [];
+                    const isSelected = currentLanguages.includes(lang.id);
+                    handleLanguageChange(
+                      isSelected 
+                        ? currentLanguages.filter(l => l !== lang.id)
+                        : [...currentLanguages, lang.id]
+                    );
+                  }}
+                  size="small"
+                />
+              ))}
+              
+              {/* Add Language button with dropdown */}
+              <AddLanguageDropdown
+                selectedLanguages={formData.language_comfort.already_speak}
+                onChange={handleLanguageChange}
+                additionalLanguages={additionalLanguages}
+                topLanguages={topLanguages}
+              />
+            </SelectionGrid>
+          </SelectionSection>
+
+          {/* Language Preference - now after Languages You Speak */}
           <SelectionSection icon={Languages} title="Language Preference">
             <SelectionGrid>
               {languageOptions.map((option) => (
@@ -464,69 +564,38 @@ export default function OnboardingCulture() {
             </SelectionGrid>
           </SelectionSection>
 
-          {/* Languages you speak - after Language Preference */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 flex items-center`}>
-              <Languages size={16} className="mr-1.5 lg:mr-2" />
-              Languages you speak
-            </label>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
-              {/* Primary Language */}
-              <LanguageSelect
-                value={formData.language_comfort.already_speak[0] || ''}
-                onChange={(e) => {
-                  const newLanguages = [...formData.language_comfort.already_speak];
-                  newLanguages[0] = e.target.value;
-                  const uniqueLanguages = [...new Set(newLanguages.filter(Boolean))];
-                  handleLanguageChange(uniqueLanguages);
-                }}
-                label="Primary"
-                languages={languages}
-              />
-
-              {/* Secondary Language */}
-              <LanguageSelect
-                value={formData.language_comfort.already_speak[1] || ''}
-                onChange={(e) => {
-                  const newLanguages = [...formData.language_comfort.already_speak];
-                  newLanguages[1] = e.target.value;
-                  const uniqueLanguages = [...new Set(newLanguages.filter(Boolean))];
-                  handleLanguageChange(uniqueLanguages);
-                }}
-                label="Secondary"
-                languages={languages}
-              />
-
-              {/* Optional Language */}
-              <LanguageSelect
-                value={formData.language_comfort.already_speak[2] || ''}
-                onChange={(e) => {
-                  const newLanguages = [...formData.language_comfort.already_speak];
-                  newLanguages[2] = e.target.value;
-                  const uniqueLanguages = [...new Set(newLanguages.filter(Boolean))];
-                  handleLanguageChange(uniqueLanguages);
-                }}
-                label="Optional"
-                languages={languages}
-              />
+          {/* Cultural & Lifestyle Priorities - converted to SelectionCards */}
+          <SelectionSection icon={Music} title="Cultural & Lifestyle Priorities">
+            <div className="space-y-3">
+              {culturalCategories.map((category) => {
+                const value = formData.cultural_importance[category.id];
+                const importanceOptions = [
+                  { value: 1, label: 'Not Important' },
+                  { value: 3, label: 'Nice to Have' },
+                  { value: 5, label: 'Very Important' }
+                ];
+                
+                return (
+                  <div key={category.id}>
+                    <label className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} block mb-2`}>
+                      {category.label}
+                    </label>
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                      {importanceOptions.map((option) => (
+                        <SelectionCard
+                          key={option.value}
+                          title={option.label}
+                          isSelected={value === option.value}
+                          onClick={() => handleImportanceChange(category.id, option.value)}
+                          size="small"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          </div>
-
-          {/* Cultural & Lifestyle Priorities */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 block`}>
-              Cultural & Lifestyle Priorities
-            </label>
-            <div className="space-y-1.5">
-              {culturalCategories.map((category) => (
-                <ImportanceSlider 
-                  key={category.id} 
-                  category={category} 
-                  icon={category.icon}
-                />
-              ))}
-            </div>
-          </div>
+          </SelectionSection>
 
           {/* Summary Section */}
           {(formData.expat_community_preference.length > 0 ||
@@ -553,7 +622,7 @@ export default function OnboardingCulture() {
                 )}
                 {formData.language_comfort.already_speak.length > 0 && (
                   <div><span className={`${uiConfig.font.weight.medium}`}>Speaks:</span> {formData.language_comfort.already_speak.map(langId => 
-                    languages.find(l => l.id === langId)?.label
+                    allLanguages.find(l => l.id === langId)?.label
                   ).filter(Boolean).join(', ')}</div>
                 )}
               </div>
