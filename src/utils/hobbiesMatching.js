@@ -1,4 +1,4 @@
-import supabase from './supabaseClient';
+import supabase from './supabaseClient.js';
 
 /**
  * Enhanced hobbies matching using normalized hobbies database
@@ -201,44 +201,55 @@ export async function calculateHobbiesScore(userHobbies, town) {
     }
   });
 
-  // Calculate base score (0-80 points based on match percentage)
+  // Calculate base score - REALISTIC scoring based on actual matches
   if (totalUserHobbies > 0) {
     const matchPercentage = (totalMatches / totalUserHobbies) * 100;
-    score = Math.min(80, matchPercentage * 0.8);
+    
+    // Direct proportional scoring - no inflation
+    score = Math.min(85, matchPercentage * 0.85);  // Cap at 85 to leave room for bonuses
     
     // Add factors based on match quality
-    if (matchPercentage >= 90) {
+    if (matchPercentage >= 80) {
       factors.push({ 
         factor: `${totalMatches}/${totalUserHobbies} hobbies available`, 
-        score: matchPercentage 
+        score: Math.round(score) 
       });
-    } else if (matchPercentage >= 70) {
+    } else if (matchPercentage >= 60) {
       factors.push({ 
         factor: `Most hobbies available (${totalMatches}/${totalUserHobbies})`, 
-        score: matchPercentage 
+        score: Math.round(score) 
       });
-    } else if (matchPercentage >= 50) {
+    } else if (matchPercentage >= 40) {
       factors.push({ 
         factor: `Some hobbies available (${totalMatches}/${totalUserHobbies})`, 
-        score: matchPercentage 
+        score: Math.round(score) 
+      });
+    } else if (matchPercentage >= 20) {
+      factors.push({ 
+        factor: `Few hobbies available (${totalMatches}/${totalUserHobbies})`, 
+        score: Math.round(score) 
       });
     } else {
       factors.push({ 
         factor: `Limited hobby matches (${totalMatches}/${totalUserHobbies})`, 
-        score: matchPercentage 
+        score: Math.round(score) 
       });
     }
   }
 
-  // Bonus for travel infrastructure (up to 20 points)
+  // Bonus for travel infrastructure (up to 15 points)
   if (userHobbies.travel_frequency) {
     const hasAirport = town.activity_infrastructure?.airport || 
                       town.transport_links?.includes('airport') ||
                       town.distance_to_airport < 50;
     
     if (userHobbies.travel_frequency === 'frequent' && hasAirport) {
-      score += 20;
-      factors.push({ factor: 'Good airport access for frequent travel', score: 20 });
+      score += 15;
+      factors.push({ factor: 'Good airport access for frequent travel', score: 15 });
+    } else if (userHobbies.travel_frequency === 'frequent' && !hasAirport) {
+      // Penalty for frequent travelers without good airport access
+      score -= 10;
+      factors.push({ factor: 'Poor airport access for frequent traveler', score: -10 });
     } else if (userHobbies.travel_frequency === 'occasional' && hasAirport) {
       score += 10;
       factors.push({ factor: 'Airport access for occasional travel', score: 10 });

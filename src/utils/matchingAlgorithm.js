@@ -12,47 +12,9 @@
 
 import supabase from './supabaseClient';
 import { getOnboardingProgress } from './onboardingUtils';
-import { calculateEnhancedMatch } from './enhancedMatchingAlgorithm';
-import { 
-  generateEnhancedInsights, 
-  generateEnhancedWarnings, 
-  generateEnhancedHighlights 
-} from './enhancedMatchingHelpers';
+import { scoreTownsBatch } from './unifiedScoring';
 
-/**
- * Convert user preferences to enhanced algorithm format
- */
-const convertPreferencesForEnhancedAlgorithm = (userPreferences) => {
-  // IMPORTANT: NO DEFAULTS! Empty preferences should remain empty
-  // so the algorithm gives 100% scores for categories with no preferences
-  
-  const climateData = userPreferences.climate || userPreferences.climate_preferences || {};
-  const budgetData = userPreferences.costs || userPreferences.budget_preferences || {};
-  
-  // Handle region preferences - combine countries and regions from top-level fields
-  const regionPreferences = userPreferences.region || userPreferences.region_preferences || {};
-  
-  // If top-level countries/regions exist, ensure they're in the region_preferences object
-  if (userPreferences.countries || userPreferences.regions) {
-    regionPreferences.countries = userPreferences.countries || regionPreferences.countries || [];
-    regionPreferences.regions = userPreferences.regions || regionPreferences.regions || [];
-  }
-  
-  // Add geographic_features if present at top level
-  if (userPreferences.geographic_features) {
-    regionPreferences.geographic_features = userPreferences.geographic_features;
-  }
-  
-  return {
-    region_preferences: regionPreferences,
-    climate_preferences: climateData,  // NO DEFAULTS!
-    culture_preferences: userPreferences.culture || userPreferences.culture_preferences || {},
-    hobbies_preferences: userPreferences.hobbies || userPreferences.hobbies_preferences || {},
-    admin_preferences: userPreferences.administration || userPreferences.admin_preferences || {},
-    budget_preferences: budgetData,    // NO DEFAULTS!
-    current_status: userPreferences.current_status || {}
-  };
-};
+// Conversion function moved to unifiedScoring.js to avoid duplication
 
 /**
  * Clear cached personalized results for a user
@@ -141,8 +103,9 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     if (cachedResult) {
       const parsed = JSON.parse(cachedResult);
       if (Date.now() - parsed.timestamp < 3600000) { // 1 hour cache
-        // Returning cached results for performance
-        return parsed.data;
+        console.log('⚠️ Returning CACHED results - clear sessionStorage to see new scoring');
+        // TEMPORARILY DISABLE CACHE TO DEBUG
+        // return parsed.data;
       }
     }
 
@@ -212,53 +175,16 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       }
     }
 
-    // 3. Score each town based on user preferences using enhanced algorithm
-    const scoredTowns = await Promise.all(allTowns.map(async (town) => {
-      // Convert preferences to enhanced algorithm format
-      const convertedPreferences = convertPreferencesForEnhancedAlgorithm(finalUserPreferences);
-      
-      // Call enhanced matching with correct parameter order
-      const enhancedResult = await calculateEnhancedMatch(convertedPreferences, town);
-      
-      // Generate additional insights using helper functions
-      const insights = generateEnhancedInsights(town, convertedPreferences, enhancedResult.category_scores);
-      const warnings = generateEnhancedWarnings(town, convertedPreferences);
-      const highlights = generateEnhancedHighlights(town, enhancedResult.category_scores);
-      
-      // Convert match factors to match reasons
-      const matchReasons = enhancedResult.top_factors
-        .filter(f => f.score > 0)
-        .map(f => f.factor);
-      
-      // Determine confidence based on score
-      let confidence = 'Low';
-      if (enhancedResult.match_score >= 85) confidence = 'Very High';
-      else if (enhancedResult.match_score >= 70) confidence = 'High';
-      else if (enhancedResult.match_score >= 55) confidence = 'Medium';
-      
-      // Calculate value rating (budget score as percentage of match score)
-      const valueRating = enhancedResult.category_scores.budget >= 80 ? 5 : 
-                         enhancedResult.category_scores.budget >= 60 ? 4 :
-                         enhancedResult.category_scores.budget >= 40 ? 3 : 2;
-      
-      return {
-        ...town,
-        matchScore: enhancedResult.match_score,
-        matchReasons: matchReasons,
-        categoryScores: enhancedResult.category_scores,
-        warnings: warnings,
-        insights: insights,
-        highlights: highlights,
-        confidence: confidence,
-        valueRating: valueRating
-      };
-    }));
+    // 3. Score each town using the unified scoring function
+    const scoredTowns = await scoreTownsBatch(allTowns, finalUserPreferences);
 
     // 4. Sort by match score (highest first) and paginate (unless specific townIds requested)
     let sortedTowns;
     if (townIds && Array.isArray(townIds) && townIds.length > 0) {
-      // For specific town IDs, return all towns without pagination
-      sortedTowns = scoredTowns.sort((a, b) => b.matchScore - a.matchScore);
+      // For specific town IDs, return ONLY those specific towns (no pagination)
+      sortedTowns = scoredTowns
+        .filter(town => townIds.includes(town.id))
+        .sort((a, b) => b.matchScore - a.matchScore);
     } else {
       // For general discovery, use pagination
       sortedTowns = scoredTowns

@@ -450,8 +450,7 @@ export default function OnboardingHobbies() {
     ].sort(),
     
     'Museums & History Related': [
-      'Antique collecting', 'Astronomy', 'Genealogy', 'Historical sites', 'Museums', 
-      'Train spotting'
+      'Antique collecting', 'Astronomy', 'Genealogy', 'Historical sites', 'Museums'
     ].sort(),
     
     'Social & Community': [
