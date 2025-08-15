@@ -266,7 +266,8 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
         countries: data.countries || [],
         provinces: data.provinces || [],
         geographic_features: data.geographic_features || [],
-        vegetation_types: data.vegetation_types || []
+        vegetation_types: data.vegetation_types || [],
+        mobility: data.mobility || { local: [], regional: [], international: [] }
       },
       climate_preferences: {
         summer_climate_preference: data.summer_climate_preference || [],

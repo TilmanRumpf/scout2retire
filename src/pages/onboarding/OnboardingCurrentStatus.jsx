@@ -595,7 +595,6 @@ export default function OnboardingCurrentStatus() {
                         }`
                       : "Select your citizenship"
                   }
-                  icon={Globe}
                   isSelected={formData.citizenship.primary_citizenship !== ''}
                   onClick={() => setExpandedCitizenship(expandedCitizenship === 0 ? -1 : 0)}
                   showCheckmark={formData.citizenship.primary_citizenship !== ''}
@@ -700,7 +699,6 @@ export default function OnboardingCurrentStatus() {
                           }`
                         : "Select partner's citizenship"
                     }
-                    icon={Globe}
                     isSelected={formData.partner_citizenship.primary_citizenship !== ''}
                     onClick={() => setExpandedCitizenship(expandedCitizenship === 1 ? -1 : 1)}
                     showCheckmark={formData.partner_citizenship.primary_citizenship !== ''}
@@ -806,7 +804,6 @@ export default function OnboardingCurrentStatus() {
                           }`
                         : "Select children's citizenship"
                     }
-                    icon={Globe}
                     isSelected={formData.children_citizenship.primary_citizenship !== ''}
                     onClick={() => setExpandedCitizenship(expandedCitizenship === 2 ? -1 : 2)}
                     showCheckmark={formData.children_citizenship.primary_citizenship !== ''}

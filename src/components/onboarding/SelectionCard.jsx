@@ -64,7 +64,7 @@ export const SelectionCard = ({
             {description && (
               <p className={`text-xs sm:text-sm ${
                 isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : uiConfig.colors.hint
-              }`}>
+              } truncate`}>
                 {description}
               </p>
             )}

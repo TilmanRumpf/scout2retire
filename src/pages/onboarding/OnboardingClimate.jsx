@@ -305,23 +305,34 @@ export default function OnboardingClimate() {
           </SelectionSection>
 
           {/* Seasonal Preference */}
-          <div className="mb-4">
-            <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 block`}>
-              Seasonal Preference
-            </label>
-            <select
-              name="seasonal_preference"
-              value={formData.seasonal_preference}
-              onChange={handleInputChange}
-              className={uiConfig.components.select}
-            >
-              <option value="">Select preference</option>
-              <option value="Optional">No specific preference</option>
-              <option value="all_seasons">I enjoy all seasons equally</option>
-              <option value="summer_focused">I prefer warm seasons</option>
-              <option value="winter_focused">I prefer cool seasons</option>
-            </select>
-          </div>
+          <SelectionSection icon={Cloud} title="Seasonal Preference">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+              <SelectionCard
+                title="No Preference"
+                isSelected={formData.seasonal_preference === 'Optional'}
+                onClick={() => setFormData(prev => ({ ...prev, seasonal_preference: 'Optional' }))}
+                size="small"
+              />
+              <SelectionCard
+                title="All Seasons"
+                isSelected={formData.seasonal_preference === 'all_seasons'}
+                onClick={() => setFormData(prev => ({ ...prev, seasonal_preference: 'all_seasons' }))}
+                size="small"
+              />
+              <SelectionCard
+                title="Warm Seasons"
+                isSelected={formData.seasonal_preference === 'summer_focused'}
+                onClick={() => setFormData(prev => ({ ...prev, seasonal_preference: 'summer_focused' }))}
+                size="small"
+              />
+              <SelectionCard
+                title="Cool Seasons"
+                isSelected={formData.seasonal_preference === 'winter_focused'}
+                onClick={() => setFormData(prev => ({ ...prev, seasonal_preference: 'winter_focused' }))}
+                size="small"
+              />
+            </div>
+          </SelectionSection>
 
           {/* Summary Section */}
           {(formData.summer_climate_preference.length > 0 || 

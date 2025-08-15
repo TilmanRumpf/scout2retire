@@ -164,6 +164,14 @@ export default function OnboardingCosts() {
     income_tax_sensitive: false
   });
   
+  // Helper function to find closest tier value
+  const findClosestTier = (value, tiers) => {
+    if (!value) return tiers[0]?.value;
+    return tiers.reduce((prev, curr) => 
+      Math.abs(curr.value - value) < Math.abs(prev.value - value) ? curr : prev
+    ).value;
+  };
+  
   // Enable auto-save for this page
   const autoSave = useOnboardingAutoSave(formData, 'costs');
 

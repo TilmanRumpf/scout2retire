@@ -27,6 +27,17 @@ export const saveUserPreferences = async (userId, stepName, stepData) => {
       console.log('Mobility data being saved to user_preferences:', dataToSave.mobility);
     }
     
+    // For region_preferences step, ensure mobility is properly formatted as JSON
+    if (stepName === 'region_preferences' && stepData.mobility) {
+      // Ensure mobility is saved with proper array structure
+      dataToSave.mobility = {
+        local: Array.isArray(stepData.mobility.local) ? stepData.mobility.local : [],
+        regional: Array.isArray(stepData.mobility.regional) ? stepData.mobility.regional : [],
+        international: Array.isArray(stepData.mobility.international) ? stepData.mobility.international : []
+      };
+      console.log('Region page: Mobility data being saved to user_preferences:', dataToSave.mobility);
+    }
+    
     let result;
     
     if (existing) {
