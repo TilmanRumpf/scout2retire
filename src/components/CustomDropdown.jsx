@@ -70,7 +70,7 @@ export const CustomDropdown = ({
         <>
           {/* Mobile backdrop with proper z-index */}
           <div 
-            className="sm:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" 
+            className="sm:hidden fixed inset-0 z-40 bg-black/50 transition-opacity duration-200" 
             onClick={() => {
               setIsOpen(false);
               setSearchTerm('');
@@ -78,7 +78,7 @@ export const CustomDropdown = ({
           />
           
           {/* Mobile dropdown - full width bottom sheet with proper animation */}
-          <div className={`sm:hidden fixed left-0 right-0 bottom-0 z-50 bg-white dark:bg-gray-800 rounded-t-3xl shadow-2xl animate-in slide-in-from-bottom duration-300`}>
+          <div className={`sm:hidden fixed left-0 right-0 bottom-0 z-50 bg-white dark:bg-gray-800 rounded-t-3xl shadow-2xl transition-transform duration-300 transform translate-y-0`}>
             {/* Header with drag handle */}
             <div className="sticky top-0 bg-white dark:bg-gray-800 rounded-t-3xl">
               {/* Drag handle */}
@@ -157,7 +157,7 @@ export const CustomDropdown = ({
           </div>
           
           {/* Desktop dropdown - improved positioning */}
-          <div className={`hidden sm:block absolute z-50 w-full mt-2 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200`}>
+          <div className={`hidden sm:block absolute z-50 w-full mt-2 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden transition-all duration-200`}>
           {/* Search input for desktop - consistent threshold */}
           {showSearch && options.length > 8 && (
             <div className="p-2 border-b border-gray-200 dark:border-gray-700">
