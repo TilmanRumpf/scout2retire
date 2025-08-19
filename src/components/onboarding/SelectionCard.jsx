@@ -17,9 +17,9 @@ export const SelectionCard = ({
   showCheckmark = true
 }) => {
   const sizeClasses = {
-    small: 'p-3 sm:p-4 min-h-[60px] sm:min-h-[70px]',
-    default: 'p-4 sm:p-5 min-h-[80px] sm:min-h-[90px]',
-    large: 'p-5 sm:p-6 min-h-[100px] sm:min-h-[110px]'
+    small: 'p-2 min-[410px]:p-1.5 sm:p-3.5 md:p-4 h-[75px] sm:h-[80px] md:h-[85px]',
+    default: 'p-2 min-[410px]:p-1.5 sm:p-4 md:p-5 h-[75px] sm:h-[80px] md:h-[90px]',
+    large: 'p-2 min-[410px]:p-1.5 sm:p-4 md:p-6 h-[75px] sm:h-[85px] md:h-[110px]'
   };
 
   return (
@@ -40,31 +40,31 @@ export const SelectionCard = ({
     >
       {/* Selection indicator */}
       {showCheckmark && isSelected && (
-        <div className="absolute top-2 right-2">
-          <div className="w-6 h-6 bg-scout-accent-500 rounded-full flex items-center justify-center">
-            <Check className="w-4 h-4 text-white" />
+        <div className="absolute top-1 right-1">
+          <div className="w-5 h-5 bg-scout-accent-500 rounded-full flex items-center justify-center">
+            <Check className="w-3 h-3 text-white" />
           </div>
         </div>
       )}
       
       {/* Card content */}
-      <div className={showCheckmark && isSelected ? 'pr-10' : 'pr-2'}>
-        <div className="flex items-start">
+      <div className="flex items-center h-full">
+        <div className="flex items-start w-full">
           {Icon && (
             <Icon className={`w-5 h-5 mt-0.5 mr-2 flex-shrink-0 ${
               isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'
             }`} />
           )}
-          <div className="flex-1">
+          <div className={`flex-1 min-w-0 ${showCheckmark && isSelected ? 'pr-6' : 'pr-1'}`}>
             <h3 className={`${uiConfig.font.weight.semibold} ${
               isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : uiConfig.colors.heading
-            } text-sm sm:text-base mb-1 whitespace-nowrap`}>
+            } text-xs sm:text-sm md:text-base truncate`}>
               {title}
             </h3>
             {description && (
-              <p className={`text-xs sm:text-sm ${
+              <p className={`text-[10px] sm:text-xs md:text-sm ${
                 isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : uiConfig.colors.hint
-              } truncate`}>
+              } truncate mt-0.5`}>
                 {description}
               </p>
             )}
@@ -83,10 +83,10 @@ export const SelectionGrid = ({
   columns = 'default' // 'default' (3), 'two', 'four', 'single'
 }) => {
   const columnClasses = {
-    single: 'grid grid-cols-1 gap-3 sm:gap-4',
-    two: 'grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4',
-    default: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4',
-    four: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4'
+    single: 'grid grid-cols-1 gap-2 sm:gap-3 md:gap-4',
+    two: 'grid grid-cols-2 gap-1.5 min-[410px]:gap-1 sm:gap-2.5 md:gap-4',
+    default: 'grid grid-cols-3 gap-1.5 min-[410px]:gap-1 sm:gap-2.5 md:gap-4',
+    four: 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 min-[410px]:gap-1 sm:gap-2.5 md:gap-4'
   };
 
   return (

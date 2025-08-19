@@ -21,19 +21,16 @@ const DateSelect = ({ value, onChange, name, label, options, getOptionLabel }) =
   const displayLabel = selectedOption ? 
     (getOptionLabel ? getOptionLabel(selectedOption) : 
      (typeof selectedOption === 'object' ? selectedOption.label : selectedOption)) : 
-    'Select...';
+    label;
   
   return (
     <div className="relative">
-      <label className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} block mb-1`}>
-        {label}
-      </label>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          w-full p-4 sm:p-5 min-h-[80px] sm:min-h-[90px] ${uiConfig.layout.radius.lg} 
-          border-2 ${uiConfig.animation.transition} text-left relative overflow-hidden cursor-pointer
+          w-full p-2 min-[410px]:p-1.5 sm:p-4 md:p-5 h-[75px] sm:h-[80px] md:h-[90px] ${uiConfig.layout.radius.lg} 
+          border-2 ${uiConfig.animation.transition} text-left relative overflow-hidden cursor-pointer flex items-center
           ${value 
             ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 shadow-md' 
             : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/30 hover:border-scout-accent-300 hover:shadow-md'
@@ -43,18 +40,27 @@ const DateSelect = ({ value, onChange, name, label, options, getOptionLabel }) =
       >
         {/* Checkmark indicator */}
         {value && (
-          <div className="absolute top-2 right-2">
-            <div className="w-6 h-6 bg-scout-accent-500 rounded-full flex items-center justify-center">
-              <Check className="w-4 h-4 text-white" />
+          <div className="absolute top-1 right-1">
+            <div className="w-5 h-5 bg-scout-accent-500 rounded-full flex items-center justify-center">
+              <Check className="w-3 h-3 text-white" />
             </div>
           </div>
         )}
         
-        <div className={value ? 'pr-10' : 'pr-2'}>
-          <div className={`${uiConfig.font.weight.medium} ${
-            value ? 'text-scout-accent-700 dark:text-scout-accent-300' : 'text-gray-500 dark:text-gray-400'
-          } text-sm sm:text-base`}>
-            {displayLabel}
+        <div className="flex-1">
+          <div className="flex-1 min-w-0">
+            <h3 className={`${uiConfig.font.weight.semibold} ${
+              value ? 'text-scout-accent-700 dark:text-scout-accent-300' : uiConfig.colors.heading
+            } text-xs sm:text-sm md:text-base truncate`}>
+              {label}
+            </h3>
+            {value && (
+              <p className={`text-[10px] sm:text-xs md:text-sm ${
+                'text-scout-accent-600 dark:text-scout-accent-400'
+              } truncate mt-0.5`}>
+                {displayLabel}
+              </p>
+            )}
           </div>
         </div>
       </button>
@@ -66,7 +72,43 @@ const DateSelect = ({ value, onChange, name, label, options, getOptionLabel }) =
             className="fixed inset-0 z-40" 
             onClick={() => setIsOpen(false)}
           />
-          <div className={`absolute top-full left-0 right-0 mt-1 z-50 bg-white dark:bg-gray-800 
+          {/* Mobile dropdown - full width */}
+          <div className={`sm:hidden fixed left-0 right-0 bottom-0 z-50 bg-white dark:bg-gray-800 
+            rounded-t-2xl border-t-2 border-gray-300 dark:border-gray-600 shadow-2xl 
+            max-h-[50vh] overflow-y-auto animate-slide-up`}>
+            <div className="sticky top-0 bg-white dark:bg-gray-800 p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{label}</span>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <span className="text-sm">Done</span>
+                </button>
+              </div>
+            </div>
+            {options.map((option, index) => {
+              const optValue = typeof option === 'object' ? option.value : option;
+              const optLabel = getOptionLabel ? getOptionLabel(option) : 
+                             (typeof option === 'object' ? option.label : option);
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => {
+                    onChange({ target: { name, value: optValue } });
+                    setIsOpen(false);
+                  }}
+                  className={`w-full p-4 text-left text-base hover:bg-gray-50 dark:hover:bg-gray-700/30 
+                    ${uiConfig.animation.transition} ${value === optValue ? 'bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 font-medium' : ''}`}
+                >
+                  {optLabel}
+                </button>
+              );
+            })}
+          </div>
+          {/* Desktop dropdown - current behavior */}
+          <div className={`hidden sm:block absolute top-full left-0 right-0 mt-1 z-50 bg-white dark:bg-gray-800 
             ${uiConfig.layout.radius.lg} border-2 border-gray-300 dark:border-gray-600 shadow-lg 
             max-h-60 overflow-y-auto`}>
             {options.map((option, index) => {
@@ -129,6 +171,7 @@ export default function OnboardingCurrentStatus() {
   
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
   const navigate = useNavigate();
   
@@ -213,6 +256,9 @@ export default function OnboardingCurrentStatus() {
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     
+    // Mark as having unsaved changes
+    setHasUnsavedChanges(true);
+    
     // Mark field as touched
     setTouchedFields(prev => ({
       ...prev,
@@ -269,6 +315,7 @@ export default function OnboardingCurrentStatus() {
   };
 
   const handleFamilyStatusChange = (status) => {
+    setHasUnsavedChanges(true);
     setFormData(prev => ({
       ...prev,
       family_situation: status,
@@ -286,6 +333,7 @@ export default function OnboardingCurrentStatus() {
   };
 
   const handleRetirementStatusChange = (status) => {
+    setHasUnsavedChanges(true);
     setFormData(prev => ({
       ...prev,
       retirement_timeline: {
@@ -296,6 +344,7 @@ export default function OnboardingCurrentStatus() {
   };
 
   const handlePetChange = (petType) => {
+    setHasUnsavedChanges(true);
     setFormData(prev => ({
       ...prev,
       pet_owner: (prev.pet_owner || []).includes(petType)
@@ -307,6 +356,7 @@ export default function OnboardingCurrentStatus() {
   const handleSkip = async () => {
     setLoading(true);
     await autoSave();
+    setHasUnsavedChanges(false);
     setLoading(false);
     navigate('/onboarding/region');
   };
@@ -381,6 +431,7 @@ export default function OnboardingCurrentStatus() {
       }
       
       toast.success('Current status saved!');
+      setHasUnsavedChanges(false);
       
       // Also save to new user_preferences table
       try {
@@ -494,20 +545,16 @@ export default function OnboardingCurrentStatus() {
                 onClick={() => handleRetirementStatusChange('already_retired')}
               />
             </SelectionGrid>
-          </SelectionSection>
-
-          {/* Target Date */}
-          {formData.retirement_timeline.status !== 'already_retired' && (
-            <div className="mb-4">
-              <label className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2 lg:mb-3 block`}>
-                Target Retirement Date
-              </label>
-              {formData.retirement_timeline.status === 'retiring_soon' && (
-                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mb-2`}>
-                  Enter any date that works for you - even if it's coming up soon!
-                </p>
-              )}
-              <div className="grid grid-cols-3 gap-2 lg:gap-3 xl:gap-4">
+            
+            {/* Target Date */}
+            {formData.retirement_timeline.status !== 'already_retired' && (
+              <>
+                {formData.retirement_timeline.status === 'retiring_soon' && (
+                  <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-3 mb-2`}>
+                    Enter any date that works for you - even if it's coming up soon!
+                  </p>
+                )}
+                <div className={`grid grid-cols-3 gap-1.5 sm:gap-2.5 md:gap-4 ${formData.retirement_timeline.status === 'retiring_soon' ? '' : 'mt-3'}`}>
                 <DateSelect
                   name="retirement_timeline.target_month"
                   value={formData.retirement_timeline.target_month}
@@ -543,8 +590,9 @@ export default function OnboardingCurrentStatus() {
                   options={retirementYearOptions}
                 />
               </div>
-            </div>
-          )}
+              </>
+            )}
+          </SelectionSection>
 
           {/* Family Situation */}
           <SelectionSection icon={Users} title="Family Situation">
@@ -575,17 +623,11 @@ export default function OnboardingCurrentStatus() {
 
           {/* Citizenship */}
           <SelectionSection icon={Globe} title="Citizenship">
-            <div className={`${
-              formData.family_situation === 'family' 
-                ? 'grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4' 
-                : formData.family_situation === 'couple' 
-                  ? 'grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4' 
-                  : 'space-y-3 sm:space-y-4'
-            }`}>
+            <div className="grid grid-cols-3 gap-1.5 min-[410px]:gap-1 sm:gap-2.5 md:gap-4">
               {/* Your Citizenship Card */}
               <div>
                 <SelectionCard
-                  title="Your Citizenship"
+                  title="You"
                   description={
                     formData.citizenship.primary_citizenship 
                       ? `${countries.find(c => c.id === formData.citizenship.primary_citizenship)?.label || formData.citizenship.primary_citizenship}${
@@ -689,7 +731,7 @@ export default function OnboardingCurrentStatus() {
               {(formData.family_situation === 'couple' || formData.family_situation === 'family') && (
                 <div>
                   <SelectionCard
-                    title="Partner's Citizenship"
+                    title="Partner"
                     description={
                       formData.partner_citizenship.primary_citizenship 
                         ? `${countries.find(c => c.id === formData.partner_citizenship.primary_citizenship)?.label || formData.partner_citizenship.primary_citizenship}${
@@ -794,7 +836,7 @@ export default function OnboardingCurrentStatus() {
               {formData.family_situation === 'family' && (
                 <div>
                   <SelectionCard
-                    title="Children's Citizenship"
+                    title="Children"
                     description={
                       formData.children_citizenship.primary_citizenship 
                         ? `${countries.find(c => c.id === formData.children_citizenship.primary_citizenship)?.label || formData.children_citizenship.primary_citizenship}${
@@ -958,17 +1000,12 @@ export default function OnboardingCurrentStatus() {
         </form>
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
-        <div className={`fixed sm:sticky bottom-0 left-0 right-0 sm:relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-6 lg:mt-8`}>
+        <div className={`fixed sm:sticky bottom-0 left-0 right-0 sm:relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-t ${uiConfig.colors.borderLight} p-4 sm:p-4 sm:border-t sm:mt-6 lg:mt-8`}>
           <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto">
             <div className="flex items-center">
               <button
                 type="button"
-                onClick={async () => {
-                  setLoading(true);
-                  await autoSave();
-                  setLoading(false);
-                  navigate('/welcome');
-                }}
+                onClick={() => navigate('/welcome')}
                 disabled={loading}
                 className={uiConfig.components.buttonSecondary}
               >
@@ -983,14 +1020,19 @@ export default function OnboardingCurrentStatus() {
                   Skip
                 </button>
               </div>
-              <button
-                type="submit"
-                disabled={loading}
-                onClick={handleSubmit}
-                className={uiConfig.components.buttonPrimary}
-              >
-                {loading ? 'Saving...' : 'Next →'}
-              </button>
+              <div className="relative">
+                {hasUnsavedChanges && !loading && (
+                  <span className="absolute -top-1 -left-2 w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+                )}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  onClick={handleSubmit}
+                  className={uiConfig.components.buttonPrimary}
+                >
+                  {loading ? 'Saving...' : hasUnsavedChanges ? 'Save & Next →' : 'Next →'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
