@@ -40,7 +40,7 @@ const HealthSelect = ({ value, onChange, name, label, options }) => {
         <div className="flex flex-col justify-center h-full">
           <div className={`${uiConfig.onboardingButton.typography.title.weight} ${
             value && value !== '' ? uiConfig.onboardingButton.typography.title.selectedColor : 'text-gray-500 dark:text-gray-400'
-          } ${uiConfig.onboardingButton.typography.title.size} ${uiConfig.onboardingButton.typography.title.truncate} ${value && value !== '' ? 'pr-6' : ''}`}>
+          } ${uiConfig.onboardingButton.typography.title.size} ${value && value !== '' ? 'pr-6' : ''}`}>
             {selectedOption ? selectedOption.label : 'None'}
           </div>
         </div>

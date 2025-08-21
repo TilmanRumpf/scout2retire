@@ -65,13 +65,13 @@ const MobilityDropdown = ({ values = [], onChange, label, options, icon: Icon })
           {/* Title - using centralized typography */}
           <div className={`${uiConfig.onboardingButton.typography.title.weight} ${
             values.length > 0 ? uiConfig.onboardingButton.typography.title.selectedColor : uiConfig.onboardingButton.typography.title.unselectedColor
-          } ${uiConfig.onboardingButton.typography.title.size} ${uiConfig.onboardingButton.typography.title.truncate} ${values.length > 0 ? 'pr-6' : ''}`}>
+          } ${uiConfig.onboardingButton.typography.title.size} ${values.length > 0 ? 'pr-6' : ''}`}>
             {label}
           </div>
           {/* Subtitle - using centralized typography */}
           <div className={`${uiConfig.onboardingButton.typography.subtitle.size} ${
             values.length > 0 ? uiConfig.onboardingButton.typography.subtitle.selectedColor : uiConfig.onboardingButton.typography.subtitle.unselectedColor
-          } ${uiConfig.onboardingButton.typography.subtitle.truncate}`}>
+          } ${uiConfig.onboardingButton.typography.subtitle.spacing} truncate`}>
             {values.length === 0 ? 'Select your preferences' : getDisplayText()}
           </div>
         </div>
