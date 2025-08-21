@@ -206,22 +206,6 @@ const ActivitySection = ({
           );
         })}
         
-        {/* Add Custom Button */}
-        {expanded && (
-          <ActivityCard
-            id="add-more"
-            label="Add More"
-            description={customPlaceholder?.replace('Add custom ', '') || "Add your own"}
-            isSelected={false}
-            onClick={() => {
-              // For now, just create a temporary implementation
-              const customValue = prompt(customPlaceholder || "Add custom item:");
-              if (customValue) {
-                handleAddCustom(customValue);
-              }
-            }}
-          />
-        )}
       </div>
     </div>
   );
