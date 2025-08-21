@@ -33,7 +33,7 @@ const ActivityCard = ({ id, label, description, isSelected, onClick, size = 'def
         <h3 className={`${uiConfig.onboardingButton.typography.title.weight} ${
           isSelected ? uiConfig.onboardingButton.typography.title.selectedColor : uiConfig.onboardingButton.typography.title.unselectedColor
         } ${uiConfig.onboardingButton.typography.title.size} ${isSelected ? 'pr-6' : ''}`}>
-          {typeof label === 'string' ? label.replace(/^\+\s*/, '').replace('Add More', 'Add Custom Activity') : label}
+          {typeof label === 'string' ? label.replace(/^\+\s*/g, '').replace(/Add\s*More/gi, 'Add Custom Activity').trim() : label}
         </h3>
         {description && (
           <p className={`${uiConfig.onboardingButton.typography.subtitle.size} ${
