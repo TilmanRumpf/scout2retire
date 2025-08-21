@@ -580,7 +580,7 @@ export default function OnboardingCulture() {
                     <label className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} block mb-2`}>
                       {category.label}
                     </label>
-                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                    <div className="grid grid-cols-2 min-[428px]:grid-cols-3 gap-2 sm:gap-3">
                       {importanceOptions.map((option) => (
                         <SelectionCard
                           key={option.value}

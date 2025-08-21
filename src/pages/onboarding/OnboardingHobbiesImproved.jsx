@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Plane, Activity, ShoppingBag, Sparkles, Lightbulb, Plus, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Heart, Plane, Activity, ShoppingBag, Sparkles, Lightbulb, Plus, ChevronDown, ChevronUp, X, Check } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import { saveUserPreferences } from '../../utils/userPreferences';
@@ -8,43 +8,41 @@ import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 
-// Enhanced Activity Card Component with better visual design
+// Enhanced Activity Card Component - using centralized configuration
 const ActivityCard = ({ id, label, description, isSelected, onClick, size = 'default' }) => {
-  const sizeClasses = size === 'small' 
-    ? 'p-2 sm:p-2.5 min-h-[40px]' 
-    : 'p-3 sm:p-4 min-h-[48px] sm:min-h-[56px]';
+  // Use centralized button configuration - MUST use standard height
+  const buttonClasses = uiConfig.onboardingButton.getButtonClasses(isSelected, false);
   
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`relative ${sizeClasses} ${uiConfig.layout.radius.lg} border-2 ${uiConfig.animation.transition} 
-        transform hover:scale-[1.02] hover:shadow-md ${
-        isSelected
-          ? 'bg-gradient-to-br from-scout-accent-400 to-scout-accent-500 border-scout-accent-500 text-white shadow-md'
-          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-scout-accent-300 dark:hover:border-scout-accent-400'
-      }`}
+      className={buttonClasses}
     >
-      {/* Checkmark for selected items */}
+      {/* Checkmark for selected items - using centralized config */}
       {isSelected && (
-        <div className="absolute top-2 right-2 w-5 h-5 bg-white rounded-full flex items-center justify-center">
-          <span className="text-scout-accent-500 text-xs font-bold">✓</span>
+        <div className={uiConfig.onboardingButton.checkmark.position}>
+          <div className={uiConfig.onboardingButton.checkmark.container}>
+            <Check className={uiConfig.onboardingButton.checkmark.icon} />
+          </div>
         </div>
       )}
       
-      <div className={`text-sm sm:text-base ${uiConfig.font.weight.semibold} ${
-        isSelected ? 'text-white' : 'text-gray-800 dark:text-gray-200'
-      }`}>
-        {label}
+      {/* Content - using centralized typography */}
+      <div className="flex flex-col justify-center h-full">
+        <h3 className={`${uiConfig.onboardingButton.typography.title.weight} ${
+          isSelected ? uiConfig.onboardingButton.typography.title.selectedColor : uiConfig.onboardingButton.typography.title.unselectedColor
+        } ${uiConfig.onboardingButton.typography.title.size} ${isSelected ? 'pr-6' : ''}`}>
+          {label}
+        </h3>
+        {description && (
+          <p className={`${uiConfig.onboardingButton.typography.subtitle.size} ${
+            isSelected ? uiConfig.onboardingButton.typography.subtitle.selectedColor : uiConfig.onboardingButton.typography.subtitle.unselectedColor
+          } ${uiConfig.onboardingButton.typography.subtitle.spacing}`}>
+            {description}
+          </p>
+        )}
       </div>
-      
-      {description && (
-        <div className={`text-xs mt-1 ${
-          isSelected ? 'text-white/90' : 'text-gray-500 dark:text-gray-400'
-        }`}>
-          {description}
-        </div>
-      )}
     </button>
   );
 };
@@ -63,18 +61,21 @@ const CustomActivityInput = ({ onAdd, placeholder = "Add custom activity..." }) 
   };
 
   if (!isAdding) {
+    const buttonClasses = `${uiConfig.onboardingButton.dimensions.height} ${uiConfig.onboardingButton.dimensions.padding} 
+      ${uiConfig.layout.radius.lg} border-2 border-dashed 
+      border-gray-300 dark:border-gray-600 hover:border-scout-accent-300 
+      dark:hover:border-scout-accent-400 ${uiConfig.animation.transition}
+      flex items-center justify-center gap-2
+      bg-gray-50/50 dark:bg-gray-800/50 relative`;
+    
     return (
       <button
         type="button"
         onClick={() => setIsAdding(true)}
-        className={`p-3 sm:p-4 ${uiConfig.layout.radius.lg} border-2 border-dashed 
-          border-gray-300 dark:border-gray-600 hover:border-scout-accent-300 
-          dark:hover:border-scout-accent-400 ${uiConfig.animation.transition}
-          flex items-center justify-center gap-2 min-h-[48px] sm:min-h-[56px]
-          bg-gray-50/50 dark:bg-gray-800/50`}
+        className={buttonClasses}
       >
         <Plus size={16} className="text-gray-400" />
-        <span className="text-sm text-gray-500 dark:text-gray-400">
+        <span className={`${uiConfig.onboardingButton.typography.title.size} text-gray-500 dark:text-gray-400`}>
           {placeholder}
         </span>
       </button>
@@ -178,7 +179,7 @@ const ActivitySection = ({
       </div>
 
       {/* Items Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 min-[428px]:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
         {visibleItems.map((item) => (
           <ActivityCard
             key={item.id}
@@ -598,7 +599,7 @@ export default function OnboardingHobbiesImproved() {
               Travel Frequency
             </h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 min-[428px]:grid-cols-3 gap-3">
             {travelOptions.map((option) => (
               <ActivityCard
                 key={option.id}

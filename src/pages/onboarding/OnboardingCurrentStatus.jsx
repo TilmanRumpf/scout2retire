@@ -551,7 +551,7 @@ export default function OnboardingCurrentStatus() {
                     Enter any date that works for you - even if it's coming up soon!
                   </p>
                 )}
-                <div className={`grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 ${formData.retirement_timeline.status === 'retiring_soon' ? '' : 'mt-3'}`}>
+                <div className={`grid grid-cols-2 min-[428px]:grid-cols-3 gap-2 sm:gap-3 md:gap-4 ${formData.retirement_timeline.status === 'retiring_soon' ? '' : 'mt-3'}`}>
                 <DateSelect
                   name="retirement_timeline.target_month"
                   value={formData.retirement_timeline.target_month}
@@ -641,7 +641,7 @@ export default function OnboardingCurrentStatus() {
                 
                 {/* Your Citizenship Dropdown */}
                 {expandedCitizenship === 0 && (
-                  <div className={`mt-3 p-4 sm:p-5 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition}`}>
+                  <div className={`mt-3 p-3 sm:p-4 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition}`}>
                     <div>
                       <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 block`}>
                         Primary Citizenship *
@@ -745,7 +745,7 @@ export default function OnboardingCurrentStatus() {
                   
                   {/* Partner's Citizenship Dropdown */}
                   {expandedCitizenship === 1 && (
-                    <div className={`mt-3 p-4 sm:p-5 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition}`}>
+                    <div className={`mt-3 p-3 sm:p-4 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition}`}>
                       <div>
                         <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 block`}>
                           Partner's Primary Citizenship *
@@ -850,7 +850,7 @@ export default function OnboardingCurrentStatus() {
                   
                   {/* Children's Citizenship Dropdown */}
                   {expandedCitizenship === 2 && (
-                    <div className={`mt-3 p-4 sm:p-5 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition}`}>
+                    <div className={`mt-3 p-3 sm:p-4 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition}`}>
                       <div>
                         <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1.5 block`}>
                           Children's Primary Citizenship *

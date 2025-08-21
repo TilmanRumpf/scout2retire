@@ -494,7 +494,7 @@ export default function OnboardingCosts() {
             <h4 className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-3`}>
               What are you looking for?
             </h4>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 min-[428px]:grid-cols-3 gap-2 sm:gap-3">
               {housingPreferenceOptions.map((option) => (
                 <SelectionCard
                   key={option.id}
@@ -569,7 +569,7 @@ export default function OnboardingCosts() {
 
         {/* Mobility Preferences - Using styled dropdowns like administration page */}
         <SelectionSection icon={Car} title="Transportation Preferences">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 min-[428px]:grid-cols-3 gap-3 sm:gap-4">
             <MobilityDropdown
               values={formData.mobility.local || []}
               onChange={(values) => handleMobilityUpdate('local', values)}
@@ -601,7 +601,7 @@ export default function OnboardingCosts() {
           <p className={`${uiConfig.font.size.xs} lg:text-sm ${uiConfig.colors.hint} mb-3`}>
             Select which taxes are important to minimize in your retirement location
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+          <div className="grid grid-cols-2 min-[428px]:grid-cols-3 gap-2 sm:gap-3">
             {taxOptions.map((option) => (
               <SelectionCard
                 key={option.id}
