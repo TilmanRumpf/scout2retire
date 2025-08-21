@@ -763,7 +763,7 @@ const OnboardingRegion = () => {
                 
                 {/* First Preference Dropdown - appears right after its card */}
                 {expandedPreference === 0 && (
-                  <div className={`mt-3 p-4 sm:p-5 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition} relative z-10`}>
+                  <div className={`mt-3 p-3 sm:p-4 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition} relative z-10`}>
                     {/* Region dropdown */}
                     <div>
                       <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 sm:mb-1.5 block`}>
@@ -885,7 +885,7 @@ const OnboardingRegion = () => {
                 
                 {/* Second Preference Dropdown - appears right after its card */}
                 {expandedPreference === 1 && (
-                  <div className={`mt-3 p-4 sm:p-5 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition} relative z-10`}>
+                  <div className={`mt-3 p-3 sm:p-4 ${uiConfig.layout.radius.lg} bg-white dark:bg-gray-800/30 border-2 border-scout-accent-200 dark:border-scout-accent-600 shadow-lg space-y-3 ${uiConfig.animation.transition} relative z-10`}>
                     {/* Region dropdown */}
                     <div>
                       <label className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-1 sm:mb-1.5 block`}>
