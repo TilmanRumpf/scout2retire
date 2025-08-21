@@ -33,7 +33,18 @@ const ActivityCard = ({ id, label, description, isSelected, onClick, size = 'def
         <h3 className={`${uiConfig.onboardingButton.typography.title.weight} ${
           isSelected ? uiConfig.onboardingButton.typography.title.selectedColor : uiConfig.onboardingButton.typography.title.unselectedColor
         } ${uiConfig.onboardingButton.typography.title.size} ${isSelected ? 'pr-6' : ''}`}>
-          {typeof label === 'string' ? label.replace(/^\+\s*/g, '').replace(/Add\s*More/gi, 'Add Custom Activity').trim() : label}
+          {(() => {
+            let cleanLabel = label;
+            if (typeof cleanLabel === 'string') {
+              // Remove ANY plus character anywhere
+              cleanLabel = cleanLabel.replace(/\+/g, '');
+              // Remove "Add More" text
+              cleanLabel = cleanLabel.replace(/Add\s*More/gi, 'Add Custom Activity');
+              // Clean up extra spaces
+              cleanLabel = cleanLabel.trim();
+            }
+            return cleanLabel;
+          })()}
         </h3>
         {description && (
           <p className={`${uiConfig.onboardingButton.typography.subtitle.size} ${
