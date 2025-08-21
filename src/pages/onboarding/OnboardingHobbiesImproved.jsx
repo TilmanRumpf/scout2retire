@@ -74,7 +74,6 @@ const CustomActivityInput = ({ onAdd, placeholder = "Add custom activity..." }) 
         onClick={() => setIsAdding(true)}
         className={buttonClasses}
       >
-        <Plus size={16} className="text-gray-400" />
         <span className={`${uiConfig.onboardingButton.typography.title.size} text-gray-500 dark:text-gray-400`}>
           {placeholder}
         </span>
@@ -179,7 +178,7 @@ const ActivitySection = ({
       </div>
 
       {/* Items Grid */}
-      <div className="grid grid-cols-2 min-[428px]:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
         {visibleItems.map((item) => (
           <ActivityCard
             key={item.id}
@@ -209,9 +208,18 @@ const ActivitySection = ({
         
         {/* Add Custom Button */}
         {expanded && (
-          <CustomActivityInput 
-            onAdd={handleAddCustom}
-            placeholder={customPlaceholder}
+          <ActivityCard
+            id="add-more"
+            label="Add More"
+            description={customPlaceholder?.replace('Add custom ', '') || "Add your own"}
+            isSelected={false}
+            onClick={() => {
+              // For now, just create a temporary implementation
+              const customValue = prompt(customPlaceholder || "Add custom item:");
+              if (customValue) {
+                handleAddCustom(customValue);
+              }
+            }}
           />
         )}
       </div>
@@ -599,7 +607,7 @@ export default function OnboardingHobbiesImproved() {
               Travel Frequency
             </h3>
           </div>
-          <div className="grid grid-cols-2 min-[428px]:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {travelOptions.map((option) => (
               <ActivityCard
                 key={option.id}
