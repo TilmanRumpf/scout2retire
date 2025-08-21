@@ -5,9 +5,11 @@ import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import { saveUserPreferences } from '../../utils/userPreferences';
 import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
+import { useHideOnScroll } from '../../hooks/useHideOnScroll';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
+import { isIOS } from '../../utils/platformDetection';
 import { getLoadingBackgroundClass, getLoadingTextClass } from '../../utils/themeUtils';
 import supabase from '../../utils/supabaseClient';
 import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
@@ -146,6 +148,9 @@ const OnboardingRegion = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  
+  // Auto-hide navigation on scroll
+  const { isVisible: isNavVisible } = useHideOnScroll();
   
   
   // Updated state arrays to only have 2 elements instead of 3
@@ -1102,10 +1107,10 @@ const OnboardingRegion = () => {
           )}
         </form>
 
-        {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
-        <div className={`fixed sm:sticky bottom-0 left-0 right-0 sm:relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-6 lg:mt-8`}>
-          <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto">
-            <div className="flex items-center">
+        {/* Bottom Navigation - Using centralized config */}
+        <div className={uiConfig.bottomNavigation.container.getContainerClasses(isIOS(), isNavVisible)}>
+          <div className={uiConfig.bottomNavigation.container.innerContainer}>
+            <div className={uiConfig.bottomNavigation.container.buttonLayout}>
               <button
                 type="button"
                 onClick={async () => {

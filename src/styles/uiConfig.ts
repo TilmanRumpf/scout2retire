@@ -246,8 +246,42 @@ export const stepNavigation = {
   }
 };
 
-// Bottom Navigation Patterns - Added 10JUN25
+// Bottom Navigation Patterns - Updated 21JAN25 for consistency
 export const bottomNavigation = {
+  // Container configuration - SINGLE SOURCE OF TRUTH
+  container: {
+    // Base classes for all bottom navs
+    base: 'fixed sm:sticky bottom-0 left-0 right-0 sm:relative border-t p-4 sm:mt-6 lg:mt-8',
+    
+    // Platform-specific backgrounds
+    iosBackground: 'ios-navigation-bg', // Blur effect for iOS
+    standardBackground: `${colors.card}`, // Regular card background
+    
+    // Border styling
+    border: `${colors.borderLight}`,
+    
+    // Auto-hide animation classes
+    autoHide: {
+      visible: 'translate-y-0',
+      hidden: 'translate-y-full sm:translate-y-0', // Only hide on mobile
+      transition: 'transition-transform duration-300'
+    },
+    
+    // Inner container for content
+    innerContainer: 'max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto',
+    
+    // Button layout
+    buttonLayout: 'flex items-center',
+    
+    // Helper to get full container classes
+    getContainerClasses: (isIOS: boolean = false, isVisible: boolean = true) => {
+      const background = isIOS ? bottomNavigation.container.iosBackground : bottomNavigation.container.standardBackground;
+      const visibility = isVisible ? bottomNavigation.container.autoHide.visible : bottomNavigation.container.autoHide.hidden;
+      return `${bottomNavigation.container.base} ${background} ${bottomNavigation.container.border} ${bottomNavigation.container.autoHide.transition} ${visibility}`;
+    }
+  },
+  
+  // Button styles (existing)
   styles: {
     container: 'flex justify-between items-center pt-8 mt-8 border-t border-gray-200 dark:border-gray-700',
     backButton: 'inline-flex items-center px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-scout-accent-400 focus:ring-offset-2 transition-all duration-200',
