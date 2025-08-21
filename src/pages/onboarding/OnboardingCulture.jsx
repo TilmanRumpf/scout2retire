@@ -60,41 +60,36 @@ const AddLanguageDropdown = ({ selectedLanguages = [], onChange, additionalLangu
     onChange(topLanguagesOnly);
   };
   
+  // Use centralized button classes - EXACT SAME AS SelectionCard
+  const buttonClasses = uiConfig.onboardingButton.getButtonClasses(hasAdditionalLanguages, false);
+  
   return (
     <div className="relative">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`
-          w-full p-3 sm:p-4 min-h-[60px] sm:min-h-[70px] ${uiConfig.layout.radius.lg} 
-          border-2 ${uiConfig.animation.transition} text-left relative overflow-hidden cursor-pointer
-          ${hasAdditionalLanguages
-            ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 shadow-md' 
-            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/30 hover:border-scout-accent-300 hover:shadow-md'
-          }
-          hover:-translate-y-0.5 active:scale-[0.98]
-        `}
+        className={buttonClasses}
       >
-        {/* Checkmark indicator - clickable to clear all */}
+        {/* Checkmark indicator - using STANDARD position from config */}
         {hasAdditionalLanguages && (
           <button
             type="button"
             onClick={handleClearAdditional}
-            className="absolute top-2 right-2 hover:scale-110 transition-transform"
+            className={`${uiConfig.onboardingButton.checkmark.position} hover:scale-110 transition-transform`}
             title="Clear all additional languages"
           >
-            <div className="w-6 h-6 bg-scout-accent-500 rounded-full flex items-center justify-center">
-              <Check className="w-4 h-4 text-white" />
+            <div className={uiConfig.onboardingButton.checkmark.container}>
+              <Check className={uiConfig.onboardingButton.checkmark.icon} />
             </div>
           </button>
         )}
         
-        {/* Match SelectionCard layout exactly */}
-        <div className={hasAdditionalLanguages ? 'pr-10' : 'pr-2'}>
-          <div className="flex-1">
-            <h3 className={`${uiConfig.font.weight.semibold} ${
-              hasAdditionalLanguages ? 'text-scout-accent-700 dark:text-scout-accent-300' : uiConfig.colors.heading
-            } text-sm sm:text-base mb-1 whitespace-nowrap`}>
+        {/* Use STANDARD layout from SelectionCard */}
+        <div className="flex flex-col justify-center h-full">
+          <div className="flex items-center">
+            <h3 className={`${uiConfig.onboardingButton.typography.title.weight} ${
+              hasAdditionalLanguages ? uiConfig.onboardingButton.typography.title.selectedColor : uiConfig.onboardingButton.typography.title.unselectedColor
+            } ${uiConfig.onboardingButton.typography.title.size} ${hasAdditionalLanguages ? 'pr-6' : ''}`}>
               {getButtonContent()}
             </h3>
           </div>
