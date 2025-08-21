@@ -136,6 +136,10 @@ const ActivitySection = ({
   ).length;
 
   const handleAddCustom = (value) => {
+    // Prevent adding "Add More" or items with "+" as custom items
+    if (value.toLowerCase().includes('add more') || value.includes('+')) {
+      return;
+    }
     const customId = `custom_${value.toLowerCase().replace(/\s+/g, '_')}`;
     setCustomItems(prev => [...prev, value]);
     onToggle(customId);
@@ -191,20 +195,22 @@ const ActivitySection = ({
           />
         ))}
         
-        {/* Custom Items */}
-        {customItems.map((item) => {
-          const customId = `custom_${item.toLowerCase().replace(/\s+/g, '_')}`;
-          return (
-            <ActivityCard
-              key={customId}
-              id={customId}
-              label={item}
-              isSelected={selectedItems.includes(customId)}
-              onClick={() => onToggle(customId)}
-              size={expanded && items.length > 8 ? 'small' : 'default'}
-            />
-          );
-        })}
+        {/* Custom Items - Filter out any "Add More" corruption */}
+        {customItems
+          .filter(item => !item.includes('Add More') && !item.includes('add more') && !item.includes('+'))
+          .map((item) => {
+            const customId = `custom_${item.toLowerCase().replace(/\s+/g, '_')}`;
+            return (
+              <ActivityCard
+                key={customId}
+                id={customId}
+                label={item}
+                isSelected={selectedItems.includes(customId)}
+                onClick={() => onToggle(customId)}
+                size={expanded && items.length > 8 ? 'small' : 'default'}
+              />
+            );
+          })}
         
       </div>
     </div>
@@ -371,9 +377,20 @@ export default function OnboardingHobbiesImproved() {
         
         // If hobbies data exists, load it
         if (progressResult.data && progressResult.data.hobbies) {
+          // Filter out any corrupted "+ Add More" entries
+          const cleanedHobbies = {
+            ...progressResult.data.hobbies,
+            activities: (progressResult.data.hobbies.activities || []).filter(
+              activity => !activity.includes('Add More') && !activity.includes('add_more') && !activity.includes('+')
+            ),
+            interests: (progressResult.data.hobbies.interests || []).filter(
+              interest => !interest.includes('Add More') && !interest.includes('add_more') && !interest.includes('+')
+            )
+          };
+          
           setFormData(prev => ({
             ...prev,
-            ...progressResult.data.hobbies,
+            ...cleanedHobbies,
             lifestyle_importance: {
               outdoor_activities: 1,
               cultural_events: 1,
