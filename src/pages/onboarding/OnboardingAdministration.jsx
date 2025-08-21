@@ -10,10 +10,13 @@ import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
 
-// Health Select Component - styled to match DateSelect from current-status
+// Health Select Component - using centralized button standards
 const HealthSelect = ({ value, onChange, name, label, options }) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectedOption = options.find(opt => opt.id === value);
+  
+  // Use centralized dropdown classes (min-height for dropdowns)
+  const buttonClasses = uiConfig.onboardingButton.getDropdownClasses(value && value !== '');
   
   return (
     <div className="relative">
@@ -23,29 +26,21 @@ const HealthSelect = ({ value, onChange, name, label, options }) => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`
-          w-full p-3 sm:p-4 min-h-[60px] sm:min-h-[70px] ${uiConfig.layout.radius.lg} 
-          border-2 ${uiConfig.animation.transition} text-left relative overflow-hidden cursor-pointer
-          ${value && value !== '' 
-            ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 shadow-md' 
-            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/30 hover:border-scout-accent-300 hover:shadow-md'
-          }
-          hover:-translate-y-0.5 active:scale-[0.98]
-        `}
+        className={buttonClasses}
       >
-        {/* Checkmark indicator */}
+        {/* Checkmark indicator - using centralized config */}
         {value && value !== '' && (
-          <div className="absolute top-2 right-2">
-            <div className="w-6 h-6 bg-scout-accent-500 rounded-full flex items-center justify-center">
-              <Check className="w-4 h-4 text-white" />
+          <div className={uiConfig.onboardingButton.checkmark.position}>
+            <div className={uiConfig.onboardingButton.checkmark.container}>
+              <Check className={uiConfig.onboardingButton.checkmark.icon} />
             </div>
           </div>
         )}
         
-        <div className={value && value !== '' ? 'pr-10' : 'pr-2'}>
-          <div className={`${uiConfig.font.weight.medium} ${
-            value && value !== '' ? 'text-scout-accent-700 dark:text-scout-accent-300' : 'text-gray-500 dark:text-gray-400'
-          } text-sm sm:text-base`}>
+        <div className="flex flex-col justify-center h-full">
+          <div className={`${uiConfig.onboardingButton.typography.title.weight} ${
+            value && value !== '' ? uiConfig.onboardingButton.typography.title.selectedColor : 'text-gray-500 dark:text-gray-400'
+          } ${uiConfig.onboardingButton.typography.title.size} ${uiConfig.onboardingButton.typography.title.truncate} ${value && value !== '' ? 'pr-6' : ''}`}>
             {selectedOption ? selectedOption.label : 'None'}
           </div>
         </div>

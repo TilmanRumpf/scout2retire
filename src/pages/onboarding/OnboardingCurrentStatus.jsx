@@ -5,13 +5,14 @@ import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import { saveUserPreferences } from '../../utils/userPreferences';
 import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
+import { useHideOnScroll } from '../../hooks/useHideOnScroll';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
 import { CustomDropdown } from '../../components/CustomDropdown';
 
-// Date Select Component - styled to match SelectionCard
+// Date Select Component - using centralized button standards
 const DateSelect = ({ value, onChange, name, label, options, getOptionLabel }) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectedOption = options.find(opt => 
@@ -23,45 +24,39 @@ const DateSelect = ({ value, onChange, name, label, options, getOptionLabel }) =
      (typeof selectedOption === 'object' ? selectedOption.label : selectedOption)) : 
     label;
   
+  // Use centralized button classes
+  const buttonClasses = `${uiConfig.onboardingButton.getButtonClasses(!!value, false)} flex items-center`;
+  
   return (
     <div className="relative">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`
-          w-full p-2 min-[410px]:p-1.5 sm:p-4 md:p-5 h-[75px] sm:h-[80px] md:h-[90px] ${uiConfig.layout.radius.lg} 
-          border-2 ${uiConfig.animation.transition} text-left relative overflow-hidden cursor-pointer flex items-center
-          ${value 
-            ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 shadow-md' 
-            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/30 hover:border-scout-accent-300 hover:shadow-md'
-          }
-          hover:-translate-y-0.5 active:scale-[0.98]
-        `}
+        className={buttonClasses}
       >
-        {/* Checkmark indicator */}
+        {/* Selection indicator - using centralized config */}
         {value && (
-          <div className="absolute top-1 right-1">
-            <div className="w-5 h-5 bg-scout-accent-500 rounded-full flex items-center justify-center">
-              <Check className="w-3 h-3 text-white" />
+          <div className={uiConfig.onboardingButton.checkmark.position}>
+            <div className={uiConfig.onboardingButton.checkmark.container}>
+              <Check className={uiConfig.onboardingButton.checkmark.icon} />
             </div>
           </div>
         )}
         
-        <div className="flex-1">
-          <div className="flex-1 min-w-0">
-            <h3 className={`${uiConfig.font.weight.semibold} ${
-              value ? 'text-scout-accent-700 dark:text-scout-accent-300' : uiConfig.colors.heading
-            } text-xs sm:text-sm md:text-base truncate`}>
+        {/* Card content - using centralized typography */}
+        <div className="flex flex-col justify-center h-full">
+          <div className="flex items-center">
+            <h3 className={`${uiConfig.onboardingButton.typography.title.weight} ${
+              value ? uiConfig.onboardingButton.typography.title.selectedColor : uiConfig.onboardingButton.typography.title.unselectedColor
+            } ${uiConfig.onboardingButton.typography.title.size} ${uiConfig.onboardingButton.typography.title.truncate} ${value ? 'pr-6' : ''}`}>
               {label}
             </h3>
-            {value && (
-              <p className={`text-[10px] sm:text-xs md:text-sm ${
-                'text-scout-accent-600 dark:text-scout-accent-400'
-              } truncate mt-0.5`}>
-                {displayLabel}
-              </p>
-            )}
           </div>
+          {value && (
+            <p className={`${uiConfig.onboardingButton.typography.subtitle.size} ${uiConfig.onboardingButton.typography.subtitle.selectedColor} ${uiConfig.onboardingButton.typography.subtitle.truncate}`}>
+              {displayLabel}
+            </p>
+          )}
         </div>
       </button>
       
@@ -141,6 +136,7 @@ export default function OnboardingCurrentStatus() {
   const [touchedFields, setTouchedFields] = useState({});
   const [expandedCitizenship, setExpandedCitizenship] = useState(-1); // -1 none, 0 yours, 1 partner's, 2 children's
   const [hasLoadedData, setHasLoadedData] = useState(false);
+  const { isVisible: isNavVisible } = useHideOnScroll();
   const defaultYear = new Date().getFullYear() + 5;
   const [formData, setFormData] = useState({
     retirement_timeline: {
@@ -554,7 +550,7 @@ export default function OnboardingCurrentStatus() {
                     Enter any date that works for you - even if it's coming up soon!
                   </p>
                 )}
-                <div className={`grid grid-cols-3 gap-1.5 sm:gap-2.5 md:gap-4 ${formData.retirement_timeline.status === 'retiring_soon' ? '' : 'mt-3'}`}>
+                <div className={`grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 ${formData.retirement_timeline.status === 'retiring_soon' ? '' : 'mt-3'}`}>
                 <DateSelect
                   name="retirement_timeline.target_month"
                   value={formData.retirement_timeline.target_month}
@@ -623,7 +619,7 @@ export default function OnboardingCurrentStatus() {
 
           {/* Citizenship */}
           <SelectionSection icon={Globe} title="Citizenship">
-            <div className="grid grid-cols-3 gap-1.5 min-[410px]:gap-1 sm:gap-2.5 md:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
               {/* Your Citizenship Card */}
               <div>
                 <SelectionCard
@@ -943,17 +939,20 @@ export default function OnboardingCurrentStatus() {
           <SelectionSection icon={PawPrint} title="Pet Owner">
             <SelectionGrid>
               <SelectionCard
-                title="Cat"
+                title="Bringing"
+                description="Cat"
                 isSelected={formData.pet_owner?.includes('cat') || false}
                 onClick={() => handlePetChange('cat')}
               />
               <SelectionCard
-                title="Dog"
+                title="Bringing"
+                description="Dog"
                 isSelected={formData.pet_owner?.includes('dog') || false}
                 onClick={() => handlePetChange('dog')}
               />
               <SelectionCard
-                title="Other"
+                title="Bringing"
+                description="Other"
                 isSelected={formData.pet_owner?.includes('other') || false}
                 onClick={() => handlePetChange('other')}
               />
@@ -1000,7 +999,7 @@ export default function OnboardingCurrentStatus() {
         </form>
 
         {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
-        <div className={`fixed sm:sticky bottom-0 left-0 right-0 sm:relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-t ${uiConfig.colors.borderLight} p-4 sm:p-4 sm:border-t sm:mt-6 lg:mt-8`}>
+        <div className={`fixed sm:sticky bottom-0 left-0 right-0 sm:relative ios-navigation-bg border-t ${uiConfig.colors.borderLight} p-4 sm:p-4 sm:border-t sm:mt-6 lg:mt-8 transition-transform duration-300 ${isNavVisible ? 'translate-y-0' : 'translate-y-full sm:translate-y-0'}`}>
           <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto">
             <div className="flex items-center">
               <button

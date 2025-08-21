@@ -155,6 +155,18 @@
   visibility: hidden;
 }
 
+/* Shared navigation background style - matches ios-header exactly */
+.ios-navigation-bg {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Dark mode for navigation background */
+.dark .ios-navigation-bg {
+  background: rgba(31, 41, 55, 0.9);
+}
+
 /* Special spacer ONLY for Compare page with tabs */
 .compare-page-spacer {
   /* Mobile needs extra space for tabs */

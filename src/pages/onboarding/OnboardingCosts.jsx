@@ -39,40 +39,39 @@ const MobilityDropdown = ({ values = [], onChange, label, options, icon: Icon })
     return `${labels.slice(0, 2).join(', ')}...`;
   };
   
+  // Use centralized dropdown classes
+  const buttonClasses = uiConfig.onboardingButton.getDropdownClasses(values.length > 0);
+  
   return (
     <div className="relative">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`
-          w-full p-3 sm:p-4 min-h-[70px] sm:min-h-[80px] ${uiConfig.layout.radius.lg} 
-          border-2 ${uiConfig.animation.transition} text-left relative overflow-hidden cursor-pointer
-          ${values.length > 0
-            ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 shadow-md' 
-            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/30 hover:border-scout-accent-300 hover:shadow-md'
-          }
-          hover:-translate-y-0.5 active:scale-[0.98]
-        `}
+        className={buttonClasses}
       >
-        {/* Checkmark indicator like SelectionCard */}
+        {/* Checkmark indicator - using centralized config */}
         {values.length > 0 && (
-          <div className="absolute top-2 right-2">
-            <div className="w-6 h-6 bg-scout-accent-500 rounded-full flex items-center justify-center">
-              <Check className="w-4 h-4 text-white" />
+          <div className={uiConfig.onboardingButton.checkmark.position}>
+            <div className={uiConfig.onboardingButton.checkmark.container}>
+              <Check className={uiConfig.onboardingButton.checkmark.icon} />
             </div>
           </div>
         )}
         
-        <div className={values.length > 0 ? 'pr-10' : 'pr-2'}>
-          {/* Title with icon and label */}
-          <div className={`${uiConfig.font.weight.medium} ${
-            values.length > 0 ? 'text-scout-accent-700 dark:text-scout-accent-300' : uiConfig.colors.heading
-          } text-sm sm:text-base flex items-center`}>
-            {Icon && <Icon size={16} className="mr-2 flex-shrink-0" />}
-            {label}
+        <div className="flex flex-col justify-center h-full">
+          {/* Title with icon - using centralized typography */}
+          <div className="flex items-center">
+            {Icon && <Icon className="w-4 h-4 mr-1.5 flex-shrink-0 text-gray-500 dark:text-gray-400" />}
+            <div className={`${uiConfig.onboardingButton.typography.title.weight} ${
+              values.length > 0 ? uiConfig.onboardingButton.typography.title.selectedColor : uiConfig.onboardingButton.typography.title.unselectedColor
+            } ${uiConfig.onboardingButton.typography.title.size} ${uiConfig.onboardingButton.typography.title.truncate} ${values.length > 0 ? 'pr-6' : ''}`}>
+              {label}
+            </div>
           </div>
-          {/* Subtitle with selected items or prompt */}
-          <div className={`text-xs mt-0.5 ${uiConfig.colors.hint} truncate`}>
+          {/* Subtitle - using centralized typography */}
+          <div className={`${uiConfig.onboardingButton.typography.subtitle.size} ${
+            values.length > 0 ? uiConfig.onboardingButton.typography.subtitle.selectedColor : uiConfig.onboardingButton.typography.subtitle.unselectedColor
+          } ${uiConfig.onboardingButton.typography.subtitle.truncate} ${Icon ? 'ml-5' : ''}`}>
             {values.length === 0 ? 'Select your preferences' : getDisplayText()}
           </div>
         </div>

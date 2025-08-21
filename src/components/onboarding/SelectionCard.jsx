@@ -13,63 +13,49 @@ export const SelectionCard = ({
   onClick, 
   icon: Icon,
   disabled = false,
-  size = 'default', // 'small', 'default', 'large'
+  size = 'default', // 'small', 'default', 'large' - kept for backward compatibility
   showCheckmark = true
 }) => {
-  const sizeClasses = {
-    small: 'p-2 min-[410px]:p-1.5 sm:p-3.5 md:p-4 h-[75px] sm:h-[80px] md:h-[85px]',
-    default: 'p-2 min-[410px]:p-1.5 sm:p-4 md:p-5 h-[75px] sm:h-[80px] md:h-[90px]',
-    large: 'p-2 min-[410px]:p-1.5 sm:p-4 md:p-6 h-[75px] sm:h-[85px] md:h-[110px]'
-  };
+  // Use centralized configuration - SINGLE SOURCE OF TRUTH
+  const buttonClasses = uiConfig.onboardingButton.getButtonClasses(isSelected, disabled);
 
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`
-        ${sizeClasses[size]} ${uiConfig.layout.radius.lg} border-2 ${uiConfig.animation.transition}
-        text-left relative overflow-hidden cursor-pointer w-full
-        ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        ${isSelected 
-          ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 shadow-md' 
-          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/30 hover:border-scout-accent-300 hover:shadow-md'
-        }
-        ${!disabled && !isSelected && 'hover:-translate-y-0.5 active:scale-[0.98]'}
-      `}
+      className={buttonClasses}
     >
-      {/* Selection indicator */}
+      {/* Selection indicator - using centralized config */}
       {showCheckmark && isSelected && (
-        <div className="absolute top-1 right-1">
-          <div className="w-5 h-5 bg-scout-accent-500 rounded-full flex items-center justify-center">
-            <Check className="w-3 h-3 text-white" />
+        <div className={uiConfig.onboardingButton.checkmark.position}>
+          <div className={uiConfig.onboardingButton.checkmark.container}>
+            <Check className={uiConfig.onboardingButton.checkmark.icon} />
           </div>
         </div>
       )}
       
-      {/* Card content */}
-      <div className="flex items-center h-full">
-        <div className="flex items-start w-full">
+      {/* Card content - simple flex column */}
+      <div className="flex flex-col justify-center h-full">
+        <div className="flex items-center">
           {Icon && (
-            <Icon className={`w-5 h-5 mt-0.5 mr-2 flex-shrink-0 ${
+            <Icon className={`w-4 h-4 mr-1.5 flex-shrink-0 ${
               isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : 'text-gray-500 dark:text-gray-400'
             }`} />
           )}
-          <div className={`flex-1 min-w-0 ${showCheckmark && isSelected ? 'pr-6' : 'pr-1'}`}>
-            <h3 className={`${uiConfig.font.weight.semibold} ${
-              isSelected ? 'text-scout-accent-700 dark:text-scout-accent-300' : uiConfig.colors.heading
-            } text-xs sm:text-sm md:text-base truncate`}>
-              {title}
-            </h3>
-            {description && (
-              <p className={`text-[10px] sm:text-xs md:text-sm ${
-                isSelected ? 'text-scout-accent-600 dark:text-scout-accent-400' : uiConfig.colors.hint
-              } truncate mt-0.5`}>
-                {description}
-              </p>
-            )}
-          </div>
+          <h3 className={`${uiConfig.onboardingButton.typography.title.weight} ${
+            isSelected ? uiConfig.onboardingButton.typography.title.selectedColor : uiConfig.onboardingButton.typography.title.unselectedColor
+          } ${uiConfig.onboardingButton.typography.title.size} ${uiConfig.onboardingButton.typography.title.truncate} ${showCheckmark && isSelected ? 'pr-6' : ''}`}>
+            {title}
+          </h3>
         </div>
+        {description && (
+          <p className={`${uiConfig.onboardingButton.typography.subtitle.size} ${
+            isSelected ? uiConfig.onboardingButton.typography.subtitle.selectedColor : uiConfig.onboardingButton.typography.subtitle.unselectedColor
+          } ${uiConfig.onboardingButton.typography.subtitle.truncate} ${Icon ? 'ml-5' : ''}`}>
+            {description}
+          </p>
+        )}
       </div>
     </button>
   );
@@ -84,9 +70,9 @@ export const SelectionGrid = ({
 }) => {
   const columnClasses = {
     single: 'grid grid-cols-1 gap-2 sm:gap-3 md:gap-4',
-    two: 'grid grid-cols-2 gap-1.5 min-[410px]:gap-1 sm:gap-2.5 md:gap-4',
-    default: 'grid grid-cols-3 gap-1.5 min-[410px]:gap-1 sm:gap-2.5 md:gap-4',
-    four: 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 min-[410px]:gap-1 sm:gap-2.5 md:gap-4'
+    two: 'grid grid-cols-2 gap-2 sm:gap-3 md:gap-4',
+    default: 'grid grid-cols-3 gap-2 sm:gap-3 md:gap-4',
+    four: 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4'
   };
 
   return (

@@ -29,6 +29,7 @@ import HeaderMockup from "./pages/HeaderMockup";
 // import TestClaude from "./components/TestClaude";
 import ScottyGuide from "./components/ScottyGuide";
 import TestOnboardingUpdate from "./pages/TestOnboardingUpdate";
+import TestButtonSizing from "./pages/TestButtonSizing";
 
 // Onboarding Flow
 import OnboardingProgress from "./pages/onboarding/OnboardingProgress";
@@ -302,6 +303,10 @@ const router = createBrowserRouter([
       {
         path: "test-onboarding",
         element: <ProtectedRoute><AuthenticatedLayout><TestOnboardingUpdate /></AuthenticatedLayout></ProtectedRoute>
+      },
+      {
+        path: "test-button-sizing",
+        element: <TestButtonSizing />
       },
       
       // Default redirect - check auth and redirect accordingly
