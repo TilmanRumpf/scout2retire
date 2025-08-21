@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
 import { CustomDropdown } from '../../components/CustomDropdown';
+import { isIOS } from '../../utils/platformDetection';
 
 // Date Select Component - using centralized button standards
 const DateSelect = ({ value, onChange, name, label, options, getOptionLabel }) => {
@@ -998,10 +999,10 @@ export default function OnboardingCurrentStatus() {
           )}
         </form>
 
-        {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
-        <div className={`fixed sm:sticky bottom-0 left-0 right-0 sm:relative ios-navigation-bg border-t ${uiConfig.colors.borderLight} p-4 sm:p-4 sm:border-t sm:mt-6 lg:mt-8 transition-transform duration-300 ${isNavVisible ? 'translate-y-0' : 'translate-y-full sm:translate-y-0'}`}>
-          <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto">
-            <div className="flex items-center">
+        {/* Bottom Navigation - Using centralized config */}
+        <div className={uiConfig.bottomNavigation.container.getContainerClasses(isIOS(), isNavVisible)}>
+          <div className={uiConfig.bottomNavigation.container.innerContainer}>
+            <div className={uiConfig.bottomNavigation.container.buttonLayout}>
               <button
                 type="button"
                 onClick={() => navigate('/welcome')}

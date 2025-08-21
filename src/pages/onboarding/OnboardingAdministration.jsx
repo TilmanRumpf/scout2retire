@@ -5,9 +5,11 @@ import { getCurrentUser } from '../../utils/authUtils';
 import { saveOnboardingStep, getOnboardingProgress } from '../../utils/onboardingUtils';
 import { saveUserPreferences } from '../../utils/userPreferences';
 import { useOnboardingAutoSave } from '../../hooks/useOnboardingAutoSave';
+import { useHideOnScroll } from '../../hooks/useHideOnScroll';
 import ProTip from '../../components/ProTip';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
+import { isIOS } from '../../utils/platformDetection';
 import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
 
 // Health Select Component - using centralized button standards
@@ -111,6 +113,9 @@ export default function OnboardingAdministration() {
   const [initialLoading, setInitialLoading] = useState(true);
   
   const navigate = useNavigate();
+  
+  // Auto-hide navigation on scroll
+  const { isVisible: isNavVisible } = useHideOnScroll();
   
   // Enable auto-save for this page
   const autoSave = useOnboardingAutoSave(formData, 'administration');
@@ -580,10 +585,10 @@ export default function OnboardingAdministration() {
 
         </form>
 
-        {/* Bottom Navigation - Fixed on mobile, sticky on desktop */}
-        <div className={`fixed sm:sticky bottom-0 left-0 right-0 sm:relative ${uiConfig.colors.card} border-t ${uiConfig.colors.borderLight} p-4 sm:p-0 sm:border-0 sm:bg-transparent sm:mt-6 lg:mt-8`}>
-          <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto">
-            <div className="flex items-center">
+        {/* Bottom Navigation - Using centralized config */}
+        <div className={uiConfig.bottomNavigation.container.getContainerClasses(isIOS(), isNavVisible)}>
+          <div className={uiConfig.bottomNavigation.container.innerContainer}>
+            <div className={uiConfig.bottomNavigation.container.buttonLayout}>
               <button
                 type="button"
                 onClick={async () => {
