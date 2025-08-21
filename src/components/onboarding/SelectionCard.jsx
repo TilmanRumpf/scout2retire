@@ -71,8 +71,8 @@ export const SelectionGrid = ({
   const columnClasses = {
     single: 'grid grid-cols-1 gap-2 sm:gap-3 md:gap-4',
     two: 'grid grid-cols-2 gap-2 sm:gap-3 md:gap-4',
-    default: 'grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4',
-    four: 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4'
+    default: 'grid grid-cols-2 min-[428px]:grid-cols-3 gap-2 sm:gap-3 md:gap-4',
+    four: 'grid grid-cols-2 min-[428px]:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4'
   };
 
   return (
