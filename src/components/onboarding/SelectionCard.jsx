@@ -45,14 +45,14 @@ export const SelectionCard = ({
           )}
           <h3 className={`${uiConfig.onboardingButton.typography.title.weight} ${
             isSelected ? uiConfig.onboardingButton.typography.title.selectedColor : uiConfig.onboardingButton.typography.title.unselectedColor
-          } ${uiConfig.onboardingButton.typography.title.size} ${uiConfig.onboardingButton.typography.title.truncate} ${showCheckmark && isSelected ? 'pr-6' : ''}`}>
+          } ${uiConfig.onboardingButton.typography.title.size} ${showCheckmark && isSelected ? 'pr-6' : ''}`}>
             {title}
           </h3>
         </div>
         {description && (
           <p className={`${uiConfig.onboardingButton.typography.subtitle.size} ${
             isSelected ? uiConfig.onboardingButton.typography.subtitle.selectedColor : uiConfig.onboardingButton.typography.subtitle.unselectedColor
-          } ${uiConfig.onboardingButton.typography.subtitle.truncate} ${Icon ? 'ml-5' : ''}`}>
+          } ${uiConfig.onboardingButton.typography.subtitle.spacing} ${Icon ? 'ml-5' : ''}`}>
             {description}
           </p>
         )}

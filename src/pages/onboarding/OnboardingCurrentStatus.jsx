@@ -48,12 +48,12 @@ const DateSelect = ({ value, onChange, name, label, options, getOptionLabel }) =
           <div className="flex items-center">
             <h3 className={`${uiConfig.onboardingButton.typography.title.weight} ${
               value ? uiConfig.onboardingButton.typography.title.selectedColor : uiConfig.onboardingButton.typography.title.unselectedColor
-            } ${uiConfig.onboardingButton.typography.title.size} ${uiConfig.onboardingButton.typography.title.truncate} ${value ? 'pr-6' : ''}`}>
+            } ${uiConfig.onboardingButton.typography.title.size} ${value ? 'pr-6' : ''}`}>
               {label}
             </h3>
           </div>
           {value && (
-            <p className={`${uiConfig.onboardingButton.typography.subtitle.size} ${uiConfig.onboardingButton.typography.subtitle.selectedColor} ${uiConfig.onboardingButton.typography.subtitle.truncate}`}>
+            <p className={`${uiConfig.onboardingButton.typography.subtitle.size} ${uiConfig.onboardingButton.typography.subtitle.selectedColor} ${uiConfig.onboardingButton.typography.subtitle.spacing}`}>
               {displayLabel}
             </p>
           )}

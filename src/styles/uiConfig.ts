@@ -623,14 +623,15 @@ export const onboardingButton = {
       size: 'text-xs sm:text-sm md:text-base',
       weight: font.weight.semibold,
       selectedColor: 'text-scout-accent-700 dark:text-scout-accent-300',
-      unselectedColor: colors.heading,
-      truncate: 'truncate'
+      unselectedColor: colors.heading
+      // Removed truncate - will be applied conditionally only when needed
     },
     subtitle: {
       size: 'text-[10px] sm:text-xs md:text-sm',
       selectedColor: 'text-scout-accent-600 dark:text-scout-accent-400',
       unselectedColor: colors.hint,
-      truncate: 'truncate mt-1'
+      spacing: 'mt-1'
+      // Removed truncate - will be applied conditionally only when needed
     }
   },
   
