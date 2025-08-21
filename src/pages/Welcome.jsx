@@ -98,7 +98,7 @@ export default function Welcome() {
       </section>
 
       {/* Footer */}
-      <footer className={`py-8 ${uiConfig.colors.page}`}>
+      <footer className="py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">

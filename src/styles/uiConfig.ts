@@ -607,6 +607,69 @@ export const i18n = {
   }
 };
 
+// Onboarding Button Standards - Added 21JAN25
+// SINGLE SOURCE OF TRUTH for all onboarding buttons
+export const onboardingButton = {
+  // Standard dimensions - NEVER CHANGE WITHOUT USER APPROVAL
+  dimensions: {
+    height: 'h-[75px] sm:h-[85px] md:h-[90px]',
+    padding: 'p-2 sm:p-3 md:p-4',
+    minHeight: 'min-h-[75px] sm:min-h-[85px] md:min-h-[90px]' // For dropdowns
+  },
+  
+  // Typography standards
+  typography: {
+    title: {
+      size: 'text-xs sm:text-sm md:text-base',
+      weight: font.weight.semibold,
+      selectedColor: 'text-scout-accent-700 dark:text-scout-accent-300',
+      unselectedColor: colors.heading,
+      truncate: 'truncate'
+    },
+    subtitle: {
+      size: 'text-[10px] sm:text-xs md:text-sm',
+      selectedColor: 'text-scout-accent-600 dark:text-scout-accent-400',
+      unselectedColor: colors.hint,
+      truncate: 'truncate mt-1'
+    }
+  },
+  
+  // Checkmark indicator
+  checkmark: {
+    position: 'absolute top-1 right-1',
+    container: 'w-5 h-5 bg-scout-accent-500 rounded-full flex items-center justify-center',
+    icon: 'w-3 h-3 text-white'
+  },
+  
+  // Border and background states
+  states: {
+    selected: 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 shadow-md',
+    unselected: 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/30 hover:border-scout-accent-300 hover:shadow-md'
+  },
+  
+  // Common button classes
+  base: `border-2 ${layout.radius.lg} ${animation.transition} text-left relative overflow-hidden cursor-pointer w-full`,
+  
+  // Hover and active effects
+  interactions: 'hover:-translate-y-0.5 active:scale-[0.98]',
+  
+  // Disabled state
+  disabled: 'opacity-50 cursor-not-allowed',
+  
+  // Helper function to get full button classes
+  getButtonClasses: (isSelected: boolean, disabled: boolean = false) => {
+    const state = isSelected ? onboardingButton.states.selected : onboardingButton.states.unselected;
+    const disabledClass = disabled ? onboardingButton.disabled : onboardingButton.interactions;
+    return `${onboardingButton.dimensions.height} ${onboardingButton.dimensions.padding} ${onboardingButton.base} ${state} ${disabledClass}`;
+  },
+  
+  // Helper function for dropdown buttons (with min-height instead of fixed height)
+  getDropdownClasses: (isSelected: boolean) => {
+    const state = isSelected ? onboardingButton.states.selected : onboardingButton.states.unselected;
+    return `${onboardingButton.dimensions.minHeight} ${onboardingButton.dimensions.padding} ${onboardingButton.base} ${state} ${onboardingButton.interactions}`;
+  }
+};
+
 // Town Card Overlay Configuration - Added 10JAN25
 export const townCardOverlay = {
   // Backdrop styling - more transparent as requested
@@ -676,6 +739,7 @@ export const uiConfig = {
   progress,
   validation,
   notifications,
+  onboardingButton, // Added 21JAN25: Standardized onboarding button configuration
   townCardOverlay, // Added 10JAN25: Centralized town card overlay styling
   states,
   responsive,
