@@ -313,7 +313,7 @@ export default function OnboardingClimate() {
           <SelectionSection icon={Cloud} title="Seasonal Preference">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
               <SelectionCard
-                title="No Preference"
+                title="None"
                 isSelected={formData.seasonal_preference === 'Optional'}
                 onClick={() => setFormData(prev => ({ ...prev, seasonal_preference: 'Optional' }))}
                 size="small"
