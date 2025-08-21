@@ -985,7 +985,7 @@ const OnboardingRegion = () => {
             <p className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.colors.hint} mb-2 sm:mb-3 -mt-2`}>
               Select preferred geographic features (optional)
             </p>
-            <SelectionGrid>
+            <SelectionGrid columns="two">
               {geographicFeatures.map(feature => (
                 <SelectionCard
                   key={feature}
@@ -1003,7 +1003,7 @@ const OnboardingRegion = () => {
             <p className={`${uiConfig.font.size.xs} sm:${uiConfig.font.size.sm} ${uiConfig.colors.hint} mb-2 sm:mb-3 -mt-2`}>
               Select preferred vegetation types (optional)
             </p>
-            <SelectionGrid>
+            <SelectionGrid columns="two">
               {vegetationTypes.map(vegetation => (
                 <SelectionCard
                   key={vegetation}
