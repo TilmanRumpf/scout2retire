@@ -737,7 +737,6 @@ const OnboardingRegion = () => {
                 <SelectionCard
                   title={getPreferenceLabel(0)}
                   description={getDisplayValue(0) || "Select region"}
-                  icon={Globe}
                   isSelected={selectedRegions[0] !== ''}
                   onClick={() => {
                     // Toggle expanded state
@@ -860,7 +859,6 @@ const OnboardingRegion = () => {
                 <SelectionCard
                   title={getPreferenceLabel(1)}
                   description={getDisplayValue(1) || "Select region"}
-                  icon={Globe}
                   isSelected={selectedRegions[1] !== ''}
                   onClick={() => {
                     // Toggle expanded state
