@@ -754,7 +754,6 @@ export default function OnboardingHobbies() {
                   ? formData.custom_physical.slice(0, 2).join(', ') + (formData.custom_physical.length > 2 ? '...' : '')
                   : 'More activities'
                 }
-                icon={Plus}
                 isSelected={formData.custom_physical.length > 0}
                 onClick={openPhysicalModal}
               />
