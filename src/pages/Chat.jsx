@@ -1064,7 +1064,7 @@ export default function Chat() {
             ? `Chat with ${activeFriend.friend.full_name || activeFriend.friend.email.split('@')[0]}`
             : 'Retirement Lounge'
         }
-        maxWidth="max-w-6xl"
+        maxWidth="max-w-7xl"
       />
 
       <UnifiedErrorBoundary variant="compact"

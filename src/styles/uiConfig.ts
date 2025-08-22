@@ -82,6 +82,7 @@ export const font = {
 export const layout = {
   spacing: {
     // iOS 8-point grid spacing
+    page: 'px-4 py-6',         // Standard page padding: 16px horizontal, 24px vertical
     section: 'py-6 px-4',      // 24px vertical, 16px horizontal
     card: 'p-6',               // 24px
     cardCompact: 'p-4',        // 16px
@@ -120,11 +121,21 @@ export const layout = {
   width: {
     container: 'max-w-4xl mx-auto w-full',
     containerWide: 'max-w-6xl mx-auto w-full',
+    containerXL: 'max-w-7xl mx-auto w-full',        // Standard for main app pages
     containerNarrow: 'max-w-2xl mx-auto w-full',
     // Mobile-first widths
     mobile: 'max-w-sm mx-auto w-full',
     tablet: 'max-w-2xl mx-auto w-full',
     desktop: 'max-w-4xl mx-auto w-full',
+  },
+  logo: {
+    // Standard logo sizes for consistent branding
+    header: 'h-8',           // 32px - For UnifiedHeader
+    headerMobile: 'h-6',     // 24px - For mobile headers
+    welcome: 'h-10',         // 40px - For Welcome page
+    large: 'h-12',           // 48px - For large displays
+    icon: 'h-6 w-6',         // 24px - For icon-only displays
+    favicon: 'h-4 w-4',      // 16px - For small inline usage
   }
 };
 

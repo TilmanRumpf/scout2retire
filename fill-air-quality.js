@@ -106,13 +106,13 @@ async function fillAirQuality() {
       
       // Adjust based on factors
       // Coastal areas typically cleaner
-      if (town.geographic_features?.includes('Coastal') || 
-          town.geographic_features?.includes('Island')) {
+      if (town.geographic_features?.includes('coastal') || 
+          town.geographic_features?.includes('island')) {
         aqi = Math.round(aqi * 0.8);
         reason = 'coastal/island';
       }
       // Mountain areas usually cleaner (except inversions)
-      else if (town.geographic_features?.includes('Mountain') && 
+      else if (town.geographic_features?.includes('mountain') && 
                town.elevation_meters > 1000) {
         aqi = Math.round(aqi * 0.85);
         reason = 'mountain town';

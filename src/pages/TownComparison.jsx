@@ -277,7 +277,7 @@ export default function TownComparison() {
         activeCategory={activeCategory}
         onCategoryChange={setActiveCategory}
       >
-        <main className="max-w-7xl mx-auto px-4 py-6">
+        <main className={`${uiConfig.layout.width.containerXL} ${uiConfig.layout.spacing.page}`}>
         {/* Town Selection Section - Mobile and Desktop */}
         <div className="mb-6">
           <div className="mb-3">

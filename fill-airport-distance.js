@@ -143,8 +143,8 @@ async function fillAirportDistance() {
       }
       // Tourist destinations usually have nearby airports
       else if (town.expat_community_size === 'large' || 
-               town.geographic_features?.includes('Island') ||
-               town.geographic_features?.includes('Coastal') && town.population > 50000) {
+               town.geographic_features?.includes('island') ||
+               town.geographic_features?.includes('coastal') && town.population > 50000) {
         distance = Math.round(20 + Math.random() * 60); // 20-80km
         source = 'tourist destination';
       }
@@ -161,7 +161,7 @@ async function fillAirportDistance() {
       // Remote/rural
       else {
         distance = Math.round(80 + Math.random() * 120); // 80-200km
-        if (town.geographic_features?.includes('Island')) {
+        if (town.geographic_features?.includes('island')) {
           distance = Math.round(distance * 0.5); // Islands often have small airports
         }
         source = 'rural/remote';

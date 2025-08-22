@@ -378,7 +378,7 @@ export default function OnboardingComplete() {
 
       {/* Tips Section */}
       <div className={`${uiConfig.colors.card} ${uiConfig.layout.shadow.sm} mt-12`}>
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className={`${uiConfig.layout.width.containerXL} ${uiConfig.layout.spacing.page}`}>
           <h3 className={`text-xl font-bold ${uiConfig.colors.heading} mb-4 text-center`}>
             What's Next?
           </h3>

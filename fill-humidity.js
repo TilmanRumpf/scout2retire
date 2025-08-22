@@ -118,10 +118,10 @@ async function fillHumidity() {
       let locationType = 'inland'; // default
       
       // Check geographic features
-      if (town.geographic_features?.includes('Coastal') || 
-          town.geographic_features?.includes('Island')) {
+      if (town.geographic_features?.includes('coastal') || 
+          town.geographic_features?.includes('island')) {
         locationType = 'coastal';
-      } else if (town.geographic_features?.includes('Mountain') &&
+      } else if (town.geographic_features?.includes('mountain') &&
                  town.elevation_meters > 1000) {
         locationType = 'mountain';
       }
@@ -165,7 +165,7 @@ async function fillHumidity() {
       // Default based on climate zone
       if (!humidity) {
         if (town.climate?.includes('Tropical')) humidity = 78;
-        else if (town.climate?.includes('Desert')) humidity = 35;
+        else if (town.climate?.includes('desert')) humidity = 35;
         else if (town.climate?.includes('Mediterranean')) humidity = 60;
         else if (town.climate?.includes('Oceanic')) humidity = 72;
         else if (town.climate?.includes('Continental')) humidity = 65;

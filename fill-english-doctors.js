@@ -103,7 +103,7 @@ async function fillEnglishDoctors() {
     }
     // European tourist areas
     else if (['Spain', 'Portugal', 'France', 'Italy', 'Greece', 'Croatia', 'Cyprus', 'Malta'].includes(town.country) &&
-             (town.population > 100000 || town.geographic_features?.includes('Coastal'))) {
+             (town.population > 100000 || town.geographic_features?.includes('coastal'))) {
       hasEnglishDocs = true;
       reason = 'European tourist area';
       yesCount++;
@@ -117,7 +117,7 @@ async function fillEnglishDoctors() {
       }
       // Asia - depends on development
       else if (['Thailand', 'Vietnam', 'Philippines', 'Malaysia', 'Cambodia', 'Laos'].includes(town.country)) {
-        hasEnglishDocs = town.population > 100000 || town.geographic_features?.includes('Island');
+        hasEnglishDocs = town.population > 100000 || town.geographic_features?.includes('island');
         reason = hasEnglishDocs ? 'Asian city/tourist area' : 'Asian rural area';
       }
       // Default - NO for smaller towns

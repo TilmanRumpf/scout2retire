@@ -16,7 +16,7 @@ export default function Welcome() {
       {/* Header */}
       <header className="p-4">
         <div className="max-w-7xl mx-auto flex justify-between">
-          <Logo variant="full" className="h-10" />
+          <Logo variant="symbol" className="h-10" />
         </div>
       </header>
 

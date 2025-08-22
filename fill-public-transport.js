@@ -113,8 +113,8 @@ async function fillPublicTransport() {
       if (!town.has_public_transit) score = Math.min(score, 2);
       
       // Tourist areas get a boost
-      if (town.geographic_features?.includes('Island')) score -= 1;
-      if (town.geographic_features?.includes('Coastal') && town.population > 50000) score += 0.5;
+      if (town.geographic_features?.includes('island')) score -= 1;
+      if (town.geographic_features?.includes('coastal') && town.population > 50000) score += 0.5;
       
       // Capital cities get a boost
       if (town.name.includes(town.country) || town.name === 'Capital') score += 1;

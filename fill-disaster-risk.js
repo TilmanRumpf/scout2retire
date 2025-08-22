@@ -108,7 +108,7 @@ async function fillDisasterRisk() {
         reason = 'hurricane zone';
         
         // Coastal areas in hurricane zones get +1
-        if (town.geographic_features?.includes('Coastal')) {
+        if (town.geographic_features?.includes('coastal')) {
           risk = Math.min(10, risk + 1);
         }
       }
@@ -128,7 +128,7 @@ async function fillDisasterRisk() {
         
         // Low elevation coastal areas higher risk
         if (town.elevation_meters !== null && town.elevation_meters < 10 && 
-            town.geographic_features?.includes('Coastal')) {
+            town.geographic_features?.includes('coastal')) {
           risk = Math.min(10, risk + 1);
         }
       }
@@ -136,8 +136,8 @@ async function fillDisasterRisk() {
       // Wildfire risk
       if (HIGH_RISK_ZONES.wildfire.countries.includes(town.country) ||
           HIGH_RISK_ZONES.wildfire.cities.some(city => town.name.includes(city))) {
-        if (town.geographic_features?.includes('Forest') || 
-            town.geographic_features?.includes('Mountain')) {
+        if (town.geographic_features?.includes('forest') || 
+            town.geographic_features?.includes('mountain')) {
           risk = Math.max(risk, HIGH_RISK_ZONES.wildfire.risk);
           reason = risk === HIGH_RISK_ZONES.wildfire.risk ? 'wildfire zone' : reason + ' + wildfire';
         }

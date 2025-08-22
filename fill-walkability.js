@@ -116,7 +116,7 @@ async function fillWalkability() {
       if (town.population > 1000000) townType = 'large';
       else if (town.population < 50000) townType = 'small';
       if (town.population < 10000) townType = 'rural';
-      if (town.geographic_features?.includes('Coastal')) townType = 'coastal';
+      if (town.geographic_features?.includes('coastal')) townType = 'coastal';
       
       // Historic towns are more walkable
       const historicTowns = ['Antigua', 'Cartagena', 'Cusco', 'Oaxaca', 'San Miguel de Allende',
@@ -129,7 +129,7 @@ async function fillWalkability() {
       // Modifiers
       if (town.public_transport_quality >= 7) score += 1;
       if (town.requires_car) score -= 2;
-      if (town.geographic_features?.includes('Mountain')) score -= 1;
+      if (town.geographic_features?.includes('mountain')) score -= 1;
       if (region === 'Europe' && town.population < 100000) score += 1; // European small towns often walkable
       
       // Ensure valid range

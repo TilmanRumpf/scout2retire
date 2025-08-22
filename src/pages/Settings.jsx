@@ -190,14 +190,14 @@ export default function Settings() {
     <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
       {/* Header */}
       <header className={`${uiConfig.colors.card} shadow-sm`}>
-        <div className="max-w-4xl mx-auto px-4 py-4">
+        <div className={`${uiConfig.layout.width.containerXL} ${uiConfig.layout.spacing.page}`}>
           <h1 className={`text-xl font-bold ${uiConfig.colors.heading}`}>
             Settings
           </h1>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+      <main className={`${uiConfig.layout.width.containerXL} ${uiConfig.layout.spacing.page} space-y-6`}>
         {/* App Appearance */}
         <div className={`${uiConfig.colors.card} rounded-lg border ${uiConfig.colors.border}`}>
           <div className="p-6">
@@ -220,7 +220,7 @@ export default function Settings() {
                     }`}
                   >
                     <div className="flex items-center justify-center mb-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className={`h-8 w-8 ${uiConfig.colors.warning}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                       </svg>
                     </div>
@@ -592,7 +592,7 @@ export default function Settings() {
       
       {/* Delete account confirmation modal */}
       {showDeleteConfirm && (
-        <div className={`fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4`}>
+        <div className={`fixed inset-0 ${uiConfig.colors.overlay} flex items-center justify-center z-50 p-4`}>
           <div className={`${uiConfig.colors.card} rounded-lg shadow-xl max-w-md w-full p-6`}>
             <h3 className={`text-xl font-bold ${uiConfig.colors.heading} mb-4`}>
               Delete Account?
@@ -625,7 +625,7 @@ export default function Settings() {
               <button
                 onClick={handleDeleteAccount}
                 disabled={!deletePassword}
-                className={`flex-1 ${uiConfig.colors.btnDanger} text-white font-medium py-2 px-4 rounded-md transition-colors disabled:opacity-50`}
+                className={`flex-1 ${uiConfig.colors.btnDanger} font-medium py-2 px-4 rounded-md transition-colors disabled:opacity-50`}
               >
                 Delete Account
               </button>

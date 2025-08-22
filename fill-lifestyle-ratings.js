@@ -109,7 +109,7 @@ async function fillLifestyleRatings() {
       }
       
       // Coastal/Island bonuses
-      if (town.geographic_features?.includes('Coastal') || town.geographic_features?.includes('Island')) {
+      if (town.geographic_features?.includes('coastal') || town.geographic_features?.includes('island')) {
         ratings.outdoor = Math.min(10, ratings.outdoor + 2);
         ratings.restaurants = Math.min(10, ratings.restaurants + 1);
       }

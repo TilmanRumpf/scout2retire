@@ -113,8 +113,8 @@ async function fillExpatCommunity() {
           town.population > 1000000) {
         townType = 'capital';
       }
-      else if (town.geographic_features?.includes('Coastal') || 
-               town.geographic_features?.includes('Island')) {
+      else if (town.geographic_features?.includes('coastal') || 
+               town.geographic_features?.includes('island')) {
         townType = 'coastal';
       }
       

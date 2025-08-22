@@ -15,7 +15,7 @@ import { uiConfig } from '../styles/uiConfig';
  * @param {string} props.alt - Alt text for accessibility (default: 'Scout2Retire')
  */
 export default function Logo({ 
-  variant = 'full',
+  variant = 'symbol',
   className = '',
   onClick,
   navigateTo,

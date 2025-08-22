@@ -217,16 +217,17 @@ const OnboardingRegion = () => {
     { id: 'flexible', label: 'Flexible', description: 'Open to any option' }
   ];
 
+  // Geographic features for onboarding - limited set, lowercase for consistency
   const geographicFeatures = [
-    'Coastal',
-    'Mountains',
-    'Island',
-    'Lakes',
-    'River',
-    'Valley',
-    'Desert',
-    'Forest',
-    'Plains'
+    'coastal',
+    'mountain',
+    'island',
+    'lake',
+    'river',
+    'valley',
+    'desert',
+    'forest',
+    'plains'
   ];
 
   // Removed Alpine from vegetation types
@@ -981,7 +982,7 @@ const OnboardingRegion = () => {
               {geographicFeatures.map(feature => (
                 <SelectionCard
                   key={feature}
-                  title={feature}
+                  title={feature.charAt(0).toUpperCase() + feature.slice(1)}
                   isSelected={selectedFeatures.includes(feature)}
                   onClick={() => handleFeatureToggle(feature)}
                   size="small"

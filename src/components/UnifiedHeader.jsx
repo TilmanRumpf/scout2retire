@@ -4,6 +4,7 @@ import { Menu, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign,
 import QuickNav from './QuickNav';
 import FilterBarV3 from './FilterBarV3';
 import Logo from './Logo';
+import { uiConfig } from '../styles/uiConfig';
 
 /*
 === UNIFIED HEADER - Single Source of Truth ===
@@ -177,29 +178,34 @@ export default function UnifiedHeader({
     <>
       <header className="ios-header fixed top-0 left-0 right-0 w-full">
         <div className={`${maxWidth} mx-auto px-4`}>
-          <div className="ios-header-content gap-2">
-              {/* Logo - hidden on mobile phones */}
-              <Logo 
-                variant="full" 
-                className="h-8 hidden md:block"
-                navigateTo="/daily"
-              />
+          <div className="ios-header-content">
+              {/* Logo with company name - hidden on mobile phones */}
+              <div className="hidden md:flex items-center gap-2 mr-4">
+                <Logo 
+                  variant="symbol" 
+                  className="h-6"
+                  navigateTo="/daily"
+                />
+                <span className={`text-sm font-semibold ${uiConfig.colors.heading}`}>
+                  Scout<span className={uiConfig.colors.accent}>2</span>Retire
+                </span>
+              </div>
               
               {/* Title - always visible */}
               <div className="flex-1 min-w-0">
-                <h1 className="text-base font-medium text-gray-900 dark:text-white">
+                <h1 className={`text-base font-medium ${uiConfig.colors.heading}`}>
                   <span className={`${title.includes("brings your future home") ? 'handwritten-tagline' : ''}`}>
                     {title}
                   </span>
                   {/* Count - hidden on narrow screens */}
                   {totalCount !== undefined && (
-                    <span className="ml-1.5 text-sm font-normal text-gray-500 dark:text-gray-400 hidden md:inline">
+                    <span className={`ml-1.5 text-sm font-normal ${uiConfig.colors.subtitle} hidden md:inline`}>
                       ({filteredCount} of {totalCount})
                     </span>
                   )}
                   {/* Step context for onboarding */}
                   {steps.length > 0 && currentStepNum > 0 && (
-                    <span className="ml-1.5 text-sm font-normal text-gray-500 dark:text-gray-400">
+                    <span className={`ml-1.5 text-sm font-normal ${uiConfig.colors.subtitle}`}>
                       {currentStepNum} of {steps.length}
                     </span>
                   )}
@@ -211,12 +217,12 @@ export default function UnifiedHeader({
               {secondRowType === 'filters' && (
                 <button
                   onClick={() => setIsMobileFiltersOpen(true)}
-                  className="relative p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors lg:hidden"
+                  className={`relative p-1.5 hover:${uiConfig.colors.secondary} rounded-lg transition-colors lg:hidden`}
                   aria-label="Filters"
                 >
-                  <SlidersHorizontal className="w-5 h-5 text-gray-900 dark:text-gray-100" />
+                  <SlidersHorizontal className={`w-5 h-5 ${uiConfig.colors.heading}`} />
                   {filterProps.filterCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-scout-accent-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                    <span className={`absolute -top-1 -right-1 ${uiConfig.colors.accent} text-xs rounded-full h-4 w-4 flex items-center justify-center`}>
                       {filterProps.filterCount}
                     </span>
                   )}
@@ -226,11 +232,11 @@ export default function UnifiedHeader({
               {/* Menu button - always visible */}
               <button 
                 onClick={handleMenuClick}
-                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className={`p-1.5 hover:${uiConfig.colors.secondary} rounded-lg transition-colors`}
                 aria-label="Open navigation menu"
                 type="button"
               >
-                <Menu className="w-5 h-5 text-gray-900 dark:text-gray-100" />
+                <Menu className={`w-5 h-5 ${uiConfig.colors.heading}`} />
               </button>
             </div>
             
@@ -280,18 +286,18 @@ export default function UnifiedHeader({
                             }}
                             className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm whitespace-nowrap transition-all duration-200 ${
                               isActive 
-                                ? 'bg-scout-accent-100 dark:bg-scout-accent-900/30 font-medium text-scout-accent-700 dark:text-scout-accent-300' 
+                                ? `${uiConfig.colors.accentSecondary} font-medium ${uiConfig.colors.accent}` 
                                 : isCompleted
-                                ? 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
-                                : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400'
+                                ? `hover:${uiConfig.colors.secondary} ${uiConfig.colors.heading}`
+                                : `hover:${uiConfig.colors.secondary} ${uiConfig.colors.subtitle}`
                             }`}
                           >
                             <Icon className={`w-4 h-4 transition-colors duration-200 ${
                               isActive 
-                                ? 'text-scout-accent-600 dark:text-scout-accent-400' 
+                                ? uiConfig.colors.accent 
                                 : isCompleted
-                                ? 'text-gray-600 dark:text-gray-400'
-                                : 'text-gray-400 dark:text-gray-500'
+                                ? uiConfig.colors.body
+                                : uiConfig.colors.subtitle
                             }`} />
                             <span>{step.label}</span>
                           </button>
@@ -341,14 +347,14 @@ export default function UnifiedHeader({
                             }}
                             className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm whitespace-nowrap transition-all duration-200 ${
                               tab.isActive 
-                                ? 'bg-scout-accent-100 dark:bg-scout-accent-900/30 font-medium text-scout-accent-700 dark:text-scout-accent-300' 
-                                : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'
+                                ? `${uiConfig.colors.accentSecondary} font-medium ${uiConfig.colors.accent}` 
+                                : `hover:${uiConfig.colors.secondary} ${uiConfig.colors.body}`
                             }`}
                           >
                             <Icon className={`w-4 h-4 transition-colors duration-200 ${
                               tab.isActive 
-                                ? 'text-scout-accent-600 dark:text-scout-accent-400' 
-                                : 'text-gray-500 dark:text-gray-500'
+                                ? uiConfig.colors.accent 
+                                : uiConfig.colors.subtitle
                             }`} />
                             <span>{tab.label}</span>
                           </button>
@@ -365,7 +371,7 @@ export default function UnifiedHeader({
               <div className="filter-row pb-2 -mt-1">
                 <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
                   {/* Town count */}
-                  <span className="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0">
+                  <span className={`text-sm ${uiConfig.colors.subtitle} flex-shrink-0`}>
                     {comparisonProps.towns.length}/{comparisonProps.maxTowns || 3}
                   </span>
                   
@@ -373,13 +379,13 @@ export default function UnifiedHeader({
                   {comparisonProps.towns.map((town) => (
                     <div
                       key={town.id}
-                      className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full text-sm"
+                      className={`flex-shrink-0 flex items-center gap-2 px-3 py-1.5 ${uiConfig.colors.card} border ${uiConfig.colors.border} rounded-full text-sm`}
                     >
-                      <MapPin className="w-3 h-3 text-scout-accent-600" />
-                      <span className="text-gray-900 dark:text-white">{town.name}</span>
+                      <MapPin className={`w-3 h-3 ${uiConfig.colors.accent}`} />
+                      <span className={uiConfig.colors.heading}>{town.name}</span>
                       <button
                         onClick={() => comparisonProps.onRemoveTown(town.id)}
-                        className="ml-1 text-gray-400 hover:text-red-500 transition-colors"
+                        className={`ml-1 ${uiConfig.colors.subtitle} hover:${uiConfig.colors.danger} transition-colors`}
                         aria-label={`Remove ${town.name}`}
                       >
                         <X className="w-3.5 h-3.5" />
@@ -391,7 +397,7 @@ export default function UnifiedHeader({
                   {comparisonProps.towns.length < (comparisonProps.maxTowns || 3) && (
                     <button
                       onClick={() => navigate('/favorites')}
-                      className="flex-shrink-0 px-3 py-1.5 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-700 dark:text-scout-accent-300 border border-scout-accent-200 dark:border-scout-accent-800 rounded-full text-sm hover:bg-scout-accent-100 dark:hover:bg-scout-accent-900/30 transition-colors"
+                      className={`flex-shrink-0 px-3 py-1.5 ${uiConfig.colors.accentSecondary} ${uiConfig.colors.accent} border ${uiConfig.colors.accentBorder} rounded-full text-sm hover:${uiConfig.colors.accentHover} transition-colors`}
                     >
                       + Add Town
                     </button>
@@ -399,7 +405,7 @@ export default function UnifiedHeader({
                   
                   {/* Max reached */}
                   {comparisonProps.towns.length >= (comparisonProps.maxTowns || 3) && (
-                    <span className="text-sm text-gray-500 dark:text-gray-400 italic flex-shrink-0">
+                    <span className={`text-sm ${uiConfig.colors.subtitle} italic flex-shrink-0`}>
                       Maximum reached
                     </span>
                   )}
@@ -427,22 +433,22 @@ export default function UnifiedHeader({
         <div className="fixed inset-0 z-[10000] md:hidden">
           {/* Backdrop */}
           <div 
-            className="absolute inset-0 bg-black bg-opacity-50"
+            className={`absolute inset-0 ${uiConfig.colors.overlay}`}
             onClick={() => setIsMobileFiltersOpen(false)}
           />
           
           {/* Modal */}
-          <div className="absolute bottom-0 left-4 right-4 bg-white dark:bg-gray-800 rounded-t-2xl shadow-xl max-h-[80vh] overflow-y-auto">
+          <div className={`absolute bottom-0 left-4 right-4 ${uiConfig.colors.card} rounded-t-2xl shadow-xl max-h-[80vh] overflow-y-auto`}>
             {/* Header */}
-            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+            <div className={`sticky top-0 ${uiConfig.colors.card} border-b ${uiConfig.colors.border} p-4`}>
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Filters</h2>
+                <h2 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>Filters</h2>
                 <button
                   onClick={() => setIsMobileFiltersOpen(false)}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  className={`p-2 hover:${uiConfig.colors.secondary} rounded-lg transition-colors`}
                   aria-label="Close filters"
                 >
-                  <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  <X className={`w-5 h-5 ${uiConfig.colors.subtitle}`} />
                 </button>
               </div>
             </div>
@@ -453,10 +459,10 @@ export default function UnifiedHeader({
             </div>
             
             {/* Apply Button */}
-            <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
+            <div className={`sticky bottom-0 ${uiConfig.colors.card} border-t ${uiConfig.colors.border} p-4`}>
               <button
                 onClick={() => setIsMobileFiltersOpen(false)}
-                className="w-full py-3 bg-scout-accent-600 text-white rounded-lg font-medium hover:bg-scout-accent-700 transition-colors"
+                className={`w-full py-3 ${uiConfig.colors.btnPrimary} rounded-lg font-medium hover:${uiConfig.colors.btnPrimaryHover} transition-colors`}
               >
                 Apply Filters
               </button>
