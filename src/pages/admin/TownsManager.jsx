@@ -927,8 +927,8 @@ const TownsManager = () => {
     const fieldSearchQuery = getSearchQuery(column, town);
     
     return (
-    <div key={column} className="flex items-center py-1 group" data-field={column}>
-      <div className={`w-64 text-sm font-medium ${uiConfig.colors.body} flex items-center gap-1`}>
+    <div key={column} className="lg:flex lg:items-center py-2 lg:py-1 group border-b lg:border-0" data-field={column}>
+      <div className={`lg:w-64 text-sm font-medium ${uiConfig.colors.body} flex items-center gap-1 mb-1 lg:mb-0`}>
         {column}:
         <button
           onClick={() => {
@@ -1137,16 +1137,16 @@ const TownsManager = () => {
 
       {/* Filters */}
       <div className={`${uiConfig.colors.card} shadow-sm border-b px-4 py-3`}>
-        <div className="max-w-7xl mx-auto flex gap-4 flex-wrap items-center">
+        <div className="max-w-7xl mx-auto flex gap-2 lg:gap-4 flex-wrap items-center">
           {/* Town Search - First */}
-          <div className="relative">
+          <div className="relative flex-1 lg:flex-none min-w-[140px] max-w-[200px]">
             <input
               type="text"
               value={filters.townSearch}
               onChange={(e) => handleTownSearch(e.target.value)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              placeholder="Search town..."
-              className={`border ${uiConfig.colors.border} rounded px-3 py-1 w-48 ${uiConfig.colors.input}`}
+              placeholder="Search..."
+              className={`border ${uiConfig.colors.border} rounded px-3 py-1 w-full lg:w-48 ${uiConfig.colors.input}`}
             />
             {showSuggestions && (
               <div className={`absolute top-full left-0 mt-1 w-full ${uiConfig.colors.card} border ${uiConfig.colors.border} rounded shadow-lg z-10 max-h-60 overflow-y-auto`}>
@@ -1167,18 +1167,18 @@ const TownsManager = () => {
           <select 
             value={filters.hasPhoto} 
             onChange={(e) => setFilters({...filters, hasPhoto: e.target.value})}
-            className="border rounded px-3 py-1"
+            className="border rounded px-2 lg:px-3 py-1 text-sm lg:text-base"
           >
-            <option value="all">Has Photo</option>
-            <option value="yes">Has Photo</option>
-            <option value="no">No Photo</option>
+            <option value="all">Photo</option>
+            <option value="yes">Has</option>
+            <option value="no">No</option>
           </select>
           
           {/* Completion - Third */}
           <select 
             value={filters.completionLevel} 
             onChange={(e) => setFilters({...filters, completionLevel: e.target.value})}
-            className="border rounded px-3 py-1"
+            className="border rounded px-2 lg:px-3 py-1 text-sm lg:text-base"
           >
             <option value="all">Completion</option>
             <option value="top50">Top 50</option>
@@ -1194,7 +1194,7 @@ const TownsManager = () => {
           <select 
             value={filters.geo_region} 
             onChange={(e) => setFilters({...filters, geo_region: e.target.value})}
-            className="border rounded px-3 py-1"
+            className="border rounded px-2 lg:px-3 py-1 text-sm lg:text-base hidden lg:block"
             title="Filter by geo_region column"
           >
             <option value="all">Geo Region (All)</option>
@@ -1207,9 +1207,9 @@ const TownsManager = () => {
           <select 
             value={filters.country} 
             onChange={(e) => setFilters({...filters, country: e.target.value})}
-            className="border rounded px-3 py-1"
+            className="border rounded px-2 lg:px-3 py-1 text-sm lg:text-base"
           >
-            <option value="all">Countries (All)</option>
+            <option value="all">Countries</option>
             {getUniqueCountries().map(country => (
               <option key={country} value={country}>{country}</option>
             ))}
@@ -1233,7 +1233,7 @@ const TownsManager = () => {
               
               setFilters(updatedFilters);
             }}
-            className="border rounded px-3 py-1"
+            className="border rounded px-2 lg:px-3 py-1 text-sm lg:text-base"
           >
             <option value="all">Data Quality</option>
             <option value="has_errors">Has data errors ({getDataQualityCounts().has_errors})</option>
@@ -1246,9 +1246,10 @@ const TownsManager = () => {
       </div>
 
       <div className={`${uiConfig.layout.width.containerXL} ${uiConfig.layout.spacing.page}`}>
-        <div className="grid grid-cols-12 gap-6">
-          {/* Town List */}
-          <div className="col-span-3">
+        {/* Mobile: Show either list OR details. Desktop: Show both side by side */}
+        <div className="lg:grid lg:grid-cols-12 lg:gap-6">
+          {/* Town List - Full width on mobile, 3 cols on desktop */}
+          <div className={`${selectedTown ? 'hidden lg:block' : 'block'} lg:col-span-3`}>
             <div className={`${uiConfig.colors.card} rounded-lg shadow max-h-[800px] overflow-y-auto`}>
               <div className={`sticky top-0 ${uiConfig.colors.card} border-b`}>
                 <div className="px-4 py-2">
@@ -1356,14 +1357,26 @@ const TownsManager = () => {
             </div>
           </div>
 
-          {/* Town Details */}
-          <div className="col-span-9">
+          {/* Town Details - Full width on mobile, 9 cols on desktop */}
+          <div className={`${selectedTown ? 'block' : 'hidden lg:block'} lg:col-span-9`}>
             {selectedTown ? (
               <div className={`${uiConfig.colors.card} rounded-lg shadow`}>
-                {/* Town Header */}
-                <div className="px-6 py-4 border-b">
+                {/* Town Header with mobile back button */}
+                <div className="px-4 lg:px-6 py-4 border-b">
                   <div className="flex justify-between items-start">
-                    <h2 className={`text-xl font-bold ${uiConfig.colors.heading}`}>{selectedTown.name}, {selectedTown.country}</h2>
+                    <div className="flex items-center gap-3">
+                      {/* Mobile back button */}
+                      <button
+                        onClick={() => setSelectedTown(null)}
+                        className={`lg:hidden p-2 rounded-lg ${uiConfig.colors.secondary} hover:${uiConfig.colors.primary} transition-colors`}
+                        title="Back to list"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <h2 className={`text-lg lg:text-xl font-bold ${uiConfig.colors.heading}`}>{selectedTown.name}, {selectedTown.country}</h2>
+                    </div>
                     {/* Wikipedia Button */}
                     <button
                       onClick={() => setWikipediaOpen(true)}
@@ -1394,14 +1407,14 @@ const TownsManager = () => {
                   )}
                 </div>
 
-                {/* Category Tabs */}
-                <div className="border-b">
-                  <div className="flex">
+                {/* Category Tabs - Scrollable on mobile */}
+                <div className="border-b overflow-x-auto">
+                  <div className="flex min-w-max">
                     {Object.keys(COLUMN_CATEGORIES).map((category) => (
                       <button
                         key={category}
                         onClick={() => setActiveCategory(category)}
-                        className={`px-6 py-3 font-medium transition-colors ${
+                        className={`px-4 lg:px-6 py-3 font-medium transition-colors whitespace-nowrap ${
                           activeCategory === category
                             ? `border-b-2 ${uiConfig.colors.accentBorder} ${uiConfig.colors.accent}`
                             : `${uiConfig.colors.body} hover:${uiConfig.colors.heading}`
@@ -1414,7 +1427,7 @@ const TownsManager = () => {
                 </div>
 
                 {/* Category Content with Subcategories */}
-                <div className="p-6">
+                <div className="p-4 lg:p-6">
                   {activeCategory === 'Hobbies' ? (
                     // Special handling for Hobbies tab with enhanced display
                     <div>
