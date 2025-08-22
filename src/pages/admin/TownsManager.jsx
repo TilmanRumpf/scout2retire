@@ -1,6 +1,7 @@
 // src/pages/admin/TownsManager.jsx - Reorganized with onboarding subcategories
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import supabase from '../../utils/supabaseClient';
 import SmartFieldEditor from '../../components/SmartFieldEditor';
 import QuickNav from '../../components/QuickNav';
@@ -193,14 +194,14 @@ const TownsManager = () => {
       
       if (error) {
         console.error('❌ Auth error:', error);
-        alert('Authentication error. Please log in again.');
+        toast.error('Authentication error. Please log in again.');
         navigate('/welcome');
         return;
       }
       
       if (!user) {
         console.error('❌ No user logged in');
-        alert('You must be logged in to access the admin panel.');
+        toast.error('You must be logged in to access the admin panel.');
         navigate('/welcome');
         return;
       }
@@ -211,7 +212,7 @@ const TownsManager = () => {
       // Check if user is admin
       if (user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
         console.error('❌ Not authorized - user is not admin');
-        alert('You are not authorized to access the admin panel.');
+        toast.error('You are not authorized to access the admin panel.');
         navigate('/');
         return;
       }
@@ -630,7 +631,7 @@ const TownsManager = () => {
       
       if (fetchError) {
         console.error('Error fetching town data:', fetchError);
-        alert('Error fetching town data. Please try again.');
+        toast.error('Error fetching town data. Please try again.');
         return;
       }
       
@@ -650,7 +651,7 @@ const TownsManager = () => {
       
       if (updateError) {
         console.error('Error saving audit data:', updateError);
-        alert(`Error saving audit approval: ${updateError.message}\n\nThis might be an RLS issue.`);
+        toast.error(`Error saving audit approval: ${updateError.message}`);
         return;
       }
       
@@ -876,7 +877,7 @@ const TownsManager = () => {
     
     if (error) {
       console.error('Error updating:', error);
-      alert(`Error saving changes: ${error.message || 'Unknown error'}`);
+      toast.error(`Error saving changes: ${error.message || 'Unknown error'}`);
       return;
     }
     
@@ -945,13 +946,13 @@ const TownsManager = () => {
             
             if (error) {
               console.error('❌ Supabase update error:', error);
-              alert(`Error saving changes: ${error.message || 'Unknown error'}\n\nThis is likely a permission issue. Check:\n1. Are you logged in as admin?\n2. Does the towns table have Row Level Security policies?\n3. Check browser console for details.`);
+              toast.error(`Error saving changes: ${error.message || 'Unknown error'}`);
               return;
             }
             
             if (!data || data.length === 0) {
               console.error('❌ No data returned from update - possible RLS issue');
-              alert('Update may have failed - no data returned. Check Row Level Security policies.');
+              toast.error('Update may have failed - no data returned. Check Row Level Security policies.');
               return;
             }
             

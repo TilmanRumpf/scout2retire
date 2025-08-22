@@ -201,7 +201,6 @@ export default function OnboardingCurrentStatus() {
     const loadExistingData = async () => {
       try {
         const userResult = await getCurrentUser();
-        console.log('getCurrentUser result:', userResult);
         
         if (!userResult || !userResult.user || !userResult.user.id) {
           console.error('User or user ID not found:', userResult);
@@ -209,7 +208,6 @@ export default function OnboardingCurrentStatus() {
           return;
         }
         
-        console.log('User ID being passed to getOnboardingProgress:', userResult.user.id);
         const { success, data, progress: userProgress, error } = await getOnboardingProgress(userResult.user.id);
         if (!success) {
           console.error("Error loading existing data:", error);
@@ -220,7 +218,6 @@ export default function OnboardingCurrentStatus() {
         // Progress is now managed by OnboardingLayout
         
         if (data && data.current_status) {
-          console.log('Loading current_status data:', data.current_status); // DEBUG
           setHasLoadedData(true);
           setFormData(prev => ({
             ...prev,
@@ -390,7 +387,6 @@ export default function OnboardingCurrentStatus() {
         return;
       }
       
-      console.log('Saving formData with children_citizenship:', formData.children_citizenship); // DEBUG
       
       const cleanedFormData = {
         ...formData,
@@ -469,7 +465,6 @@ export default function OnboardingCurrentStatus() {
         );
 
         if (prefSuccess) {
-          console.log('✅ Saved to user_preferences table');
         } else {
           console.error('❌ Failed to save to user_preferences:', prefError);
         }

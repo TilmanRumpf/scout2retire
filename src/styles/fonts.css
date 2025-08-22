@@ -1,33 +1,7 @@
 /* Google Fonts Utility Classes */
 
 /* Ensure fonts are properly loaded and applied */
-@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400&family=Montserrat:wght@800&family=Dancing+Script:wght@400;700&family=Pacifico&family=Satisfy&family=Caveat:wght@400;700&display=swap');
-
-/* Font utility classes with !important to override Tailwind */
-.font-kalam {
-  font-family: 'Kalam', cursive !important;
-}
-
-.font-montserrat {
-  font-family: 'Montserrat', sans-serif !important;
-  font-weight: 800 !important;
-}
-
-.font-dancing-script {
-  font-family: 'Dancing Script', cursive !important;
-}
-
-.font-pacifico {
-  font-family: 'Pacifico', cursive !important;
-}
-
-.font-satisfy {
-  font-family: 'Satisfy', cursive !important;
-}
-
-.font-caveat {
-  font-family: 'Caveat', cursive !important;
-}
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&family=Caveat:wght@400;700&display=swap');
 
 /* Specific use cases */
 .s2r-logo {
@@ -60,17 +34,3 @@
   font-weight: 800;
 }
 
-/* Debug class to verify font loading */
-.font-test {
-  position: relative;
-}
-
-.font-test::after {
-  content: attr(data-font);
-  position: absolute;
-  top: -20px;
-  left: 0;
-  font-size: 10px;
-  color: #666;
-  font-family: monospace;
-}

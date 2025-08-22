@@ -132,7 +132,6 @@ export default function OnboardingAdministration() {
         
         const progressResult = await getOnboardingProgress(userResult.user.id);
         
-        console.log('Administration - Loading data:', { success: progressResult.success, data: progressResult.data, error: progressResult.error }); // DEBUG
         
         if (!progressResult.success) {
           console.error("Error loading existing data:", progressResult.error);
@@ -144,7 +143,6 @@ export default function OnboardingAdministration() {
         
         // If administration data exists, load it
         if (progressResult.data && progressResult.data.administration) {
-          console.log('Administration data found:', progressResult.data.administration); // DEBUG
           
           // Handle both string and object data
           let adminData = progressResult.data.administration;
@@ -230,8 +228,6 @@ export default function OnboardingAdministration() {
         return;
       }
       
-      // Log what we're trying to save
-      console.log('Administration - Saving data:', formData); // DEBUG
       
       // Create a clean data object
       const dataToSave = {
@@ -252,11 +248,9 @@ export default function OnboardingAdministration() {
         residency_path: formData.residency_path || []
       };
       
-      console.log('SENDING TO SUPABASE:', JSON.stringify(dataToSave, null, 2));
       
       const { success, error } = await saveOnboardingStep(userResult.user.id, dataToSave, 'administration');
       
-      console.log('Administration - Save result:', { success, error }); // DEBUG
       
       if (!success) {
         toast.error(`Failed to save: ${error?.message || 'Unknown error'}`);
@@ -273,7 +267,6 @@ export default function OnboardingAdministration() {
           dataToSave
         );
         if (prefSuccess) {
-          console.log('✅ Saved administration to user_preferences table');
         } else {
           console.error('❌ Failed to save administration to user_preferences:', prefError);
         }
@@ -286,7 +279,7 @@ export default function OnboardingAdministration() {
         navigate('/onboarding/costs');
       }, 100);
     } catch (err) {
-      console.error('Administration - Save error:', err); // DEBUG
+      console.error('Administration - Save error:', err);
       toast.error('An unexpected error occurred');
     } finally {
       setLoading(false);

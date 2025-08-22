@@ -43,7 +43,6 @@ export default function OnboardingReview() {
 
   const handleComplete = async () => {
     setLoading(true);
-    console.log('Starting onboarding completion process...');
     
     try {
       const { user } = await getCurrentUser();
@@ -53,12 +52,9 @@ export default function OnboardingReview() {
         return;
       }
       
-      console.log('User found:', user.id, user.email);
-      console.log('Calling completeOnboarding...');
       
       const { success, error } = await completeOnboarding(user.id);
       
-      console.log('completeOnboarding result:', { success, error });
       
       if (!success) {
         const errorMessage = error?.message || 'Unknown error';
@@ -68,7 +64,6 @@ export default function OnboardingReview() {
         return;
       }
       
-      console.log('Onboarding completed successfully! Navigating to complete page...');
       toast.success('Onboarding completed! Let\'s find your perfect matches...');
       navigate('/onboarding/complete');
     } catch (err) {
