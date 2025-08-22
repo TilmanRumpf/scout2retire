@@ -176,7 +176,7 @@ export default function UnifiedHeader({
 
   return (
     <>
-      <header className="ios-header fixed top-0 left-0 right-0 w-full">
+      <header className="ios-header fixed top-0 left-0 right-0 w-full pt-safe">
         <div className={`${maxWidth} mx-auto px-4`}>
           <div className="ios-header-content">
               {/* Logo with company name - hidden on mobile phones */}

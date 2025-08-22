@@ -1135,104 +1135,106 @@ const TownsManager = () => {
 
       {/* Filters */}
       <div className={`${uiConfig.colors.card} shadow-sm border-b`}>
-        <div className={`${uiConfig.layout.width.containerXL} px-4 py-3 flex gap-3 flex-wrap items-center`}>
-          {/* Town Search - First */}
-          <div className="relative">
-            <input
-              type="text"
-              value={filters.townSearch}
-              onChange={(e) => handleTownSearch(e.target.value)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              placeholder="Search towns..."
-              className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm w-40 ${uiConfig.colors.input}`}
-            />
-            {showSuggestions && (
-              <div className={`absolute top-full left-0 mt-1 w-full ${uiConfig.colors.card} border ${uiConfig.colors.border} rounded shadow-lg z-10 max-h-60 overflow-y-auto`}>
-                {searchSuggestions.map((suggestion, index) => (
-                  <div
-                    key={index}
-                    onClick={() => handleSuggestionClick(suggestion)}
-                    className={`px-3 py-2 hover:${uiConfig.colors.secondary} cursor-pointer`}
-                  >
-                    {suggestion}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          
-          {/* Has Photos - Second */}
-          <select 
-            value={filters.hasPhoto} 
-            onChange={(e) => setFilters({...filters, hasPhoto: e.target.value})}
-            className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm max-w-[110px] ${uiConfig.colors.input}`}
-          >
-            <option value="all">Photo</option>
-            <option value="yes">Has Photo</option>
-            <option value="no">No Photo</option>
-          </select>
-          
-          {/* Completion - Third */}
-          <select 
-            value={filters.completionLevel} 
-            onChange={(e) => setFilters({...filters, completionLevel: e.target.value})}
-            className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm max-w-[140px] truncate ${uiConfig.colors.input}`}
-          >
-            <option value="all">Completion</option>
-            <option value="top50">Top 50</option>
-            <option value="81-100">81-100%</option>
-            <option value="61-80">61-80%</option>
-            <option value="41-60">41-60%</option>
-            <option value="21-40">21-40%</option>
-            <option value="0-20">0-20%</option>
-            <option value="worst50">Worst 50</option>
-          </select>
-          
-          {/* Geo Regions - Fourth */}
-          <select 
-            value={filters.geo_region} 
-            onChange={(e) => setFilters({...filters, geo_region: e.target.value})}
-            className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm max-w-[160px] truncate hidden lg:block ${uiConfig.colors.input}`}
-            title="Filter by geo_region column"
-          >
-            <option value="all">Geo Region</option>
-            {getUniqueGeoRegion().map(region => (
-              <option key={region} value={region} className="truncate">{region}</option>
-            ))}
-          </select>
-          
-          {/* All Countries - Fifth */}
-          <select 
-            value={filters.country} 
-            onChange={(e) => setFilters({...filters, country: e.target.value})}
-            className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm max-w-[150px] truncate ${uiConfig.colors.input}`}
-          >
-            <option value="all">Countries</option>
-            {getUniqueCountries().map(country => (
-              <option key={country} value={country} className="truncate">{country.length > 20 ? country.substring(0, 20) + '...' : country}</option>
-            ))}
-          </select>
-          
-          {/* Data Quality - Last */}
-          <select 
-            value={filters.dataQuality} 
-            onChange={(e) => {
-              const newQuality = e.target.value;
-              const updatedFilters = {...filters, dataQuality: newQuality};
-              
-              // Smart filter reset: Clear conflicting filters when selecting data quality options
-              if (newQuality === 'missing_photos') {
-                // Reset hasPhoto to 'all' to show towns without photos
-                updatedFilters.hasPhoto = 'all';
-              } else if (newQuality === 'low_completion') {
-                // Reset completionLevel to 'all' to show all completion levels
-                updatedFilters.completionLevel = 'all';
-              }
-              
-              setFilters(updatedFilters);
-            }}
-            className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm max-w-[150px] truncate ${uiConfig.colors.input}`}
-          >
+        <div className={`${uiConfig.layout.width.containerXL} px-4 py-3`}>
+          {/* Mobile: 2x2 grid, Desktop: single row */}
+          <div className="grid grid-cols-2 sm:flex sm:gap-3 gap-2 sm:flex-wrap items-center">
+            {/* Town Search - spans full width on mobile */}
+            <div className="relative col-span-2 sm:col-span-1">
+              <input
+                type="text"
+                value={filters.townSearch}
+                onChange={(e) => handleTownSearch(e.target.value)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                placeholder="Search..."
+                className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm w-full sm:w-40 ${uiConfig.colors.input}`}
+              />
+              {showSuggestions && (
+                <div className={`absolute top-full left-0 mt-1 w-full ${uiConfig.colors.card} border ${uiConfig.colors.border} rounded shadow-lg z-10 max-h-60 overflow-y-auto`}>
+                  {searchSuggestions.map((suggestion, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className={`px-3 py-2 hover:${uiConfig.colors.secondary} cursor-pointer`}
+                    >
+                      {suggestion}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Has Photos */}
+            <select 
+              value={filters.hasPhoto} 
+              onChange={(e) => setFilters({...filters, hasPhoto: e.target.value})}
+              className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm w-full sm:w-auto sm:max-w-[110px] ${uiConfig.colors.input}`}
+            >
+              <option value="all">Photo</option>
+              <option value="yes">Has Photo</option>
+              <option value="no">No Photo</option>
+            </select>
+            
+            {/* Completion */}
+            <select 
+              value={filters.completionLevel} 
+              onChange={(e) => setFilters({...filters, completionLevel: e.target.value})}
+              className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm w-full sm:w-auto sm:max-w-[140px] truncate ${uiConfig.colors.input}`}
+            >
+              <option value="all">Completion</option>
+              <option value="top50">Top 50</option>
+              <option value="81-100">81-100%</option>
+              <option value="61-80">61-80%</option>
+              <option value="41-60">41-60%</option>
+              <option value="21-40">21-40%</option>
+              <option value="0-20">0-20%</option>
+              <option value="worst50">Worst 50</option>
+            </select>
+            
+            {/* Geo Regions - hidden on mobile */}
+            <select 
+              value={filters.geo_region} 
+              onChange={(e) => setFilters({...filters, geo_region: e.target.value})}
+              className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm max-w-[160px] truncate hidden sm:block ${uiConfig.colors.input}`}
+              title="Filter by geo_region column"
+            >
+              <option value="all">Geo Region</option>
+              {getUniqueGeoRegion().map(region => (
+                <option key={region} value={region} className="truncate">{region}</option>
+              ))}
+            </select>
+            
+            {/* All Countries */}
+            <select 
+              value={filters.country} 
+              onChange={(e) => setFilters({...filters, country: e.target.value})}
+              className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm w-full sm:w-auto sm:max-w-[150px] truncate ${uiConfig.colors.input}`}
+            >
+              <option value="all">Countries</option>
+              {getUniqueCountries().map(country => (
+                <option key={country} value={country} className="truncate">{country.length > 20 ? country.substring(0, 20) + '...' : country}</option>
+              ))}
+            </select>
+            
+            {/* Data Quality */}
+            <select 
+              value={filters.dataQuality} 
+              onChange={(e) => {
+                const newQuality = e.target.value;
+                const updatedFilters = {...filters, dataQuality: newQuality};
+                
+                // Smart filter reset: Clear conflicting filters when selecting data quality options
+                if (newQuality === 'missing_photos') {
+                  // Reset hasPhoto to 'all' to show towns without photos
+                  updatedFilters.hasPhoto = 'all';
+                } else if (newQuality === 'low_completion') {
+                  // Reset completionLevel to 'all' to show all completion levels
+                  updatedFilters.completionLevel = 'all';
+                }
+                
+                setFilters(updatedFilters);
+              }}
+              className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm w-full sm:w-auto sm:max-w-[150px] truncate ${uiConfig.colors.input}`}
+            >
             <option value="all">Data Quality</option>
             <option value="has_errors">Has data errors ({getDataQualityCounts().has_errors})</option>
             <option value="missing_photos">Missing photos ({getDataQualityCounts().missing_photos})</option>
