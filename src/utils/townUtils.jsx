@@ -33,15 +33,9 @@ export const fetchTowns = async (filters = {}) => {
     }
 
     // EXISTING: Your original logic unchanged
-    // SELECT only needed columns for performance
-    const selectColumns = `
-      id, name, state_name, state_code, country, population,
-      image_url_1, image_url_2, image_url_3, image_url_4,
-      latitude, longitude, description, townHighlights
-    `;
     let query = supabase
       .from('towns')
-      .select(selectColumns);
+      .select('*');
 
     // Filter for towns with photos (quality control)
     query = query
@@ -297,15 +291,9 @@ export const getTownOfTheDay = async (userId) => {
     const favoriteTownIds = favorites ? favorites.map(fav => fav.town_id) : [];
 
     // Get a random town not in favorites
-    // SELECT only needed columns for performance
-    const selectColumnsRandom = `
-      id, name, state_name, state_code, country, population,
-      image_url_1, image_url_2, image_url_3, image_url_4,
-      latitude, longitude, description, townHighlights
-    `;
     let query = supabase
       .from('towns')
-      .select(selectColumnsRandom);
+      .select('*');
 
     // Filter for towns with photos (quality control) - CRITICAL SAFETY FEATURE
     query = query
