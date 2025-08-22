@@ -150,7 +150,7 @@ async function fillRetirementCommunity() {
         }
       }
       // Coastal towns often attract retirees
-      else if (town.geographic_features?.includes('Coastal')) {
+      else if (town.geographic_features?.includes('coastal')) {
         presence = 'minimal';
         reason = 'coastal US town';
       }
@@ -168,7 +168,7 @@ async function fillRetirementCommunity() {
         reason = 'has expat community';
       }
       // Coastal with amenities
-      else if (town.geographic_features?.includes('Coastal') && 
+      else if (town.geographic_features?.includes('coastal') && 
                town.english_speaking_doctors) {
         presence = 'minimal';
         reason = 'coastal + English doctors';

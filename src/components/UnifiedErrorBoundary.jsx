@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertTriangle, AlertCircle, RefreshCw, Home } from 'lucide-react';
+import { uiConfig } from '../styles/uiConfig';
 
 class UnifiedErrorBoundary extends React.Component {
   constructor(props) {
@@ -57,24 +58,24 @@ class UnifiedErrorBoundary extends React.Component {
       if (variant === 'compact') {
         return (
           <div className="min-h-[400px] flex items-center justify-center p-4">
-            <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-center">
+            <div className={`max-w-md w-full ${uiConfig.colors.card} rounded-lg shadow-lg p-6 text-center`}>
               <div className="flex justify-center mb-4">
-                <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
-                  <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                <div className={`w-12 h-12 ${uiConfig.colors.dangerSecondary} rounded-full flex items-center justify-center`}>
+                  <AlertCircle className={`w-6 h-6 ${uiConfig.colors.danger}`} />
                 </div>
               </div>
               
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-2`}>
                 {fallbackTitle || 'Something went wrong'}
               </h3>
               
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              <p className={`text-sm ${uiConfig.colors.body} mb-6`}>
                 {fallbackMessage || 'We encountered an error loading this content. Please try again.'}
               </p>
 
               <button
                 onClick={this.handleReset}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                className={`inline-flex items-center gap-2 px-4 py-2 ${uiConfig.colors.success} hover:${uiConfig.colors.successHover} font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500`}
               >
                 <RefreshCw className="w-4 h-4" />
                 Try Again
@@ -82,8 +83,8 @@ class UnifiedErrorBoundary extends React.Component {
 
               {/* Show error details in development */}
               {isDevelopment && this.state.error && (
-                <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-700 rounded text-left">
-                  <p className="text-xs font-mono text-gray-600 dark:text-gray-400">
+                <div className={`mt-4 p-3 ${uiConfig.colors.secondary} rounded text-left`}>
+                  <p className={`text-xs font-mono ${uiConfig.colors.body}`}>
                     {this.state.error.toString()}
                   </p>
                 </div>
@@ -95,22 +96,22 @@ class UnifiedErrorBoundary extends React.Component {
 
       // Full variant for app-level errors
       return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
+        <div className={`min-h-screen ${uiConfig.colors.page} flex items-center justify-center px-4`}>
           <div className="max-w-md w-full">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 sm:p-8">
+            <div className={`${uiConfig.colors.card} rounded-lg shadow-lg p-6 sm:p-8`}>
               {/* Error Icon */}
               <div className="flex justify-center mb-6">
-                <div className="w-20 h-20 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
-                  <AlertTriangle className="w-10 h-10 text-red-600 dark:text-red-400" />
+                <div className={`w-20 h-20 ${uiConfig.colors.dangerSecondary} rounded-full flex items-center justify-center`}>
+                  <AlertTriangle className={`w-10 h-10 ${uiConfig.colors.danger}`} />
                 </div>
               </div>
 
               {/* Error Message */}
-              <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-4">
+              <h1 className={`text-2xl font-bold text-center ${uiConfig.colors.heading} mb-4`}>
                 {fallbackTitle || 'Oops! Something went wrong'}
               </h1>
               
-              <p className="text-center text-gray-600 dark:text-gray-400 mb-8">
+              <p className={`text-center ${uiConfig.colors.body} mb-8`}>
                 {fallbackMessage || "We're sorry, but something unexpected happened. Please try refreshing the page or return to the home page."}
               </p>
 
@@ -118,7 +119,7 @@ class UnifiedErrorBoundary extends React.Component {
               <div className="space-y-3">
                 <button
                   onClick={this.handleReset}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 ${uiConfig.colors.success} hover:${uiConfig.colors.successHover} font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500`}
                 >
                   <RefreshCw className="w-5 h-5" />
                   Try Again
@@ -127,7 +128,7 @@ class UnifiedErrorBoundary extends React.Component {
                 {showReloadButton && (
                   <button
                     onClick={this.handleReload}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className={`w-full flex items-center justify-center gap-2 px-4 py-3 ${uiConfig.colors.btnPrimary} hover:${uiConfig.colors.btnPrimaryHover} font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
                   >
                     <RefreshCw className="w-5 h-5" />
                     Reload Page
@@ -137,7 +138,7 @@ class UnifiedErrorBoundary extends React.Component {
                 {showHomeButton && (
                   <button
                     onClick={this.handleGoHome}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                    className={`w-full flex items-center justify-center gap-2 px-4 py-3 ${uiConfig.colors.btnSecondary} hover:${uiConfig.colors.btnSecondaryHover} font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500`}
                   >
                     <Home className="w-5 h-5" />
                     Go to Home
@@ -147,11 +148,11 @@ class UnifiedErrorBoundary extends React.Component {
 
               {/* Error Details (Development Only) */}
               {isDevelopment && this.state.error && (
-                <div className="mt-8 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <div className={`mt-8 p-4 ${uiConfig.colors.secondary} rounded-lg`}>
+                  <h3 className={`text-sm font-semibold ${uiConfig.colors.heading} mb-2`}>
                     Error Details (Development Mode)
                   </h3>
-                  <pre className="text-xs text-gray-600 dark:text-gray-400 overflow-x-auto">
+                  <pre className={`text-xs ${uiConfig.colors.body} overflow-x-auto`}>
                     {this.state.error.toString()}
                     {this.state.errorInfo && this.state.errorInfo.componentStack}
                   </pre>

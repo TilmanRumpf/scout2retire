@@ -138,7 +138,7 @@ export function calculateRegionScore(preferences, town) {
     }
     
     // FALLBACK: Check regions array for coastal indicators when no geographic data
-    if (!hasMatch && preferences.geographic_features.includes('Coastal') && town.regions?.length) {
+    if (!hasMatch && preferences.geographic_features.includes('coastal') && town.regions?.length) {
       const coastalIndicators = ['gulf', 'ocean', 'coast', 'beach', 'sea', 'atlantic', 'pacific']
       hasMatch = town.regions.some(region => 
         coastalIndicators.some(indicator => region.toLowerCase().includes(indicator))

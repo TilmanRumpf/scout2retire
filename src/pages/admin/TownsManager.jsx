@@ -7,9 +7,11 @@ import SmartFieldEditor from '../../components/SmartFieldEditor';
 import QuickNav from '../../components/QuickNav';
 import FieldDefinitionEditor from '../../components/FieldDefinitionEditor';
 import GoogleSearchPanel from '../../components/GoogleSearchPanel';
+import WikipediaPanel from '../../components/WikipediaPanel';
 import HobbiesDisplay from '../../components/admin/HobbiesDisplay';
 import { getFieldOptions, isMultiSelectField } from '../../utils/townDataOptions';
 import { useFieldDefinitions } from '../../hooks/useFieldDefinitions';
+import { uiConfig } from '../../styles/uiConfig';
 
 // Admin email check
 const ADMIN_EMAIL = 'tilman.rumpf@gmail.com';
@@ -183,6 +185,9 @@ const TownsManager = () => {
     searchQuery: '', 
     fieldName: null 
   });
+
+  // Wikipedia panel state
+  const [wikipediaOpen, setWikipediaOpen] = useState(false);
   
   // Get field definitions for audit questions
   const { getAuditQuestion, getSearchQuery, getFieldDefinition } = useFieldDefinitions();
@@ -914,7 +919,7 @@ const TownsManager = () => {
     
     return (
     <div key={column} className="flex items-center py-1 group">
-      <div className="w-64 text-sm font-medium text-gray-600 flex items-center gap-1">
+      <div className={`w-64 text-sm font-medium ${uiConfig.colors.body} flex items-center gap-1`}>
         {column}:
         <button
           onClick={() => {
@@ -924,7 +929,7 @@ const TownsManager = () => {
               fieldName: column
             });
           }}
-          className="text-blue-500 text-sm font-bold cursor-pointer hover:text-blue-700 ml-1"
+          className={`${uiConfig.colors.accent} text-sm font-bold cursor-pointer hover:${uiConfig.colors.accentHover} ml-1`}
           title="Edit field definition template (affects ALL towns)"
         >
           ⓘ
@@ -981,9 +986,9 @@ const TownsManager = () => {
         <>
           <div 
             onClick={() => startEdit(town.id, column, town[column])}
-            className="flex-1 px-2 py-1 hover:bg-gray-100 cursor-pointer rounded"
+            className={`flex-1 px-2 py-1 hover:${uiConfig.colors.secondary} cursor-pointer rounded`}
           >
-            <span className={town[column] ? 'text-gray-800' : 'text-gray-400'}>
+            <span className={town[column] ? uiConfig.colors.heading : uiConfig.colors.subtitle}>
               {(column === 'water_bodies' || column === 'geo_region' || column === 'regions') && Array.isArray(town[column])
                 ? town[column].length > 0 
                   ? town[column].join(', ')
@@ -999,14 +1004,15 @@ const TownsManager = () => {
           <button
             onClick={() => {
               // Open Google search in side panel
-              const searchQuery = getSearchQuery(column, town);
+              // Use generateSearchQuery which has comprehensive fallback logic for ALL fields
+              const searchQuery = generateSearchQuery(town, column, false);
               setGoogleSearchPanel({ 
                 isOpen: true, 
                 searchQuery: searchQuery,
                 fieldName: formatFieldName(column)
               });
             }}
-            className={`ml-2 p-1.5 rounded hover:bg-gray-100 transition-all ${
+            className={`ml-2 p-1.5 rounded hover:${uiConfig.colors.secondary} transition-all ${
               !fieldHasData(town[column])
                 ? 'opacity-100 hover:scale-110' 
                 : 'opacity-30 group-hover:opacity-60 hover:opacity-100'
@@ -1033,7 +1039,7 @@ const TownsManager = () => {
                   fieldName: column
                 });
               }}
-              className="ml-1 p-1.5 rounded hover:bg-green-50 transition-all opacity-60 group-hover:opacity-100 hover:scale-110"
+              className={`ml-1 p-1.5 rounded hover:${uiConfig.colors.statusSuccess} transition-all opacity-60 group-hover:opacity-100 hover:scale-110`}
               title={`Verify ${formatFieldName(column)} data`}
             >
               {/* Checkmark Shield Icon - Green verification badge */}
@@ -1047,7 +1053,7 @@ const TownsManager = () => {
           {/* Audit Button - Shows for all fields */}
           <button
             onClick={() => handleAudit(town.id, column)}
-            className={`ml-1 p-1.5 rounded hover:bg-blue-50 transition-all ${
+            className={`ml-1 p-1.5 rounded hover:${uiConfig.colors.accentSecondary} transition-all ${
               isFieldAudited(town.id, column)
                 ? 'opacity-100'
                 : 'opacity-60 group-hover:opacity-100'
@@ -1096,26 +1102,26 @@ const TownsManager = () => {
   };
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Checking access...</div>;
+    return <div className={`flex items-center justify-center min-h-screen ${uiConfig.colors.page}`}><div className={uiConfig.colors.body}>Checking access...</div></div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className={`min-h-screen ${uiConfig.colors.page}`}>
       {/* QuickNav hamburger menu */}
       <QuickNav />
       
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-gray-800">Towns Manager</h1>
-          <p className="text-sm text-gray-600 mt-1">
+      <header className={`${uiConfig.colors.card} shadow-sm border-b`}>
+        <div className={`${uiConfig.layout.width.containerXL} ${uiConfig.layout.spacing.page}`}>
+          <h1 className={`text-2xl font-bold ${uiConfig.colors.heading}`}>Towns Manager</h1>
+          <p className={`text-sm ${uiConfig.colors.body} mt-1`}>
             Total: {towns.length} towns | Showing: {filteredTowns.length}
           </p>
         </div>
       </header>
 
       {/* Filters */}
-      <div className="bg-white shadow-sm border-b px-4 py-3">
+      <div className={`${uiConfig.colors.card} shadow-sm border-b px-4 py-3`}>
         <div className="max-w-7xl mx-auto flex gap-4 flex-wrap items-center">
           {/* Town Search - First */}
           <div className="relative">
@@ -1125,15 +1131,15 @@ const TownsManager = () => {
               onChange={(e) => handleTownSearch(e.target.value)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               placeholder="Search town..."
-              className="border rounded px-3 py-1 w-48"
+              className={`border ${uiConfig.colors.border} rounded px-3 py-1 w-48 ${uiConfig.colors.input}`}
             />
             {showSuggestions && (
-              <div className="absolute top-full left-0 mt-1 w-full bg-white border rounded shadow-lg z-10 max-h-60 overflow-y-auto">
+              <div className={`absolute top-full left-0 mt-1 w-full ${uiConfig.colors.card} border ${uiConfig.colors.border} rounded shadow-lg z-10 max-h-60 overflow-y-auto`}>
                 {searchSuggestions.map((suggestion, index) => (
                   <div
                     key={index}
                     onClick={() => handleSuggestionClick(suggestion)}
-                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                    className={`px-3 py-2 hover:${uiConfig.colors.secondary} cursor-pointer`}
                   >
                     {suggestion}
                   </div>
@@ -1224,17 +1230,17 @@ const TownsManager = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className={`${uiConfig.layout.width.containerXL} ${uiConfig.layout.spacing.page}`}>
         <div className="grid grid-cols-12 gap-6">
           {/* Town List */}
           <div className="col-span-3">
-            <div className="bg-white rounded-lg shadow max-h-[800px] overflow-y-auto">
-              <div className="sticky top-0 bg-white border-b">
+            <div className={`${uiConfig.colors.card} rounded-lg shadow max-h-[800px] overflow-y-auto`}>
+              <div className={`sticky top-0 ${uiConfig.colors.card} border-b`}>
                 <div className="px-4 py-2">
-                  <h2 className="font-semibold">Towns</h2>
+                  <h2 className={`font-semibold ${uiConfig.colors.heading}`}>Towns</h2>
                 </div>
                 {/* Sorting controls - more functional and left-aligned */}
-                <div className="px-4 py-2 bg-gray-50 border-t flex items-center gap-2">
+                <div className={`px-4 py-2 ${uiConfig.colors.secondary} border-t flex items-center gap-2`}>
                   <button
                     onClick={() => setFilters({...filters, 
                       sortBy: 'abc', 
@@ -1242,8 +1248,8 @@ const TownsManager = () => {
                     })}
                     className={`flex items-center gap-1 px-3 py-1 text-sm rounded transition-colors ${
                       filters.sortBy === 'abc' 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-white border hover:bg-gray-100'
+                        ? uiConfig.colors.btnPrimary 
+                        : `${uiConfig.colors.card} border hover:${uiConfig.colors.secondary}`
                     }`}
                     title="Sort alphabetically"
                   >
@@ -1261,8 +1267,8 @@ const TownsManager = () => {
                     })}
                     className={`flex items-center gap-1 px-3 py-1 text-sm rounded transition-colors ${
                       filters.sortBy.startsWith('completion') 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-white border hover:bg-gray-100'
+                        ? uiConfig.colors.btnPrimary 
+                        : `${uiConfig.colors.card} border hover:${uiConfig.colors.secondary}`
                     }`}
                     title="Sort by completion percentage"
                   >
@@ -1274,7 +1280,7 @@ const TownsManager = () => {
                     )}
                   </button>
                   
-                  <span className="text-xs text-gray-500 ml-2">
+                  <span className={`text-xs ${uiConfig.colors.subtitle} ml-2`}>
                     {filteredTowns.length} towns
                   </span>
                 </div>
@@ -1284,12 +1290,12 @@ const TownsManager = () => {
                   <div 
                     key={town.id}
                     onClick={() => setSelectedTown(town)}
-                    className={`px-4 py-3 cursor-pointer hover:bg-gray-50 ${
-                      selectedTown?.id === town.id ? 'bg-blue-50' : ''
+                    className={`px-4 py-3 cursor-pointer hover:${uiConfig.colors.secondary} ${
+                      selectedTown?.id === town.id ? uiConfig.colors.accent : ''
                     }`}
                   >
-                    <div className="font-medium">{town.name}</div>
-                    <div className="text-sm text-gray-600">{town.country}</div>
+                    <div className={`font-medium ${uiConfig.colors.heading}`}>{town.name}</div>
+                    <div className={`text-sm ${uiConfig.colors.body}`}>{town.country}</div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className={`text-xs px-2 py-1 rounded ${
                         town._completion < 30 ? 'bg-red-100 text-red-700' :
@@ -1318,16 +1324,33 @@ const TownsManager = () => {
           {/* Town Details */}
           <div className="col-span-9">
             {selectedTown ? (
-              <div className="bg-white rounded-lg shadow">
+              <div className={`${uiConfig.colors.card} rounded-lg shadow`}>
                 {/* Town Header */}
                 <div className="px-6 py-4 border-b">
                   <div className="flex justify-between items-start">
-                    <h2 className="text-xl font-bold">{selectedTown.name}, {selectedTown.country}</h2>
+                    <h2 className={`text-xl font-bold ${uiConfig.colors.heading}`}>{selectedTown.name}, {selectedTown.country}</h2>
+                    {/* Wikipedia Button */}
+                    <button
+                      onClick={() => setWikipediaOpen(true)}
+                      className={`p-2 rounded-lg ${uiConfig.colors.secondary} hover:${uiConfig.colors.primary} transition-colors flex items-center justify-center`}
+                      title="View Wikipedia"
+                    >
+                      <img 
+                        src="https://en.wikipedia.org/static/favicon/wikipedia.ico"
+                        alt="Wikipedia"
+                        className="w-5 h-5"
+                        onError={(e) => {
+                          // Fallback to text if favicon fails to load
+                          e.target.style.display = 'none';
+                          e.target.parentElement.innerHTML = '<span class="font-bold text-sm">W</span>';
+                        }}
+                      />
+                    </button>
                   </div>
                   {selectedTown._errors.length > 0 && (
-                    <div className="mt-2 p-3 bg-red-50 rounded border border-red-200">
-                      <h3 className="font-semibold text-red-800 mb-1">Detected Errors:</h3>
-                      <ul className="text-sm text-red-700 list-disc list-inside">
+                    <div className={`mt-2 p-3 ${uiConfig.colors.statusError} rounded border ${uiConfig.colors.border}`}>
+                      <h3 className={`font-semibold ${uiConfig.colors.errorText} mb-1`}>Detected Errors:</h3>
+                      <ul className={`text-sm ${uiConfig.colors.errorText} list-disc list-inside`}>
                         {selectedTown._errors.map((error, i) => (
                           <li key={i}>{error}</li>
                         ))}
@@ -1345,8 +1368,8 @@ const TownsManager = () => {
                         onClick={() => setActiveCategory(category)}
                         className={`px-6 py-3 font-medium transition-colors ${
                           activeCategory === category
-                            ? 'border-b-2 border-blue-500 text-blue-600'
-                            : 'text-gray-600 hover:text-gray-800'
+                            ? `border-b-2 ${uiConfig.colors.accentBorder} ${uiConfig.colors.accent}`
+                            : `${uiConfig.colors.body} hover:${uiConfig.colors.heading}`
                         }`}
                       >
                         {category}
@@ -1367,11 +1390,11 @@ const TownsManager = () => {
                       
                       {/* Show legacy fields for reference */}
                       <div className="mt-8 pt-6 border-t">
-                        <h3 className="text-lg font-semibold text-gray-700 mb-3 border-b pb-1">
+                        <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-3 border-b pb-1`}>
                           Legacy Data (for reference)
                         </h3>
                         <div className="opacity-60">
-                          <h4 className="text-sm font-medium text-gray-600 mb-2">Old JSON format (being phased out)</h4>
+                          <h4 className={`text-sm font-medium ${uiConfig.colors.body} mb-2`}>Old JSON format (being phased out)</h4>
                           <div className="space-y-1 pl-4">
                             {['outdoor_activities', 'hiking_trails', 'beaches_nearby', 'golf_courses', 'ski_resorts_nearby', 'cultural_attractions'].map(column => 
                               renderFieldRow(column, selectedTown)
@@ -1391,14 +1414,14 @@ const TownsManager = () => {
                       return (
                         <div key={subcategoryName} className="mb-8">
                           {/* Subcategory Title */}
-                          <h3 className="text-lg font-semibold text-gray-700 mb-3 border-b pb-1">
+                          <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-3 border-b pb-1`}>
                             {subcategoryName}
                           </h3>
                           
                           {/* Used Fields (Towns Data for Matching) */}
                           {hasUsedFields && (
                             <div className="mb-4">
-                              <h4 className="text-sm font-medium text-gray-600 mb-2">Towns Data for Matching</h4>
+                              <h4 className={`text-sm font-medium ${uiConfig.colors.body} mb-2`}>Towns Data for Matching</h4>
                               <div className="space-y-1 pl-4">
                                 {subcategory.used.map(column => renderFieldRow(column, selectedTown))}
                               </div>
@@ -1408,7 +1431,7 @@ const TownsManager = () => {
                           {/* Unused Fields (Towns Data for Context) */}
                           {hasUnusedFields && (
                             <div className="opacity-60">
-                              <h4 className="text-sm font-medium text-gray-600 mb-2">Towns Data for Context</h4>
+                              <h4 className={`text-sm font-medium ${uiConfig.colors.body} mb-2`}>Towns Data for Context</h4>
                               <div className="space-y-1 pl-4">
                                 {subcategory.unused.map(column => renderFieldRow(column, selectedTown))}
                               </div>
@@ -1421,7 +1444,7 @@ const TownsManager = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-white rounded-lg shadow p-12 text-center text-gray-500">
+              <div className={`${uiConfig.colors.card} rounded-lg shadow p-12 text-center ${uiConfig.colors.subtitle}`}>
                 Select a town to view and edit its data
               </div>
             )}
@@ -1449,35 +1472,45 @@ const TownsManager = () => {
         searchQuery={googleSearchPanel.searchQuery}
         fieldName={googleSearchPanel.fieldName}
       />
+
+      {/* Wikipedia Panel */}
+      {selectedTown && (
+        <WikipediaPanel
+          townName={selectedTown.name}
+          country={selectedTown.country}
+          isOpen={wikipediaOpen}
+          onClose={() => setWikipediaOpen(false)}
+        />
+      )}
       
       {/* Audit Confirmation Dialog */}
       {showAuditDialog && (
         <>
           <div className="fixed inset-0 bg-black/30 z-50" onClick={() => setShowAuditDialog(null)} />
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl z-50 p-6 max-w-md w-full">
+          <div className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${uiConfig.colors.card} rounded-lg shadow-xl z-50 p-6 max-w-md w-full`}>
             <div className="flex items-center mb-4">
               <svg className="w-8 h-8 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="12" cy="12" r="10" fill="#2196F3"/>
                 <text x="12" y="16" fontSize="10" fill="white" textAnchor="middle" fontWeight="bold">A</text>
               </svg>
-              <h3 className="text-lg font-semibold">Audit Field Data</h3>
+              <h3 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>Audit Field Data</h3>
             </div>
             
             <div className="mb-4">
-              <p className="text-gray-600">
+              <p className={uiConfig.colors.body}>
                 {isFieldAudited(showAuditDialog.townId, showAuditDialog.fieldName) 
                   ? 'Re-audit this field to update the approval status.'
                   : 'Do you approve the data in this field as accurate and complete?'}
               </p>
-              <div className="mt-2 p-3 bg-gray-50 rounded">
-                <p className="text-sm font-medium text-gray-700">
+              <div className={`mt-2 p-3 ${uiConfig.colors.secondary} rounded`}>
+                <p className={`text-sm font-medium ${uiConfig.colors.heading}`}>
                   Field: {formatFieldName(showAuditDialog.fieldName)}
                 </p>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className={`text-sm ${uiConfig.colors.body} mt-1`}>
                   Town: {towns.find(t => t.id === showAuditDialog.townId)?.name}
                 </p>
                 {isFieldAudited(showAuditDialog.townId, showAuditDialog.fieldName) && (
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className={`text-xs ${uiConfig.colors.subtitle} mt-2`}>
                     Previously audited by {auditedFields[`${showAuditDialog.townId}-${showAuditDialog.fieldName}`]?.approvedByName} 
                     {auditedFields[`${showAuditDialog.townId}-${showAuditDialog.fieldName}`]?.approvedAt && 
                       ` on ${new Date(auditedFields[`${showAuditDialog.townId}-${showAuditDialog.fieldName}`].approvedAt).toLocaleDateString()}`}
@@ -1489,13 +1522,13 @@ const TownsManager = () => {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowAuditDialog(null)}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                className={`px-4 py-2 ${uiConfig.colors.body} hover:${uiConfig.colors.secondary} rounded transition-colors`}
               >
                 Cancel
               </button>
               <button
                 onClick={confirmAudit}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                className={`px-4 py-2 ${uiConfig.colors.btnPrimary} rounded hover:${uiConfig.colors.btnPrimaryHover} transition-colors`}
               >
                 Approve Data
               </button>

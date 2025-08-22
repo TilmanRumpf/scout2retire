@@ -70,10 +70,10 @@ export const TOWN_DATA_OPTIONS = {
   // Precipitation levels
   precipitation_levels: ['Very Low', 'Low', 'Moderate', 'High', 'Very High'],
   
-  // Geographic features
+  // Geographic features - standardized to lowercase for consistency
   geographic_features: [
-    'Coastal', 'Island', 'Mountain', 'Valley', 'Plains', 'Desert', 'Forest',
-    'Lake', 'River', 'Peninsula', 'Archipelago', 'Highland', 'Lowland', 'Urban'
+    'coastal', 'island', 'mountain', 'valley', 'plains', 'desert', 'forest',
+    'lake', 'river', 'peninsula', 'archipelago', 'highland', 'lowland', 'urban'
   ],
   
   // Vegetation types

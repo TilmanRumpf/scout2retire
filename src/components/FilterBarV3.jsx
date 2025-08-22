@@ -2,6 +2,7 @@
 import { ChevronDown, X, Globe, DollarSign, Crosshair, SortDesc, Search } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { uiConfig } from '../styles/uiConfig';
 
 export default function FilterBarV3({
   sortBy,
@@ -128,7 +129,7 @@ export default function FilterBarV3({
     
     return createPortal(
       <div 
-        className={`fixed ${width} bg-white dark:bg-gray-800 rounded-lg shadow-md z-[9999]`}
+        className={`fixed ${width} ${uiConfig.colors.card} rounded-lg shadow-md z-[9999]`}
         style={{
           top: `${dropdownPosition.top}px`,
           left: `${dropdownPosition.left}px`,
@@ -148,14 +149,14 @@ export default function FilterBarV3({
         {/* Search Input - Clean Zillow style */}
         <div className={`relative ${variant === 'mobile' ? 'w-full' : variant === 'compact' ? 'flex-shrink min-w-[180px] max-w-[240px]' : 'flex-shrink-0 w-64'}`} ref={searchInputRef}>
           <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Search size={16} className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.subtitle}`} />
             <input
               type="text"
               value={searchInput}
               onChange={handleSearchInputChange}
               onFocus={() => searchInput.length > 0 && setShowSearchDropdown(true)}
               placeholder="Search cities..."
-              className="w-full h-9 pl-9 pr-8 text-sm bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:border-gray-300 dark:focus:border-gray-600 transition-all"
+              className={`w-full h-9 pl-9 pr-8 text-sm ${uiConfig.colors.input} rounded-lg border ${uiConfig.colors.border} focus:outline-none focus:${uiConfig.colors.card} focus:border-${uiConfig.colors.accentBorder} transition-all`}
             />
             {searchInput && (
               <button
@@ -166,7 +167,7 @@ export default function FilterBarV3({
                   }
                   setShowSearchDropdown(false);
                 }}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5"
+                className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.subtitle} hover:${uiConfig.colors.body} p-0.5`}
               >
                 <X size={14} />
               </button>
@@ -175,16 +176,16 @@ export default function FilterBarV3({
           
           {/* Search Dropdown */}
           {showSearchDropdown && getFilteredTowns().length > 0 && (
-            <div className="absolute z-[9999] w-full mt-2 bg-white dark:bg-gray-900 rounded-lg shadow-md max-h-60 overflow-auto"
+            <div className={`absolute z-[9999] w-full mt-2 ${uiConfig.colors.card} rounded-lg shadow-md max-h-60 overflow-auto`}
                  style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}>
               {getFilteredTowns().map((town) => (
                 <button
                   key={town.id}
                   onClick={() => handleSearchSelect(town.name)}
-                  className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                  className={`w-full text-left px-4 py-3 hover:${uiConfig.colors.secondary} transition-colors first:rounded-t-lg last:rounded-b-lg`}
                 >
-                  <div className="font-medium text-gray-900 dark:text-gray-100">{town.name}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                  <div className={`font-medium ${uiConfig.colors.heading}`}>{town.name}</div>
+                  <div className={`text-xs ${uiConfig.colors.subtitle}`}>
                     {town.state_code && `${town.state_code}, `}{town.country}
                   </div>
                 </button>
@@ -200,11 +201,11 @@ export default function FilterBarV3({
           <div className="flex flex-col gap-4 w-full">
             {/* Sort */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
+              <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-2`}>Sort By</label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm"
+                className={`w-full px-3 py-2 border ${uiConfig.colors.border} rounded-lg ${uiConfig.colors.input} text-sm`}
               >
                 <option value="match">Best Match</option>
                 <option value="name">Name (A-Z)</option>
@@ -221,11 +222,11 @@ export default function FilterBarV3({
 
             {/* Location */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Region</label>
+              <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-2`}>Region</label>
               <select
                 value={filterRegion}
                 onChange={(e) => setFilterRegion(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm mb-3"
+                className={`w-full px-3 py-2 border ${uiConfig.colors.border} rounded-lg ${uiConfig.colors.input} text-sm mb-3`}
               >
                 <option value="all">All Regions</option>
                 {regions.map(region => (
@@ -233,13 +234,13 @@ export default function FilterBarV3({
                 ))}
               </select>
               
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-2`}>
                 Country {filterRegion !== 'all' && `(${filterRegion})`}
               </label>
               <select
                 value={filterCountry}
                 onChange={(e) => setFilterCountry(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm"
+                className={`w-full px-3 py-2 border ${uiConfig.colors.border} rounded-lg ${uiConfig.colors.input} text-sm`}
                 disabled={countries.length === 0}
               >
                 <option value="all">All Countries</option>
@@ -251,11 +252,11 @@ export default function FilterBarV3({
 
             {/* Cost Range */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cost Range</label>
+              <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-2`}>Cost Range</label>
               <select
                 value={filterCostRange}
                 onChange={(e) => setFilterCostRange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm"
+                className={`w-full px-3 py-2 border ${uiConfig.colors.border} rounded-lg ${uiConfig.colors.input} text-sm`}
               >
                 <option value="all">Any Cost</option>
                 <option value="under2000">Under $2,000</option>
@@ -267,11 +268,11 @@ export default function FilterBarV3({
 
             {/* Match Score */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Match Score</label>
+              <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-2`}>Match Score</label>
               <select
                 value={filterMatchRange}
                 onChange={(e) => setFilterMatchRange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm"
+                className={`w-full px-3 py-2 border ${uiConfig.colors.border} rounded-lg ${uiConfig.colors.input} text-sm`}
               >
                 <option value="all">Any Match Score</option>
                 <option value="excellent">Excellent (80%+)</option>
@@ -291,7 +292,7 @@ export default function FilterBarV3({
                     setSearchTerm('');
                   }
                 }}
-                className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm ${uiConfig.colors.danger} border ${uiConfig.colors.dangerBorder} rounded-lg hover:${uiConfig.colors.dangerSecondary} transition-colors`}
               >
                 <X size={16} />
                 <span>Clear all filters</span>
@@ -307,7 +308,7 @@ export default function FilterBarV3({
           <button
             ref={sortButtonRef}
             onClick={() => toggleDropdown('sort')}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors whitespace-nowrap"
+            className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg border ${uiConfig.colors.border} hover:${uiConfig.colors.accentBorder} ${uiConfig.colors.body} hover:${uiConfig.colors.heading} transition-colors whitespace-nowrap`}
           >
             <SortDesc size={14} />
             <span>Sort</span>
@@ -320,8 +321,8 @@ export default function FilterBarV3({
             onClick={() => toggleDropdown('location')}
             className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg border transition-colors whitespace-nowrap ${
               activeFilters.location > 0
-                ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium border-gray-300 dark:border-gray-600'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                ? `${uiConfig.colors.secondary} ${uiConfig.colors.heading} font-medium ${uiConfig.colors.accentBorder}`
+                : `${uiConfig.colors.body} hover:${uiConfig.colors.heading} ${uiConfig.colors.border} hover:${uiConfig.colors.accentBorder}`
             }`}
           >
             <Globe size={14} />
@@ -337,8 +338,8 @@ export default function FilterBarV3({
             onClick={() => toggleDropdown('cost')}
             className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg border transition-colors whitespace-nowrap ${
               isFilterActive(filterCostRange)
-                ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium border-gray-300 dark:border-gray-600'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                ? `${uiConfig.colors.secondary} ${uiConfig.colors.heading} font-medium ${uiConfig.colors.accentBorder}`
+                : `${uiConfig.colors.body} hover:${uiConfig.colors.heading} ${uiConfig.colors.border} hover:${uiConfig.colors.accentBorder}`
             }`}
           >
             <DollarSign size={14} />
@@ -351,8 +352,8 @@ export default function FilterBarV3({
             onClick={() => toggleDropdown('match')}
             className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg border transition-colors whitespace-nowrap ${
               isFilterActive(filterMatchRange)
-                ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium border-gray-300 dark:border-gray-600'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                ? `${uiConfig.colors.secondary} ${uiConfig.colors.heading} font-medium ${uiConfig.colors.accentBorder}`
+                : `${uiConfig.colors.body} hover:${uiConfig.colors.heading} ${uiConfig.colors.border} hover:${uiConfig.colors.accentBorder}`
             }`}
           >
             <Crosshair size={14} />
@@ -369,7 +370,7 @@ export default function FilterBarV3({
                   setSearchTerm('');
                 }
               }}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors whitespace-nowrap"
+              className={`flex items-center gap-1 px-3 py-1.5 text-sm ${uiConfig.colors.body} hover:${uiConfig.colors.danger} transition-colors whitespace-nowrap`}
             >
               <X size={14} />
               <span>Clear all</span>
@@ -389,10 +390,10 @@ export default function FilterBarV3({
                 setSortBy(option);
                 setOpenDropdown(null);
               }}
-              className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 ${
+              className={`w-full px-4 py-2 text-left text-sm hover:${uiConfig.colors.secondary} ${
                 sortBy === option 
-                  ? 'bg-scout-accent-50 dark:bg-scout-accent-400/20 text-scout-accent-600 dark:text-scout-accent-300' 
-                  : 'text-gray-700 dark:text-gray-300'
+                  ? `${uiConfig.colors.accentSecondary} ${uiConfig.colors.accent}` 
+                  : uiConfig.colors.body
               }`}
             >
               {option === 'match' ? 'Best Match' : 
@@ -415,11 +416,11 @@ export default function FilterBarV3({
           <div className="p-4">
             {/* Region Selection */}
             <div className="mb-4">
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Region</label>
+              <label className={`block text-xs font-medium ${uiConfig.colors.body} mb-2`}>Region</label>
               <select
                 value={filterRegion}
                 onChange={(e) => setFilterRegion(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-sm"
+                className={`w-full px-3 py-2 border ${uiConfig.colors.border} rounded-md ${uiConfig.colors.input} text-sm`}
               >
                 <option value="all">All Regions</option>
                 {regions.map(region => (
@@ -430,13 +431,13 @@ export default function FilterBarV3({
 
             {/* Country Selection */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+              <label className={`block text-xs font-medium ${uiConfig.colors.body} mb-2`}>
                 Country {filterRegion !== 'all' && `(${filterRegion})`}
               </label>
               <select
                 value={filterCountry}
                 onChange={(e) => setFilterCountry(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-sm"
+                className={`w-full px-3 py-2 border ${uiConfig.colors.border} rounded-md ${uiConfig.colors.input} text-sm`}
                 disabled={countries.length === 0}
               >
                 <option value="all">All Countries</option>
@@ -449,7 +450,7 @@ export default function FilterBarV3({
             {/* Apply button */}
             <button
               onClick={() => setOpenDropdown(null)}
-              className="w-full mt-3 px-3 py-2 bg-scout-accent-500 text-white rounded-md text-sm font-medium hover:bg-scout-accent-600"
+              className={`w-full mt-3 px-3 py-2 ${uiConfig.colors.btnPrimary} rounded-md text-sm font-medium hover:${uiConfig.colors.btnPrimaryHover}`}
             >
               Apply Filters
             </button>
@@ -464,8 +465,8 @@ export default function FilterBarV3({
               setFilterCostRange('all');
               setOpenDropdown(null);
             }}
-            className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 ${
-              filterCostRange === 'all' ? 'bg-gray-50 dark:bg-gray-700' : ''
+            className={`w-full px-4 py-2 text-left text-sm hover:${uiConfig.colors.secondary} ${
+              filterCostRange === 'all' ? uiConfig.colors.secondary : ''
             }`}
           >
             Any Cost
@@ -482,8 +483,8 @@ export default function FilterBarV3({
                 setFilterCostRange(option.value);
                 setOpenDropdown(null);
               }}
-              className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                filterCostRange === option.value ? 'bg-gray-50 dark:bg-gray-700' : ''
+              className={`w-full px-4 py-2 text-left text-sm hover:${uiConfig.colors.secondary} ${
+                filterCostRange === option.value ? uiConfig.colors.secondary : ''
               }`}
             >
               {option.label}
@@ -499,8 +500,8 @@ export default function FilterBarV3({
               setFilterMatchRange('all');
               setOpenDropdown(null);
             }}
-            className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 ${
-              filterMatchRange === 'all' ? 'bg-gray-50 dark:bg-gray-700' : ''
+            className={`w-full px-4 py-2 text-left text-sm hover:${uiConfig.colors.secondary} ${
+              filterMatchRange === 'all' ? uiConfig.colors.secondary : ''
             }`}
           >
             Any Match Score
@@ -517,8 +518,8 @@ export default function FilterBarV3({
                 setFilterMatchRange(option.value);
                 setOpenDropdown(null);
               }}
-              className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                filterMatchRange === option.value ? 'bg-gray-50 dark:bg-gray-700' : ''
+              className={`w-full px-4 py-2 text-left text-sm hover:${uiConfig.colors.secondary} ${
+                filterMatchRange === option.value ? uiConfig.colors.secondary : ''
               }`}
             >
               {option.label}
