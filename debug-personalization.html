@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Personalization</title>
+</head>
+<body>
+    <h1>Testing Personalization</h1>
+    <div id="results"></div>
+    
+    <script type="module">
+        // Test personalization directly in browser
+        const results = document.getElementById('results');
+        
+        async function testPersonalization() {
+            try {
+                results.innerHTML = '<p>Loading...</p>';
+                
+                // Import fetchTowns
+                const { fetchTowns } = await import('./src/utils/townUtils.jsx');
+                
+                console.log('Testing fetchTowns with personalization...');
+                
+                // Test with a user that has preferences
+                const result = await fetchTowns({
+                    userId: 'd1039857-71e2-4562-86aa-1f0b4a0c17c8',
+                    usePersonalization: true,
+                    limit: 3
+                });
+                
+                if (result.success) {
+                    const output = [
+                        `✅ fetchTowns successful`,
+                        `Towns returned: ${result.towns?.length || 0}`,
+                        `Is personalized: ${result.isPersonalized}`,
+                        ''
+                    ];
+                    
+                    if (result.towns && result.towns.length > 0) {
+                        result.towns.forEach((town, i) => {
+                            output.push(`Town ${i + 1}: ${town.name}`);
+                            output.push(`- Match Score: ${town.matchScore || 'undefined'}`);
+                            output.push(`- Category Scores: ${town.categoryScores ? 'present' : 'missing'}`);
+                            output.push(`- Has scoring data: ${!!(town.matchScore || town.categoryScores)}`);
+                            output.push('');
+                        });
+                    }
+                    
+                    results.innerHTML = '<pre>' + output.join('\n') + '</pre>';
+                } else {
+                    results.innerHTML = `<p>❌ fetchTowns failed: ${JSON.stringify(result.error)}</p>`;
+                }
+            } catch (error) {
+                results.innerHTML = `<p>❌ Error: ${error.message}</p>`;
+                console.error('Full error:', error);
+            }
+        }
+        
+        testPersonalization();
+    </script>
+</body>
+</html>

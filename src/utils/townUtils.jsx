@@ -33,11 +33,16 @@ export const fetchTowns = async (filters = {}) => {
     }
 
     // EXISTING: Your original logic unchanged
-    // SELECT only needed columns (verified from database)
+    // SELECT needed columns (FIXED: removed non-existent scoring columns)
     const selectColumns = `
       id, name, country, population, region,
       image_url_1, image_url_2, image_url_3,
-      latitude, longitude, description
+      latitude, longitude, description,
+      cost_of_living_usd, typical_monthly_living_cost, cost_index,
+      healthcare_score, safety_score,
+      avg_temp_summer, avg_temp_winter,
+      airport_distance, english_proficiency_level,
+      walkability, expat_population
     `;
     let query = supabase
       .from('towns')

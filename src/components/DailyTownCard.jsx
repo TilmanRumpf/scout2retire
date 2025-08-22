@@ -241,10 +241,14 @@ export default function DailyTownCard() {
             )}
             
             {/* CULTURE - English */}
-            {town.english_proficiency && (
+            {(town.english_proficiency || town.english_proficiency_level) && (
               <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
                 <MessageCircle size={14} className="flex-shrink-0" />
-                <span className="truncate">{town.english_proficiency}%</span>
+                <span className="truncate">
+                  {town.english_proficiency 
+                    ? `${town.english_proficiency}%`
+                    : town.english_proficiency_level}
+                </span>
               </div>
             )}
             
@@ -252,7 +256,7 @@ export default function DailyTownCard() {
             {town.walkability && (
               <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
                 <Footprints size={14} className="flex-shrink-0" />
-                <span className="truncate">{town.walkability}/100</span>
+                <span className="truncate">{town.walkability}/10</span>
               </div>
             )}
             
