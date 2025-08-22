@@ -64,6 +64,15 @@ async function getTownHobbies(townId) {
  * Map old activity/interest strings to hobby names for backward compatibility
  */
 const legacyMapping = {
+  // Compound mappings (expand to multiple hobbies)
+  'walking_cycling': ['Walking', 'Cycling'],
+  'golf_tennis': ['Golf', 'Tennis'],
+  'water_sports': ['Swimming', 'Water Sports'],
+  'water_crafts': ['Kayaking', 'Sailing', 'Boating'],
+  'winter_sports': ['Winter Sports', 'Ice skating', 'Cross-country skiing'],
+  'arts_culture': ['Arts & Crafts', 'Theater', 'Music'],
+  'food_drink': ['Cooking', 'Wine', 'Baking'],
+  
   // Activities
   'walking': 'Walking',
   'swimming': 'Swimming',
@@ -152,16 +161,26 @@ export async function calculateHobbiesScore(userHobbies, town) {
   // Add activities
   if (userHobbies.activities?.length) {
     userHobbies.activities.forEach(activity => {
-      const mappedName = legacyMapping[activity] || activity;
-      userHobbyNames.push(mappedName);
+      const mapped = legacyMapping[activity] || activity;
+      // Handle both single strings and arrays
+      if (Array.isArray(mapped)) {
+        userHobbyNames.push(...mapped);
+      } else {
+        userHobbyNames.push(mapped);
+      }
     });
   }
   
   // Add interests  
   if (userHobbies.interests?.length) {
     userHobbies.interests.forEach(interest => {
-      const mappedName = legacyMapping[interest] || interest;
-      userHobbyNames.push(mappedName);
+      const mapped = legacyMapping[interest] || interest;
+      // Handle both single strings and arrays
+      if (Array.isArray(mapped)) {
+        userHobbyNames.push(...mapped);
+      } else {
+        userHobbyNames.push(mapped);
+      }
     });
   }
   
