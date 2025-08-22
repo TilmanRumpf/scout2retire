@@ -558,16 +558,43 @@ export default function TownDiscovery() {
                   <div>
                     <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-4`}>Key Information</h3>
                     <div className="space-y-3">
+                      {/* REGION - Population, Airport Distance */}
                       {selectedTownData.population && (
                         <div>
                           <span className={`font-medium ${uiConfig.colors.body}`}>Population: </span>
-                          <span className={`${uiConfig.colors.hint}`}>{selectedTownData.population.toLocaleString()}</span>
+                          <span className={`${uiConfig.colors.hint}`}>
+                            {selectedTownData.population > 1000000 
+                              ? `${(selectedTownData.population / 1000000).toFixed(1)}M` 
+                              : selectedTownData.population > 1000 
+                              ? `${Math.round(selectedTownData.population / 1000)}K`
+                              : selectedTownData.population.toLocaleString()}
+                          </span>
                         </div>
                       )}
-                      {selectedTownData.climate && (
+                      {selectedTownData.airport_distance && (
+                        <div>
+                          <span className={`font-medium ${uiConfig.colors.body}`}>Airport Distance: </span>
+                          <span className={`${uiConfig.colors.hint}`}>{Math.round(selectedTownData.airport_distance)}km</span>
+                        </div>
+                      )}
+                      
+                      {/* CLIMATE - Temperature */}
+                      {(selectedTownData.avg_temp_summer || selectedTownData.avg_temp_winter) && (
                         <div>
                           <span className={`font-medium ${uiConfig.colors.body}`}>Climate: </span>
-                          <span className={`${uiConfig.colors.hint}`}>{selectedTownData.climate}</span>
+                          <span className={`${uiConfig.colors.hint}`}>
+                            {selectedTownData.avg_temp_summer && `Summer: ${Math.round(selectedTownData.avg_temp_summer)}°C`}
+                            {selectedTownData.avg_temp_summer && selectedTownData.avg_temp_winter && ', '}
+                            {selectedTownData.avg_temp_winter && `Winter: ${Math.round(selectedTownData.avg_temp_winter)}°C`}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {/* CULTURE - English, Expat Community */}
+                      {selectedTownData.english_proficiency && (
+                        <div>
+                          <span className={`font-medium ${uiConfig.colors.body}`}>English Proficiency: </span>
+                          <span className={`${uiConfig.colors.hint}`}>{selectedTownData.english_proficiency}%</span>
                         </div>
                       )}
                       {selectedTownData.expat_population && (
@@ -576,10 +603,36 @@ export default function TownDiscovery() {
                           <span className={`${uiConfig.colors.hint}`}>{selectedTownData.expat_population}</span>
                         </div>
                       )}
-                      {selectedTownData.healthcare_description && (
+                      
+                      {/* HOBBIES - Walkability */}
+                      {selectedTownData.walkability && (
                         <div>
-                          <span className={`font-medium ${uiConfig.colors.body}`}>Healthcare: </span>
-                          <span className={`${uiConfig.colors.hint}`}>{selectedTownData.healthcare_description}</span>
+                          <span className={`font-medium ${uiConfig.colors.body}`}>Walkability: </span>
+                          <span className={`${uiConfig.colors.hint}`}>{selectedTownData.walkability}/100</span>
+                        </div>
+                      )}
+                      
+                      {/* ADMINISTRATION - Healthcare, Safety */}
+                      {selectedTownData.healthcare_score && (
+                        <div>
+                          <span className={`font-medium ${uiConfig.colors.body}`}>Healthcare Score: </span>
+                          <span className={`${uiConfig.colors.hint}`}>{selectedTownData.healthcare_score}/10</span>
+                        </div>
+                      )}
+                      {selectedTownData.safety_score && (
+                        <div>
+                          <span className={`font-medium ${uiConfig.colors.body}`}>Safety Score: </span>
+                          <span className={`${uiConfig.colors.hint}`}>{selectedTownData.safety_score}/10</span>
+                        </div>
+                      )}
+                      
+                      {/* COSTS - Cost of Living */}
+                      {(selectedTownData.cost_of_living_usd || selectedTownData.typical_monthly_living_cost || selectedTownData.cost_index) && (
+                        <div>
+                          <span className={`font-medium ${uiConfig.colors.body}`}>Cost of Living: </span>
+                          <span className={`${uiConfig.colors.hint}`}>
+                            ${selectedTownData.cost_of_living_usd || selectedTownData.typical_monthly_living_cost || selectedTownData.cost_index}/month
+                          </span>
                         </div>
                       )}
                     </div>
