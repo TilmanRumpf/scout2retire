@@ -202,37 +202,11 @@ export default function DailyTownCard() {
           </p>
         </div>
 
-        {/* Key Facts Section - Most important practical data */}
+        {/* Key Facts Section - Ordered by onboarding logic */}
         <div className="mb-4">
           <h4 className={`text-sm ${uiConfig.colors.hint} mb-2`}>Key Facts</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {/* Cost of Living */}
-            {(town.cost_of_living_usd || town.typical_monthly_living_cost || town.cost_index) && (
-              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
-                <DollarSign size={14} className="flex-shrink-0" />
-                <span className="truncate">
-                  ${town.cost_of_living_usd || town.typical_monthly_living_cost || town.cost_index}/mo
-                </span>
-              </div>
-            )}
-            
-            {/* Healthcare Score */}
-            {town.healthcare_score && (
-              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.statusInfo} text-xs ${uiConfig.layout.radius.md}`}>
-                <Activity size={14} className="flex-shrink-0" />
-                <span className="truncate">{town.healthcare_score}/10</span>
-              </div>
-            )}
-            
-            {/* Safety Score */}
-            {town.safety_score && (
-              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
-                <Shield size={14} className="flex-shrink-0" />
-                <span className="truncate">{town.safety_score}/10</span>
-              </div>
-            )}
-            
-            {/* Population */}
+            {/* REGION - Population, Airport */}
             {town.population && (
               <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
                 <Users size={14} className="flex-shrink-0" />
@@ -246,7 +220,15 @@ export default function DailyTownCard() {
               </div>
             )}
             
-            {/* Climate (Summer/Winter temps) */}
+            {/* Airport Distance */}
+            {town.airport_distance && (
+              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
+                <Plane size={14} className="flex-shrink-0" />
+                <span className="truncate">{Math.round(town.airport_distance)}km</span>
+              </div>
+            )}
+            
+            {/* CLIMATE - Temperature */}
             {(town.avg_temp_summer || town.avg_temp_winter) && (
               <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
                 <Thermometer size={14} className="flex-shrink-0" />
@@ -258,15 +240,7 @@ export default function DailyTownCard() {
               </div>
             )}
             
-            {/* Airport Distance */}
-            {town.airport_distance && (
-              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
-                <Plane size={14} className="flex-shrink-0" />
-                <span className="truncate">{Math.round(town.airport_distance)}km</span>
-              </div>
-            )}
-            
-            {/* English Proficiency */}
+            {/* CULTURE - English */}
             {town.english_proficiency && (
               <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
                 <MessageCircle size={14} className="flex-shrink-0" />
@@ -274,11 +248,36 @@ export default function DailyTownCard() {
               </div>
             )}
             
-            {/* Walkability */}
+            {/* HOBBIES - Walkability */}
             {town.walkability && (
               <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
                 <Footprints size={14} className="flex-shrink-0" />
                 <span className="truncate">{town.walkability}/100</span>
+              </div>
+            )}
+            
+            {/* ADMINISTRATION - Healthcare, Safety */}
+            {town.healthcare_score && (
+              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.statusInfo} text-xs ${uiConfig.layout.radius.md}`}>
+                <Activity size={14} className="flex-shrink-0" />
+                <span className="truncate">{town.healthcare_score}/10</span>
+              </div>
+            )}
+            
+            {town.safety_score && (
+              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
+                <Shield size={14} className="flex-shrink-0" />
+                <span className="truncate">{town.safety_score}/10</span>
+              </div>
+            )}
+            
+            {/* COSTS - Cost of Living */}
+            {(town.cost_of_living_usd || town.typical_monthly_living_cost || town.cost_index) && (
+              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
+                <DollarSign size={14} className="flex-shrink-0" />
+                <span className="truncate">
+                  ${town.cost_of_living_usd || town.typical_monthly_living_cost || town.cost_index}/mo
+                </span>
               </div>
             )}
           </div>
