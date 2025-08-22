@@ -1,45 +1,46 @@
 // App.jsx - Performance optimized
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { RouterProvider, createBrowserRouter, Routes, Route, Navigate, useNavigate, Outlet } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
 import toast from 'react-hot-toast';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider } from './contexts/AuthContext';
 import supabase from './utils/supabaseClient';
 import AuthenticatedLayout from './components/AuthenticatedLayout';
 import UnifiedErrorBoundary from './components/UnifiedErrorBoundary';
 import { checkAppVersion, setupAutoRefresh } from './utils/versionCheck';
 import InstallPromptBanner from './components/InstallPromptBanner';
+import SuspenseLoader from './components/SuspenseLoader';
 
-// Core Pages
-import Home from "./pages/Home";
-import DailyRedesignV2 from "./pages/DailyRedesignV2";
-import Welcome from "./pages/Welcome";
-import Login from "./pages/Login";
-import SignupEnhanced from "./pages/SignupEnhanced";
-import ResetPassword from "./pages/ResetPassword";
-import Favorites from "./pages/Favorites";
-import ProfileUnified from "./pages/ProfileUnified";
-import MasterSchedule from "./pages/MasterSchedule";
-import TownComparison from "./pages/TownComparison";
-import TownDiscovery from "./pages/TownDiscovery";
-import Chat from "./pages/Chat";
-import Journal from "./pages/Journal";
-import TownsManager from "./pages/admin/TownsManager";
-import HeaderMockup from "./pages/HeaderMockup";
-// import TestClaude from "./components/TestClaude";
-import ScottyGuide from "./components/ScottyGuide";
+// Core Pages - Lazy loaded for better performance
+const Home = React.lazy(() => import("./pages/Home"));
+const DailyRedesignV2 = React.lazy(() => import("./pages/DailyRedesignV2"));
+const Welcome = React.lazy(() => import("./pages/Welcome"));
+const Login = React.lazy(() => import("./pages/Login"));
+const SignupEnhanced = React.lazy(() => import("./pages/SignupEnhanced"));
+const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
+const Favorites = React.lazy(() => import("./pages/Favorites"));
+const ProfileUnified = React.lazy(() => import("./pages/ProfileUnified"));
+const MasterSchedule = React.lazy(() => import("./pages/MasterSchedule"));
+const TownComparison = React.lazy(() => import("./pages/TownComparison"));
+const TownDiscovery = React.lazy(() => import("./pages/TownDiscovery"));
+const Chat = React.lazy(() => import("./pages/Chat"));
+const Journal = React.lazy(() => import("./pages/Journal"));
+const TownsManager = React.lazy(() => import("./pages/admin/TownsManager"));
+const HeaderMockup = React.lazy(() => import("./pages/HeaderMockup"));
+const ScottyGuide = React.lazy(() => import("./components/ScottyGuide"));
 
-// Onboarding Flow
-import OnboardingProgress from "./pages/onboarding/OnboardingProgress";
-import OnboardingClimate from "./pages/onboarding/OnboardingClimate";
-import OnboardingCosts from "./pages/onboarding/OnboardingCosts";
-import OnboardingCulture from "./pages/onboarding/OnboardingCulture";
-import OnboardingCurrentStatus from "./pages/onboarding/OnboardingCurrentStatus";
-import OnboardingHobbies from "./pages/onboarding/OnboardingHobbies";
-import OnboardingRegion from "./pages/onboarding/OnboardingRegion";
-import OnboardingReview from "./pages/onboarding/OnboardingReview";
-import OnboardingAdministration from "./pages/onboarding/OnboardingAdministration";
-import OnboardingComplete from "./pages/onboarding/OnboardingComplete";
+// Onboarding Flow - Lazy loaded
+const OnboardingProgress = React.lazy(() => import("./pages/onboarding/OnboardingProgress"));
+const OnboardingClimate = React.lazy(() => import("./pages/onboarding/OnboardingClimate"));
+const OnboardingCosts = React.lazy(() => import("./pages/onboarding/OnboardingCosts"));
+const OnboardingCulture = React.lazy(() => import("./pages/onboarding/OnboardingCulture"));
+const OnboardingCurrentStatus = React.lazy(() => import("./pages/onboarding/OnboardingCurrentStatus"));
+const OnboardingHobbies = React.lazy(() => import("./pages/onboarding/OnboardingHobbies"));
+const OnboardingRegion = React.lazy(() => import("./pages/onboarding/OnboardingRegion"));
+const OnboardingReview = React.lazy(() => import("./pages/onboarding/OnboardingReview"));
+const OnboardingAdministration = React.lazy(() => import("./pages/onboarding/OnboardingAdministration"));
+const OnboardingComplete = React.lazy(() => import("./pages/onboarding/OnboardingComplete"));
 
 // Import the new OnboardingLayout
 import OnboardingLayout from './components/OnboardingLayout';
@@ -321,7 +322,11 @@ const router = createBrowserRouter([
 function App() {
   return (
     <UnifiedErrorBoundary variant="full">
-      <RouterProvider router={router} />
+      <AuthProvider>
+        <Suspense fallback={<SuspenseLoader />}>
+          <RouterProvider router={router} />
+        </Suspense>
+      </AuthProvider>
     </UnifiedErrorBoundary>
   );
 }

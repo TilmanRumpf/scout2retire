@@ -110,7 +110,29 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     }
 
     // 2. Build query with smart pre-filtering for performance
-    let query = supabase.from('towns').select('*');
+    // SELECT only needed columns for better performance
+    const selectColumns = `
+      id, name, state_name, state_code, country, population,
+      image_url_1, image_url_2, image_url_3, image_url_4,
+      categoryScores, matchScore, finalScore,
+      rent_1bed, rent_2bed, property_buy_sqm, meal_cost, groceries_cost,
+      utilities_cost, transport_cost, cost_index,
+      climate_type_actual, pace_of_life_actual, expat_community_actual,
+      political_leaning_actual, senior_percentage, median_age, diversity_index,
+      activities, hobbies_description, cost_description,
+      culture_type_actual, budget_housing_actual, budget_food_actual,
+      budget_transportation_actual, budget_healthcare_actual, budget_entertainment_actual,
+      visa_ease_actual, residency_process_actual, tax_friendliness_actual,
+      internet_quality_actual, utilities_reliability_actual, bureaucracy_level_actual,
+      latitude, longitude, description, townHighlights,
+      summerTemp, winterTemp, annualRainfall, annualSnowfall, sunnyDays,
+      income, crime, education, politics, costOfLiving,
+      medianHomePrice, medianRent, recreationScore, healthcareScore,
+      nearestHospital, medicalFacilities, medicareQuality, cultureScore,
+      culturalVenues, dining, annualEvents, ethnicity, ageDistribution,
+      taxRates, utilities, nearbyAttractions, climateType
+    `;
+    let query = supabase.from('towns').select(selectColumns);
     
     // If specific town IDs are requested (e.g., from favorites), filter by those first
     if (townIds && Array.isArray(townIds) && townIds.length > 0) {
@@ -170,7 +192,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
         .order('name');
         
       if (!retryError && moreTowns) {
-        allTowns.push(...moreTowns.filter(t => !allTowns.find(existing => existing.id === t.id)));
+        allTowns.push(...(moreTowns?.filter(t => !allTowns.find(existing => existing.id === t.id)) || []));
         console.log(`Expanded search found ${allTowns.length} total towns`);
       }
     }
@@ -182,8 +204,8 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     let sortedTowns;
     if (townIds && Array.isArray(townIds) && townIds.length > 0) {
       // For specific town IDs, return ONLY those specific towns (no pagination)
-      sortedTowns = scoredTowns
-        .filter(town => townIds.includes(town.id))
+      sortedTowns = (scoredTowns || [])
+        .filter(town => townIds?.includes(town.id))
         .sort((a, b) => b.matchScore - a.matchScore);
     } else {
       // For general discovery, use pagination
