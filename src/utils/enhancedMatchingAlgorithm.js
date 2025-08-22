@@ -121,10 +121,15 @@ export function calculateRegionScore(preferences, town) {
   // PART 2: GEOGRAPHIC FEATURES (Max 30 points)
   let geoScore = 0
   
-  if (!hasGeoPrefs) {
-    // No geographic preferences = 100% = 30 points
+  // Define all possible geographic features
+  const ALL_GEO_FEATURES = ['coastal', 'mountain', 'island', 'lake', 'river', 'valley', 'desert', 'forest', 'plains']
+  const userSelectedAllGeo = preferences.geographic_features?.length === ALL_GEO_FEATURES.length &&
+    ALL_GEO_FEATURES.every(f => preferences.geographic_features.map(gf => gf.toLowerCase()).includes(f))
+  
+  if (!hasGeoPrefs || userSelectedAllGeo) {
+    // No geographic preferences OR selected ALL = 100% = 30 points (user is open to anything)
     geoScore = 30
-    factors.push({ factor: 'Open to any geography', score: 30 })
+    factors.push({ factor: userSelectedAllGeo ? 'Open to all geographies (all selected)' : 'Open to any geography', score: 30 })
   } else {
     // Check if ANY geographic feature matches
     let hasMatch = false
@@ -157,10 +162,15 @@ export function calculateRegionScore(preferences, town) {
   // PART 3: VEGETATION TYPE (Max 20 points)
   let vegScore = 0
   
-  if (!hasVegPrefs) {
-    // No vegetation preferences = 100% = 20 points
+  // Define all possible vegetation types
+  const ALL_VEG_TYPES = ['tropical', 'subtropical', 'mediterranean', 'forest', 'grassland', 'desert']
+  const userSelectedAllVeg = preferences.vegetation_types?.length === ALL_VEG_TYPES.length &&
+    ALL_VEG_TYPES.every(v => preferences.vegetation_types.map(vt => vt.toLowerCase()).includes(v))
+  
+  if (!hasVegPrefs || userSelectedAllVeg) {
+    // No vegetation preferences OR selected ALL = 100% = 20 points (user is open to anything)
     vegScore = 20
-    factors.push({ factor: 'Open to any vegetation', score: 20 })
+    factors.push({ factor: userSelectedAllVeg ? 'Open to all vegetation (all selected)' : 'Open to any vegetation', score: 20 })
   } else if (town.vegetation_type_actual?.length) {
     // Check if ANY vegetation type matches
     const userVeg = preferences.vegetation_types.map(v => v.toLowerCase())
