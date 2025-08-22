@@ -1,7 +1,7 @@
 import React from 'react';
 import TownRadarChart from './TownRadarChart';
 import LikeButton from './LikeButton';
-import SimpleImage from './SimpleImage';
+import OptimizedImage from './OptimizedImage';
 import { MapPin, X } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
 
@@ -246,7 +246,7 @@ export default function ComparisonGrid({
         <div key={town.id} className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
           {/* Town Header */}
           <div className="relative h-32">
-            <SimpleImage
+            <OptimizedImage
               src={town.image_url_1}
               alt={town.name}
               className="w-full h-full object-cover"

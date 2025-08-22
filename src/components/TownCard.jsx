@@ -5,7 +5,7 @@ import { toggleFavorite } from '../utils/townUtils.jsx';
 import toast from 'react-hot-toast';
 import { MapPin, DollarSign, Activity, Shield } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
-import SimpleImage from './SimpleImage';
+import OptimizedImage from './OptimizedImage';
 import TownImageOverlay from './TownImageOverlay';
 
 export default function TownCard({ 
@@ -84,7 +84,7 @@ export default function TownCard({
   return (
     <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden ${className}`}>
       <div className="relative h-48">
-        <SimpleImage
+        <OptimizedImage
           src={town.image_url_1}
           alt={town.name}
           className="w-full h-full object-cover"

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
-import SimpleImage from '../components/SimpleImage';
+import OptimizedImage from '../components/OptimizedImage';
 import TownImageOverlay from '../components/TownImageOverlay';
 import { MapPin } from 'lucide-react';
 import UnifiedHeader from '../components/UnifiedHeader';
@@ -481,7 +481,7 @@ export default function Favorites() {
                       onClick={isSelectionMode ? () => handleToggleSelection(town.id) : undefined}
                     >
                       <div className="relative h-40">
-                        <SimpleImage
+                        <OptimizedImage
                           src={town.image_url_1}
                           alt={town.name}
                           className="w-full h-full object-cover"
