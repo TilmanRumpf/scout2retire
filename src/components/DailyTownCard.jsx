@@ -5,7 +5,7 @@ import TownImageOverlay from './TownImageOverlay';
 import { getTownOfTheDay } from '../utils/townUtils.jsx';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
-import { MapPin } from 'lucide-react';
+import { MapPin, DollarSign, Activity, Shield, Users, Thermometer, Plane, MessageCircle, Footprints } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
 import toast from 'react-hot-toast';
 
@@ -200,6 +200,88 @@ export default function DailyTownCard() {
           <p className="min-h-[4rem] md:min-h-[4.5rem]">
             {town.description || "Charming European destination offering excellent quality of life, beautiful historic architecture, and affordable living costs. Perfect for retirees seeking authentic culture without Western European prices."}
           </p>
+        </div>
+
+        {/* Key Facts Section - Most important practical data */}
+        <div className="mb-4">
+          <h4 className={`text-sm ${uiConfig.colors.hint} mb-2`}>Key Facts</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {/* Cost of Living */}
+            {(town.cost_of_living_usd || town.typical_monthly_living_cost || town.cost_index) && (
+              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
+                <DollarSign size={14} className="flex-shrink-0" />
+                <span className="truncate">
+                  ${town.cost_of_living_usd || town.typical_monthly_living_cost || town.cost_index}/mo
+                </span>
+              </div>
+            )}
+            
+            {/* Healthcare Score */}
+            {town.healthcare_score && (
+              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.statusInfo} text-xs ${uiConfig.layout.radius.md}`}>
+                <Activity size={14} className="flex-shrink-0" />
+                <span className="truncate">{town.healthcare_score}/10</span>
+              </div>
+            )}
+            
+            {/* Safety Score */}
+            {town.safety_score && (
+              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
+                <Shield size={14} className="flex-shrink-0" />
+                <span className="truncate">{town.safety_score}/10</span>
+              </div>
+            )}
+            
+            {/* Population */}
+            {town.population && (
+              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
+                <Users size={14} className="flex-shrink-0" />
+                <span className="truncate">
+                  {town.population > 1000000 
+                    ? `${(town.population / 1000000).toFixed(1)}M` 
+                    : town.population > 1000 
+                    ? `${Math.round(town.population / 1000)}K`
+                    : town.population.toLocaleString()}
+                </span>
+              </div>
+            )}
+            
+            {/* Climate (Summer/Winter temps) */}
+            {(town.avg_temp_summer || town.avg_temp_winter) && (
+              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
+                <Thermometer size={14} className="flex-shrink-0" />
+                <span className="truncate">
+                  {town.avg_temp_summer && `${Math.round(town.avg_temp_summer)}°C`}
+                  {town.avg_temp_summer && town.avg_temp_winter && '/'}
+                  {town.avg_temp_winter && `${Math.round(town.avg_temp_winter)}°C`}
+                </span>
+              </div>
+            )}
+            
+            {/* Airport Distance */}
+            {town.airport_distance && (
+              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
+                <Plane size={14} className="flex-shrink-0" />
+                <span className="truncate">{Math.round(town.airport_distance)}km</span>
+              </div>
+            )}
+            
+            {/* English Proficiency */}
+            {town.english_proficiency && (
+              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
+                <MessageCircle size={14} className="flex-shrink-0" />
+                <span className="truncate">{town.english_proficiency}%</span>
+              </div>
+            )}
+            
+            {/* Walkability */}
+            {town.walkability && (
+              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
+                <Footprints size={14} className="flex-shrink-0" />
+                <span className="truncate">{town.walkability}/100</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Category Scores Grid - All 6 Onboarding Categories */}
