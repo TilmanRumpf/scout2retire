@@ -110,8 +110,24 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     }
 
     // 2. Build query with smart pre-filtering for performance
-    // Using SELECT * temporarily until we confirm exact column names
-    let query = supabase.from('towns').select('*');
+    // SELECT only needed columns for better performance (verified columns)
+    const selectColumns = `
+      id, name, country, population, region,
+      image_url_1, image_url_2, image_url_3,
+      latitude, longitude, description,
+      cost_index, cost_of_living_usd, 
+      rent_1bed, meal_cost, groceries_cost, utilities_cost,
+      healthcare_score, safety_score, quality_of_life,
+      climate, climate_description, avg_temp_summer, avg_temp_winter,
+      annual_rainfall, sunshine_hours,
+      activities_available, interests_supported,
+      outdoor_rating, cultural_rating, nightlife_rating,
+      expat_population, expat_community_size, english_proficiency_level,
+      pace_of_life_actual, urban_rural_character,
+      visa_requirements, residency_path_info, tax_rates,
+      categoryScores, matchScore, finalScore
+    `;
+    let query = supabase.from('towns').select(selectColumns);
     
     // If specific town IDs are requested (e.g., from favorites), filter by those first
     if (townIds && Array.isArray(townIds) && townIds.length > 0) {
