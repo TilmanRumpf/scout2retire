@@ -110,7 +110,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     }
 
     // 2. Build query with smart pre-filtering for performance
-    // SELECT only needed columns for better performance (verified columns)
+    // SELECT only needed columns for better performance (FIXED: removed non-existent scoring columns)
     const selectColumns = `
       id, name, country, population, region,
       image_url_1, image_url_2, image_url_3,
@@ -124,8 +124,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       outdoor_rating, cultural_rating, nightlife_rating,
       expat_population, expat_community_size, english_proficiency_level,
       pace_of_life_actual, urban_rural_character,
-      visa_requirements, residency_path_info, tax_rates,
-      categoryScores, matchScore, finalScore
+      visa_requirements, residency_path_info, tax_rates
     `;
     let query = supabase.from('towns').select(selectColumns);
     

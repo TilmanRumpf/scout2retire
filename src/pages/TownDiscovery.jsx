@@ -591,10 +591,14 @@ export default function TownDiscovery() {
                       )}
                       
                       {/* CULTURE - English, Expat Community */}
-                      {selectedTownData.english_proficiency && (
+                      {(selectedTownData.english_proficiency || selectedTownData.english_proficiency_level) && (
                         <div>
                           <span className={`font-medium ${uiConfig.colors.body}`}>English Proficiency: </span>
-                          <span className={`${uiConfig.colors.hint}`}>{selectedTownData.english_proficiency}%</span>
+                          <span className={`${uiConfig.colors.hint}`}>
+                            {selectedTownData.english_proficiency 
+                              ? `${selectedTownData.english_proficiency}%`
+                              : selectedTownData.english_proficiency_level}
+                          </span>
                         </div>
                       )}
                       {selectedTownData.expat_population && (
@@ -608,7 +612,7 @@ export default function TownDiscovery() {
                       {selectedTownData.walkability && (
                         <div>
                           <span className={`font-medium ${uiConfig.colors.body}`}>Walkability: </span>
-                          <span className={`${uiConfig.colors.hint}`}>{selectedTownData.walkability}/100</span>
+                          <span className={`${uiConfig.colors.hint}`}>{selectedTownData.walkability}/10</span>
                         </div>
                       )}
                       
