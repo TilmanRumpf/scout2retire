@@ -71,6 +71,7 @@ export function useFieldDefinitions() {
     loading,
     getAuditQuestion,
     getSearchQuery,
-    getFieldDefinition
+    getFieldDefinition,
+    refreshDefinitions: fetchFieldDefinitions
   };
 }

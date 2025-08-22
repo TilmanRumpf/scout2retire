@@ -8,6 +8,7 @@ import QuickNav from '../../components/QuickNav';
 import FieldDefinitionEditor from '../../components/FieldDefinitionEditor';
 import GoogleSearchPanel from '../../components/GoogleSearchPanel';
 import WikipediaPanel from '../../components/WikipediaPanel';
+import DataQualityPanel from '../../components/DataQualityPanel';
 import HobbiesDisplay from '../../components/admin/HobbiesDisplay';
 import { getFieldOptions, isMultiSelectField } from '../../utils/townDataOptions';
 import { useFieldDefinitions } from '../../hooks/useFieldDefinitions';
@@ -152,7 +153,7 @@ const TownsManager = () => {
   
   // Filters
   const [filters, setFilters] = useState({
-    hasPhoto: 'yes',  // Default to "Has Photo"
+    hasPhoto: 'all',  // Show all by default
     completionLevel: 'all',
     dataQuality: 'all',  // New data quality filter
     country: 'all',
@@ -189,8 +190,14 @@ const TownsManager = () => {
   // Wikipedia panel state
   const [wikipediaOpen, setWikipediaOpen] = useState(false);
   
+  // Data Quality panel state
+  const [dataQualityPanel, setDataQualityPanel] = useState({
+    isOpen: false,
+    town: null
+  });
+  
   // Get field definitions for audit questions
-  const { getAuditQuestion, getSearchQuery, getFieldDefinition } = useFieldDefinitions();
+  const { getAuditQuestion, getSearchQuery, getFieldDefinition, refreshDefinitions } = useFieldDefinitions();
 
   // Auth check - FIXED to use actual Supabase authentication
   useEffect(() => {
@@ -282,9 +289,11 @@ const TownsManager = () => {
       const townsWithMetrics = data.map(town => {
         const errors = detectErrors(town);
         const completion = calculateCompletion(town);
+        console.log(`Town ${town.name}: completion=${completion}, errors=${errors.length}`);
         return { ...town, _errors: errors, _completion: completion };
       });
       
+      console.log('First town with metrics:', townsWithMetrics[0]);
       setTowns(townsWithMetrics);
       
       // Load audit data from towns
@@ -918,7 +927,7 @@ const TownsManager = () => {
     const fieldSearchQuery = getSearchQuery(column, town);
     
     return (
-    <div key={column} className="flex items-center py-1 group">
+    <div key={column} className="flex items-center py-1 group" data-field={column}>
       <div className={`w-64 text-sm font-medium ${uiConfig.colors.body} flex items-center gap-1`}>
         {column}:
         <button
@@ -1004,8 +1013,14 @@ const TownsManager = () => {
           <button
             onClick={() => {
               // Open Google search in side panel
-              // Use generateSearchQuery which has comprehensive fallback logic for ALL fields
-              const searchQuery = generateSearchQuery(town, column, false);
+              // First try to use the custom field definition from database
+              let searchQuery = getSearchQuery(column, town);
+              
+              // If no custom definition exists, fall back to generateSearchQuery
+              if (!searchQuery) {
+                searchQuery = generateSearchQuery(town, column, false);
+              }
+              
               setGoogleSearchPanel({ 
                 isOpen: true, 
                 searchQuery: searchQuery,
@@ -1297,20 +1312,40 @@ const TownsManager = () => {
                     <div className={`font-medium ${uiConfig.colors.heading}`}>{town.name}</div>
                     <div className={`text-sm ${uiConfig.colors.body}`}>{town.country}</div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        town._completion < 30 ? 'bg-red-100 text-red-700' :
-                        town._completion < 70 ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-green-100 text-green-700'
-                      }`}>
-                        {town._completion}% Completion
-                      </span>
-                      {town._errors.length > 0 && (
-                        <span className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">
-                          {town._errors.length} errors
+                      {town._completion !== undefined && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent town selection
+                            setDataQualityPanel({ isOpen: true, town });
+                          }}
+                          className={`text-xs px-2 py-1 rounded flex items-center gap-1 hover:opacity-80 transition-all ${
+                            town._completion < 30 ? 'bg-red-100 text-red-700 animate-pulse' :
+                            town._completion < 50 ? 'bg-yellow-100 text-yellow-700 animate-pulse' :
+                            town._completion < 70 ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-green-100 text-green-700'
+                          } ${
+                            town._completion < 50 ? 'hover:scale-105' : ''
+                          }`}
+                          title="View data quality report"
+                        >
+                          <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          {town._completion}%
+                        </button>
+                      )}
+                      {town._errors && town._errors.length > 0 && (
+                        <span className={`text-xs px-2 py-1 rounded bg-red-100 text-red-700 ${
+                          town._errors.length > 3 ? 'font-semibold' : ''
+                        }`}>
+                          {town._errors.length} error{town._errors.length > 1 ? 's' : ''}
                         </span>
                       )}
                       {!town.image_url_1 && (
-                        <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-700">
+                        <span className="text-xs px-2 py-1 rounded bg-orange-100 text-orange-700 flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
                           No photo
                         </span>
                       )}
@@ -1457,10 +1492,11 @@ const TownsManager = () => {
       {fieldDefEditor.isOpen && (
         <FieldDefinitionEditor
           fieldName={fieldDefEditor.fieldName}
-          onClose={() => {
+          onClose={async () => {
             setFieldDefEditor({ isOpen: false, fieldName: '' });
-            // Reload field definitions after editing
-            window.location.reload();
+            // Refresh field definitions without reloading the page
+            await refreshDefinitions();
+            toast.success('Field definition saved! The new search pattern will be used.');
           }}
         />
       )}
@@ -1482,6 +1518,125 @@ const TownsManager = () => {
           onClose={() => setWikipediaOpen(false)}
         />
       )}
+      
+      {/* Data Quality Panel */}
+      <DataQualityPanel
+        town={dataQualityPanel.town}
+        isOpen={dataQualityPanel.isOpen}
+        onClose={() => setDataQualityPanel({ isOpen: false, town: null })}
+        onQuickAction={(action, field) => {
+          // Handle quick actions
+          if (action === 'scrollToField' && field) {
+            // Close the panel
+            setDataQualityPanel({ isOpen: false, town: null });
+            // Select the town if it's not already selected
+            if (selectedTown?.id !== dataQualityPanel.town?.id) {
+              setSelectedTown(dataQualityPanel.town);
+            }
+            // Scroll to the field after a brief delay
+            setTimeout(() => {
+              const fieldElement = document.querySelector(`[data-field="${field}"]`);
+              if (fieldElement) {
+                fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                fieldElement.classList.add('ring-2', 'ring-blue-500');
+                setTimeout(() => {
+                  fieldElement.classList.remove('ring-2', 'ring-blue-500');
+                }, 2000);
+              }
+            }, 300);
+          } else if (action === 'fillMissing') {
+            // Close panel and select town
+            setDataQualityPanel({ isOpen: false, town: null });
+            if (selectedTown?.id !== dataQualityPanel.town?.id) {
+              setSelectedTown(dataQualityPanel.town);
+            }
+            // Find first empty critical field
+            const criticalFields = ['image_url_1', 'country', 'region', 'cost_of_living_usd',
+                                   'healthcare_score', 'safety_score', 'climate', 'population'];
+            const firstCritical = criticalFields.find(field => {
+              const value = dataQualityPanel.town[field];
+              return value === null || value === undefined || value === '';
+            });
+            if (firstCritical) {
+              setTimeout(() => {
+                const fieldElement = document.querySelector(`[data-field="${firstCritical}"]`);
+                if (fieldElement) {
+                  fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  fieldElement.classList.add('ring-2', 'ring-yellow-500', 'bg-yellow-50');
+                  setTimeout(() => {
+                    fieldElement.classList.remove('ring-2', 'ring-yellow-500', 'bg-yellow-50');
+                  }, 3000);
+                }
+              }, 300);
+              toast(`📝 Navigate to critical field: ${firstCritical.replace(/_/g, ' ')}`);
+            }
+          } else if (action === 'fixErrors') {
+            // Close panel and find first error field
+            setDataQualityPanel({ isOpen: false, town: null });
+            if (selectedTown?.id !== dataQualityPanel.town?.id) {
+              setSelectedTown(dataQualityPanel.town);
+            }
+            // Find first field mentioned in errors
+            const errors = dataQualityPanel.town._errors || [];
+            if (errors.length > 0) {
+              // Extract field name from first error message
+              const fieldMatch = errors[0].match(/Field: (\w+)/);
+              const errorField = fieldMatch ? fieldMatch[1] : null;
+              if (errorField) {
+                setTimeout(() => {
+                  const fieldElement = document.querySelector(`[data-field="${errorField}"]`);
+                  if (fieldElement) {
+                    fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    fieldElement.classList.add('ring-2', 'ring-red-500', 'bg-red-50');
+                    setTimeout(() => {
+                      fieldElement.classList.remove('ring-2', 'ring-red-500', 'bg-red-50');
+                    }, 3000);
+                  }
+                }, 300);
+              }
+              toast.error(`🔧 Navigate to error: ${errors[0]}`);
+            }
+          } else if (action === 'addPhoto') {
+            // Close panel and scroll to photo field
+            setDataQualityPanel({ isOpen: false, town: null });
+            if (selectedTown?.id !== dataQualityPanel.town?.id) {
+              setSelectedTown(dataQualityPanel.town);
+            }
+            setTimeout(() => {
+              const photoField = document.querySelector('[data-field="image_url_1"]');
+              if (photoField) {
+                photoField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                photoField.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+                setTimeout(() => {
+                  photoField.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+                }, 3000);
+              }
+            }, 300);
+            toast('📸 Navigate to photo URL field');
+          } else if (action === 'runValidation') {
+            // Re-calculate validation for this town
+            const town = dataQualityPanel.town;
+            const errors = [];
+            
+            // Check for data inconsistencies
+            if (town.country === 'United States' && !town.state_code) {
+              errors.push('Missing state code for US town');
+            }
+            if (town.coastal && (!town.water_bodies || !town.water_bodies.includes('ocean'))) {
+              errors.push('Coastal town without ocean in water bodies');
+            }
+            if (town.elevation_meters && town.elevation_meters > 3000 && !town.geographic_features_actual?.includes('mountain')) {
+              errors.push('High elevation without mountain feature');
+            }
+            
+            // Update the town's errors
+            const updatedTown = { ...town, _errors: errors };
+            setDataQualityPanel({ ...dataQualityPanel, town: updatedTown });
+            
+            toast.success(`✅ Validation complete: ${errors.length} issues found`);
+          }
+        }}
+      />
       
       {/* Audit Confirmation Dialog */}
       {showAuditDialog && (
