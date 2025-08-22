@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import { askConsultant } from '../../anthropic-api/anthropic-client.js';
 import { getUserContext, formatContextForPrompt } from '../utils/scottyContext';
 import { getCurrentUser } from '../utils/authUtils';
@@ -598,7 +599,7 @@ What would you like to know about ${name}?`;
     }
   };
 
-  // Function to convert text formatting
+  // Function to convert text formatting with XSS protection
   const formatResponse = (text) => {
     // Convert **text** to bold
     let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -606,7 +607,13 @@ What would you like to know about ${name}?`;
     // Convert line breaks to <br> tags
     formatted = formatted.split('\n').join('<br />');
     
-    return formatted;
+    // Sanitize HTML to prevent XSS attacks
+    const sanitized = DOMPurify.sanitize(formatted, {
+      ALLOWED_TAGS: ['strong', 'br', 'b', 'i', 'em', 'u', 'p'],
+      ALLOWED_ATTR: []
+    });
+    
+    return sanitized;
   };
 
   return (
