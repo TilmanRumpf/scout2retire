@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import supabase from '../../utils/supabaseClient';
 import SmartFieldEditor from '../../components/SmartFieldEditor';
-import QuickNav from '../../components/QuickNav';
+import UnifiedHeader from '../../components/UnifiedHeader';
+import HeaderSpacer from '../../components/HeaderSpacer';
 import FieldDefinitionEditor from '../../components/FieldDefinitionEditor';
 import GoogleSearchPanel from '../../components/GoogleSearchPanel';
 import WikipediaPanel from '../../components/WikipediaPanel';
@@ -1122,31 +1123,28 @@ const TownsManager = () => {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page}`}>
-      {/* QuickNav hamburger menu */}
-      <QuickNav />
+      {/* UnifiedHeader for consistency */}
+      <UnifiedHeader 
+        title="Towns Manager"
+        subtitle={`Total: ${towns.length} towns | Showing: ${filteredTowns.length}`}
+        showFilters={false}
+      />
       
-      {/* Header */}
-      <header className={`${uiConfig.colors.card} shadow-sm border-b`}>
-        <div className={`${uiConfig.layout.width.containerXL} ${uiConfig.layout.spacing.page}`}>
-          <h1 className={`text-2xl font-bold ${uiConfig.colors.heading}`}>Towns Manager</h1>
-          <p className={`text-sm ${uiConfig.colors.body} mt-1`}>
-            Total: {towns.length} towns | Showing: {filteredTowns.length}
-          </p>
-        </div>
-      </header>
+      {/* Header spacer for proper content positioning */}
+      <HeaderSpacer hasFilters={false} />
 
       {/* Filters */}
-      <div className={`${uiConfig.colors.card} shadow-sm border-b px-4 py-3`}>
-        <div className="max-w-7xl mx-auto flex gap-2 lg:gap-4 flex-wrap items-center">
+      <div className={`${uiConfig.colors.card} shadow-sm border-b`}>
+        <div className={`${uiConfig.layout.width.containerXL} px-4 py-3 flex gap-3 flex-wrap items-center`}>
           {/* Town Search - First */}
-          <div className="relative flex-1 lg:flex-none min-w-[140px] max-w-[200px]">
+          <div className="relative">
             <input
               type="text"
               value={filters.townSearch}
               onChange={(e) => handleTownSearch(e.target.value)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              placeholder="Search..."
-              className={`border ${uiConfig.colors.border} rounded px-3 py-1 w-full lg:w-48 ${uiConfig.colors.input}`}
+              placeholder="Search towns..."
+              className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm w-40 ${uiConfig.colors.input}`}
             />
             {showSuggestions && (
               <div className={`absolute top-full left-0 mt-1 w-full ${uiConfig.colors.card} border ${uiConfig.colors.border} rounded shadow-lg z-10 max-h-60 overflow-y-auto`}>
@@ -1167,18 +1165,18 @@ const TownsManager = () => {
           <select 
             value={filters.hasPhoto} 
             onChange={(e) => setFilters({...filters, hasPhoto: e.target.value})}
-            className="border rounded px-2 lg:px-3 py-1 text-sm lg:text-base"
+            className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm max-w-[110px] ${uiConfig.colors.input}`}
           >
             <option value="all">Photo</option>
-            <option value="yes">Has</option>
-            <option value="no">No</option>
+            <option value="yes">Has Photo</option>
+            <option value="no">No Photo</option>
           </select>
           
           {/* Completion - Third */}
           <select 
             value={filters.completionLevel} 
             onChange={(e) => setFilters({...filters, completionLevel: e.target.value})}
-            className="border rounded px-2 lg:px-3 py-1 text-sm lg:text-base"
+            className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm max-w-[140px] truncate ${uiConfig.colors.input}`}
           >
             <option value="all">Completion</option>
             <option value="top50">Top 50</option>
@@ -1194,12 +1192,12 @@ const TownsManager = () => {
           <select 
             value={filters.geo_region} 
             onChange={(e) => setFilters({...filters, geo_region: e.target.value})}
-            className="border rounded px-2 lg:px-3 py-1 text-sm lg:text-base hidden lg:block"
+            className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm max-w-[160px] truncate hidden lg:block ${uiConfig.colors.input}`}
             title="Filter by geo_region column"
           >
-            <option value="all">Geo Region (All)</option>
+            <option value="all">Geo Region</option>
             {getUniqueGeoRegion().map(region => (
-              <option key={region} value={region}>{region}</option>
+              <option key={region} value={region} className="truncate">{region}</option>
             ))}
           </select>
           
@@ -1207,11 +1205,11 @@ const TownsManager = () => {
           <select 
             value={filters.country} 
             onChange={(e) => setFilters({...filters, country: e.target.value})}
-            className="border rounded px-2 lg:px-3 py-1 text-sm lg:text-base"
+            className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm max-w-[150px] truncate ${uiConfig.colors.input}`}
           >
             <option value="all">Countries</option>
             {getUniqueCountries().map(country => (
-              <option key={country} value={country}>{country}</option>
+              <option key={country} value={country} className="truncate">{country.length > 20 ? country.substring(0, 20) + '...' : country}</option>
             ))}
           </select>
           
@@ -1233,7 +1231,7 @@ const TownsManager = () => {
               
               setFilters(updatedFilters);
             }}
-            className="border rounded px-2 lg:px-3 py-1 text-sm lg:text-base"
+            className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm max-w-[150px] truncate ${uiConfig.colors.input}`}
           >
             <option value="all">Data Quality</option>
             <option value="has_errors">Has data errors ({getDataQualityCounts().has_errors})</option>
