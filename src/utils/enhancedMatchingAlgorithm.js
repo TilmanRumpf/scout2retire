@@ -108,12 +108,11 @@ export function calculateRegionScore(preferences, town) {
       }
     }
     
-    // If nothing matched and user had preferences, give partial credit
-    // This prevents good towns from being penalized too heavily for location mismatch
+    // If nothing matched and user had preferences, no points awarded
     if (regionCountryScore === 0 && (hasCountryPrefs || hasRegionPrefs)) {
-      // Give 25% credit (10 points) for being in a different but viable location
-      regionCountryScore = 10
-      factors.push({ factor: 'Different region (but viable)', score: 10 })
+      // No match = 0 points (as per specification)
+      regionCountryScore = 0
+      factors.push({ factor: 'No location match', score: 0 })
     }
   }
   
