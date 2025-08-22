@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 
 const FieldDefinitionEditor = ({ 
@@ -57,7 +58,7 @@ const FieldDefinitionEditor = ({
       }
     } catch (error) {
       console.error('Error loading field definition:', error);
-      alert('Error loading field definition');
+      toast.error('Error loading field definition');
     } finally {
       setLoading(false);
     }
@@ -101,11 +102,11 @@ const FieldDefinitionEditor = ({
       
       if (updateError) throw updateError;
       
-      alert(`✅ Updated "${fieldName}" for ALL towns!`);
+      toast.success(`✅ Updated "${fieldName}" for ALL towns!`);
       onClose();
     } catch (error) {
       console.error('Error saving:', error);
-      alert('Error saving field definition');
+      toast.error('Error saving field definition');
     } finally {
       setSaving(false);
     }

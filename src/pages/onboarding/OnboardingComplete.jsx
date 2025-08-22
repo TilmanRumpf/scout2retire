@@ -34,11 +34,6 @@ export default function OnboardingComplete() {
       const result = await getPersonalizedTowns(user.id, { limit: 20 });
       
       if (result.success && result.towns) {
-        // Debug: Log all scores
-        console.log('🎯 All match scores:');
-        result.towns.forEach((town, i) => {
-          console.log(`${i+1}. ${town.name}: ${town.matchScore}%`);
-        });
         
         // Lower thresholds temporarily to see matches
         const excellentMatches = result.towns.filter(town => town.matchScore >= 60);
@@ -48,7 +43,6 @@ export default function OnboardingComplete() {
         // Take top 10 matches regardless of score
         const topTowns = [...excellentMatches, ...goodMatches, ...fairMatches].slice(0, 10);
         
-        console.log(`Found: ${excellentMatches.length} excellent, ${goodMatches.length} good, ${fairMatches.length} fair matches`);
         
         setTopMatches(topTowns);
         setUserPreferences(result.userPreferences);

@@ -165,7 +165,6 @@ export default function OnboardingClimate() {
           formData
         );
         if (prefSuccess) {
-          console.log('✅ Saved climate to user_preferences table');
         } else {
           console.error('❌ Failed to save climate to user_preferences:', prefError);
         }

@@ -293,8 +293,6 @@ export default function OnboardingCosts() {
         if (progressResult.success) {
           if (progressResult.data && (progressResult.data.costs || progressResult.data.budget)) {
             const budgetData = progressResult.data.costs || progressResult.data.budget;
-            console.log('Loading costs data:', budgetData);
-            console.log('Mobility data loaded:', budgetData.mobility);
             
             setFormData(prev => ({ 
               ...prev, 
@@ -325,19 +323,6 @@ export default function OnboardingCosts() {
               need_car: undefined
             }));
             
-            console.log('Form data after loading:', {
-              mobility: {
-                local: Array.isArray(budgetData.mobility?.local) 
-                  ? budgetData.mobility.local 
-                  : (budgetData.mobility?.local ? [budgetData.mobility.local] : []),
-                regional: Array.isArray(budgetData.mobility?.regional)
-                  ? budgetData.mobility.regional
-                  : (budgetData.mobility?.regional ? [budgetData.mobility.regional] : []),
-                international: Array.isArray(budgetData.mobility?.international)
-                  ? budgetData.mobility.international
-                  : (budgetData.mobility?.international ? [budgetData.mobility.international] : [])
-              }
-            });
           }
         }
       } catch (err) {
@@ -409,9 +394,6 @@ export default function OnboardingCosts() {
         return;
       }
       
-      // Debug log to see what we're saving
-      console.log('Saving costs data:', JSON.stringify(formData, null, 2));
-      console.log('Mobility data being saved:', formData.mobility);
       
       const { success, error } = await saveOnboardingStep(userResult.user.id, formData, 'costs');
       
@@ -430,7 +412,6 @@ export default function OnboardingCosts() {
           formData
         );
         if (prefSuccess) {
-          console.log('✅ Saved costs to user_preferences table');
         } else {
           console.error('❌ Failed to save costs to user_preferences:', prefError);
         }

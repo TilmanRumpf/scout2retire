@@ -665,7 +665,6 @@ export default function OnboardingHobbies() {
           dataToSave
         );
         if (prefSuccess) {
-          console.log('✅ Saved hobbies to user_preferences table');
         } else {
           console.error('❌ Failed to save hobbies to user_preferences:', prefError);
         }

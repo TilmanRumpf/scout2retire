@@ -1,12 +1,9 @@
 import supabase from './supabaseClient';
 import { logTownActivity } from './journalUtils';
 import { getPersonalizedTowns } from './matchingAlgorithm'; // NEW: Added import
-import { logAPICall } from './apiLogger';
 
 // Town management
 export const fetchTowns = async (filters = {}) => {
-  // Log API call for tracking
-  logAPICall('towns', 'select', filters.component || 'unknown');
   
   try {
     // NEW: Check if personalization is requested
@@ -235,7 +232,6 @@ export const toggleFavorite = async (userId, townId, townName = null, townCountr
 
 export const fetchFavorites = async (userId, component = 'unknown') => {
   // Log API call for tracking
-  logAPICall('favorites', 'select', component);
   
   try {
     // DO NOT normalize user ID - keep it as is

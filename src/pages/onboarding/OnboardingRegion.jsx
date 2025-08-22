@@ -408,17 +408,14 @@ const OnboardingRegion = () => {
           }
           
           // Handle mobility - moved from costs
-          console.log('Loading mobility data from regionData:', regionData.mobility);
           if (regionData.mobility) {
             const mobilityToSet = {
               local: Array.isArray(regionData.mobility.local) ? regionData.mobility.local : [],
               regional: Array.isArray(regionData.mobility.regional) ? regionData.mobility.regional : [],
               international: Array.isArray(regionData.mobility.international) ? regionData.mobility.international : []
             };
-            console.log('Setting mobility state to:', mobilityToSet);
             setMobility(mobilityToSet);
           } else {
-            console.log('No mobility data found in regionData');
           }
         }
       } catch (err) {
@@ -659,8 +656,6 @@ const OnboardingRegion = () => {
         mobility: mobility // Include mobility preferences in save
       };
       
-      console.log('Saving region data with mobility:', formData);
-      console.log('Mobility being saved:', mobility);
       
       const { success, error } = await saveOnboardingStep(
         userResult.user.id,
@@ -684,7 +679,6 @@ const OnboardingRegion = () => {
           formData
         );
         if (prefSuccess) {
-          console.log('✅ Saved region to user_preferences table');
         } else {
           console.error('❌ Failed to save region to user_preferences:', prefError);
         }

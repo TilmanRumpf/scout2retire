@@ -395,7 +395,6 @@ export default function OnboardingCulture() {
           formData
         );
         if (prefSuccess) {
-          console.log('✅ Saved culture to user_preferences table');
         } else {
           console.error('❌ Failed to save culture to user_preferences:', prefError);
         }
