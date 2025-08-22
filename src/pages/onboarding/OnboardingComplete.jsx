@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { getPersonalizedTowns } from '../../utils/matchingAlgorithm';
 import { getCurrentUser } from '../../utils/authUtils';
 import { uiConfig } from '../../styles/uiConfig';
-import { testMatchingInBrowser } from '../../utils/testMatching';
 import TownRadarChart from '../../components/TownRadarChart';
 import LikeButton from '../../components/LikeButton';
 import toast from 'react-hot-toast';
@@ -30,10 +29,6 @@ export default function OnboardingComplete() {
         return;
       }
       setUserId(user.id);
-
-      // Debug: Test matching in browser
-      console.log('🧪 Running debug test...');
-      await testMatchingInBrowser(user.id);
 
       // Get personalized recommendations
       const result = await getPersonalizedTowns(user.id, { limit: 20 });
