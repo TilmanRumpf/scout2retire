@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SimpleImage from './SimpleImage';
+import OptimizedImage from './OptimizedImage';
 import TownImageOverlay from './TownImageOverlay';
 import { getTownOfTheDay } from '../utils/townUtils.jsx';
 import { getCurrentUser } from '../utils/authUtils';
@@ -154,7 +154,7 @@ export default function DailyTownCard() {
   return (
     <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden w-full`}>
       <div className="relative h-48">
-        <SimpleImage
+        <OptimizedImage
           src={town.image_url_1}
           alt={town.name}
           className="w-full h-full object-cover"

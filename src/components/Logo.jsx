@@ -1,5 +1,5 @@
 import { useTheme } from '../contexts/useTheme';
-import LazyImage from './LazyImage';
+import OptimizedImage from './OptimizedImage';
 import { useNavigate } from 'react-router-dom';
 import { uiConfig } from '../styles/uiConfig';
 
@@ -66,10 +66,11 @@ export default function Logo({
   
   // Logo image component
   const logoImage = (
-    <LazyImage
+    <OptimizedImage
       src={logoUrl}
       alt={alt}
       className={`${className} ${isClickable ? 'cursor-pointer' : ''}`}
+      lazy={true}
       onError={(e) => {
         // If image fails to load and fallback text is enabled, hide the broken image
         if (showFallbackText) {

@@ -5,10 +5,10 @@ import { fetchFavorites } from '../utils/townUtils.jsx';
 import DailyTownCard from '../components/DailyTownCard';
 import { saveJournalEntry } from '../utils/journalUtils';
 import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
-import PageErrorBoundary from '../components/PageErrorBoundary';
+import UnifiedErrorBoundary from '../components/UnifiedErrorBoundary';
 import UnifiedHeader from '../components/UnifiedHeader';
 import HeaderSpacer from '../components/HeaderSpacer';
-import SimpleImage from '../components/SimpleImage';
+import OptimizedImage from '../components/OptimizedImage';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 import supabase from '../utils/supabaseClient';
@@ -424,12 +424,12 @@ export default function DailyRedesignV2() {
             />
           );
         } catch (error) {
-          console.error('AppHeader error:', error);
-          return <div className="bg-red-500 text-white p-4">AppHeader Error: {error.message}</div>;
+          console.error('UnifiedHeader error:', error);
+          return <div className="bg-red-500 text-white p-4">UnifiedHeader Error: {error.message}</div>;
         }
       })()}
 
-      <PageErrorBoundary
+      <UnifiedErrorBoundary variant="compact"
         fallbackTitle="Dashboard Error"
         fallbackMessage="We're having trouble loading your dashboard. Please try refreshing the page."
         onReset={() => window.location.reload()}
@@ -507,7 +507,7 @@ export default function DailyRedesignV2() {
                 <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
                   {/* Clean image without text overlay */}
                   <Link to={todaysInspiration.link} className="block relative h-48">
-                    <SimpleImage
+                    <OptimizedImage
                       src={todaysInspiration.image}
                       alt={todaysInspiration.region}
                       className="w-full h-full object-cover"
@@ -601,7 +601,7 @@ export default function DailyRedesignV2() {
                           className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.sm} p-4 hover:shadow-md transition-shadow flex items-center gap-4`}
                         >
                           <div className="relative w-20 h-20 flex-shrink-0">
-                            <SimpleImage
+                            <OptimizedImage
                               src={town.image_url_1}
                               alt={town.name}
                               className={`w-full h-full object-cover ${uiConfig.layout.radius.md}`}
@@ -637,7 +637,7 @@ export default function DailyRedesignV2() {
                       className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.sm} overflow-hidden hover:shadow-md transition-shadow`}
                     >
                       <div className="relative h-32">
-                        <SimpleImage
+                        <OptimizedImage
                           src={town.image_url_1}
                           alt={town.name}
                           className="w-full h-full object-cover"
@@ -787,7 +787,7 @@ export default function DailyRedesignV2() {
             </Link>
           </section>
         </main>
-      </PageErrorBoundary>
+      </UnifiedErrorBoundary>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { ThemeProvider } from './contexts/ThemeContext';
 import supabase from './utils/supabaseClient';
 import AuthenticatedLayout from './components/AuthenticatedLayout';
-import ErrorBoundary from './components/ErrorBoundary';
+import UnifiedErrorBoundary from './components/UnifiedErrorBoundary';
 import { checkAppVersion, setupAutoRefresh } from './utils/versionCheck';
 import InstallPromptBanner from './components/InstallPromptBanner';
 
@@ -202,7 +202,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      <ErrorBoundary>
+      <UnifiedErrorBoundary variant="full">
         <ThemeProvider>
           <>
             <Toaster position="top-center" />
@@ -210,7 +210,7 @@ const router = createBrowserRouter([
             <Outlet />
           </>
         </ThemeProvider>
-      </ErrorBoundary>
+      </UnifiedErrorBoundary>
     ),
     children: [
       // Public routes - redirect to /daily if authenticated
@@ -320,9 +320,9 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <ErrorBoundary>
+    <UnifiedErrorBoundary variant="full">
       <RouterProvider router={router} />
-    </ErrorBoundary>
+    </UnifiedErrorBoundary>
   );
 }
 

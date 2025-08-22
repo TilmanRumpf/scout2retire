@@ -5,7 +5,7 @@ import { getCurrentUser } from '../utils/authUtils';
 import CompactCountdown from '../components/CompactCountdown';
 import DailyTownCard from '../components/DailyTownCard';
 import TownCard from '../components/TownCard';
-import PageErrorBoundary from '../components/PageErrorBoundary';
+import UnifiedErrorBoundary from '../components/UnifiedErrorBoundary';
 import UnifiedHeader from '../components/UnifiedHeader';
 import HeaderSpacer from '../components/HeaderSpacer';
 import { fetchFavorites } from '../utils/townUtils.jsx';
@@ -138,7 +138,7 @@ export default function Home() {
         title="Home Dashboard"
       />
 
-      <PageErrorBoundary
+      <UnifiedErrorBoundary variant="compact"
         fallbackTitle="Dashboard Error"
         fallbackMessage="We're having trouble loading your dashboard. Please try refreshing the page."
         onReset={() => window.location.reload()}
@@ -320,7 +320,7 @@ export default function Home() {
           </button>
         </div>
         </main>
-      </PageErrorBoundary>
+      </UnifiedErrorBoundary>
 
       {/* Bottom Navigation (Mobile) */}
     </div>

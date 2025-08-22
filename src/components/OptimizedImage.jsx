@@ -1,25 +1,29 @@
-// LazyImage component with intersection observer for lazy loading
+// Unified image component with optional lazy loading
 import { useState, useEffect, useRef } from 'react';
 import { MapPin } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
 
-export default function LazyImage({ 
+export default function OptimizedImage({ 
   src, 
   alt, 
   className = '', 
+  lazy = false, // Enable lazy loading with intersection observer
   fallbackIcon = MapPin,
   fallbackIconSize = 24,
+  rootMargin = '50px', // For lazy loading
   onLoad,
   onError 
 }) {
-  const [imageSrc, setImageSrc] = useState(null);
+  const [imageSrc, setImageSrc] = useState(lazy ? null : src);
   const [imageLoadError, setImageLoadError] = useState(false);
-  const [isIntersecting, setIsIntersecting] = useState(false);
+  const [isIntersecting, setIsIntersecting] = useState(!lazy);
   const imgRef = useRef(null);
   const FallbackIcon = fallbackIcon;
 
-  // Intersection Observer to detect when image is in viewport
+  // Intersection Observer for lazy loading
   useEffect(() => {
+    if (!lazy) return;
+    
     const currentElement = imgRef.current;
     
     const observer = new IntersectionObserver(
@@ -31,9 +35,7 @@ export default function LazyImage({
           }
         });
       },
-      {
-        rootMargin: '50px' // Start loading 50px before image enters viewport
-      }
+      { rootMargin }
     );
 
     if (currentElement) {
@@ -45,10 +47,12 @@ export default function LazyImage({
         observer.unobserve(currentElement);
       }
     };
-  }, []);
+  }, [lazy, rootMargin]);
 
-  // Load image when it's in viewport
+  // Load image when it's in viewport (for lazy loading)
   useEffect(() => {
+    if (!lazy) return;
+    
     if (isIntersecting && src && !imageLoadError) {
       const img = new Image();
       
@@ -64,7 +68,13 @@ export default function LazyImage({
       
       img.src = src;
     }
-  }, [isIntersecting, src, imageLoadError, onLoad, onError]);
+  }, [lazy, isIntersecting, src, imageLoadError, onLoad, onError]);
+
+  // Handle non-lazy image errors
+  const handleDirectError = () => {
+    setImageLoadError(true);
+    if (onError) onError();
+  };
 
   // Show fallback if no image or error
   if (!src || imageLoadError) {
@@ -78,8 +88,8 @@ export default function LazyImage({
     );
   }
 
-  // Show placeholder while loading
-  if (!imageSrc) {
+  // For lazy loading: show placeholder while loading
+  if (lazy && !imageSrc) {
     return (
       <div 
         ref={imgRef}
@@ -90,15 +100,17 @@ export default function LazyImage({
     );
   }
 
-  // Show loaded image
+  // Show the image
   return (
     <img
       ref={imgRef}
-      src={imageSrc}
+      src={imageSrc || src}
       alt={alt}
       className={className}
-      loading="lazy"
+      loading={lazy ? "lazy" : "eager"}
       decoding="async"
+      onLoad={!lazy ? onLoad : undefined}
+      onError={!lazy ? handleDirectError : undefined}
     />
   );
 }

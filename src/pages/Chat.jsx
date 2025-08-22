@@ -5,7 +5,7 @@ import { fetchTowns, fetchFavorites } from '../utils/townUtils.jsx';
 import { sanitizeChatMessage, MAX_LENGTHS } from '../utils/sanitizeUtils';
 import { cancelInvitation } from '../utils/companionUtils';
 import { sendInvitationEmailViaAuth } from '../utils/emailUtils';
-import PageErrorBoundary from '../components/PageErrorBoundary';
+import UnifiedErrorBoundary from '../components/UnifiedErrorBoundary';
 import UnifiedHeader from '../components/UnifiedHeader';
 import HeaderSpacer from '../components/HeaderSpacer';
 import FriendsSection from '../components/FriendsSection';
@@ -1067,7 +1067,7 @@ export default function Chat() {
         maxWidth="max-w-6xl"
       />
 
-      <PageErrorBoundary 
+      <UnifiedErrorBoundary variant="compact"
         fallbackTitle="Chat Error"
         fallbackMessage="We're having trouble loading the chat. Please try refreshing the page."
         onReset={() => window.location.reload()}
@@ -1291,7 +1291,7 @@ export default function Chat() {
           </div>
         </div>
         </main>
-      </PageErrorBoundary>
+      </UnifiedErrorBoundary>
       
       {/* Bottom navigation for mobile */}
       

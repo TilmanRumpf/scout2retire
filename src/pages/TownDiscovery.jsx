@@ -3,9 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
 import toast from 'react-hot-toast';
-import SimpleImage from '../components/SimpleImage';
+import OptimizedImage from '../components/OptimizedImage';
 import TownImageOverlay from '../components/TownImageOverlay';
-import PageErrorBoundary from '../components/PageErrorBoundary';
+import UnifiedErrorBoundary from '../components/UnifiedErrorBoundary';
 import UnifiedHeader from '../components/UnifiedHeader';
 import HeaderSpacer from '../components/HeaderSpacer';
 import TownRadarChart from '../components/TownRadarChart';
@@ -356,7 +356,7 @@ export default function TownDiscovery() {
       {/* Spacer for fixed header with filters */}
       <HeaderSpacer hasFilters={true} />
 
-        <PageErrorBoundary
+        <UnifiedErrorBoundary variant="compact"
           fallbackTitle="Discovery Error"
           fallbackMessage="We're having trouble loading town recommendations. Please try refreshing the page."
           onReset={() => window.location.reload()}
@@ -394,7 +394,7 @@ export default function TownDiscovery() {
           <div className="mb-8">
             <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
               <div className="relative h-64 md:h-80">
-                <SimpleImage
+                <OptimizedImage
                   src={selectedTownData.image_url_1}
                   alt={selectedTownData.name}
                   className="w-full h-full object-cover"
@@ -614,7 +614,7 @@ export default function TownDiscovery() {
               }`}
             >
               <div className="relative h-40">
-                <SimpleImage
+                <OptimizedImage
                   src={town.image_url_1}
                   alt={town.name}
                   className="w-full h-full object-cover"
@@ -746,7 +746,7 @@ export default function TownDiscovery() {
         )}
         
         </main>
-        </PageErrorBoundary>
+        </UnifiedErrorBoundary>
 
     </div>
   );
