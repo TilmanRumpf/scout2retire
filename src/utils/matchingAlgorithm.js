@@ -110,29 +110,8 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     }
 
     // 2. Build query with smart pre-filtering for performance
-    // SELECT only needed columns for better performance
-    const selectColumns = `
-      id, name, state_name, state_code, country, population,
-      image_url_1, image_url_2, image_url_3, image_url_4,
-      categoryScores, matchScore, finalScore,
-      rent_1bed, rent_2bed, property_buy_sqm, meal_cost, groceries_cost,
-      utilities_cost, transport_cost, cost_index,
-      climate_type_actual, pace_of_life_actual, expat_community_actual,
-      political_leaning_actual, senior_percentage, median_age, diversity_index,
-      activities, hobbies_description, cost_description,
-      culture_type_actual, budget_housing_actual, budget_food_actual,
-      budget_transportation_actual, budget_healthcare_actual, budget_entertainment_actual,
-      visa_ease_actual, residency_process_actual, tax_friendliness_actual,
-      internet_quality_actual, utilities_reliability_actual, bureaucracy_level_actual,
-      latitude, longitude, description, townHighlights,
-      summerTemp, winterTemp, annualRainfall, annualSnowfall, sunnyDays,
-      income, crime, education, politics, costOfLiving,
-      medianHomePrice, medianRent, recreationScore, healthcareScore,
-      nearestHospital, medicalFacilities, medicareQuality, cultureScore,
-      culturalVenues, dining, annualEvents, ethnicity, ageDistribution,
-      taxRates, utilities, nearbyAttractions, climateType
-    `;
-    let query = supabase.from('towns').select(selectColumns);
+    // Using SELECT * temporarily until we confirm exact column names
+    let query = supabase.from('towns').select('*');
     
     // If specific town IDs are requested (e.g., from favorites), filter by those first
     if (townIds && Array.isArray(townIds) && townIds.length > 0) {
