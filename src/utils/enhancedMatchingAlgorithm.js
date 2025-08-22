@@ -49,6 +49,24 @@ export function calculateRegionScore(preferences, town) {
   const hasGeoPrefs = preferences.geographic_features?.length > 0
   const hasVegPrefs = preferences.vegetation_types?.length > 0
   
+  // DEBUG: Log when score is unexpectedly low
+  const DEBUG = false  // Set to true to enable debug logging
+  if (DEBUG && town.country === 'Spain') {
+    console.log(`\n=== REGION SCORING DEBUG for ${town.name} ===`)
+    console.log('User preferences:', {
+      countries: preferences.countries,
+      regions: preferences.regions,
+      geographic_features: preferences.geographic_features,
+      vegetation_types: preferences.vegetation_types
+    })
+    console.log('Town data:', {
+      country: town.country,
+      geo_region: town.geo_region,
+      geographic_features_actual: town.geographic_features_actual,
+      vegetation_type_actual: town.vegetation_type_actual
+    })
+  }
+  
   // If user has NO preferences at all, they're open to anywhere - give perfect score
   if (!hasCountryPrefs && !hasRegionPrefs && !hasGeoPrefs && !hasVegPrefs) {
     score = 100
@@ -96,15 +114,24 @@ export function calculateRegionScore(preferences, town) {
     
     // If no country match, check for region match (75% = 30 points)
     if (!countryMatched && hasRegionPrefs) {
-      // Check traditional regions array
-      if (town.regions?.some(region => preferences.regions.includes(region))) {
+      // Check traditional regions array (case-insensitive)
+      const userRegionsLower = preferences.regions.map(r => r.toLowerCase())
+      
+      if (town.regions?.some(region => userRegionsLower.includes(region.toLowerCase()))) {
         regionCountryScore = 30
         factors.push({ factor: 'Region match only', score: 30 })
       }
-      // Also check geo_region for broader matches
-      else if (town.geo_region && preferences.regions.includes(town.geo_region)) {
-        regionCountryScore = 30
-        factors.push({ factor: `Region match only (${town.geo_region})`, score: 30 })
+      // Also check geo_region for broader matches (now comma-separated)
+      else if (town.geo_region) {
+        // Handle comma-separated geo_region
+        const geoRegions = town.geo_region.includes(',') 
+          ? town.geo_region.split(',').map(r => r.trim().toLowerCase())
+          : [town.geo_region.toLowerCase()]
+        
+        if (geoRegions.some(gr => userRegionsLower.includes(gr))) {
+          regionCountryScore = 30
+          factors.push({ factor: `Region match only (${town.geo_region})`, score: 30 })
+        }
       }
     }
     
@@ -133,17 +160,17 @@ export function calculateRegionScore(preferences, town) {
   } else {
     // Check if ANY geographic feature matches
     let hasMatch = false
+    const userFeatures = preferences.geographic_features.map(f => f.toLowerCase())
     
     // First try actual geographic features
     if (town.geographic_features_actual?.length) {
-      const userFeatures = preferences.geographic_features.map(f => f.toLowerCase())
       const townFeatures = town.geographic_features_actual.map(f => f.toLowerCase())
       hasMatch = userFeatures.some(feature => townFeatures.includes(feature))
     }
     
     // FALLBACK: Check regions array for coastal indicators when no geographic data
-    if (!hasMatch && preferences.geographic_features.includes('coastal') && town.regions?.length) {
-      const coastalIndicators = ['gulf', 'ocean', 'coast', 'beach', 'sea', 'atlantic', 'pacific']
+    if (!hasMatch && userFeatures.includes('coastal') && town.regions?.length) {
+      const coastalIndicators = ['gulf', 'ocean', 'coast', 'beach', 'sea', 'atlantic', 'pacific', 'mediterranean']
       hasMatch = town.regions.some(region => 
         coastalIndicators.some(indicator => region.toLowerCase().includes(indicator))
       )
@@ -153,7 +180,37 @@ export function calculateRegionScore(preferences, town) {
       geoScore = 30
       factors.push({ factor: 'Geographic features match', score: 30 })
     } else {
-      factors.push({ factor: 'No geographic feature match', score: 0 })
+      // IMPROVED: Give partial credit for related geographic features
+      // Water features are somewhat interchangeable for lifestyle purposes
+      const relatedFeatures = {
+        'coastal': ['island', 'lake', 'river'],  // All water access
+        'island': ['coastal'],  // Islands are inherently coastal
+        'lake': ['coastal', 'river'],  // Water features
+        'river': ['lake', 'coastal'],  // Water features
+        'mountain': ['valley', 'forest'],  // Often found together
+        'valley': ['mountain', 'river'],  // Valleys often have rivers
+        'forest': ['mountain', 'valley'],  // Forest areas
+        'plains': ['valley'],  // Similar flat terrain
+        'desert': []  // Desert is unique
+      }
+      
+      let partialMatch = false
+      if (town.geographic_features_actual?.length) {
+        const townFeatures = town.geographic_features_actual.map(f => f.toLowerCase())
+        for (const userFeature of userFeatures) {
+          const related = relatedFeatures[userFeature] || []
+          if (townFeatures.some(tf => related.includes(tf))) {
+            geoScore = 15  // 50% credit for related features
+            factors.push({ factor: 'Related geographic features (partial match)', score: 15 })
+            partialMatch = true
+            break
+          }
+        }
+      }
+      
+      if (!partialMatch) {
+        factors.push({ factor: 'No geographic feature match', score: 0 })
+      }
     }
   }
   
@@ -167,10 +224,19 @@ export function calculateRegionScore(preferences, town) {
   const userSelectedAllVeg = preferences.vegetation_types?.length === ALL_VEG_TYPES.length &&
     ALL_VEG_TYPES.every(v => preferences.vegetation_types.map(vt => vt.toLowerCase()).includes(v))
   
+  // SMART INFERENCE: If user selected Mediterranean region but didn't specify vegetation,
+  // they're likely OK with mediterranean vegetation (common sense)
+  const impliedMediterraneanVeg = !hasVegPrefs && hasRegionPrefs && 
+    preferences.regions?.some(r => r.toLowerCase() === 'mediterranean')
+  
   if (!hasVegPrefs || userSelectedAllVeg) {
     // No vegetation preferences OR selected ALL = 100% = 20 points (user is open to anything)
     vegScore = 20
-    factors.push({ factor: userSelectedAllVeg ? 'Open to all vegetation (all selected)' : 'Open to any vegetation', score: 20 })
+    if (impliedMediterraneanVeg && town.vegetation_type_actual?.includes('mediterranean')) {
+      factors.push({ factor: 'Mediterranean region implies vegetation compatibility', score: 20 })
+    } else {
+      factors.push({ factor: userSelectedAllVeg ? 'Open to all vegetation (all selected)' : 'Open to any vegetation', score: 20 })
+    }
   } else if (town.vegetation_type_actual?.length) {
     // Check if ANY vegetation type matches
     const userVeg = preferences.vegetation_types.map(v => v.toLowerCase())
@@ -181,7 +247,30 @@ export function calculateRegionScore(preferences, town) {
       vegScore = 20
       factors.push({ factor: 'Vegetation type match', score: 20 })
     } else {
-      factors.push({ factor: 'No vegetation match', score: 0 })
+      // IMPROVED: Give partial credit for related vegetation types
+      // Mediterranean is related to subtropical (both warm, dry climates)
+      const relatedVegetation = {
+        'mediterranean': ['subtropical'],
+        'subtropical': ['mediterranean', 'tropical'],
+        'tropical': ['subtropical'],
+        'forest': ['grassland'],
+        'grassland': ['forest']
+      }
+      
+      let partialMatch = false
+      for (const userVegType of userVeg) {
+        const related = relatedVegetation[userVegType] || []
+        if (townVeg.some(tv => related.includes(tv))) {
+          vegScore = 10  // 50% credit for related vegetation
+          factors.push({ factor: 'Related vegetation type (partial match)', score: 10 })
+          partialMatch = true
+          break
+        }
+      }
+      
+      if (!partialMatch) {
+        factors.push({ factor: 'No vegetation match', score: 0 })
+      }
     }
   } else {
     // User has preferences but town has no vegetation data
@@ -193,6 +282,13 @@ export function calculateRegionScore(preferences, town) {
   // Calculate final percentage based on 90 points total
   const totalPossible = 90
   const percentage = Math.round((score / totalPossible) * 100)
+  
+  // DEBUG: Log final score breakdown
+  if (DEBUG && town.country === 'Spain' && percentage < 70) {
+    console.log(`\nFINAL SCORE: ${percentage}% (${score}/${totalPossible})`)
+    console.log('Breakdown:', factors)
+    console.log('=== END DEBUG ===\n')
+  }
   
   return {
     score: percentage,
