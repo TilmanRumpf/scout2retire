@@ -98,8 +98,8 @@ ${data.errors.join('\n')}
 
   return (
     <>
-      {/* Panel - 1/4 page from right */}
-      <div className={`fixed right-0 top-0 h-full w-full sm:w-1/2 lg:w-1/3 xl:w-1/4 ${uiConfig.colors.card} shadow-2xl z-40 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'} border-l ${uiConfig.colors.border}`}>
+      {/* Panel - 1/4 page from right with flex layout */}
+      <div className={`fixed right-0 top-0 h-full w-full sm:w-1/2 lg:w-1/3 xl:w-1/4 ${uiConfig.colors.card} shadow-2xl z-40 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'} border-l ${uiConfig.colors.border} flex flex-col`}>
         
         {/* Header */}
         <div className={`flex items-center justify-between p-4 border-b ${uiConfig.colors.border}`}>
@@ -154,8 +154,8 @@ ${data.errors.join('\n')}
           </button>
         </div>
         
-        {/* Content */}
-        <div className="overflow-y-auto h-[calc(100%-240px)] p-4">
+        {/* Content - flex-1 to fill all available space */}
+        <div className="overflow-y-auto flex-1 p-4">
           
           {/* Overview Tab */}
           {activeTab === 'overview' && (
@@ -284,7 +284,7 @@ ${data.errors.join('\n')}
                 <h4 className={`font-medium ${uiConfig.colors.heading} mb-2`}>
                   All Empty Fields ({data.emptyFields.length})
                 </h4>
-                <div className="space-y-1 max-h-64 overflow-y-auto">
+                <div className="space-y-1">
                   {data.emptyFields.map(field => (
                     <div 
                       key={field}

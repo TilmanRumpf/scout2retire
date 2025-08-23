@@ -1486,7 +1486,9 @@ function calculateTaxScore(preferences, town, maxPoints = 15) {
   
   // Calculate proportional score based on sensitive taxes
   if (totalSensitiveTaxes > 0) {
-    score = (taxScoreTotal / totalSensitiveTaxes) * (maxPoints * 0.8) / 5 // 80% of points from tax rates
+    // More forgiving calculation: minimum 2 points per tax, not 1
+    const avgTaxScore = taxScoreTotal / totalSensitiveTaxes
+    score = Math.max(2, avgTaxScore) * (maxPoints * 0.8) / 5 // 80% of points from tax rates
   }
   
   // Bonus scoring for tax benefits (20% of points)
@@ -1564,10 +1566,10 @@ function calculateGradualTaxScore(taxRate, taxType) {
       poor: 4          // 3-4%
     },
     sales: {
-      excellent: 8,    // 0-8%
-      good: 15,        // 8-15%
-      fair: 20,        // 15-20%
-      poor: 25         // 20-25%
+      excellent: 10,   // 0-10%
+      good: 17,        // 10-17%
+      fair: 22,        // 17-22% (includes most EU VAT rates)
+      poor: 27         // 22-27%
     }
   }
   
