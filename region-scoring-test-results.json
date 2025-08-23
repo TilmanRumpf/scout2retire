@@ -1,0 +1,135 @@
+{
+  "timestamp": "2025-08-23T20:43:24.213Z",
+  "totalSpanishTowns": 12,
+  "sampleSize": 5,
+  "averageScore": 93.4,
+  "improvement": 49.400000000000006,
+  "testResults": [
+    {
+      "town": "Valencia",
+      "region": "Valencia Community",
+      "score": 100,
+      "factors": [
+        {
+          "factor": "Country match",
+          "score": 40
+        },
+        {
+          "factor": "Geographic features match",
+          "score": 30
+        },
+        {
+          "factor": "Vegetation type match",
+          "score": 20
+        }
+      ],
+      "geoFeatures": [
+        "coastal"
+      ],
+      "vegetation": [
+        "mediterranean"
+      ]
+    },
+    {
+      "town": "Malaga",
+      "region": "Andalusia",
+      "score": 100,
+      "factors": [
+        {
+          "factor": "Country match",
+          "score": 40
+        },
+        {
+          "factor": "Geographic features match",
+          "score": 30
+        },
+        {
+          "factor": "Vegetation type match",
+          "score": 20
+        }
+      ],
+      "geoFeatures": [
+        "coastal"
+      ],
+      "vegetation": [
+        "mediterranean"
+      ]
+    },
+    {
+      "town": "Granada",
+      "region": "Andalusia",
+      "score": 67,
+      "factors": [
+        {
+          "factor": "Country match",
+          "score": 40
+        },
+        {
+          "factor": "No geographic feature match",
+          "score": 0
+        },
+        {
+          "factor": "Vegetation type match",
+          "score": 20
+        }
+      ],
+      "geoFeatures": [
+        "continental",
+        "mountain"
+      ],
+      "vegetation": [
+        "mediterranean"
+      ]
+    },
+    {
+      "town": "Castro Urdiales",
+      "region": "Cantabria",
+      "score": 100,
+      "factors": [
+        {
+          "factor": "Country match",
+          "score": 40
+        },
+        {
+          "factor": "Geographic features match",
+          "score": 30
+        },
+        {
+          "factor": "Vegetation type match",
+          "score": 20
+        }
+      ],
+      "geoFeatures": [
+        "coastal"
+      ],
+      "vegetation": [
+        "mediterranean"
+      ]
+    },
+    {
+      "town": "Alicante",
+      "region": "Valencia Community",
+      "score": 100,
+      "factors": [
+        {
+          "factor": "Country match",
+          "score": 40
+        },
+        {
+          "factor": "Geographic features match",
+          "score": 30
+        },
+        {
+          "factor": "Vegetation type match",
+          "score": 20
+        }
+      ],
+      "geoFeatures": [
+        "coastal"
+      ],
+      "vegetation": [
+        "mediterranean"
+      ]
+    }
+  ]
+}
