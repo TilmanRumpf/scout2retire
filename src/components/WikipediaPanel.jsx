@@ -51,8 +51,8 @@ export default function WikipediaPanel({ townName, country, isOpen, onClose }) {
     <>
       {/* No backdrop - keep main page interactive */}
       
-      {/* Panel - 1/4 page from right */}
-      <div className={`fixed right-0 top-0 h-full w-full sm:w-1/2 lg:w-1/3 xl:w-1/4 ${uiConfig.colors.card} shadow-2xl z-40 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'} border-l ${uiConfig.colors.border}`}>
+      {/* Panel - 1/4 page from left */}
+      <div className={`fixed left-0 top-0 h-full w-full sm:w-1/2 lg:w-1/3 xl:w-1/4 ${uiConfig.colors.card} shadow-2xl z-40 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} border-r ${uiConfig.colors.border}`}>
         {/* Header */}
         <div className={`flex items-center justify-between p-4 border-b ${uiConfig.colors.border}`}>
           <div className="flex items-center gap-2">

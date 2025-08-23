@@ -1,0 +1,803 @@
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+async function populateElevationAndDistance() {
+  console.log('🏔️ POPULATING ELEVATION AND OCEAN DISTANCE DATA\n');
+  console.log('=' + '='.repeat(60) + '\n');
+  
+  // ELEVATION DATA (meters above sea level)
+  const ELEVATION_DATA = {
+    // High elevation cities (>1500m)
+    'Denver': 1609,
+    'Mexico City': 2250,
+    'Quito': 2850,
+    'La Paz': 3640,
+    'Bogota': 2640,
+    'Addis Ababa': 2355,
+    'Salt Lake City': 1288,
+    'Calgary': 1045,
+    'Johannesburg': 1753,
+    'Nairobi': 1795,
+    'Kathmandu': 1400,
+    'Cusco': 3399,
+    
+    // Mountain towns (500-1500m)
+    'Zurich': 408,
+    'Munich': 520,
+    'Madrid': 667,
+    'Innsbruck': 574,
+    'Geneva': 375,
+    'Boulder': 1655,
+    'Asheville': 650,
+    'Santa Fe': 2194,
+    'Tucson': 728,
+    'Phoenix': 331,
+    'Albuquerque': 1619,
+    'Reno': 1373,
+    'Bern': 542,
+    'Turin': 239,
+    'Krakow': 219,
+    'Vienna': 171,
+    'Prague': 399,
+    'Budapest': 102,
+    'Bratislava': 134,
+    'Ljubljana': 298,
+    'Zagreb': 158,
+    'Sarajevo': 518,
+    'Sofia': 550,
+    'Ankara': 938,
+    'Tehran': 1189,
+    'Yerevan': 989,
+    'Tbilisi': 380,
+    
+    // Moderate elevation (100-500m)
+    'Atlanta': 320,
+    'Charlotte': 229,
+    'Austin': 149,
+    'San Antonio': 198,
+    'Dallas': 131,
+    'Nashville': 182,
+    'Pittsburgh': 370,
+    'Birmingham': 183,
+    'Montreal': 216,
+    'Ottawa': 70,
+    'Berlin': 34,
+    'Paris': 35,
+    'Lyon': 173,
+    'Toulouse': 141,
+    'Stuttgart': 245,
+    'Frankfurt': 112,
+    'Cologne': 37,
+    'Brussels': 13,
+    'Luxembourg': 376,
+    'Edinburgh': 47,
+    'Glasgow': 8,
+    'Manchester': 38,
+    'Leeds': 48,
+    'Rome': 21,
+    'Milan': 120,
+    'Florence': 50,
+    'Bologna': 54,
+    'Lisbon': 2,
+    'Porto': 75,
+    'Seville': 7,
+    'Granada': 738,
+    'Bilbao': 19,
+    'Jerusalem': 754,
+    'Amman': 784,
+    'Damascus': 680,
+    
+    // Low elevation/Coastal (<100m)
+    'New York': 10,
+    'Boston': 19,
+    'Washington DC': 7,
+    'Miami': 2,
+    'Orlando': 34,
+    'Tampa': 14,
+    'Jacksonville': 5,
+    'Charleston': 6,
+    'Savannah': 15,
+    'New Orleans': -2,  // Below sea level
+    'Houston': 15,
+    'San Diego': 19,
+    'Los Angeles': 87,
+    'San Francisco': 16,
+    'Seattle': 56,
+    'Portland': 15,
+    'Vancouver': 152,
+    'Victoria': 20,
+    'Toronto': 76,
+    'Chicago': 182,
+    'Detroit': 183,
+    'Cleveland': 199,
+    'Baltimore': 10,
+    'Philadelphia': 12,
+    
+    // European coastal/low
+    'London': 11,
+    'Amsterdam': -2,  // Below sea level
+    'Rotterdam': -1,
+    'The Hague': 1,
+    'Copenhagen': 9,
+    'Stockholm': 28,
+    'Oslo': 23,
+    'Helsinki': 25,
+    'Tallinn': 9,
+    'Riga': 3,
+    'Vilnius': 112,
+    'Warsaw': 103,
+    'Hamburg': 6,
+    'Barcelona': 12,
+    'Valencia': 15,
+    'Malaga': 11,
+    'Nice': 0,
+    'Marseille': 12,
+    'Monaco': 0,
+    'Venice': 1,
+    'Naples': 17,
+    'Athens': 20,
+    'Thessaloniki': 20,
+    'Istanbul': 39,
+    'Izmir': 2,
+    'Antalya': 30,
+    'Beirut': 0,
+    'Tel Aviv': 5,
+    'Haifa': 280,
+    'Dubai': 5,
+    'Abu Dhabi': 3,
+    'Doha': 10,
+    'Kuwait City': 0,
+    'Muscat': 0,
+    
+    // Asia-Pacific
+    'Tokyo': 40,
+    'Osaka': 3,
+    'Kyoto': 44,
+    'Yokohama': 5,
+    'Seoul': 38,
+    'Busan': 0,
+    'Beijing': 44,
+    'Shanghai': 4,
+    'Hong Kong': 32,
+    'Taipei': 9,
+    'Singapore': 15,
+    'Kuala Lumpur': 21,
+    'Bangkok': 1.5,
+    'Phuket': 5,
+    'Chiang Mai': 316,
+    'Ho Chi Minh City': 19,
+    'Hanoi': 10,
+    'Manila': 5,
+    'Jakarta': 8,
+    'Bali': 0,  // Coastal areas
+    'Sydney': 3,
+    'Melbourne': 31,
+    'Brisbane': 28,
+    'Perth': 0,
+    'Adelaide': 50,
+    'Gold Coast': 4,
+    'Auckland': 196,
+    'Wellington': 12,
+    'Christchurch': 20,
+    'Queenstown': 310,
+    'Wanaka': 300,
+    
+    // Latin America
+    'Buenos Aires': 25,
+    'Montevideo': 43,
+    'Santiago': 567,
+    'Lima': 154,
+    'Caracas': 900,
+    'Rio de Janeiro': 2,
+    'Sao Paulo': 760,
+    'Brasilia': 1172,
+    'Salvador': 8,
+    'Cartagena': 2,
+    'Panama City': 0,
+    'San Jose': 1161,
+    'Guatemala City': 1500,
+    'Havana': 59,
+    'Santo Domingo': 14,
+    'San Juan': 8,
+    
+    // Africa
+    'Cairo': 23,
+    'Alexandria': 0,
+    'Casablanca': 27,
+    'Marrakech': 466,
+    'Tunis': 4,
+    'Algiers': 0,
+    'Lagos': 41,
+    'Cape Town': 0,
+    'Durban': 8,
+    'Dar es Salaam': 0,
+    'Mombasa': 0,
+    'Accra': 61,
+    'Dakar': 0,
+    
+    // Indian Subcontinent
+    'Mumbai': 14,
+    'Delhi': 216,
+    'Bangalore': 920,
+    'Chennai': 6,
+    'Kolkata': 9,
+    'Hyderabad': 542,
+    'Pune': 560,
+    'Goa': 0,
+    'Jaipur': 431,
+    'Udaipur': 598,
+    'Kochi': 0,
+    'Colombo': 1,
+    'Dhaka': 4,
+    'Karachi': 10,
+    'Lahore': 217,
+    'Islamabad': 540,
+    
+    // Special cases
+    'Valletta': 0,
+    'Reykjavik': 8,
+    'Bergen': 2,
+    'Tromso': 6,
+    'Dubrovnik': 3,
+    'Split': 0,
+    'Zadar': 0,
+    'Ljubljana': 298,
+    'Koper': 0,
+    'Rijeka': 0,
+    'Pula': 30,
+    'Sibiu': 415,
+    'Cluj-Napoca': 410,
+    'Timisoara': 142,
+    'Constanta': 25,
+    'Varna': 80,
+    'Burgas': 30,
+    'Gdansk': 0,
+    'Krakow': 219,
+    'Wroclaw': 111,
+    'Poznan': 60,
+    'Szczecin': 1,
+    'Palma': 13,
+    'Las Palmas': 8,
+    'Santa Cruz de Tenerife': 4,
+    'Funchal': 0,
+    'Ponta Delgada': 0,
+    'Fort Lauderdale': 3,
+    'West Palm Beach': 5,
+    'Naples_FL': 2,  // Naples, Florida
+    'Sarasota': 8,
+    'St Petersburg': 13,  // Florida
+    'Clearwater': 9,
+    'Key West': 1,
+    'Corpus Christi': 2,
+    'Galveston': 6,
+    'Mobile': 3,
+    'Pensacola': 31,
+    'Biloxi': 6,
+    'Virginia Beach': 3,
+    'Myrtle Beach': 10,
+    'Wilmington': 9,
+    'Hilton Head': 4,
+    'Santa Barbara': 15,
+    'Monterey': 8,
+    'Carmel': 26,
+    'Santa Cruz': 11,
+    'Half Moon Bay': 21,
+    'Newport Beach': 19,
+    'Laguna Beach': 27,
+    'Carlsbad': 16,
+    'Oceanside': 9,
+    'Ventura': 32,
+    'Malibu': 32,
+    'Honolulu': 6,
+    'Maui': 3,
+    'Kauai': 3,
+    'Kona': 0,
+    'Anchorage': 31,
+    'Juneau': 17,
+    'Fairbanks': 136,
+    'Burlington': 61,
+    'Portland_ME': 19,
+    'Portsmouth': 6,
+    'Newport': 9,
+    'Providence': 23,
+    'New Haven': 18,
+    'Stamford': 9,
+    'Atlantic City': 2,
+    'Ocean City': 2,
+    'Rehoboth Beach': 3,
+    'Annapolis': 12,
+    'Norfolk': 3,
+    'Richmond': 45,
+    'Raleigh': 96,
+    'Durham': 124,
+    'Chapel Hill': 145,
+    'Greenville': 17,
+    'Columbia': 89,
+    'Augusta': 45,
+    'Lexington': 305,
+    'Louisville': 142,
+    'Knoxville': 270,
+    'Memphis': 64,
+    'Little Rock': 102,
+    'Jackson': 85,
+    'Montgomery': 73,
+    'Tallahassee': 62,
+    'Gainesville': 54,
+    'St Augustine': 2,
+    'Daytona Beach': 3,
+    'Fort Myers': 3,
+    'Boca Raton': 4,
+    'Delray Beach': 5,
+    'Jupiter': 7,
+    'Vero Beach': 6,
+    'Stuart': 4,
+    'Fort Pierce': 6,
+    'Melbourne': 6,  // Florida
+    'Cocoa Beach': 1,
+    'Panama City Beach': 4,
+    'Destin': 7,
+    'Gulf Shores': 2,
+    'Orange Beach': 3
+  };
+  
+  // DISTANCE TO OCEAN (km) - 0 for coastal, increasing inland
+  const DISTANCE_TO_OCEAN = {
+    // Coastal cities (0-5 km)
+    'Miami': 0,
+    'San Diego': 0,
+    'Charleston': 0,
+    'Savannah': 0,
+    'Boston': 0,
+    'New York': 0,
+    'San Francisco': 0,
+    'Seattle': 0,
+    'Portland': 80,  // Oregon, inland
+    'Los Angeles': 0,
+    'Vancouver': 0,
+    'Sydney': 0,
+    'Melbourne': 0,
+    'Brisbane': 0,
+    'Perth': 0,
+    'Gold Coast': 0,
+    'Auckland': 0,
+    'Wellington': 0,
+    'Barcelona': 0,
+    'Valencia': 0,
+    'Malaga': 0,
+    'Nice': 0,
+    'Marseille': 0,
+    'Monaco': 0,
+    'Venice': 0,
+    'Naples': 0,
+    'Athens': 0,
+    'Thessaloniki': 0,
+    'Istanbul': 0,
+    'Izmir': 0,
+    'Antalya': 0,
+    'Beirut': 0,
+    'Tel Aviv': 0,
+    'Dubai': 0,
+    'Abu Dhabi': 0,
+    'Doha': 0,
+    'Kuwait City': 0,
+    'Muscat': 0,
+    'Mumbai': 0,
+    'Chennai': 0,
+    'Goa': 0,
+    'Kochi': 0,
+    'Colombo': 0,
+    'Karachi': 0,
+    'Hong Kong': 0,
+    'Singapore': 0,
+    'Phuket': 0,
+    'Bangkok': 25,  // Gulf of Thailand
+    'Ho Chi Minh City': 50,
+    'Manila': 0,
+    'Jakarta': 0,
+    'Bali': 0,
+    'Rio de Janeiro': 0,
+    'Salvador': 0,
+    'Cartagena': 0,
+    'Panama City': 0,
+    'Havana': 0,
+    'Santo Domingo': 0,
+    'San Juan': 0,
+    'Cape Town': 0,
+    'Durban': 0,
+    'Dar es Salaam': 0,
+    'Mombasa': 0,
+    'Accra': 0,
+    'Dakar': 0,
+    'Lagos': 0,
+    'Alexandria': 0,
+    'Casablanca': 0,
+    'Tunis': 0,
+    'Algiers': 0,
+    'Lisbon': 0,
+    'Porto': 0,
+    'Copenhagen': 0,
+    'Stockholm': 0,
+    'Oslo': 0,
+    'Helsinki': 0,
+    'Tallinn': 0,
+    'Riga': 0,
+    'Gdansk': 0,
+    'Split': 0,
+    'Dubrovnik': 0,
+    'Valletta': 0,
+    'Reykjavik': 0,
+    'Bergen': 0,
+    'Honolulu': 0,
+    'Anchorage': 0,
+    'Juneau': 0,
+    
+    // Near coastal (5-50 km)
+    'London': 60,
+    'Amsterdam': 20,
+    'Rotterdam': 0,
+    'The Hague': 0,
+    'Hamburg': 90,
+    'Lisbon': 0,
+    'Rome': 25,
+    'Tokyo': 0,
+    'Osaka': 0,
+    'Yokohama': 0,
+    'Seoul': 30,
+    'Busan': 0,
+    'Shanghai': 0,
+    'Taipei': 15,
+    'Kuala Lumpur': 45,
+    'Buenos Aires': 0,
+    'Montevideo': 0,
+    'Lima': 0,
+    'Tampa': 0,
+    'Orlando': 60,
+    'Jacksonville': 0,
+    'Houston': 50,
+    'New Orleans': 0,
+    'Washington DC': 60,
+    'Philadelphia': 80,
+    'Baltimore': 15,
+    'Toronto': 75,  // Lake Ontario, not ocean
+    'Victoria': 0,
+    'Halifax': 0,
+    'St Johns': 0,
+    
+    // Moderate distance (50-200 km)
+    'Paris': 200,
+    'Brussels': 100,
+    'Berlin': 150,
+    'Frankfurt': 380,
+    'Munich': 500,
+    'Milan': 140,
+    'Florence': 80,
+    'Madrid': 350,
+    'Seville': 85,
+    'Granada': 65,
+    'Santiago': 100,
+    'Sao Paulo': 70,
+    'Delhi': 1400,
+    'Bangalore': 100,
+    'Hyderabad': 500,
+    'Beijing': 150,
+    'Atlanta': 400,
+    'Charlotte': 350,
+    'Raleigh': 200,
+    'Nashville': 550,
+    'Austin': 300,
+    'San Antonio': 225,
+    'Dallas': 430,
+    'Chicago': 800,  // Great Lakes, not ocean
+    'Detroit': 800,
+    'Montreal': 500,  // St. Lawrence River
+    'Ottawa': 450,
+    
+    // Far inland (200-500 km)
+    'Zurich': 600,
+    'Geneva': 550,
+    'Bern': 550,
+    'Vienna': 600,
+    'Prague': 700,
+    'Budapest': 750,
+    'Warsaw': 350,
+    'Krakow': 500,
+    'Lyon': 450,
+    'Toulouse': 250,
+    'Stuttgart': 600,
+    'Cologne': 350,
+    'Birmingham': 150,
+    'Manchester': 50,
+    'Leeds': 100,
+    'Edinburgh': 2,
+    'Glasgow': 30,
+    'Turin': 150,
+    'Bologna': 100,
+    'Bilbao': 15,
+    'Zaragoza': 300,
+    'Jerusalem': 50,
+    'Amman': 100,
+    'Cairo': 165,
+    'Marrakech': 250,
+    'Johannesburg': 550,
+    'Nairobi': 450,
+    'Brasilia': 1000,
+    'Bogota': 700,
+    'Quito': 280,
+    'La Paz': 400,
+    'Caracas': 10,
+    'Guatemala City': 130,
+    'San Jose': 100,
+    'Chiang Mai': 700,
+    'Hanoi': 100,
+    'Kolkata': 150,
+    'Pune': 150,
+    'Jaipur': 650,
+    'Udaipur': 700,
+    'Lahore': 1100,
+    'Islamabad': 1500,
+    'Kathmandu': 1600,
+    'Cusco': 450,
+    
+    // Very far inland (>500 km)
+    'Denver': 1600,
+    'Salt Lake City': 1100,
+    'Phoenix': 600,
+    'Tucson': 700,
+    'Albuquerque': 1400,
+    'Santa Fe': 1400,
+    'Boulder': 1600,
+    'Las Vegas': 430,
+    'Reno': 350,
+    'Calgary': 1000,
+    'Edmonton': 1200,
+    'Winnipeg': 2000,
+    'Minneapolis': 2000,
+    'St Louis': 1500,
+    'Kansas City': 1900,
+    'Oklahoma City': 1400,
+    'Indianapolis': 1200,
+    'Cincinnati': 900,
+    'Columbus': 800,
+    'Cleveland': 800,  // Lake Erie, not ocean
+    'Pittsburgh': 600,
+    'Louisville': 1100,
+    'Memphis': 800,
+    'Little Rock': 700,
+    'Innsbruck': 650,
+    'Ljubljana': 100,
+    'Zagreb': 150,
+    'Sarajevo': 150,
+    'Sofia': 300,
+    'Bucharest': 200,
+    'Bratislava': 450,
+    'Luxembourg': 350,
+    'Ankara': 400,
+    'Tehran': 500,
+    'Yerevan': 600,
+    'Tbilisi': 350,
+    'Addis Ababa': 800,
+    'Mexico City': 350,
+    'Asheville': 450,
+    'Fairbanks': 500,
+    
+    // New Zealand specifics
+    'Christchurch': 0,
+    'Queenstown': 100,
+    'Wanaka': 100,
+    'Dunedin': 0,
+    'Hamilton': 40,
+    'Tauranga': 0,
+    'Napier': 0,
+    'Nelson': 0,
+    'Rotorua': 90,
+    
+    // Additional coastal
+    'Fort Lauderdale': 0,
+    'West Palm Beach': 0,
+    'Naples_FL': 0,
+    'Sarasota': 0,
+    'St Petersburg': 0,
+    'Clearwater': 0,
+    'Key West': 0,
+    'Corpus Christi': 0,
+    'Galveston': 0,
+    'Mobile': 0,
+    'Pensacola': 0,
+    'Biloxi': 0,
+    'Virginia Beach': 0,
+    'Myrtle Beach': 0,
+    'Wilmington': 0,
+    'Hilton Head': 0,
+    'Santa Barbara': 0,
+    'Monterey': 0,
+    'Carmel': 0,
+    'Santa Cruz': 0,
+    'Half Moon Bay': 0,
+    'Newport Beach': 0,
+    'Laguna Beach': 0,
+    'Carlsbad': 0,
+    'Oceanside': 0,
+    'Ventura': 0,
+    'Malibu': 0,
+    'Portsmouth': 0,
+    'Newport': 0,
+    'Atlantic City': 0,
+    'Ocean City': 0,
+    'Rehoboth Beach': 0,
+    'Annapolis': 30,
+    'Norfolk': 0,
+    'St Augustine': 0,
+    'Daytona Beach': 0,
+    'Fort Myers': 0,
+    'Boca Raton': 0,
+    'Delray Beach': 0,
+    'Cocoa Beach': 0,
+    'Panama City Beach': 0,
+    'Destin': 0,
+    'Gulf Shores': 0,
+    
+    // Missing EU cities
+    'Vilnius': 300,
+    'Riga': 0,
+    'Koper': 0,
+    'Rijeka': 0,
+    'Pula': 0,
+    'Zadar': 0,
+    'Sibiu': 400,
+    'Cluj-Napoca': 450,
+    'Timisoara': 600,
+    'Constanta': 0,
+    'Varna': 0,
+    'Burgas': 0,
+    'Wroclaw': 400,
+    'Poznan': 350,
+    'Szczecin': 0,
+    'Palma': 0,
+    'Las Palmas': 0,
+    'Santa Cruz de Tenerife': 0,
+    'Funchal': 0,
+    'Ponta Delgada': 0,
+    'Tromso': 0,
+    'Trondheim': 0,
+    'Malmo': 0,
+    'Gothenburg': 0,
+    'Uppsala': 30,
+    'Aarhus': 0,
+    'Odense': 20,
+    'Aalborg': 10,
+    'Bremen': 60,
+    'Hannover': 200,
+    'Leipzig': 350,
+    'Dresden': 400,
+    'Nuremberg': 450,
+    'Heidelberg': 450,
+    'Freiburg': 400,
+    'Basel': 550,
+    'Lausanne': 500,
+    'Lucerne': 550,
+    'Salzburg': 500,
+    'Graz': 450,
+    'Linz': 400,
+    'Klagenfurt': 250,
+    'Verona': 120,
+    'Padua': 40,
+    'Trieste': 0,
+    'Genoa': 0,
+    'Pisa': 15,
+    'Siena': 70,
+    'Perugia': 150,
+    'Catania': 0,
+    'Palermo': 0,
+    'Cagliari': 0,
+    'Bari': 0,
+    'Brindisi': 0,
+    'Pescara': 0,
+    'Ancona': 0,
+    'Ravenna': 10,
+    'Rimini': 0,
+    'La Spezia': 0,
+    'Livorno': 0,
+    'Messina': 0,
+    'Reggio Calabria': 0,
+    'Salerno': 0,
+    'Taranto': 0
+  };
+  
+  console.log('📏 Updating elevation data...\n');
+  
+  let elevationCount = 0;
+  for (const [town, elevation] of Object.entries(ELEVATION_DATA)) {
+    const { error } = await supabase
+      .from('towns')
+      .update({ elevation_meters: elevation })
+      .eq('name', town);
+    
+    if (!error) elevationCount++;
+  }
+  
+  console.log(`✅ Updated elevation for ${elevationCount} towns\n`);
+  
+  console.log('🌊 Updating distance to ocean...\n');
+  
+  let distanceCount = 0;
+  for (const [town, distance] of Object.entries(DISTANCE_TO_OCEAN)) {
+    const { error } = await supabase
+      .from('towns')
+      .update({ distance_to_ocean_km: distance })
+      .eq('name', town);
+    
+    if (!error) distanceCount++;
+  }
+  
+  console.log(`✅ Updated ocean distance for ${distanceCount} towns\n`);
+  
+  // Get all towns to see what's missing
+  const { data: allTowns } = await supabase
+    .from('towns')
+    .select('name, elevation_meters, distance_to_ocean_km')
+    .order('name');
+  
+  const missingElevation = [];
+  const missingDistance = [];
+  
+  for (const town of allTowns || []) {
+    if (town.elevation_meters === null || town.elevation_meters === undefined) {
+      missingElevation.push(town.name);
+    }
+    if (town.distance_to_ocean_km === null || town.distance_to_ocean_km === undefined) {
+      missingDistance.push(town.name);
+    }
+  }
+  
+  console.log('\n' + '='.repeat(60));
+  console.log('ELEVATION AND DISTANCE UPDATE COMPLETE');
+  console.log('='.repeat(60));
+  
+  console.log(`\n📊 Summary:`);
+  console.log(`✅ Elevation updated: ${elevationCount} towns`);
+  console.log(`✅ Ocean distance updated: ${distanceCount} towns`);
+  console.log(`❓ Missing elevation: ${missingElevation.length} towns`);
+  console.log(`❓ Missing ocean distance: ${missingDistance.length} towns`);
+  
+  if (missingElevation.length > 0 && missingElevation.length <= 20) {
+    console.log('\n⚠️ Towns missing elevation data:');
+    console.log(missingElevation.join(', '));
+  }
+  
+  if (missingDistance.length > 0 && missingDistance.length <= 20) {
+    console.log('\n⚠️ Towns missing ocean distance:');
+    console.log(missingDistance.join(', '));
+  }
+  
+  // Show examples
+  console.log('\n📋 Example towns with elevation and distance:\n');
+  
+  const examples = [
+    'Denver', 'Miami', 'Zurich', 'Singapore', 'Tokyo', 
+    'Mexico City', 'Amsterdam', 'Dubai', 'Sydney', 'Cape Town'
+  ];
+  
+  for (const name of examples) {
+    const { data: town } = await supabase
+      .from('towns')
+      .select('name, elevation_meters, distance_to_ocean_km')
+      .eq('name', name)
+      .single();
+    
+    if (town) {
+      console.log(`${town.name}:`);
+      console.log(`  Elevation: ${town.elevation_meters}m`);
+      console.log(`  Ocean distance: ${town.distance_to_ocean_km}km\n`);
+    }
+  }
+}
+
+// Run population
+populateElevationAndDistance().catch(console.error);

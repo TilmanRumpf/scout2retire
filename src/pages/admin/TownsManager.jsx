@@ -1377,23 +1377,33 @@ const TownsManager = () => {
                       </button>
                       <h2 className={`text-lg lg:text-xl font-bold ${uiConfig.colors.heading}`}>{selectedTown.name}, {selectedTown.country}</h2>
                     </div>
-                    {/* Wikipedia Button */}
-                    <button
-                      onClick={() => setWikipediaOpen(true)}
-                      className={`p-2 rounded-lg ${uiConfig.colors.secondary} hover:${uiConfig.colors.primary} transition-colors flex items-center justify-center`}
-                      title="View Wikipedia"
-                    >
-                      <img 
-                        src="https://en.wikipedia.org/static/favicon/wikipedia.ico"
-                        alt="Wikipedia"
-                        className="w-5 h-5"
-                        onError={(e) => {
-                          // Fallback to text if favicon fails to load
-                          e.target.style.display = 'none';
-                          e.target.parentElement.innerHTML = '<span class="font-bold text-sm">W</span>';
-                        }}
-                      />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {/* Data Quality Report Button */}
+                      <button
+                        onClick={() => setDataQualityPanel({ isOpen: true, town: selectedTown })}
+                        className={`px-3 py-1 rounded-lg ${uiConfig.colors.secondary} hover:${uiConfig.colors.primary} transition-colors flex items-center justify-center text-sm font-medium`}
+                        title="View Data Quality Report"
+                      >
+                        QS-Report
+                      </button>
+                      {/* Wikipedia Button */}
+                      <button
+                        onClick={() => setWikipediaOpen(true)}
+                        className={`p-2 rounded-lg ${uiConfig.colors.secondary} hover:${uiConfig.colors.primary} transition-colors flex items-center justify-center`}
+                        title="View Wikipedia"
+                      >
+                        <img 
+                          src="https://en.wikipedia.org/static/favicon/wikipedia.ico"
+                          alt="Wikipedia"
+                          className="w-5 h-5"
+                          onError={(e) => {
+                            // Fallback to text if favicon fails to load
+                            e.target.style.display = 'none';
+                            e.target.parentElement.innerHTML = '<span class="font-bold text-sm">W</span>';
+                          }}
+                        />
+                      </button>
+                    </div>
                   </div>
                   {selectedTown._errors.length > 0 && (
                     <div className={`mt-2 p-3 ${uiConfig.colors.statusError} rounded border ${uiConfig.colors.border}`}>
@@ -1704,6 +1714,7 @@ const TownsManager = () => {
           </div>
         </>
       )}
+      </div>
     </div>
   );
 };
