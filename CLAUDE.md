@@ -50,6 +50,97 @@ After the 40-hour disaster of August 24, 2025, these rules are NON-NEGOTIABLE:
 Remember: Tilman's worst professional experience was caused by me debugging 
 the wrong layer for 40 hours. The fix took 10 minutes once we looked in the right place.
 
+🔴 MANDATORY: SAFE RETURN POINT PROTOCOL
+=========================================
+When user says ANY of: "safe return point", "git push", "gitpush", "backup", "checkpoint", "save point"
+
+YOU MUST AUTOMATICALLY:
+
+1. **CREATE DATABASE SNAPSHOT**
+```bash
+node create-database-snapshot.js
+```
+
+2. **CREATE DETAILED RECOVERY DOCUMENT** with this EXACT format:
+```markdown
+# 🟢 RECOVERY CHECKPOINT - [DATE AND TIME]
+## SYSTEM STATE: [WORKING/PARTIAL/BROKEN]
+
+### ✅ WHAT'S WORKING
+- [DETAILED list of every working feature]
+- [Include specific examples and test cases]
+- [Note which bugs were fixed]
+
+### 🔧 RECENT CHANGES
+- [EXACT files modified with line numbers]
+- [EXACT code changes made]
+- [WHY each change was made]
+
+### 📊 DATABASE STATE  
+- Snapshot: [exact path]
+- Records count for each table
+- Key data characteristics
+- Any special data conditions
+
+### 🎯 WHAT WAS ACHIEVED
+- [VERY DETAILED description of accomplishments]
+- [Problems that were solved]
+- [Features that were added]
+- [Performance improvements]
+- [Bug fixes with before/after behavior]
+
+### 🔍 HOW TO VERIFY IT'S WORKING
+- [Step-by-step testing instructions]
+- [Expected results for each test]
+- [Edge cases to check]
+
+### ⚠️ KNOWN ISSUES
+- [Any remaining bugs]
+- [Partial implementations]
+- [Things to watch out for]
+
+### 🔄 HOW TO ROLLBACK
+- Exact commands to restore database
+- Exact git commands to revert
+- Any additional steps needed
+
+### 🔎 SEARCH KEYWORDS
+[List 10+ searchable terms for finding this checkpoint later]
+```
+
+3. **GIT COMMIT WITH VERBOSE MESSAGE**
+```bash
+git add -A
+git commit -m "[EMOJI] CHECKPOINT: [Short description]
+
+WHAT WAS ACHIEVED:
+[5-10 lines describing accomplishments]
+
+PROBLEMS SOLVED:
+[List each fixed issue]
+
+CURRENT STATE:
+[Describe system status]
+
+DATABASE:
+[Snapshot timestamp and contents]
+
+HOW TO RESTORE:
+[Brief restoration instructions]"
+```
+
+4. **PUSH TO REMOTE**
+```bash
+git push origin main
+```
+
+5. **UPDATE latest-checkpoint.md**
+- Always maintain a pointer to the most recent checkpoint
+- Include quick summary of last 5 checkpoints
+
+REMEMBER: Tilman couldn't find recovery points during the 40-hour disaster.
+NEVER let that happen again. VERBOSE, SEARCHABLE, DETAILED documentation.
+
 Scout2Retire Development Guide - v2.3
 🚨 CRITICAL: MCP SERVERS & LOCALHOST - USE THEM!
 LOCALHOST ALWAYS: http://localhost:5173/
