@@ -1,3 +1,4 @@
+import React from 'react';
 import { Heart, MapPin } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
 

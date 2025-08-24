@@ -1,3 +1,5 @@
+import React from 'react';
+
 /**
  * HeaderSpacer - Adds spacing for fixed header on all devices
  * This prevents content from going under the fixed header
