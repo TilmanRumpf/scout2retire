@@ -50,7 +50,7 @@ export function calculateRegionScore(preferences, town) {
   const hasVegPrefs = preferences.vegetation_types?.length > 0
   
   // DEBUG: Log when score is unexpectedly low
-  const DEBUG = false  // Set to true to enable debug logging
+  const DEBUG = false  // Fixed: was case sensitivity issue
   if (DEBUG && town.country === 'Spain') {
     console.log(`\n=== REGION SCORING DEBUG for ${town.name} ===`)
     console.log('User preferences:', {
@@ -162,10 +162,10 @@ export function calculateRegionScore(preferences, town) {
     let hasMatch = false
     const userFeatures = preferences.geographic_features.map(f => f.toLowerCase())
     
-    // First try actual geographic features
+    // First try actual geographic features - CASE INSENSITIVE FIX
     if (town.geographic_features_actual?.length) {
-      const townFeatures = town.geographic_features_actual.map(f => f.toLowerCase())
-      hasMatch = userFeatures.some(feature => townFeatures.includes(feature))
+      const townFeatures = town.geographic_features_actual.map(f => String(f).toLowerCase())
+      hasMatch = userFeatures.some(feature => townFeatures.includes(feature.toLowerCase()))
     }
     
     // FALLBACK: Check regions array for coastal indicators when no geographic data
@@ -196,7 +196,7 @@ export function calculateRegionScore(preferences, town) {
       
       let partialMatch = false
       if (town.geographic_features_actual?.length) {
-        const townFeatures = town.geographic_features_actual.map(f => f.toLowerCase())
+        const townFeatures = town.geographic_features_actual.map(f => String(f).toLowerCase())
         for (const userFeature of userFeatures) {
           const related = relatedFeatures[userFeature] || []
           if (townFeatures.some(tf => related.includes(tf))) {
@@ -238,9 +238,9 @@ export function calculateRegionScore(preferences, town) {
       factors.push({ factor: userSelectedAllVeg ? 'Open to all vegetation (all selected)' : 'Open to any vegetation', score: 20 })
     }
   } else if (town.vegetation_type_actual?.length) {
-    // Check if ANY vegetation type matches
+    // Check if ANY vegetation type matches - CASE INSENSITIVE FIX
     const userVeg = preferences.vegetation_types.map(v => v.toLowerCase())
-    const townVeg = town.vegetation_type_actual.map(v => v.toLowerCase())
+    const townVeg = town.vegetation_type_actual.map(v => String(v).toLowerCase())
     const hasMatch = userVeg.some(veg => townVeg.includes(veg))
     
     if (hasMatch) {

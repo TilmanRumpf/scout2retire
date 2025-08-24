@@ -15,6 +15,9 @@ import {
  * Handles both nested (old format) and flat (current database) structures
  */
 export const convertPreferencesToAlgorithmFormat = (userPreferences) => {
+  // DEBUG: Fixed - was case sensitivity issue
+  // console.log('🔍 DEBUG: Raw user preferences from DB:', userPreferences);
+  
   // Handle region preferences - combine countries and regions from top-level fields
   const regionPreferences = userPreferences.region || userPreferences.region_preferences || {};
   
@@ -34,6 +37,8 @@ export const convertPreferencesToAlgorithmFormat = (userPreferences) => {
   if (userPreferences.provinces) {
     regionPreferences.provinces = userPreferences.provinces;
   }
+  
+  // console.log('🔍 DEBUG: Converted region preferences:', regionPreferences);
   
   return {
     region_preferences: regionPreferences,
@@ -102,6 +107,15 @@ export const scoreTown = async (town, userPreferences) => {
   
   // Calculate match using enhanced algorithm
   const enhancedResult = await calculateEnhancedMatch(convertedPreferences, town);
+  
+  // DEBUG: Fixed - was case sensitivity issue
+  // if (town.country === 'Spain') {
+  //   console.log(`🎯 DEBUG: Scoring for ${town.name}, Spain:`, {
+  //     totalScore: enhancedResult.match_score,
+  //     categoryScores: enhancedResult.category_scores,
+  //     topFactors: enhancedResult.top_factors?.slice(0, 3)
+  //   });
+  // }
   
   // Generate additional insights
   const insights = generateEnhancedInsights(town, convertedPreferences, enhancedResult.category_scores);

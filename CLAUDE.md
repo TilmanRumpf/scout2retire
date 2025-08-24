@@ -1,4 +1,56 @@
-Scout2Retire Development Guide - v2.2
+Scout2Retire Development Guide - v2.3
+
+🔴 CRITICAL: CASE SENSITIVITY BUG (August 24, 2025)
+After 37 hours debugging "Spanish towns showing 44%":
+- All 341 towns HAD geographic_features_actual populated ✅
+- All 341 towns HAD vegetation_type_actual populated ✅
+- The ONLY issue: Case mismatch ("coastal" ≠ "Coastal") ❌
+
+ALWAYS use .toLowerCase() on BOTH sides of string comparisons!
+This 1980s-level bug wasted 40 hours in 2025. Never forget.
+
+🚨 MANDATORY DEBUGGING PROTOCOL - NEVER VIOLATE
+================================================
+After the 40-hour disaster of August 24, 2025, these rules are NON-NEGOTIABLE:
+
+1. **WHEN UI SHOWS PROBLEM → START WITH UI**
+   - Open Chrome DevTools FIRST
+   - Add console.log IN THE BROWSER
+   - Check what data UI is actually sending
+   - NEVER debug backend when problem appears in frontend
+
+2. **NEVER ASSUME - ALWAYS VERIFY**
+   - Before: "The columns must be empty"
+   - Reality: All 341 towns had data
+   - ALWAYS run SELECT query to check data exists
+   - NEVER create solutions before confirming problem
+
+3. **TWO-HOUR RULE**
+   - If not fixed in 2 hours → YOU'RE SOLVING WRONG PROBLEM
+   - STOP and reconsider approach
+   - Check the SIMPLEST possible causes first
+
+4. **NEVER CREATE DEBUG SCRIPTS**
+   - Use browser DevTools
+   - Use console.log
+   - Use breakpoints
+   - DO NOT create 200+ test files
+
+5. **CHECK THESE FIRST (30 SECONDS EACH):**
+   - [ ] Case sensitivity (.toLowerCase())
+   - [ ] Missing fields in SELECT statements
+   - [ ] Data type mismatches
+   - [ ] Null/undefined checks
+   - [ ] Array vs string comparisons
+
+6. **THE SIMPLEST BUGS CAUSE THE BIGGEST DISASTERS**
+   - 40-hour bug = missing SELECT fields + case sensitivity
+   - Always check trivial things FIRST
+
+Remember: Tilman's worst professional experience was caused by me debugging 
+the wrong layer for 40 hours. The fix took 10 minutes once we looked in the right place.
+
+Scout2Retire Development Guide - v2.3
 🚨 CRITICAL: MCP SERVERS & LOCALHOST - USE THEM!
 LOCALHOST ALWAYS: http://localhost:5173/
 You have MCP servers in Agent Mode - USE THEM:

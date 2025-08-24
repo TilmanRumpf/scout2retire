@@ -124,7 +124,9 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       outdoor_rating, cultural_rating, nightlife_rating,
       expat_population, expat_community_size, english_proficiency_level,
       pace_of_life_actual, urban_rural_character,
-      visa_requirements, residency_path_info, tax_rates
+      visa_requirements, residency_path_info, tax_rates,
+      geographic_features_actual, vegetation_type_actual,
+      geo_region, regions
     `;
     let query = supabase.from('towns').select(selectColumns);
     

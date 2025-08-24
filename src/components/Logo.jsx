@@ -1,3 +1,4 @@
+import React from 'react';
 import { useTheme } from '../contexts/useTheme';
 import OptimizedImage from './OptimizedImage';
 import { useNavigate } from 'react-router-dom';

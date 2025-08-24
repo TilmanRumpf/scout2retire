@@ -1,6 +1,6 @@
 // Option 3: Icon-based Compact Design
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, X, Globe, DollarSign, Crosshair, SortDesc, Search } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { uiConfig } from '../styles/uiConfig';
 

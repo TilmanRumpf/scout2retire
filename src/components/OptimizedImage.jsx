@@ -1,5 +1,5 @@
 // Unified image component with optional lazy loading
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapPin } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
 
