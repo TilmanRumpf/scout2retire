@@ -272,10 +272,53 @@ export const fetchFavorites = async (userId, component = 'unknown') => {
   }
 };
 
-// Get town of the day based on user preferences
+// Define geographic neighbor relationships for smart daily town selection
+const COUNTRY_NEIGHBORS = {
+  'Spain': ['Portugal', 'France', 'Italy', 'Morocco', 'Malta'],
+  'Portugal': ['Spain', 'France', 'Morocco'],
+  'France': ['Spain', 'Italy', 'Switzerland', 'Belgium', 'Germany', 'United Kingdom', 'Monaco'],
+  'Italy': ['France', 'Switzerland', 'Austria', 'Slovenia', 'Croatia', 'Greece', 'Malta'],
+  'Greece': ['Italy', 'Turkey', 'Bulgaria', 'Albania', 'Cyprus'],
+  'Netherlands': ['Belgium', 'Germany', 'United Kingdom', 'Denmark'],
+  'Germany': ['Netherlands', 'Belgium', 'France', 'Switzerland', 'Austria', 'Czech Republic', 'Poland', 'Denmark'],
+  'United States': ['Canada', 'Mexico'],
+  'Canada': ['United States'],
+  'Mexico': ['United States', 'Guatemala', 'Belize'],
+  'United Kingdom': ['Ireland', 'France', 'Netherlands', 'Belgium'],
+  'Ireland': ['United Kingdom'],
+  'Belgium': ['Netherlands', 'Germany', 'France', 'Luxembourg'],
+  'Switzerland': ['France', 'Italy', 'Austria', 'Germany'],
+  'Austria': ['Germany', 'Switzerland', 'Italy', 'Slovenia', 'Czech Republic', 'Hungary'],
+  'Australia': ['New Zealand'],
+  'New Zealand': ['Australia']
+};
+
+// Define regional groups for expanded neighbor matching
+const REGION_GROUPS = {
+  'Mediterranean': ['Spain', 'France', 'Italy', 'Greece', 'Croatia', 'Turkey', 'Cyprus', 'Malta', 'Portugal', 'Morocco', 'Tunisia', 'Egypt'],
+  'Nordic': ['Sweden', 'Norway', 'Denmark', 'Finland', 'Iceland'],
+  'Central Europe': ['Germany', 'Austria', 'Switzerland', 'Czech Republic', 'Poland', 'Hungary', 'Slovakia'],
+  'Balkans': ['Croatia', 'Slovenia', 'Serbia', 'Albania', 'Greece', 'Bosnia and Herzegovina', 'Montenegro', 'North Macedonia', 'Bulgaria'],
+  'Iberian': ['Spain', 'Portugal'],
+  'British Isles': ['United Kingdom', 'Ireland'],
+  'Benelux': ['Netherlands', 'Belgium', 'Luxembourg'],
+  'Caribbean': ['Barbados', 'Jamaica', 'Bahamas', 'Trinidad and Tobago', 'Dominican Republic'],
+  'South America': ['Argentina', 'Chile', 'Uruguay', 'Brazil', 'Peru', 'Colombia', 'Ecuador', 'Bolivia', 'Paraguay', 'Venezuela']
+};
+
+// Define continent mappings for fallback
+const CONTINENT_MAPPING = {
+  'Europe': ['Spain', 'France', 'Italy', 'Greece', 'Portugal', 'Germany', 'Netherlands', 'Belgium', 'United Kingdom', 'Ireland', 'Switzerland', 'Austria', 'Poland', 'Czech Republic', 'Hungary', 'Croatia', 'Slovenia', 'Denmark', 'Sweden', 'Norway', 'Finland', 'Iceland', 'Malta', 'Cyprus', 'Bulgaria', 'Romania', 'Serbia', 'Albania', 'Montenegro', 'North Macedonia', 'Bosnia and Herzegovina', 'Slovakia', 'Latvia', 'Estonia', 'Lithuania', 'Monaco', 'Luxembourg'],
+  'North America': ['United States', 'Canada', 'Mexico'],
+  'South America': ['Argentina', 'Brazil', 'Chile', 'Peru', 'Colombia', 'Ecuador', 'Uruguay', 'Paraguay', 'Bolivia', 'Venezuela'],
+  'Asia': ['Japan', 'Thailand', 'Vietnam', 'Malaysia', 'Singapore', 'Indonesia', 'Philippines', 'India', 'China', 'South Korea'],
+  'Oceania': ['Australia', 'New Zealand', 'Fiji'],
+  'Africa': ['Morocco', 'Tunisia', 'Egypt', 'South Africa', 'Kenya']
+};
+
+// Get town of the day with SMART geographic relevance
 export const getTownOfTheDay = async (userId) => {
   try {
-    
     // DO NOT normalize user ID
     const userIdString = String(userId).trim();
     
@@ -285,9 +328,7 @@ export const getTownOfTheDay = async (userId) => {
     
     if (!onboardingSuccess || !preferences) {
       console.log("No onboarding preferences found for daily town");
-      // Continue without preferences - town will be selected without personalization
     }
-
 
     // Get existing favorites to exclude them
     const { data: favorites, error: favError } = await supabase
@@ -300,72 +341,199 @@ export const getTownOfTheDay = async (userId) => {
       return { success: false, error: favError };
     }
 
-    // Extract favorite town IDs
     const favoriteTownIds = favorites ? favorites.map(fav => fav.town_id) : [];
 
-    // Get a random town not in favorites
-    const selectColumnsRandom = `
-      id, name, country, population, region,
+    // Extract user's geographic preferences
+    const userCountries = preferences?.region_preferences?.countries || preferences?.region?.countries || [];
+    const userRegions = preferences?.region_preferences?.regions || preferences?.region?.regions || [];
+    
+    // Build neighbor countries list based on user preferences
+    let neighborCountries = new Set();
+    
+    // Add direct neighbors of selected countries
+    userCountries.forEach(country => {
+      const neighbors = COUNTRY_NEIGHBORS[country] || [];
+      neighbors.forEach(n => neighborCountries.add(n));
+    });
+    
+    // Add countries from same regional groups
+    userRegions.forEach(region => {
+      // Check if user selected a known region group
+      Object.keys(REGION_GROUPS).forEach(groupName => {
+        if (region.toLowerCase().includes(groupName.toLowerCase()) || groupName.toLowerCase().includes(region.toLowerCase())) {
+          REGION_GROUPS[groupName].forEach(c => neighborCountries.add(c));
+        }
+      });
+    });
+    
+    // Special handling for Mediterranean - include ALL Spanish towns if Mediterranean selected
+    if (userRegions.some(r => r.toLowerCase().includes('mediterranean'))) {
+      neighborCountries.add('Spain');
+      neighborCountries.add('Portugal'); // Portugal is culturally similar to Mediterranean
+    }
+    
+    // Build continent list for user's countries
+    let userContinents = new Set();
+    userCountries.forEach(country => {
+      Object.entries(CONTINENT_MAPPING).forEach(([continent, countries]) => {
+        if (countries.includes(country)) {
+          userContinents.add(continent);
+        }
+      });
+    });
+    
+    // Prepare base query
+    const selectColumns = `
+      id, name, country, population, region, geo_region, regions,
       image_url_1, image_url_2, image_url_3,
-      latitude, longitude, description
+      latitude, longitude, description,
+      geographic_features_actual, vegetation_type_actual
     `;
-    let query = supabase
+    
+    // TIER 1: Exact match - user's selected countries
+    if (userCountries.length > 0) {
+      let tier1Query = supabase
+        .from('towns')
+        .select(selectColumns)
+        .in('country', userCountries)
+        .not('image_url_1', 'is', null)
+        .not('image_url_1', 'eq', '');
+      
+      if (favoriteTownIds.length > 0) {
+        tier1Query = tier1Query.not('id', 'in', `(${favoriteTownIds.join(',')})`);
+      }
+      
+      const { data: tier1Towns } = await tier1Query;
+      
+      if (tier1Towns && tier1Towns.length > 0) {
+        console.log(`Daily town: Found ${tier1Towns.length} towns in Tier 1 (exact country match)`);
+        const randomIndex = Math.floor(Math.random() * tier1Towns.length);
+        let selectedTown = tier1Towns[randomIndex];
+        
+        // Enhance with scores and return
+        if (preferences) {
+          try {
+            const { scoreTown } = await import('./unifiedScoring');
+            selectedTown = await scoreTown(selectedTown, preferences);
+          } catch (error) {
+            console.error("Error calculating match scores:", error);
+          }
+        }
+        return { success: true, town: selectedTown };
+      }
+    }
+    
+    // TIER 2: Neighbor countries
+    if (neighborCountries.size > 0) {
+      let tier2Query = supabase
+        .from('towns')
+        .select(selectColumns)
+        .in('country', Array.from(neighborCountries))
+        .not('image_url_1', 'is', null)
+        .not('image_url_1', 'eq', '');
+      
+      if (favoriteTownIds.length > 0) {
+        tier2Query = tier2Query.not('id', 'in', `(${favoriteTownIds.join(',')})`);
+      }
+      
+      const { data: tier2Towns } = await tier2Query;
+      
+      if (tier2Towns && tier2Towns.length > 0) {
+        console.log(`Daily town: Found ${tier2Towns.length} towns in Tier 2 (neighbor countries)`);
+        const randomIndex = Math.floor(Math.random() * tier2Towns.length);
+        let selectedTown = tier2Towns[randomIndex];
+        
+        // Enhance with scores and return
+        if (preferences) {
+          try {
+            const { scoreTown } = await import('./unifiedScoring');
+            selectedTown = await scoreTown(selectedTown, preferences);
+          } catch (error) {
+            console.error("Error calculating match scores:", error);
+          }
+        }
+        return { success: true, town: selectedTown };
+      }
+    }
+    
+    // TIER 3: Same continent
+    if (userContinents.size > 0) {
+      // Get all countries in user's continents
+      let continentCountries = new Set();
+      userContinents.forEach(continent => {
+        const countries = CONTINENT_MAPPING[continent] || [];
+        countries.forEach(c => continentCountries.add(c));
+      });
+      
+      if (continentCountries.size > 0) {
+        let tier3Query = supabase
+          .from('towns')
+          .select(selectColumns)
+          .in('country', Array.from(continentCountries))
+          .not('image_url_1', 'is', null)
+          .not('image_url_1', 'eq', '');
+        
+        if (favoriteTownIds.length > 0) {
+          tier3Query = tier3Query.not('id', 'in', `(${favoriteTownIds.join(',')})`);
+        }
+        
+        const { data: tier3Towns } = await tier3Query;
+        
+        if (tier3Towns && tier3Towns.length > 0) {
+          console.log(`Daily town: Found ${tier3Towns.length} towns in Tier 3 (same continent)`);
+          const randomIndex = Math.floor(Math.random() * tier3Towns.length);
+          let selectedTown = tier3Towns[randomIndex];
+          
+          // Enhance with scores and return
+          if (preferences) {
+            try {
+              const { scoreTown } = await import('./unifiedScoring');
+              selectedTown = await scoreTown(selectedTown, preferences);
+            } catch (error) {
+              console.error("Error calculating match scores:", error);
+            }
+          }
+          return { success: true, town: selectedTown };
+        }
+      }
+    }
+    
+    // TIER 4: Random fallback (any town)
+    console.log("Daily town: No geographic matches, falling back to random selection");
+    let tier4Query = supabase
       .from('towns')
-      .select(selectColumnsRandom);
-
-    // Filter for towns with photos (quality control) - CRITICAL SAFETY FEATURE
-    query = query
+      .select(selectColumns)
       .not('image_url_1', 'is', null)
-      .not('image_url_1', 'eq', '')
-      .not('image_url_1', 'ilike', 'NULL')  // Filter out 'NULL' string
-      .not('image_url_1', 'eq', 'null');   // Filter out lowercase 'null' string
-
-    // Exclude favorited towns
+      .not('image_url_1', 'eq', '');
+    
     if (favoriteTownIds.length > 0) {
-      query = query.not('id', 'in', `(${favoriteTownIds.join(',')})`);
+      tier4Query = tier4Query.not('id', 'in', `(${favoriteTownIds.join(',')})`);
     }
-
-    // Apply basic filtering based on preferences if available
-    if (preferences && preferences.budget && preferences.budget.monthly_budget) {
-      query = query.lte('cost_index', preferences.budget.monthly_budget);
-    }
-
-    // Get towns and randomize
-    const { data: towns, error: townError } = await query;
-
+    
+    const { data: allTowns, error: townError } = await tier4Query;
+    
     if (townError) {
       console.error("Error fetching towns for daily selection:", townError);
       return { success: false, error: townError };
     }
-
-    if (!towns || towns.length === 0) {
+    
+    if (!allTowns || allTowns.length === 0) {
       return { success: false, error: { message: "No towns available" } };
     }
-
-    // Randomly select one town
-    const randomIndex = Math.floor(Math.random() * towns.length);
-    let selectedTown = towns[randomIndex];
-
-    // If we have preferences, enhance the town with match scores
+    
+    const randomIndex = Math.floor(Math.random() * allTowns.length);
+    let selectedTown = allTowns[randomIndex];
+    
+    // Enhance with scores and return
     if (preferences) {
       try {
-        // Use unified scoring function
         const { scoreTown } = await import('./unifiedScoring');
-        
-        // Score the town using unified function
         selectedTown = await scoreTown(selectedTown, preferences);
-        
-        console.log("Enhanced daily town with scores:", {
-          name: selectedTown.name,
-          matchScore: selectedTown.matchScore,
-          categoryScores: selectedTown.categoryScores
-        });
       } catch (error) {
-        console.error("Error calculating match scores for daily town:", error);
-        // Continue without scores if calculation fails
+        console.error("Error calculating match scores:", error);
       }
     }
-
+    
     return { success: true, town: selectedTown };
   } catch (error) {
     console.error("Unexpected error getting town of the day:", error);
@@ -374,7 +542,7 @@ export const getTownOfTheDay = async (userId) => {
 };
 
 // Log town view activity
-export const logTownView = async (userId, townId, townName, townCountry) => {
+const logTownView = async (userId, townId, townName, townCountry) => {
   try {
     const userIdString = String(userId).trim();
     const normalizedTownId = String(townId).toLowerCase().trim();
