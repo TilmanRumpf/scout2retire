@@ -4,11 +4,49 @@
  */
 
 import { calculateEnhancedMatch } from './enhancedMatchingAlgorithm';
-import { 
-  generateEnhancedInsights, 
-  generateEnhancedWarnings, 
-  generateEnhancedHighlights 
-} from './enhancedMatchingHelpers';
+
+/**
+ * Simple implementations of insight generation functions
+ * (Previously in enhancedMatchingHelpers.js, now simplified inline)
+ */
+const generateEnhancedInsights = (town, _preferences, scores) => {
+  const insights = [];
+  
+  // Add insights based on high-scoring categories
+  if (scores.region >= 80) insights.push(`Excellent location match in ${town.country}`);
+  if (scores.climate >= 80) insights.push(`Climate aligns well with your preferences`);
+  if (scores.culture >= 80) insights.push(`Cultural fit matches your lifestyle`);
+  if (scores.budget >= 80) insights.push(`Very affordable for your budget`);
+  if (scores.admin >= 80) insights.push(`Healthcare and safety meet your standards`);
+  if (scores.hobbies >= 80) insights.push(`Many activities you enjoy are available`);
+  
+  return insights;
+};
+
+const generateEnhancedWarnings = (town, _preferences) => {
+  const warnings = [];
+  
+  // Add basic warnings
+  if (!town.image_url_1) warnings.push('No photos available yet');
+  if (town.safety_score && town.safety_score < 5) warnings.push('Safety concerns may need investigation');
+  if (town.healthcare_score && town.healthcare_score < 5) warnings.push('Healthcare may be limited');
+  
+  return warnings;
+};
+
+const generateEnhancedHighlights = (_town, scores) => {
+  const highlights = [];
+  
+  // Find the highest scoring categories
+  const sortedScores = Object.entries(scores).sort(([,a], [,b]) => b - a);
+  sortedScores.slice(0, 3).forEach(([category, score]) => {
+    if (score >= 70) {
+      highlights.push(`Strong ${category} match (${Math.round(score)}%)`);
+    }
+  });
+  
+  return highlights;
+};
 
 /**
  * Convert user preferences from database format to enhanced algorithm format
