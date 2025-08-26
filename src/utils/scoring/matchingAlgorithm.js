@@ -10,8 +10,8 @@
  * @module matchingAlgorithm
  */
 
-import supabase from './supabaseClient';
-import { getOnboardingProgress } from './onboardingUtils';
+import supabase from '../supabaseClient';
+import { getOnboardingProgress } from '../userpreferences/onboardingUtils';
 import { scoreTownsBatch } from './unifiedScoring';
 
 // Conversion function moved to unifiedScoring.js to avoid duplication

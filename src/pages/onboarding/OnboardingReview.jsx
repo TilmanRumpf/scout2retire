@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../../utils/authUtils';
-import { getOnboardingProgress, completeOnboarding } from '../../utils/onboardingUtils';
+import { getOnboardingProgress, completeOnboarding } from '../../utils/userpreferences/onboardingUtils';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 

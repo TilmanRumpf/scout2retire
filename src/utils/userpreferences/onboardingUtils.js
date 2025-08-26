@@ -1,7 +1,7 @@
 // src/utils/onboardingUtils.js
 // Updated to ensure data structure matches exactly what Supabase expects
-import supabase from './supabaseClient';
-import { clearPersonalizedCache } from './matchingAlgorithm';
+import supabase from '../supabaseClient';
+import { clearPersonalizedCache } from '../scoring';
 
 // Transformation function to ensure data matches Supabase format
 const transformAdministrationData = (data) => {

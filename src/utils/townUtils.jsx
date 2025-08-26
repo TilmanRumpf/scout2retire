@@ -1,6 +1,6 @@
 import supabase from './supabaseClient';
 import { logTownActivity } from './journalUtils';
-import { getPersonalizedTowns } from './matchingAlgorithm'; // NEW: Added import
+import { getPersonalizedTowns } from './scoring'; // NEW: Added import
 
 // Town management
 export const fetchTowns = async (filters = {}) => {

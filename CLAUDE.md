@@ -1,5 +1,39 @@
 Scout2Retire Development Guide - v2.3
 
+# 🚨 MANDATORY FILE ORGANIZATION RULES
+
+## NEVER create files in root directory!
+
+### Documentation (.md files)
+- **Algorithm docs** → `docs/algorithms/`
+- **Database docs** → `docs/database/`
+- **Recovery docs** → `docs/recovery/`
+- **Session reports** → `docs/project-history/`
+- **Technical guides** → `docs/technical/`
+- **ONLY IN ROOT**: CLAUDE.md, LATEST_CHECKPOINT.md, README.md
+
+### SQL Files
+- **Migrations** → `supabase/migrations/` ONLY
+- **Utilities** → `database-utilities/`
+- **Archive old scripts** → `archive/sql-scripts/`
+- **NEVER in root!**
+
+### JavaScript Files
+- **Utilities** → `database-utilities/`
+- **Tests** → Create in `tests/` or delete immediately
+- **Debug scripts** → Archive immediately after use
+- **Scoring system** → `src/utils/scoring/`
+- **ONLY IN ROOT**: Config files (vite, tailwind, postcss)
+
+### Test/Debug Files
+- **NEVER** leave test-*.js or debug-*.js in root
+- **Archive immediately** to `archive/debug-*/`
+- **Or delete** if not needed for reference
+
+**If you create files in wrong place, I WILL move them immediately!**
+
+---
+
 🔴 CRITICAL: CASE SENSITIVITY BUG (August 24, 2025)
 After 37 hours debugging "Spanish towns showing 44%":
 - All 341 towns HAD geographic_features_actual populated ✅

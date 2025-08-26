@@ -4,7 +4,7 @@ import UnifiedHeader from './UnifiedHeader';
 import HeaderSpacer from './HeaderSpacer';
 import SwipeableOnboardingContent from './SwipeableOnboardingContent';
 import { MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign } from 'lucide-react';
-import { getOnboardingProgress } from '../utils/onboardingUtils';
+import { getOnboardingProgress } from '../utils/userpreferences/onboardingUtils';
 import { getCurrentUser } from '../utils/authUtils';
 
 export default function OnboardingLayout() {

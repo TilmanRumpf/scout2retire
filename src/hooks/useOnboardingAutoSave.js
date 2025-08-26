@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
-import { saveOnboardingStep } from '../utils/onboardingUtils';
+import { saveOnboardingStep } from '../utils/userpreferences/onboardingUtils';
 
 /**
  * Hook to enable auto-save functionality for onboarding pages

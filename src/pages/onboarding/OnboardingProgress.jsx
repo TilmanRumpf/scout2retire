@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../../utils/authUtils';
-import { getOnboardingProgress } from '../../utils/onboardingUtils';
+import { getOnboardingProgress } from '../../utils/userpreferences/onboardingUtils';
 import UnifiedHeader from '../../components/UnifiedHeader';
 import HeaderSpacer from '../../components/HeaderSpacer';
 import { 
