@@ -16,7 +16,7 @@ const generateEnhancedInsights = (town, _preferences, scores) => {
   if (scores.region >= 80) insights.push(`Excellent location match in ${town.country}`);
   if (scores.climate >= 80) insights.push(`Climate aligns well with your preferences`);
   if (scores.culture >= 80) insights.push(`Cultural fit matches your lifestyle`);
-  if (scores.budget >= 80) insights.push(`Very affordable for your budget`);
+  if (scores.cost >= 80) insights.push(`Very affordable for your budget`);
   if (scores.admin >= 80) insights.push(`Healthcare and safety meet your standards`);
   if (scores.hobbies >= 80) insights.push(`Many activities you enjoy are available`);
   
@@ -118,7 +118,7 @@ export const convertPreferencesToAlgorithmFormat = (userPreferences) => {
       stay_duration: userPreferences.stay_duration,
       residency_path: userPreferences.residency_path
     },
-    budget_preferences: userPreferences.costs || userPreferences.budget_preferences || {
+    cost_preferences: userPreferences.costs || userPreferences.cost_preferences || {
       // Extract budget fields from root level
       total_monthly_budget: userPreferences.total_monthly_budget,
       max_monthly_rent: userPreferences.max_monthly_rent,
@@ -171,15 +171,12 @@ export const scoreTown = async (town, userPreferences) => {
   const confidence = avgScore >= 80 ? 'High' : avgScore >= 60 ? 'Medium' : 'Low';
   
   // Calculate value rating
-  const valueRating = enhancedResult.category_scores.budget >= 80 ? 5 : 
-                     enhancedResult.category_scores.budget >= 60 ? 4 :
-                     enhancedResult.category_scores.budget >= 40 ? 3 : 2;
+  const valueRating = enhancedResult.category_scores.cost >= 80 ? 5 : 
+                     enhancedResult.category_scores.cost >= 60 ? 4 :
+                     enhancedResult.category_scores.cost >= 40 ? 3 : 2;
   
-  // Map category scores with correct naming (admin -> administration) for UI compatibility
-  const mappedCategoryScores = {
-    ...enhancedResult.category_scores,
-    administration: enhancedResult.category_scores.admin // Map admin to administration for UI
-  };
+  // Use category scores directly (no mapping needed anymore)
+  const mappedCategoryScores = enhancedResult.category_scores;
   
   return {
     ...town,

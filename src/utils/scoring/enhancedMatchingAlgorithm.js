@@ -1,5 +1,5 @@
 // Enhanced Matching Algorithm that fully utilizes new town data fields
-// Maps directly to the 6 onboarding sections: Region, Climate, Culture, Hobbies, Admin, Budget
+// Maps directly to the 6 onboarding sections: Region, Climate, Culture, Hobbies, Administration, Cost
 
 import supabase from '../supabaseClient.js'
 import { mapToStandardValue } from './helpers/climateInference.js'
@@ -12,8 +12,8 @@ const CATEGORY_WEIGHTS = {
   climate: 15,     // Climate preferences 
   culture: 15,     // Cultural fit
   hobbies: 10,     // Activities & interests
-  admin: 20,       // Healthcare, safety, visa
-  budget: 20       // Financial fit
+  administration: 20,       // Healthcare, safety, visa
+  cost: 20       // Financial fit
 }
 
 // Helper function to calculate array overlap score
@@ -1741,7 +1741,7 @@ export function calculateAdminScore(preferences, town) {
 }
 
 // 6. BUDGET MATCHING (20% of total)
-export function calculateBudgetScore(preferences, town) {
+export function calculateCostScore(preferences, town) {
   let score = 0
   let factors = []
   
@@ -1753,7 +1753,7 @@ export function calculateBudgetScore(preferences, town) {
   if (!hasBudgetPrefs) {
     score = 100
     factors.push({ factor: 'Open to any budget situation', score: 100 })
-    return { score, factors, category: 'Budget' }
+    return { score, factors, category: 'Cost' }
   }
   
   // Overall budget fit (40 points)
@@ -1769,7 +1769,7 @@ export function calculateBudgetScore(preferences, town) {
     // If we don't have cost data, give neutral score
     score += 20
     factors.push({ factor: 'Cost data not available', score: 20 })
-    return { score, factors, category: 'Budget' }
+    return { score, factors, category: 'Cost' }
   }
   
   const budgetRatio = userBudget / townCost
@@ -1849,7 +1849,7 @@ export function calculateBudgetScore(preferences, town) {
   return {
     score: Math.max(0, Math.min(score, 100)),
     factors,
-    category: 'Budget'
+    category: 'Cost'
   }
 }
 
@@ -1898,7 +1898,7 @@ function calculateDataCompleteness(town) {
  * - Only when users SELECT preferences do we filter/score based on matching
  * 
  * Example: User with only budget preference gets:
- * - Budget: Scored based on their budget vs town cost
+ * - Cost: Scored based on their budget vs town cost
  * - All other categories: 100% (open to any option)
  * 
  * This ensures users see many options unless they specifically narrow them down
@@ -1913,7 +1913,7 @@ export async function calculateEnhancedMatch(userPreferences, town) {
     ...userPreferences.admin_preferences || {},
     citizenship: userPreferences.current_status?.citizenship
   }, town)
-  const budgetResult = calculateBudgetScore(userPreferences.budget_preferences || {}, town)
+  const costResult = calculateCostScore(userPreferences.cost_preferences || {}, town)
   
   
   // Calculate weighted total score
@@ -1922,8 +1922,8 @@ export async function calculateEnhancedMatch(userPreferences, town) {
     (climateResult.score * CATEGORY_WEIGHTS.climate / 100) +
     (cultureResult.score * CATEGORY_WEIGHTS.culture / 100) +
     (hobbiesResult.score * CATEGORY_WEIGHTS.hobbies / 100) +
-    (adminResult.score * CATEGORY_WEIGHTS.admin / 100) +
-    (budgetResult.score * CATEGORY_WEIGHTS.budget / 100)
+    (adminResult.score * CATEGORY_WEIGHTS.administration / 100) +
+    (costResult.score * CATEGORY_WEIGHTS.cost / 100)
   )
   
   // No bonuses - pure weighted scoring only
@@ -1938,7 +1938,7 @@ export async function calculateEnhancedMatch(userPreferences, town) {
     ...cultureResult.factors,
     ...hobbiesResult.factors,
     ...adminResult.factors,
-    ...budgetResult.factors
+    ...costResult.factors
   ]
   
   // No data completeness factors
@@ -1961,8 +1961,8 @@ export async function calculateEnhancedMatch(userPreferences, town) {
       climate: Math.round(climateResult.score),
       culture: Math.round(cultureResult.score),
       hobbies: Math.round(hobbiesResult.score),
-      admin: Math.round(adminResult.score),
-      budget: Math.round(budgetResult.score)
+      administration: Math.round(adminResult.score),
+      cost: Math.round(costResult.score)
     },
     match_factors: allFactors,
     top_factors: allFactors
@@ -2028,7 +2028,7 @@ export async function getTopMatches(userId, limit = 10) {
         stay_duration: userData.stay_duration || [],
         residency_path: userData.residency_path || []
       },
-      budget_preferences: {
+      cost_preferences: {
         total_monthly_budget: userData.total_monthly_budget || 0,
         max_monthly_rent: userData.max_monthly_rent || 0,
         max_home_price: userData.max_home_price || 0,

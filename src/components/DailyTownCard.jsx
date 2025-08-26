@@ -316,8 +316,8 @@ export default function DailyTownCard() {
                 <span className={`font-medium ${uiConfig.colors.heading}`}>{Math.round(town.categoryScores.administration || 0)}%</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className={`${uiConfig.colors.hint} capitalize`}>Budget</span>
-                <span className={`font-medium ${uiConfig.colors.heading}`}>{Math.round(town.categoryScores.budget || 0)}%</span>
+                <span className={`${uiConfig.colors.hint} capitalize`}>Cost</span>
+                <span className={`font-medium ${uiConfig.colors.heading}`}>{Math.round(town.categoryScores.cost || 0)}%</span>
               </div>
             </div>
           </>

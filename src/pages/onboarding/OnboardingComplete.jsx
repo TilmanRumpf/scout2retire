@@ -75,7 +75,7 @@ export default function OnboardingComplete() {
     if (userPreferences.costs?.total_monthly_budget) {
       summary.push({
         icon: DollarSign,
-        label: 'Budget',
+        label: 'Cost',
         value: `$${userPreferences.costs.total_monthly_budget}/month`
       });
     }
