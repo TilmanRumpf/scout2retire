@@ -32,7 +32,7 @@ export default function TownComparison() {
     { id: 'culture', label: 'Culture', icon: Users },
     { id: 'hobbies', label: 'Hobbies', icon: SmilePlus },
     { id: 'administration', label: 'Admin', icon: HousePlus },
-    { id: 'budget', label: 'Budget', icon: DollarSign }
+    { id: 'cost', label: 'Cost', icon: DollarSign }
   ];
 
   // Load initial data only once
@@ -223,14 +223,6 @@ export default function TownComparison() {
     switch (category) {
       case 'climate':
         return town.climate_rating || null;
-      case 'cost':
-        // Convert cost index to a rating (lower cost = higher rating)
-        // Assuming $1000 = 10/10, $5000 = 1/10
-        if (town.cost_index) {
-          const rating = Math.max(1, Math.min(10, 11 - (town.cost_index / 500)));
-          return Math.round(rating);
-        }
-        return null;
       case 'region':
         return town.categoryScores?.region ? Math.round(town.categoryScores.region / 10) : null;
       case 'culture':
@@ -239,8 +231,8 @@ export default function TownComparison() {
         return town.categoryScores?.hobbies ? Math.round(town.categoryScores.hobbies / 10) : null;
       case 'administration':
         return town.categoryScores?.administration ? Math.round(town.categoryScores.administration / 10) : null;
-      case 'budget':
-        return town.categoryScores?.budget ? Math.round(town.categoryScores.budget / 10) : null;
+      case 'cost':
+        return town.categoryScores?.cost ? Math.round(town.categoryScores.cost / 10) : null;
       default:
         return null;
     }
@@ -417,7 +409,7 @@ export default function TownComparison() {
                          activeCategory === 'culture' && town.categoryScores?.culture ? `${Math.round(town.categoryScores.culture)}%` :
                          activeCategory === 'hobbies' && town.categoryScores?.hobbies ? `${Math.round(town.categoryScores.hobbies)}%` :
                          activeCategory === 'administration' && town.categoryScores?.administration ? `${Math.round(town.categoryScores.administration)}%` :
-                         activeCategory === 'budget' && town.categoryScores?.budget ? `${Math.round(town.categoryScores.budget)}%` :
+                         activeCategory === 'cost' && town.categoryScores?.cost ? `${Math.round(town.categoryScores.cost)}%` :
                          'N/A'}
                       </p>
                       <p className={`text-sm ${uiConfig.colors.hint}`}>

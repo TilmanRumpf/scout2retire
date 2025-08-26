@@ -70,8 +70,8 @@ export default function TownRadarChart({ townData }) {
       fullMark: 10
     },
     {
-      category: 'Budget',
-      value: townData.categoryScores?.budget ? convertScore(townData.categoryScores.budget) : getCostRating(townData.cost_index),
+      category: 'Cost',
+      value: townData.categoryScores?.cost ? convertScore(townData.categoryScores.cost) : getCostRating(townData.cost_index),
       fullMark: 10
     }
   ];
