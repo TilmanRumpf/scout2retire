@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getPersonalizedTowns } from '../../utils/matchingAlgorithm';
+import { getPersonalizedTowns } from '../../utils/scoring';
 import { getCurrentUser } from '../../utils/authUtils';
 import { uiConfig } from '../../styles/uiConfig';
 import TownRadarChart from '../../components/TownRadarChart';

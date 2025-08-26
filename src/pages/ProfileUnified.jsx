@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getCurrentUser, signOut, updatePassword } from '../utils/authUtils';
-import { getOnboardingProgress } from '../utils/onboardingUtils';
+import { getOnboardingProgress } from '../utils/userpreferences/onboardingUtils';
 import { useTheme } from '../contexts/useTheme';
 import UnifiedHeader from '../components/UnifiedHeader';
 import HeaderSpacer from '../components/HeaderSpacer';

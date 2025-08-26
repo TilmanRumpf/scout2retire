@@ -1,4 +1,4 @@
-import supabase from './supabaseClient.js';
+import supabase from '../../supabaseClient.js';
 
 /**
  * Enhanced hobbies matching using normalized hobbies database

@@ -1,9 +1,9 @@
 // Enhanced Matching Algorithm that fully utilizes new town data fields
 // Maps directly to the 6 onboarding sections: Region, Climate, Culture, Hobbies, Admin, Budget
 
-import supabase from './supabaseClient.js'
-import { mapToStandardValue } from './climateInference.js'
-import { calculateHobbiesScore as calculateNormalizedHobbiesScore } from './hobbiesMatching.js'
+import supabase from '../supabaseClient.js'
+import { mapToStandardValue } from './helpers/climateInference.js'
+import { calculateHobbiesScore as calculateNormalizedHobbiesScore } from './helpers/hobbiesMatching.js'
 
 // Weights optimized for 55+ retirees: equal emphasis on location preference, budget constraints, and healthcare/safety (60% combined), with climate and culture as secondary factors
 // Score weights for each category (total = 100)

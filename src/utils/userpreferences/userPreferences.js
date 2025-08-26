@@ -1,4 +1,4 @@
-import supabase from './supabaseClient';
+import supabase from '../supabaseClient';
 
 /**
  * Saves user preferences from onboarding to the new structured table
