@@ -1753,7 +1753,7 @@ export function calculateCostScore(preferences, town) {
   if (!hasBudgetPrefs) {
     score = 100
     factors.push({ factor: 'Open to any budget situation', score: 100 })
-    return { score, factors, category: 'Cost' }
+    return { score, factors, category: 'Costs' }
   }
   
   // Overall budget fit (40 points)
@@ -1769,7 +1769,7 @@ export function calculateCostScore(preferences, town) {
     // If we don't have cost data, give neutral score
     score += 20
     factors.push({ factor: 'Cost data not available', score: 20 })
-    return { score, factors, category: 'Cost' }
+    return { score, factors, category: 'Costs' }
   }
   
   const budgetRatio = userBudget / townCost
@@ -1849,7 +1849,7 @@ export function calculateCostScore(preferences, town) {
   return {
     score: Math.max(0, Math.min(score, 100)),
     factors,
-    category: 'Cost'
+    category: 'Costs'
   }
 }
 

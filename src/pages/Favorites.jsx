@@ -583,7 +583,7 @@ export default function Favorites() {
                                 <span className={`font-medium ${uiConfig.colors.hint}`}>{Math.round(town.categoryScores.administration || 0)}%</span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <span className={`${uiConfig.colors.hint} capitalize`}>Cost</span>
+                                <span className={`${uiConfig.colors.hint} capitalize`}>Costs</span>
                                 <span className={`font-medium ${uiConfig.colors.hint}`}>{Math.round(town.categoryScores.cost || 0)}%</span>
                               </div>
                             </div>

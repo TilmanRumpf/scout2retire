@@ -532,22 +532,92 @@ export default function OnboardingHobbies() {
     loadExistingData();
   }, [navigate]);
 
+  // Helper function to split compound hobbies/activities
+  const splitCompoundItem = (itemId) => {
+    // Split items like 'cooking_wine' into ['cooking', 'wine']
+    // Also handle items with '&' like from the title
+    const activityOption = activityOptions.find(a => a.id === itemId);
+    const interestOption = interestOptions.find(i => i.id === itemId);
+    const option = activityOption || interestOption;
+    
+    if (option && option.title && option.title.includes('&')) {
+      // Split by '&' and clean up each part
+      return option.title.toLowerCase()
+        .split('&')
+        .map(part => part.trim().replace(/\s+/g, '_'))
+        .filter(part => part.length > 0);
+    }
+    
+    // Handle specific IDs that should be split
+    // Based on underscore compounds
+    if (itemId === 'cooking_wine') return ['cooking', 'wine'];
+    if (itemId === 'music_theater') return ['music', 'theater'];
+    if (itemId === 'walking_cycling') return ['walking', 'cycling'];
+    if (itemId === 'golf_tennis') return ['golf', 'tennis'];
+    if (itemId === 'water_sports') return ['water_sports']; // Keep as one
+    
+    // Based on titles with '&'
+    if (itemId === 'gardening') return ['gardening', 'pets']; // "Gardening & Pets"
+    if (itemId === 'arts') return ['arts', 'crafts']; // "Arts & Crafts"
+    if (itemId === 'history') return ['museums', 'history']; // "Museums & History"
+    
+    return [itemId];
+  };
+
   const handleActivityToggle = (itemId) => {
-    setFormData(prev => ({
-      ...prev,
-      activities: prev.activities.includes(itemId)
-        ? prev.activities.filter(item => item !== itemId)
-        : [...prev.activities, itemId]
-    }));
+    const itemsToToggle = splitCompoundItem(itemId);
+    
+    setFormData(prev => {
+      let newActivities = [...prev.activities];
+      
+      // Check if ANY of the split items are already selected
+      const anySelected = itemsToToggle.some(item => newActivities.includes(item));
+      
+      if (anySelected) {
+        // Remove all split items
+        newActivities = newActivities.filter(item => !itemsToToggle.includes(item));
+      } else {
+        // Add all split items (avoiding duplicates)
+        itemsToToggle.forEach(item => {
+          if (!newActivities.includes(item)) {
+            newActivities.push(item);
+          }
+        });
+      }
+      
+      return {
+        ...prev,
+        activities: newActivities
+      };
+    });
   };
 
   const handleInterestToggle = (itemId) => {
-    setFormData(prev => ({
-      ...prev,
-      interests: prev.interests.includes(itemId)
-        ? prev.interests.filter(item => item !== itemId)
-        : [...prev.interests, itemId]
-    }));
+    const itemsToToggle = splitCompoundItem(itemId);
+    
+    setFormData(prev => {
+      let newInterests = [...prev.interests];
+      
+      // Check if ANY of the split items are already selected
+      const anySelected = itemsToToggle.some(item => newInterests.includes(item));
+      
+      if (anySelected) {
+        // Remove all split items
+        newInterests = newInterests.filter(item => !itemsToToggle.includes(item));
+      } else {
+        // Add all split items (avoiding duplicates)
+        itemsToToggle.forEach(item => {
+          if (!newInterests.includes(item)) {
+            newInterests.push(item);
+          }
+        });
+      }
+      
+      return {
+        ...prev,
+        interests: newInterests
+      };
+    });
   };
 
   const handleCustomPhysicalToggle = (activity) => {
@@ -736,16 +806,22 @@ export default function OnboardingHobbies() {
           {/* Physical Activities */}
           <SelectionSection icon={Activity} title="Physical Activities">
             <SelectionGrid>
-              {activityOptions.map((activity) => (
-                <SelectionCard
-                  key={activity.id}
-                  title={activity.title}
-                  description={activity.description}
-                  icon={activity.icon}
-                  isSelected={formData.activities.includes(activity.id)}
-                  onClick={() => handleActivityToggle(activity.id)}
-                />
-              ))}
+              {activityOptions.map((activity) => {
+                // Check if any of the split items are selected
+                const splitItems = splitCompoundItem(activity.id);
+                const isSelected = splitItems.some(item => formData.activities.includes(item));
+                
+                return (
+                  <SelectionCard
+                    key={activity.id}
+                    title={activity.title}
+                    description={activity.description}
+                    icon={activity.icon}
+                    isSelected={isSelected}
+                    onClick={() => handleActivityToggle(activity.id)}
+                  />
+                );
+              })}
               {/* Add More Physical Activities Button */}
               <SelectionCard
                 title="Add More"
@@ -762,15 +838,21 @@ export default function OnboardingHobbies() {
           {/* Hobbies & Interests */}
           <SelectionSection icon={Heart} title="Hobbies & Interests">
             <SelectionGrid>
-              {interestOptions.map((interest) => (
-                <SelectionCard
-                  key={interest.id}
-                  title={interest.title}
-                  description={interest.description}
-                  isSelected={formData.interests.includes(interest.id)}
-                  onClick={() => handleInterestToggle(interest.id)}
-                />
-              ))}
+              {interestOptions.map((interest) => {
+                // Check if any of the split items are selected
+                const splitItems = splitCompoundItem(interest.id);
+                const isSelected = splitItems.some(item => formData.interests.includes(item));
+                
+                return (
+                  <SelectionCard
+                    key={interest.id}
+                    title={interest.title}
+                    description={interest.description}
+                    isSelected={isSelected}
+                    onClick={() => handleInterestToggle(interest.id)}
+                  />
+                );
+              })}
               {/* Add More Hobbies Button */}
               <SelectionCard
                 title="Add More"
@@ -811,17 +893,25 @@ export default function OnboardingHobbies() {
               </h3>
               <div className={`space-y-0.5 ${uiConfig.font.size.xs} ${uiConfig.colors.body}`}>
                 {formData.activities.length > 0 && (
-                  <div><span className={`${uiConfig.font.weight.medium}`}>Activities:</span> {formData.activities.map(id => 
-                    activityOptions.find(a => a.id === id)?.title
-                  ).filter(Boolean).join(', ')}</div>
+                  <div><span className={`${uiConfig.font.weight.medium}`}>Activities:</span> {formData.activities.map(id => {
+                    // Try to find in activity options first
+                    const activity = activityOptions.find(a => a.id === id);
+                    if (activity) return activity.title;
+                    // Otherwise, format the raw ID nicely
+                    return id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  }).join(', ')}</div>
                 )}
                 {formData.custom_physical.length > 0 && (
                   <div><span className={`${uiConfig.font.weight.medium}`}>More Activities:</span> {formData.custom_physical.join(', ')}</div>
                 )}
                 {formData.interests.length > 0 && (
-                  <div><span className={`${uiConfig.font.weight.medium}`}>Interests:</span> {formData.interests.map(id => 
-                    interestOptions.find(i => i.id === id)?.title
-                  ).filter(Boolean).join(', ')}</div>
+                  <div><span className={`${uiConfig.font.weight.medium}`}>Interests:</span> {formData.interests.map(id => {
+                    // Try to find in interest options first
+                    const interest = interestOptions.find(i => i.id === id);
+                    if (interest) return interest.title;
+                    // Otherwise, format the raw ID nicely
+                    return id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  }).join(', ')}</div>
                 )}
                 {formData.custom_hobbies.length > 0 && (
                   <div><span className={`${uiConfig.font.weight.medium}`}>More Hobbies:</span> {formData.custom_hobbies.join(', ')}</div>

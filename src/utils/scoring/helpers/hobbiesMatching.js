@@ -215,7 +215,7 @@ export async function calculateHobbiesScore(userHobbies, town) {
       }
     } else {
       // Hobby not in database (shouldn't happen with good data)
-      console.warn(`Hobby not found in database: ${hobbyName}`);
+      // console.warn(`Hobby not found in database: ${hobbyName}`);
       missingHobbies.push(hobbyName);
     }
   });
