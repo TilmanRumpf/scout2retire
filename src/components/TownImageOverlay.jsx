@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Heart, MapPin } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
 
@@ -16,20 +16,36 @@ export default function TownImageOverlay({
   isFavorited,
   isUpdating,
   onFavoriteClick,
-  appealStatement
+  appealStatement,
+  enableAnimation = false // Only enable for main display, not card grid
 }) {
+  const [shouldAnimate, setShouldAnimate] = useState(false);
+  
+  // Trigger animation only if enabled and only for actual category matches
+  useEffect(() => {
+    if (enableAnimation && appealStatement && appealStatement.includes("Match:")) {
+      // Only animate for real category matches, not for "Analyzing..."
+      setShouldAnimate(true);
+      const timer = setTimeout(() => {
+        setShouldAnimate(false);
+      }, 5500); // Total animation duration: 5s flash + 0.5s buffer
+      
+      return () => clearTimeout(timer);
+    }
+  }, [appealStatement]); // Only watch appealStatement changes
+  
   // Generate a default appeal statement if none provided
   const getDefaultAppealStatement = () => {
-    if (matchScore >= 80) return "Excellent match";
-    if (matchScore >= 70) return "Strong compatibility";
-    if (matchScore >= 60) return "Good potential";
-    if (town.cost_index <= 1500) return "Budget-friendly";
-    if (town.healthcare_score >= 8) return "Great healthcare";
-    if (town.safety_score >= 8) return "Very safe";
-    return "Worth exploring";
+    // If we have a custom appeal statement, use it
+    if (appealStatement) return appealStatement;
+    
+    // If no appeal statement at all, show analyzing
+    return { text: "Analyzing", isAnalyzing: true };
   };
 
-  const finalAppealStatement = appealStatement || getDefaultAppealStatement();
+  const appealData = getDefaultAppealStatement();
+  const finalAppealStatement = typeof appealData === 'string' ? appealData : appealData.text;
+  const isAnalyzing = typeof appealData === 'object' && appealData.isAnalyzing;
 
   return (
     <>
@@ -64,10 +80,29 @@ export default function TownImageOverlay({
         </button>
       </div>
 
-      {/* Lower left: Appeal statement */}
+      {/* Lower left: Appeal statement with flash animation */}
       <div className={`absolute ${uiConfig.townCardOverlay.position.bottomLeft}`}>
-        <div className={`px-2.5 py-1 ${uiConfig.townCardOverlay.radius} ${uiConfig.townCardOverlay.backdrop} ${uiConfig.townCardOverlay.fontSize.appealStatement} ${uiConfig.townCardOverlay.fontWeight.appealStatement} ${uiConfig.townCardOverlay.appealColor} max-w-[150px]`}>
-          {finalAppealStatement}
+        <div 
+          className={`
+            px-2.5 py-1 
+            ${uiConfig.townCardOverlay.radius} 
+            ${uiConfig.townCardOverlay.backdrop} 
+            ${uiConfig.townCardOverlay.fontSize.appealStatement} 
+            ${uiConfig.townCardOverlay.fontWeight.appealStatement} 
+            ${shouldAnimate ? 'animate-appeal-flash' : `${uiConfig.townCardOverlay.appealColor}`}
+            analyzing-badge ${!isAnalyzing ? 'has-match' : ''}
+          `}
+        >
+          {isAnalyzing ? (
+            <span>
+              Analyzing
+              <span className="dot-1">.</span>
+              <span className="dot-2">.</span>
+              <span className="dot-3">.</span>
+            </span>
+          ) : (
+            finalAppealStatement
+          )}
         </div>
       </div>
 
