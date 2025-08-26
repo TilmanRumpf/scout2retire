@@ -1,0 +1,263 @@
+{
+  "timestamp": "2025-08-26T21:50:05.122Z",
+  "summary": {
+    "total_towns": 341,
+    "countries": {
+      "unique_count": 94,
+      "null_count": 0,
+      "object_count": 0,
+      "top_countries": [
+        [
+          "United States",
+          41
+        ],
+        [
+          "France",
+          18
+        ],
+        [
+          "Mexico",
+          15
+        ],
+        [
+          "Portugal",
+          15
+        ],
+        [
+          "Australia",
+          13
+        ],
+        [
+          "Spain",
+          12
+        ],
+        [
+          "Canada",
+          10
+        ],
+        [
+          "Italy",
+          10
+        ],
+        [
+          "Greece",
+          9
+        ],
+        [
+          "Netherlands",
+          8
+        ]
+      ]
+    },
+    "languages": {
+      "primary_language_unique_count": 35,
+      "primary_language_null_count": 41,
+      "english_proficiency_null_count": 0,
+      "top_primary_languages": [
+        [
+          "English",
+          92
+        ],
+        [
+          "Spanish",
+          62
+        ],
+        [
+          "French",
+          20
+        ],
+        [
+          "Portuguese",
+          16
+        ],
+        [
+          "Dutch",
+          13
+        ],
+        [
+          "Arabic",
+          12
+        ],
+        [
+          "Greek",
+          10
+        ],
+        [
+          "Italian",
+          10
+        ],
+        [
+          "German",
+          9
+        ],
+        [
+          "Croatian",
+          7
+        ]
+      ],
+      "english_proficiency_levels": [
+        [
+          "moderate",
+          113
+        ],
+        [
+          "native",
+          75
+        ],
+        [
+          "high",
+          88
+        ],
+        [
+          "low",
+          65
+        ]
+      ]
+    },
+    "case_sensitivity_issues": {
+      "country_issues": [],
+      "language_issues": []
+    }
+  },
+  "raw_data": {
+    "country_counts": {
+      "Singapore": 1,
+      "Aruba": 1,
+      "Egypt": 4,
+      "United States": 41,
+      "Netherlands": 8,
+      "Albania": 1,
+      "Saint Vincent and Grenadines": 1,
+      "Taiwan": 2,
+      "Canada": 10,
+      "Namibia": 2,
+      "Spain": 12,
+      "Cook Islands": 1,
+      "New Caledonia": 1,
+      "Czech Republic": 1,
+      "Mexico": 15,
+      "Greece": 9,
+      "Philippines": 5,
+      "French Polynesia": 1,
+      "Cyprus": 1,
+      "Croatia": 7,
+      "Australia": 13,
+      "Malaysia": 5,
+      "Chile": 4,
+      "Antigua and Barbuda": 1,
+      "Morocco": 5,
+      "India": 2,
+      "Panama": 5,
+      "Belize": 4,
+      "France": 18,
+      "Vietnam": 5,
+      "Uruguay": 3,
+      "Italy": 10,
+      "Senegal": 1,
+      "Hungary": 1,
+      "Latvia": 2,
+      "New Zealand": 8,
+      "Portugal": 15,
+      "Bahamas": 2,
+      "Austria": 1,
+      "Peru": 1,
+      "Turkey": 3,
+      "Iceland": 1,
+      "Thailand": 7,
+      "South Africa": 4,
+      "United Kingdom": 3,
+      "Saint Lucia": 1,
+      "Brazil": 1,
+      "Ecuador": 5,
+      "Belgium": 5,
+      "Laos": 2,
+      "Cambodia": 3,
+      "Nepal": 2,
+      "Germany": 7,
+      "Fiji": 3,
+      "United Arab Emirates": 2,
+      "U.S. Virgin Islands": 2,
+      "Honduras": 1,
+      "Costa Rica": 4,
+      "Argentina": 3,
+      "Mauritius": 2,
+      "Slovenia": 1,
+      "Dominican Republic": 4,
+      "Vanuatu": 1,
+      "Solomon Islands": 1,
+      "Malta": 2,
+      "Guatemala": 2,
+      "Montenegro": 3,
+      "Rwanda": 1,
+      "Palau": 1,
+      "Samoa": 1,
+      "Marshall Islands": 1,
+      "Tunisia": 3,
+      "Saint Kitts and Nevis": 1,
+      "Colombia": 4,
+      "Grenada": 1,
+      "British Virgin Islands": 1,
+      "Botswana": 1,
+      "Martinique": 1,
+      "Saint Martin": 1,
+      "Northern Cyprus": 2,
+      "Israel": 2,
+      "Ireland": 2,
+      "Turks and Caicos": 1,
+      "Estonia": 1,
+      "Puerto Rico": 2,
+      "Curacao": 1,
+      "Paraguay": 1,
+      "Switzerland": 1,
+      "Seychelles": 1,
+      "Tonga": 1,
+      "Sint Maarten": 1,
+      "American Samoa": 1,
+      "Micronesia": 1,
+      "Barbados": 1
+    },
+    "primary_language_counts": {
+      "Spanish": 62,
+      "English": 92,
+      "Hindi": 3,
+      "Thai": 6,
+      "Dutch": 13,
+      "Arabic": 12,
+      "Croatian": 7,
+      "French": 20,
+      "Greek": 10,
+      "Afrikaans": 1,
+      "Portuguese": 16,
+      "Italian": 10,
+      "Malay": 5,
+      "German": 9,
+      "Maltese": 2,
+      "Slovenian": 1,
+      "Vietnamese": 5,
+      "Czech": 1,
+      "Hungarian": 1,
+      "Estonian": 1,
+      "Papiamento": 1,
+      "Filipino": 3,
+      "Montenegrin": 3,
+      "Albanian": 1,
+      "English, Fijian, Hindi": 1,
+      "Setswana": 1,
+      "Latvian": 2,
+      "Dutch/Papiamento": 1,
+      "Khmer": 1,
+      "Nepali": 1,
+      "Marshallese": 1,
+      "French Creole": 1,
+      "Cebuano": 2,
+      "Pohnpeian": 1,
+      "Turkish": 3
+    },
+    "english_proficiency_counts": {
+      "moderate": 113,
+      "native": 75,
+      "high": 88,
+      "low": 65
+    }
+  }
+}
