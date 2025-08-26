@@ -10,7 +10,7 @@ import UnifiedHeader from '../components/UnifiedHeader';
 import HeaderSpacer from '../components/HeaderSpacer';
 import TownRadarChart from '../components/TownRadarChart';
 import { uiConfig } from '../styles/uiConfig';
-import { Sparkles, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign } from 'lucide-react';
+import { Sparkles, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign, Target, CheckCircle } from 'lucide-react';
 import supabase from '../utils/supabaseClient';
 
 // Predefined regions and their countries from onboarding
@@ -417,15 +417,25 @@ export default function TownDiscovery() {
                     matchScore={selectedTownData.matchScore}
                     isFavorited={isFavorited(selectedTownData.id)}
                     isUpdating={false}
+                    enableAnimation={true}
                     onFavoriteClick={async () => {
                       await handleToggleFavorite(selectedTownData.id, selectedTownData.name, selectedTownData.country);
                     }}
-                    appealStatement={
-                      selectedTownData.cost_index <= 1500 ? "Budget-friendly" :
-                      selectedTownData.matchScore >= 80 ? "Strong match" :
-                      selectedTownData.healthcare_score >= 8 ? "Great healthcare" :
-                      "Worth exploring"
-                    }
+                    appealStatement={(() => {
+                      if (!selectedTownData.categoryScores) return null; // Will show "Analyzing..."
+                      
+                      const categories = [
+                        { name: "Region", score: selectedTownData.categoryScores.region || 0 },
+                        { name: "Climate", score: selectedTownData.categoryScores.climate || 0 },
+                        { name: "Culture", score: selectedTownData.categoryScores.culture || 0 },
+                        { name: "Hobbies", score: selectedTownData.categoryScores.hobbies || 0 },
+                        { name: "Admin", score: selectedTownData.categoryScores.administration || 0 },
+                        { name: "Costs", score: selectedTownData.categoryScores.budget || 0 }
+                      ];
+                      
+                      const best = categories.reduce((max, cat) => cat.score > max.score ? cat : max);
+                      return `${best.name} Match: ${Math.round(best.score)}%`;
+                    })()}
                   />
                 )}
               </div>
@@ -433,77 +443,135 @@ export default function TownDiscovery() {
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h2 className={`text-2xl font-bold ${uiConfig.colors.heading}`}>{selectedTownData.name}</h2>
-                    <p className={`text-lg ${uiConfig.colors.body}`}>{selectedTownData.country}</p>
+                    <h2 className={`text-2xl font-bold ${uiConfig.colors.heading}`}>
+                      {selectedTownData.name}, {selectedTownData.country}
+                    </h2>
                   </div>
-                  <a
-                    href={selectedTownData.google_maps_link || `https://www.google.com/maps/search/${encodeURIComponent(selectedTownData.name + ', ' + selectedTownData.country)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`${uiConfig.colors.success} text-sm hover:underline`}
-                  >
-                    View on Map
-                  </a>
+                  <div className={`text-2xl font-bold ${uiConfig.colors.heading}`}>
+                    Score: {Math.round(selectedTownData.matchScore || 0)}%
+                  </div>
                 </div>
 
-                {/* Premium Insights */}
-                {selectedTownData.insights && selectedTownData.insights.length > 0 && (
-                  <div className={`mb-4 p-3 ${uiConfig.colors.statusSuccess} ${uiConfig.layout.radius.lg}`}>
-                    <h4 className={`text-sm font-medium ${uiConfig.colors.heading} mb-2`}>Key Insights</h4>
-                    <div className="space-y-1">
-                      {selectedTownData.insights.map((insight, index) => (
-                        <div key={index} className={`text-sm ${uiConfig.colors.body}`}>
-                          {typeof insight === 'string' ? insight : insight.text}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {/* Town description - moved here right after title */}
+                <p className={`${uiConfig.colors.body} mb-6`}>
+                  {selectedTownData.description || "No description available for this town."}
+                </p>
 
-                {/* Highlights */}
-                {selectedTownData.highlights && selectedTownData.highlights.length > 0 && (
-                  <div className="mb-4 flex flex-wrap gap-2">
-                    {selectedTownData.highlights.map((highlight, index) => (
-                      <span key={index} className={`px-3 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.full} font-medium`}>
-                        {highlight}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Match Reasons */}
-                {selectedTownData.matchReasons && selectedTownData.matchReasons.length > 0 && (
-                  <div className="mb-4">
-                    <h4 className={`text-sm font-medium ${uiConfig.colors.body} mb-2`}>Why this matches you:</h4>
-                    <div className="space-y-1">
-                      {selectedTownData.matchReasons.map((reason, index) => (
-                        <div key={index} className={`flex items-center text-sm ${uiConfig.colors.success}`}>
-                          <svg className={`${uiConfig.icons.size.sm} mr-2 flex-shrink-0`} fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                          {reason}
-                        </div>
-                      ))}
+                {/* Two-column layout for Town Profile and Match Reasons - Always rendered to prevent layout shift */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
+                    {/* Town Profile - Spider Chart Container (LEFT) */}
+                    <div className={`p-3 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.border}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Target size={16} className={uiConfig.colors.subtitle} />
+                        <span className={`text-sm font-medium ${uiConfig.colors.body}`}>Town Profile</span>
+                      </div>
+                      <div className="h-64">
+                        <TownRadarChart key={selectedTownData.id} townData={selectedTownData} />
+                      </div>
                     </div>
-                    {selectedTownData.warnings && selectedTownData.warnings.length > 0 && (
-                      <div className="mt-3 p-3 ${uiConfig.colors.statusWarning} ${uiConfig.layout.radius.md}">
-                        <h5 className={`text-xs font-medium ${uiConfig.colors.heading} mb-1`}>Considerations:</h5>
+                    
+                    {/* Why this matches you - Container (RIGHT) */}
+                    {selectedTownData.matchReasons && selectedTownData.matchReasons.length > 0 ? (
+                      <div className={`p-3 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.border}`}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <CheckCircle size={16} className={uiConfig.colors.subtitle} />
+                          <span className={`text-sm font-medium ${uiConfig.colors.body}`}>Why this matches you</span>
+                        </div>
+                        
+                        {/* Match reasons in ONBOARDING SEQUENCE ORDER - just key elements */}
                         <div className="space-y-1">
-                          {selectedTownData.warnings.map((warning, index) => (
-                            <div key={index} className={`text-sm ${uiConfig.colors.body}`}>
-                              {typeof warning === 'string' ? warning : warning.text}
+                          {(() => {
+                            const reasons = [];
+                            const scores = selectedTownData.categoryScores || {};
+                            
+                            // Follow EXACT onboarding sequence:
+                            // 1. REGION (if high match)
+                            if (scores.region >= 70) {
+                              reasons.push(`Strong region match`);
+                            }
+                            
+                            // 2. CLIMATE (if high match)
+                            if (scores.climate >= 70) {
+                              reasons.push(`Strong climate match`);
+                            }
+                            
+                            // 3. CULTURE (if high match)
+                            if (scores.culture >= 70) {
+                              reasons.push(`Strong culture match`);
+                            }
+                            
+                            // 4. HOBBIES (if high match)
+                            if (scores.hobbies >= 70) {
+                              reasons.push(`Strong hobbies match`);
+                            }
+                            
+                            // 5. ADMIN (if high match)
+                            if (scores.administration >= 70) {
+                              reasons.push(`Strong admin match`);
+                            }
+                            
+                            // 6. BUDGET/COSTS (if high match)
+                            if (scores.budget >= 70) {
+                              reasons.push(`Strong budget match`);
+                            }
+                            
+                            // Add any specific location info
+                            if (selectedTownData.country) {
+                              reasons.push(`Excellent location in ${selectedTownData.country}`);
+                            }
+                            
+                            // Add key practical info from matchReasons
+                            if (selectedTownData.matchReasons) {
+                              selectedTownData.matchReasons.forEach(r => {
+                                // Filter for truly unique/important reasons not covered above
+                                if (r.includes('healthcare') || r.includes('Healthcare')) {
+                                  reasons.push('Healthcare meets requirements');
+                                }
+                                if (r.includes('temperature') && !reasons.some(x => x.includes('temperature'))) {
+                                  reasons.push(r);
+                                }
+                              });
+                            }
+                            
+                            // Render all reasons with consistent style
+                            return reasons.map((reason, index) => (
+                              <div key={index} className={`flex items-center text-sm ${uiConfig.colors.success}`}>
+                                <svg className={`${uiConfig.icons.size.sm} mr-2 flex-shrink-0`} fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                                {reason}
+                              </div>
+                            ));
+                          })()}
+                        </div>
+                        {selectedTownData.warnings && selectedTownData.warnings.length > 0 && (
+                          <div className="mt-3 p-3 ${uiConfig.colors.statusWarning} ${uiConfig.layout.radius.md}">
+                            <h5 className={`text-xs font-medium ${uiConfig.colors.heading} mb-1`}>Considerations:</h5>
+                            <div className="space-y-1">
+                              {selectedTownData.warnings.map((warning, index) => (
+                                <div key={index} className={`text-sm ${uiConfig.colors.body}`}>
+                                  {typeof warning === 'string' ? warning : warning.text}
+                                </div>
+                              ))}
                             </div>
-                          ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      // Loading placeholder for match reasons - no animation for stability
+                      <div className={`p-3 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.border} min-h-[150px]`}>
+                        <div className="flex items-center gap-2 mb-2 opacity-20">
+                          <CheckCircle size={16} />
+                          <span className={`text-sm font-medium`}>Loading matches...</span>
                         </div>
                       </div>
                     )}
                   </div>
-                )}
                 
-                {/* Category Match Breakdown - Rich Data Boxes */}
-                {selectedTownData.categoryScores && (
-                  <div className={`mb-4`}>
-                    <h4 className={`text-sm font-semibold ${uiConfig.colors.heading} mb-3`}>Match Breakdown</h4>
+                {/* Category Match Breakdown - Rich Data Boxes - Always rendered with min-height */}
+                <div className={`mb-4 ${!selectedTownData.categoryScores ? 'min-h-[400px]' : ''}`}>
+                  <h4 className={`text-sm font-semibold ${uiConfig.colors.heading} mb-3`}>Town Data and Ratings</h4>
+                  {selectedTownData.categoryScores ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       
                       {/* Region & Geography Box */}
@@ -703,124 +771,23 @@ export default function TownDiscovery() {
                       </div>
                       
                     </div>
-                  </div>
-                )}
-                
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {(selectedTownData.cost_of_living_usd || selectedTownData.typical_monthly_living_cost) && (
-                    <span className={`px-3 py-1 ${uiConfig.colors.statusSuccess} text-sm ${uiConfig.layout.radius.full}`}>
-                      ${selectedTownData.cost_of_living_usd || selectedTownData.typical_monthly_living_cost}/mo
-                    </span>
-                  )}
-                  {selectedTownData.healthcare_score && (
-                    <span className={`px-3 py-1 ${uiConfig.colors.statusInfo} text-sm ${uiConfig.layout.radius.full}`}>
-                      Healthcare: {selectedTownData.healthcare_score}/10
-                    </span>
-                  )}
-                  {selectedTownData.safety_score && (
-                    <span className={`px-3 py-1 ${uiConfig.colors.badge} text-sm ${uiConfig.layout.radius.full}`}>
-                      Safety: {selectedTownData.safety_score}/10
-                    </span>
-                  )}
-                </div>
-
-                <p className={`${uiConfig.colors.body} mb-6`}>
-                  {selectedTownData.description || "No description available for this town."}
-                </p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-4`}>Town Profile</h3>
-                    <div className="h-64">
-                      <TownRadarChart townData={selectedTownData} />
+                  ) : (
+                    // Loading skeleton for category boxes - static placeholders for layout stability
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {['Region', 'Climate', 'Culture', 'Hobbies', 'Admin', 'Costs'].map((category, i) => (
+                        <div key={i} className={`p-3 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} border ${uiConfig.colors.border} min-h-[120px]`}>
+                          <div className="flex items-center justify-between mb-2 opacity-30">
+                            <span className={`text-sm font-medium`}>{category}</span>
+                            <span className="text-lg font-bold">--</span>
+                          </div>
+                          <div className="space-y-1 opacity-10">
+                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                  <div>
-                    <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-4`}>Key Information</h3>
-                    <div className="space-y-3">
-                      {/* REGION - Population, Airport Distance */}
-                      {selectedTownData.population && (
-                        <div>
-                          <span className={`font-medium ${uiConfig.colors.body}`}>Population: </span>
-                          <span className={`${uiConfig.colors.hint}`}>
-                            {selectedTownData.population > 1000000 
-                              ? `${(selectedTownData.population / 1000000).toFixed(1)}M` 
-                              : selectedTownData.population > 1000 
-                              ? `${Math.round(selectedTownData.population / 1000)}K`
-                              : selectedTownData.population.toLocaleString()}
-                          </span>
-                        </div>
-                      )}
-                      {selectedTownData.airport_distance && (
-                        <div>
-                          <span className={`font-medium ${uiConfig.colors.body}`}>Airport Distance: </span>
-                          <span className={`${uiConfig.colors.hint}`}>{Math.round(selectedTownData.airport_distance)}km</span>
-                        </div>
-                      )}
-                      
-                      {/* CLIMATE - Temperature */}
-                      {(selectedTownData.avg_temp_summer || selectedTownData.avg_temp_winter) && (
-                        <div>
-                          <span className={`font-medium ${uiConfig.colors.body}`}>Climate: </span>
-                          <span className={`${uiConfig.colors.hint}`}>
-                            {selectedTownData.avg_temp_summer && `Summer: ${Math.round(selectedTownData.avg_temp_summer)}°C`}
-                            {selectedTownData.avg_temp_summer && selectedTownData.avg_temp_winter && ', '}
-                            {selectedTownData.avg_temp_winter && `Winter: ${Math.round(selectedTownData.avg_temp_winter)}°C`}
-                          </span>
-                        </div>
-                      )}
-                      
-                      {/* CULTURE - English, Expat Community */}
-                      {(selectedTownData.english_proficiency || selectedTownData.english_proficiency_level) && (
-                        <div>
-                          <span className={`font-medium ${uiConfig.colors.body}`}>English Proficiency: </span>
-                          <span className={`${uiConfig.colors.hint}`}>
-                            {selectedTownData.english_proficiency 
-                              ? `${selectedTownData.english_proficiency}%`
-                              : selectedTownData.english_proficiency_level}
-                          </span>
-                        </div>
-                      )}
-                      {selectedTownData.expat_population && (
-                        <div>
-                          <span className={`font-medium ${uiConfig.colors.body}`}>Expat Community: </span>
-                          <span className={`${uiConfig.colors.hint}`}>{selectedTownData.expat_population}</span>
-                        </div>
-                      )}
-                      
-                      {/* HOBBIES - Walkability */}
-                      {selectedTownData.walkability && (
-                        <div>
-                          <span className={`font-medium ${uiConfig.colors.body}`}>Walkability: </span>
-                          <span className={`${uiConfig.colors.hint}`}>{selectedTownData.walkability}/10</span>
-                        </div>
-                      )}
-                      
-                      {/* ADMINISTRATION - Healthcare, Safety */}
-                      {selectedTownData.healthcare_score && (
-                        <div>
-                          <span className={`font-medium ${uiConfig.colors.body}`}>Healthcare Score: </span>
-                          <span className={`${uiConfig.colors.hint}`}>{selectedTownData.healthcare_score}/10</span>
-                        </div>
-                      )}
-                      {selectedTownData.safety_score && (
-                        <div>
-                          <span className={`font-medium ${uiConfig.colors.body}`}>Safety Score: </span>
-                          <span className={`${uiConfig.colors.hint}`}>{selectedTownData.safety_score}/10</span>
-                        </div>
-                      )}
-                      
-                      {/* COSTS - Cost of Living */}
-                      {(selectedTownData.cost_of_living_usd || selectedTownData.typical_monthly_living_cost || selectedTownData.cost_index) && (
-                        <div>
-                          <span className={`font-medium ${uiConfig.colors.body}`}>Cost of Living: </span>
-                          <span className={`${uiConfig.colors.hint}`}>
-                            ${selectedTownData.cost_of_living_usd || selectedTownData.typical_monthly_living_cost || selectedTownData.cost_index}/month
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -868,12 +835,21 @@ export default function TownDiscovery() {
                     onFavoriteClick={async () => {
                       await handleToggleFavorite(town.id, town.name, town.country);
                     }}
-                    appealStatement={
-                      town.cost_index <= 1500 ? "Budget-friendly" :
-                      town.matchScore >= 80 ? "Strong match" :
-                      town.healthcare_score >= 8 ? "Great healthcare" :
-                      "Worth exploring"
-                    }
+                    appealStatement={(() => {
+                      if (!town.categoryScores) return null; // Will show "Analyzing..."
+                      
+                      const categories = [
+                        { name: "Region", score: town.categoryScores.region || 0 },
+                        { name: "Climate", score: town.categoryScores.climate || 0 },
+                        { name: "Culture", score: town.categoryScores.culture || 0 },
+                        { name: "Hobbies", score: town.categoryScores.hobbies || 0 },
+                        { name: "Admin", score: town.categoryScores.administration || 0 },
+                        { name: "Costs", score: town.categoryScores.budget || 0 }
+                      ];
+                      
+                      const best = categories.reduce((max, cat) => cat.score > max.score ? cat : max);
+                      return `${best.name} Match: ${Math.round(best.score)}%`;
+                    })()}
                   />
                 )}
               </div>
