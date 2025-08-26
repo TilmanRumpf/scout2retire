@@ -59,7 +59,7 @@ export default function ComparisonGrid({
                 </div>
                 <div className="flex justify-between">
                   <span className={uiConfig.colors.hint}>State/Region</span>
-                  <span className="font-medium">{town.state_code || town.region || 'N/A'}</span>
+                  <span className="font-medium">{town.region || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className={uiConfig.colors.hint}>Population</span>
@@ -259,7 +259,7 @@ export default function ComparisonGrid({
             <div className="absolute bottom-0 left-0 right-0 p-3 flex justify-between items-end">
               <div>
                 <h3 className="text-white font-semibold text-lg">{town.name}</h3>
-                <p className="text-white/80 text-sm">{town.state_code}, {town.country}</p>
+                <p className="text-white/80 text-sm">{town.region && `${town.region}, `}{town.country}</p>
               </div>
               <div className="flex gap-2">
                 {userId && (

@@ -32,7 +32,7 @@ export default function TownComparison() {
     { id: 'culture', label: 'Culture', icon: Users },
     { id: 'hobbies', label: 'Hobbies', icon: SmilePlus },
     { id: 'administration', label: 'Admin', icon: HousePlus },
-    { id: 'cost', label: 'Cost', icon: DollarSign }
+    { id: 'cost', label: 'Costs', icon: DollarSign }
   ];
 
   // Load initial data only once

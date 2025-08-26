@@ -65,12 +65,12 @@ export default function TownRadarChart({ townData }) {
       fullMark: 10
     },
     {
-      category: 'Administration',
+      category: 'Admin',
       value: townData.categoryScores?.administration ? convertScore(townData.categoryScores.administration) : Math.round((townData.healthcare_score || 5) + (townData.safety_score || 5)) / 2,
       fullMark: 10
     },
     {
-      category: 'Cost',
+      category: 'Costs',
       value: townData.categoryScores?.cost ? convertScore(townData.categoryScores.cost) : getCostRating(townData.cost_index),
       fullMark: 10
     }

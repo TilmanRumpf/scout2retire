@@ -23,7 +23,8 @@ export default function FilterBarV3({
   variant = 'default', // 'default' or 'integrated'
   searchTerm,
   setSearchTerm,
-  availableTowns = []
+  availableTowns = [],
+  setSelectedTown
 }) {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
@@ -81,18 +82,24 @@ export default function FilterBarV3({
     return availableTowns
       .filter(town => 
         town.name.toLowerCase().includes(search) ||
-        town.state_code?.toLowerCase().includes(search) ||
+        town.region?.toLowerCase().includes(search) ||
         town.country?.toLowerCase().includes(search)
       )
       .slice(0, 8); // Limit to 8 results for dropdown
   };
 
-  const handleSearchSelect = (townName) => {
-    setSearchInput(townName);
+  const handleSearchSelect = (town) => {
+    // Clear the search
+    setSearchInput('');
     if (setSearchTerm) {
-      setSearchTerm(townName);
+      setSearchTerm('');
     }
     setShowSearchDropdown(false);
+    
+    // Navigate to the town
+    if (setSelectedTown) {
+      setSelectedTown(town.id);
+    }
   };
 
   const handleSearchInputChange = (e) => {
@@ -181,12 +188,12 @@ export default function FilterBarV3({
               {getFilteredTowns().map((town) => (
                 <button
                   key={town.id}
-                  onClick={() => handleSearchSelect(town.name)}
+                  onClick={() => handleSearchSelect(town)}
                   className={`w-full text-left px-4 py-3 hover:${uiConfig.colors.secondary} transition-colors first:rounded-t-lg last:rounded-b-lg`}
                 >
                   <div className={`font-medium ${uiConfig.colors.heading}`}>{town.name}</div>
                   <div className={`text-xs ${uiConfig.colors.subtitle}`}>
-                    {town.state_code && `${town.state_code}, `}{town.country}
+                    {town.region && `${town.region}, `}{town.country}
                   </div>
                 </button>
               ))}
@@ -343,7 +350,7 @@ export default function FilterBarV3({
             }`}
           >
             <DollarSign size={14} />
-            <span>Cost</span>
+            <span>Costs</span>
           </button>
           
           {/* Match Filter */}

@@ -39,12 +39,29 @@ export const fetchTowns = async (filters = {}) => {
       image_url_1, image_url_2, image_url_3,
       latitude, longitude, description,
       cost_of_living_usd, typical_monthly_living_cost, cost_index,
-      healthcare_score, safety_score,
-      avg_temp_summer, avg_temp_winter,
-      airport_distance, english_proficiency_level,
-      walkability, expat_population,
-      geographic_features_actual, vegetation_type_actual,
-      geo_region, regions
+      healthcare_score, safety_score, healthcare_cost_monthly,
+      avg_temp_summer, avg_temp_winter, climate, 
+      summer_climate_actual, winter_climate_actual,
+      sunshine_hours, sunshine_level_actual, annual_rainfall,
+      humidity_average, humidity_level_actual, seasonal_variation_actual,
+      air_quality_index, elevation_meters, distance_to_ocean_km,
+      airport_distance, nearest_airport, english_proficiency_level,
+      walkability, expat_population, expat_community_size,
+      geographic_features, geographic_features_actual, vegetation_type_actual,
+      geo_region, regions, urban_rural_character,
+      primary_language, cultural_events_level, nightlife_rating,
+      restaurants_rating, museums_rating, shopping_rating,
+      pace_of_life_actual, cultural_landmark_1, social_atmosphere,
+      outdoor_rating, outdoor_activities_rating, beaches_nearby,
+      golf_courses_count, hiking_trails_km, tennis_courts_count,
+      marinas_count, ski_resorts_within_100km, dog_parks_count,
+      farmers_markets, water_bodies, activities_available,
+      hospital_count, nearest_major_hospital_km, english_speaking_doctors,
+      visa_requirements, visa_on_arrival_countries, retirement_visa_available,
+      digital_nomad_visa, crime_rate, natural_disaster_risk, internet_speed,
+      rent_1bed, rent_2bed_usd, groceries_cost, meal_cost, utilities_cost,
+      income_tax_rate_pct, sales_tax_rate_pct, property_tax_rate_pct,
+      tax_rates, tax_haven_status, foreign_income_taxed
     `;
     let query = supabase
       .from('towns')
@@ -323,7 +340,7 @@ export const getTownOfTheDay = async (userId) => {
     const userIdString = String(userId).trim();
     
     // First get user preferences using the proper utility
-    const { getOnboardingProgress } = await import('./onboardingUtils');
+    const { getOnboardingProgress } = await import('./userpreferences/onboardingUtils');
     const { success: onboardingSuccess, data: preferences } = await getOnboardingProgress(userId);
     
     if (!onboardingSuccess || !preferences) {
@@ -413,7 +430,7 @@ export const getTownOfTheDay = async (userId) => {
         // Enhance with scores and return
         if (preferences) {
           try {
-            const { scoreTown } = await import('./unifiedScoring');
+            const { scoreTown } = await import('./scoring/unifiedScoring');
             selectedTown = await scoreTown(selectedTown, preferences);
           } catch (error) {
             console.error("Error calculating match scores:", error);
@@ -446,7 +463,7 @@ export const getTownOfTheDay = async (userId) => {
         // Enhance with scores and return
         if (preferences) {
           try {
-            const { scoreTown } = await import('./unifiedScoring');
+            const { scoreTown } = await import('./scoring/unifiedScoring');
             selectedTown = await scoreTown(selectedTown, preferences);
           } catch (error) {
             console.error("Error calculating match scores:", error);
@@ -487,7 +504,7 @@ export const getTownOfTheDay = async (userId) => {
           // Enhance with scores and return
           if (preferences) {
             try {
-              const { scoreTown } = await import('./unifiedScoring');
+              const { scoreTown } = await import('./scoring/unifiedScoring');
               selectedTown = await scoreTown(selectedTown, preferences);
             } catch (error) {
               console.error("Error calculating match scores:", error);
@@ -527,7 +544,7 @@ export const getTownOfTheDay = async (userId) => {
     // Enhance with scores and return
     if (preferences) {
       try {
-        const { scoreTown } = await import('./unifiedScoring');
+        const { scoreTown } = await import('./scoring/unifiedScoring');
         selectedTown = await scoreTown(selectedTown, preferences);
       } catch (error) {
         console.error("Error calculating match scores:", error);
