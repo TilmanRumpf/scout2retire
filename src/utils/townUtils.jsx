@@ -61,7 +61,7 @@ export const fetchTowns = async (filters = {}) => {
       digital_nomad_visa, crime_rate, natural_disaster_risk, internet_speed,
       rent_1bed, rent_2bed_usd, groceries_cost, meal_cost, utilities_cost,
       income_tax_rate_pct, sales_tax_rate_pct, property_tax_rate_pct,
-      tax_rates, tax_haven_status, foreign_income_taxed
+      tax_haven_status, foreign_income_taxed
     `;
     let query = supabase
       .from('towns')

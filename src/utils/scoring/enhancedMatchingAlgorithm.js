@@ -1443,9 +1443,9 @@ function calculateTaxScore(preferences, town, maxPoints = 15) {
   
   // Get tax data - prioritize JSON field, fall back to individual fields
   const taxData = {
-    income: town.tax_rates?.income_tax || town.income_tax_rate_pct,
-    property: town.tax_rates?.property_tax || town.property_tax_rate_pct,
-    sales: town.tax_rates?.sales_tax || town.sales_tax_rate_pct
+    income: town.income_tax_rate_pct,
+    property: town.property_tax_rate_pct,
+    sales: town.sales_tax_rate_pct
   }
   
   let totalSensitiveTaxes = 0

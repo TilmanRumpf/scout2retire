@@ -170,17 +170,35 @@ export default function DailyTownCard() {
             isUpdating={isUpdating}
             onFavoriteClick={handleFavoriteToggle}
             appealStatement={(() => {
-              // Generate appeal statement based on category scores
-              if (town.categoryScores?.culture >= 80 || town.categoryScores?.region >= 80) {
-                return "Strong cultural fit";
+              // Find the highest scoring category and display it
+              const scores = town.categoryScores;
+              if (!scores) return "Worth exploring";
+              
+              // Get all category scores
+              const categories = [
+                { name: 'Region', score: scores.region || 0 },
+                { name: 'Climate', score: scores.climate || 0 },
+                { name: 'Culture', score: scores.culture || 0 },
+                { name: 'Hobbies', score: scores.hobbies || 0 },
+                { name: 'Admin', score: scores.administration || 0 },
+                { name: 'Costs', score: scores.cost || 0 }
+              ];
+              
+              // Find the highest scoring category
+              const highest = categories.reduce((prev, current) => 
+                current.score > prev.score ? current : prev
+              );
+              
+              // Format the appeal statement
+              if (highest.score >= 90) {
+                return `${highest.name} Match: ${Math.round(highest.score)}%`;
+              } else if (highest.score >= 80) {
+                return `Strong ${highest.name.toLowerCase()} match`;
+              } else if (highest.score >= 70) {
+                return `Good ${highest.name.toLowerCase()} fit`;
+              } else {
+                return `${highest.name}: ${Math.round(highest.score)}%`;
               }
-              if (town.cost_index && 2500 - town.cost_index > 500) {
-                return "Great value";
-              }
-              if (town.categoryScores?.climate >= 80) {
-                return "Perfect climate";
-              }
-              return "Worth exploring";
             })()}
           />
         )}
@@ -200,91 +218,6 @@ export default function DailyTownCard() {
           <p className="min-h-[4rem] md:min-h-[4.5rem]">
             {town.description || "Charming European destination offering excellent quality of life, beautiful historic architecture, and affordable living costs. Perfect for retirees seeking authentic culture without Western European prices."}
           </p>
-        </div>
-
-        {/* Key Facts Section - Ordered by onboarding logic */}
-        <div className="mb-4">
-          <h4 className={`text-sm ${uiConfig.colors.hint} mb-2`}>Key Facts</h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {/* REGION - Population, Airport */}
-            {town.population && (
-              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
-                <Users size={14} className="flex-shrink-0" />
-                <span className="truncate">
-                  {town.population > 1000000 
-                    ? `${(town.population / 1000000).toFixed(1)}M` 
-                    : town.population > 1000 
-                    ? `${Math.round(town.population / 1000)}K`
-                    : town.population.toLocaleString()}
-                </span>
-              </div>
-            )}
-            
-            {/* Airport Distance */}
-            {town.airport_distance && (
-              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
-                <Plane size={14} className="flex-shrink-0" />
-                <span className="truncate">{Math.round(town.airport_distance)}km</span>
-              </div>
-            )}
-            
-            {/* CLIMATE - Temperature */}
-            {(town.avg_temp_summer || town.avg_temp_winter) && (
-              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
-                <Thermometer size={14} className="flex-shrink-0" />
-                <span className="truncate">
-                  {town.avg_temp_summer && `${Math.round(town.avg_temp_summer)}°C`}
-                  {town.avg_temp_summer && town.avg_temp_winter && '/'}
-                  {town.avg_temp_winter && `${Math.round(town.avg_temp_winter)}°C`}
-                </span>
-              </div>
-            )}
-            
-            {/* CULTURE - English */}
-            {(town.english_proficiency || town.english_proficiency_level) && (
-              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
-                <MessageCircle size={14} className="flex-shrink-0" />
-                <span className="truncate">
-                  {town.english_proficiency 
-                    ? `${town.english_proficiency}%`
-                    : town.english_proficiency_level}
-                </span>
-              </div>
-            )}
-            
-            {/* HOBBIES - Walkability */}
-            {town.walkability && (
-              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
-                <Footprints size={14} className="flex-shrink-0" />
-                <span className="truncate">{town.walkability}/10</span>
-              </div>
-            )}
-            
-            {/* ADMINISTRATION - Healthcare, Safety */}
-            {town.healthcare_score && (
-              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.statusInfo} text-xs ${uiConfig.layout.radius.md}`}>
-                <Activity size={14} className="flex-shrink-0" />
-                <span className="truncate">{town.healthcare_score}/10</span>
-              </div>
-            )}
-            
-            {town.safety_score && (
-              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
-                <Shield size={14} className="flex-shrink-0" />
-                <span className="truncate">{town.safety_score}/10</span>
-              </div>
-            )}
-            
-            {/* COSTS - Cost of Living */}
-            {(town.cost_of_living_usd || town.typical_monthly_living_cost || town.cost_index) && (
-              <div className={`flex items-center gap-1 px-2 py-1 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.md}`}>
-                <DollarSign size={14} className="flex-shrink-0" />
-                <span className="truncate">
-                  ${town.cost_of_living_usd || town.typical_monthly_living_cost || town.cost_index}/mo
-                </span>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Category Scores Grid - All 6 Onboarding Categories */}
