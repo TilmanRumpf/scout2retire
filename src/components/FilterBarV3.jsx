@@ -30,6 +30,8 @@ export default function FilterBarV3({
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [searchInput, setSearchInput] = useState(searchTerm || '');
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef(null);
   
   // Refs for each button to calculate positions
   const sortButtonRef = useRef(null);
@@ -89,12 +91,14 @@ export default function FilterBarV3({
   };
 
   const handleSearchSelect = (town) => {
-    // Clear the search
-    setSearchInput('');
+    // Keep the selected town name visible for better UX
+    setSearchInput(`${town.name}, ${town.country}`);
+    setShowSearchDropdown(false);
+    
+    // Clear the search term so filtering doesn't apply
     if (setSearchTerm) {
       setSearchTerm('');
     }
-    setShowSearchDropdown(false);
     
     // Navigate to the town
     if (setSelectedTown) {
@@ -104,12 +108,74 @@ export default function FilterBarV3({
 
   const handleSearchInputChange = (e) => {
     const value = e.target.value;
+    
+    // Allow deletion of completed selections
     setSearchInput(value);
-    setShowSearchDropdown(value.length > 0);
+    setIsTyping(true);
     
     // Update search term in real time for filtering
     if (setSearchTerm) {
       setSearchTerm(value);
+    }
+    
+    // Clear any existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    // Check for matches and show dropdown immediately
+    if (value.length > 0 && !value.includes(',')) {
+      const search = value.toLowerCase();
+      const filtered = availableTowns.filter(town => 
+        town.name.toLowerCase().startsWith(search) ||
+        town.name.toLowerCase().includes(search)
+      );
+      
+      if (filtered.length > 1) {
+        // Multiple matches - show dropdown immediately
+        setShowSearchDropdown(true);
+      } else if (filtered.length === 0) {
+        // No matches
+        setShowSearchDropdown(false);
+      } else if (filtered.length === 1) {
+        // One match - show it in dropdown but wait LONGER to auto-complete
+        setShowSearchDropdown(true);
+        
+        // Set timeout to auto-complete after user stops typing (increased delay)
+        typingTimeoutRef.current = setTimeout(() => {
+          // Double-check that we still have only one match
+          const currentSearch = value.toLowerCase();
+          const currentFiltered = availableTowns.filter(town => 
+            town.name.toLowerCase().startsWith(currentSearch) ||
+            town.name.toLowerCase().includes(currentSearch)
+          );
+          
+          if (currentFiltered.length === 1) {
+            const selectedTown = currentFiltered[0];
+            const fullName = `${selectedTown.name}, ${selectedTown.country}`;
+            
+            // Auto-complete the input field with the full name
+            setSearchInput(fullName);
+            
+            // Select the town
+            if (setSelectedTown) {
+              setSelectedTown(selectedTown.id);
+            }
+            
+            // Clear search term so filtering shows all towns
+            if (setSearchTerm) {
+              setSearchTerm('');
+            }
+            
+            // Hide dropdown since we've auto-completed
+            setShowSearchDropdown(false);
+          }
+          setIsTyping(false);
+        }, 800); // Increased to 800ms - more human-friendly delay
+      }
+    } else {
+      setShowSearchDropdown(false);
+      setIsTyping(false);
     }
   };
 
@@ -122,13 +188,21 @@ export default function FilterBarV3({
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      // Clean up any pending timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
   }, []);
 
-  // Sync search input with searchTerm prop
+  // Only sync on initial mount, not on every searchTerm change
   useEffect(() => {
-    setSearchInput(searchTerm || '');
-  }, [searchTerm]);
+    if (searchTerm && !searchInput) {
+      setSearchInput(searchTerm);
+    }
+  }, []); // Empty deps - only on mount
 
   // Portal dropdown component
   const PortalDropdown = ({ children, width = 'w-48' }) => {
@@ -161,7 +235,17 @@ export default function FilterBarV3({
               type="text"
               value={searchInput}
               onChange={handleSearchInputChange}
-              onFocus={() => searchInput.length > 0 && setShowSearchDropdown(true)}
+              onFocus={() => {
+                // Clear if it's a previously selected town (contains comma)
+                if (searchInput.includes(',')) {
+                  setSearchInput('');
+                  if (setSearchTerm) {
+                    setSearchTerm('');
+                  }
+                } else if (searchInput.length > 0) {
+                  setShowSearchDropdown(true);
+                }
+              }}
               placeholder="Search cities..."
               className={`w-full h-9 pl-9 pr-8 text-sm ${uiConfig.colors.input} rounded-lg border ${uiConfig.colors.border} focus:outline-none focus:${uiConfig.colors.card} focus:border-${uiConfig.colors.accentBorder} transition-all`}
             />

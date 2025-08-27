@@ -42,7 +42,15 @@ const REGION_COUNTRIES = {
 
 
 export default function TownDiscovery() {
-  const [selectedTown, setSelectedTown] = useState(null);
+  const [selectedTown, setSelectedTownState] = useState(null);
+  
+  // Wrapper to also save to localStorage when town changes
+  const setSelectedTown = (townId) => {
+    setSelectedTownState(townId);
+    if (townId) {
+      localStorage.setItem('lastVisitedTown', townId);
+    }
+  };
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [userLoading, setUserLoading] = useState(true);
@@ -131,21 +139,35 @@ export default function TownDiscovery() {
     loadTowns();
   }, [user]);
   
-  // Parse URL parameters
+  // Parse URL parameters and handle town selection
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const townId = params.get('town');
     const regionFilter = params.get('filterRegion');
     
     if (townId) {
+      // User came from a specific town card - show that town
       setSelectedTown(townId);
+    } else if (!selectedTown && towns.length > 0) {
+      // No specific town requested - try to restore last visited or pick first
+      const lastVisited = localStorage.getItem('lastVisitedTown');
+      
+      if (lastVisited && towns.some(t => String(t.id) === String(lastVisited))) {
+        // Last visited town exists in current list
+        setSelectedTown(lastVisited);
+      } else {
+        // Default to first town in the list (best match if sorted by match score)
+        if (towns.length > 0) {
+          setSelectedTown(towns[0].id);
+        }
+      }
     }
     
     // Set region filter from URL parameter
     if (regionFilter && REGIONS.includes(regionFilter)) {
       setFilterRegion(regionFilter);
     }
-  }, [location.search]);
+  }, [location.search, towns]);
 
   // Navigate to welcome if not authenticated
   useEffect(() => {
@@ -696,14 +718,14 @@ export default function TownDiscovery() {
                           {selectedTownData.outdoor_activities_rating && <div>Outdoor activities: {selectedTownData.outdoor_activities_rating}/10</div>}
                           {selectedTownData.walkability && <div>Walkability: {selectedTownData.walkability}/10</div>}
                           {selectedTownData.beaches_nearby !== null && <div>Beaches: {selectedTownData.beaches_nearby ? 'Yes' : 'No'}</div>}
-                          {selectedTownData.golf_courses_count !== null && <div>Golf courses: {selectedTownData.golf_courses_count}</div>}
+                          {selectedTownData.golf_courses_count > 0 && <div>Golf courses: {selectedTownData.golf_courses_count}</div>}
                           {selectedTownData.hiking_trails_km && <div>Hiking trails: {selectedTownData.hiking_trails_km}km</div>}
-                          {selectedTownData.tennis_courts_count !== null && <div>Tennis courts: {selectedTownData.tennis_courts_count}</div>}
-                          {selectedTownData.marinas_count !== null && <div>Marinas: {selectedTownData.marinas_count}</div>}
-                          {selectedTownData.ski_resorts_within_100km !== null && <div>Ski resorts nearby: {selectedTownData.ski_resorts_within_100km}</div>}
-                          {selectedTownData.dog_parks_count !== null && <div>Dog parks: {selectedTownData.dog_parks_count}</div>}
+                          {selectedTownData.tennis_courts_count > 0 && <div>Tennis courts: {selectedTownData.tennis_courts_count}</div>}
+                          {selectedTownData.marinas_count > 0 && <div>Marinas: {selectedTownData.marinas_count}</div>}
+                          {selectedTownData.ski_resorts_within_100km > 0 && <div>Ski resorts nearby: {selectedTownData.ski_resorts_within_100km}</div>}
+                          {selectedTownData.dog_parks_count > 0 && <div>Dog parks: {selectedTownData.dog_parks_count}</div>}
                           {selectedTownData.farmers_markets !== null && <div>Farmers markets: {selectedTownData.farmers_markets ? 'Yes' : 'No'}</div>}
-                          {selectedTownData.water_bodies && <div>Water: {selectedTownData.water_bodies}</div>}
+                          {selectedTownData.water_bodies && <div>Water: {typeof selectedTownData.water_bodies === 'string' ? selectedTownData.water_bodies.split(',').map(w => w.trim()).join(', ') : selectedTownData.water_bodies}</div>}
                         </div>
                       </div>
 
@@ -764,7 +786,6 @@ export default function TownDiscovery() {
                           {(selectedTownData.income_tax_rate_pct !== undefined && selectedTownData.income_tax_rate_pct !== null) && <div>Income tax: {selectedTownData.income_tax_rate_pct}%</div>}
                           {(selectedTownData.sales_tax_rate_pct !== undefined && selectedTownData.sales_tax_rate_pct !== null) && <div>Sales tax: {selectedTownData.sales_tax_rate_pct}%</div>}
                           {(selectedTownData.property_tax_rate_pct !== undefined && selectedTownData.property_tax_rate_pct !== null) && <div>Property tax: {selectedTownData.property_tax_rate_pct}%</div>}
-                          {selectedTownData.tax_rates && <div>Tax info: {selectedTownData.tax_rates}</div>}
                           {(selectedTownData.tax_haven_status !== undefined) && <div>Tax haven: {selectedTownData.tax_haven_status ? 'Yes' : 'No'}</div>}
                           {(selectedTownData.foreign_income_taxed !== undefined) && <div>Foreign income taxed: {selectedTownData.foreign_income_taxed ? 'Yes' : 'No'}</div>}
                         </div>

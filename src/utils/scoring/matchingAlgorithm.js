@@ -135,7 +135,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       primary_language, cultural_events_level, museums_rating,
       restaurants_rating, shopping_rating, cultural_landmark_1,
       social_atmosphere, pace_of_life_actual, urban_rural_character,
-      visa_requirements, visa_on_arrival_countries, residency_path_info, tax_rates,
+      visa_requirements, visa_on_arrival_countries, residency_path_info,
       retirement_visa_available, digital_nomad_visa, crime_rate,
       natural_disaster_risk, internet_speed,
       geographic_features, geographic_features_actual, vegetation_type_actual,
