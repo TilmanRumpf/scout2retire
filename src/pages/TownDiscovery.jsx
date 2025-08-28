@@ -463,13 +463,11 @@ export default function TownDiscovery() {
               </div>
               
               <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h2 className={`text-2xl font-bold ${uiConfig.colors.heading}`}>
-                      {selectedTownData.name}, {selectedTownData.country}
-                    </h2>
-                  </div>
-                  <div className={`text-2xl font-bold ${uiConfig.colors.heading}`}>
+                <div className="flex justify-between items-baseline mb-4">
+                  <h2 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>
+                    {selectedTownData.name}, {selectedTownData.country}
+                  </h2>
+                  <div className={`text-lg font-semibold ${uiConfig.colors.heading}`}>
                     Score: {Math.round(selectedTownData.matchScore || 0)}%
                   </div>
                 </div>
@@ -831,14 +829,20 @@ export default function TownDiscovery() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedAndFilteredTowns.map((town) => (
+            {sortedAndFilteredTowns
+              .filter(town => !selectedTownData || String(town.id) !== String(selectedTownData.id))
+              .map((town) => (
             <div
               key={town.id}
               className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden ${uiConfig.animation.transition} hover:${uiConfig.layout.shadow.lg} ${
                 selectedTownData && String(town.id) === String(selectedTownData.id) ? `ring-2 ${uiConfig.colors.borderActive}` : ''
               }`}
             >
-              <div className="relative h-40">
+              <div 
+                className="relative h-40 cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => setSelectedTown(town.id)}
+                title={`View details for ${town.name}`}
+              >
                 <OptimizedImage
                   src={town.image_url_1}
                   alt={town.name}
@@ -952,6 +956,12 @@ export default function TownDiscovery() {
                     className={`px-3 py-1.5 text-xs ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md}`}
                   >
                     Explore
+                  </button>
+                  <button
+                    onClick={() => setSelectedTown(town.id)}
+                    className={`px-3 py-1.5 text-xs ${uiConfig.colors.body} border ${uiConfig.colors.border} hover:${uiConfig.colors.secondary} ${uiConfig.layout.radius.md} mx-1`}
+                  >
+                    Overview
                   </button>
                   <button
                     onClick={() => {
