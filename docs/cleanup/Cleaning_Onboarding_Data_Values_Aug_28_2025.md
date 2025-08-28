@@ -2,7 +2,7 @@
 **Date:** August 28, 2025  
 **Purpose:** Complete audit and cleanup of all user preference data  
 **Status:** PLAN PHASE - Awaiting Approval
-**Version:** 2.0 - Updated with lowercase DB / Title Case UI pattern
+**Version:** 3.0 - CRITICAL FIXES: Added towns table, transactions, verification, correct order
 
 ---
 
@@ -17,6 +17,8 @@ Multi-agent investigation revealed **critical data inconsistencies** across user
 **Impact:** These issues affect matching accuracy, causing users to miss relevant towns or get incorrect scores.
 
 **Solution:** Implement industry-standard pattern: **lowercase in database, Title Case in UI**
+
+**CRITICAL:** Must also normalize towns table data to match user preferences format
 
 ---
 
@@ -227,17 +229,37 @@ const splitCompoundValues = (value) => {
 
 ## 📝 IMPLEMENTATION PROCESS
 
+### 🚨 CRITICAL EXECUTION ORDER
+1. **Backup** → 2. **Clean Data** → 3. **Verify** → 4. **Add Constraints** → 5. **Update UI**
+
+**NEVER add constraints before cleaning data or all updates will fail!**
+
 ### STEP 1: BACKUP CURRENT STATE
 ```bash
 # 1. Create database snapshot
 node create-database-snapshot.js
 
-# 2. Export affected tables
-pg_dump --table=user_preferences > backup_user_prefs_$(date +%Y%m%d).sql
+# 2. Export affected tables (optional extra safety)
+pg_dump --table=user_preferences --table=towns > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # 3. Git checkpoint
 git add -A && git commit -m "🔒 CHECKPOINT: Before onboarding data cleanup"
 ```
+
+### PROGRESS TRACKING TABLE
+Use this to track your progress and prevent duplicate executions:
+
+| Step | Task | Status | Timestamp | Notes |
+|------|------|--------|-----------|-------|
+| 1 | Database backup | ⬜ | | |
+| 2 | Pre-execution verification | ⬜ | | |
+| 3 | User preferences normalization | ⬜ | | |
+| 4 | Towns table normalization | ⬜ | | |
+| 5 | Post-cleanup verification | ⬜ | | |
+| 6 | Add database constraints | ⬜ | | |
+| 7 | Update UI components | ⬜ | | |
+| 8 | Test full onboarding flow | ⬜ | | |
+| 9 | Final verification | ⬜ | | |
 
 ### STEP 2: CREATE TRANSFORMATION LAYER
 
@@ -542,11 +564,38 @@ async function executeCleanup(dryRun = true) {
 }
 ```
 
-### STEP 5: DATABASE NORMALIZATION QUERIES
+### STEP 5: DATABASE NORMALIZATION QUERIES (WITH TRANSACTIONS & VERIFICATION)
 
-#### **One-Time Database Cleanup SQL**
+#### **PRE-EXECUTION VERIFICATION**
 ```sql
--- CRITICAL: Convert all geographic_features to lowercase
+-- FIRST: Check current state before any changes
+-- Count records that need updating
+SELECT 
+  'user_preferences' as table_name,
+  COUNT(*) as records_to_update,
+  COUNT(DISTINCT user_id) as unique_users
+FROM user_preferences
+WHERE geographic_features IS NOT NULL 
+   OR vegetation_types IS NOT NULL;
+
+SELECT 
+  'towns' as table_name,
+  COUNT(*) as records_to_update
+FROM towns
+WHERE geographic_features_actual IS NOT NULL 
+   OR vegetation_type_actual IS NOT NULL;
+
+-- Backup current values for rollback reference
+SELECT user_id, geographic_features, vegetation_types 
+FROM user_preferences 
+WHERE user_id IN (SELECT user_id FROM user_preferences LIMIT 5);
+```
+
+#### **MAIN CLEANUP - USER_PREFERENCES TABLE (TRANSACTIONAL)**
+```sql
+BEGIN TRANSACTION;
+
+-- Step 1: Normalize geographic_features to lowercase
 UPDATE user_preferences 
 SET geographic_features = (
   SELECT array_agg(DISTINCT LOWER(value))
@@ -555,7 +604,7 @@ SET geographic_features = (
 )
 WHERE geographic_features IS NOT NULL;
 
--- CRITICAL: Convert all vegetation_types to lowercase  
+-- Step 2: Normalize vegetation_types to lowercase  
 UPDATE user_preferences
 SET vegetation_types = (
   SELECT array_agg(DISTINCT LOWER(value))
@@ -564,30 +613,122 @@ SET vegetation_types = (
 )
 WHERE vegetation_types IS NOT NULL;
 
--- Remove any remaining duplicates from all array fields
+-- Step 3: Normalize regions (handle spaces and underscores)
+UPDATE user_preferences
+SET regions = (
+  SELECT array_agg(DISTINCT REPLACE(LOWER(value), '_', ' '))
+  FROM unnest(regions) AS value
+  WHERE value IS NOT NULL
+)
+WHERE regions IS NOT NULL;
+
+-- Step 4: Remove duplicates from all array fields
 UPDATE user_preferences
 SET 
-  sunshine = (SELECT array_agg(DISTINCT value) FROM unnest(sunshine) AS value),
-  precipitation = (SELECT array_agg(DISTINCT value) FROM unnest(precipitation) AS value),
-  humidity_level = (SELECT array_agg(DISTINCT value) FROM unnest(humidity_level) AS value),
-  activities = (SELECT array_agg(DISTINCT value) FROM unnest(activities) AS value),
-  interests = (SELECT array_agg(DISTINCT value) FROM unnest(interests) AS value),
-  regions = (SELECT array_agg(DISTINCT value) FROM unnest(regions) AS value),
-  countries = (SELECT array_agg(DISTINCT value) FROM unnest(countries) AS value)
+  sunshine = (SELECT array_agg(DISTINCT value) FROM unnest(sunshine) AS value WHERE value IS NOT NULL),
+  precipitation = (SELECT array_agg(DISTINCT value) FROM unnest(precipitation) AS value WHERE value IS NOT NULL),
+  humidity_level = (SELECT array_agg(DISTINCT value) FROM unnest(humidity_level) AS value WHERE value IS NOT NULL),
+  activities = (SELECT array_agg(DISTINCT LOWER(value)) FROM unnest(activities) AS value WHERE value IS NOT NULL),
+  interests = (SELECT array_agg(DISTINCT LOWER(value)) FROM unnest(interests) AS value WHERE value IS NOT NULL),
+  countries = (SELECT array_agg(DISTINCT value) FROM unnest(countries) AS value WHERE value IS NOT NULL)
 WHERE user_id IS NOT NULL;
 
--- Verify the cleanup
+-- VERIFICATION: Check if updates worked correctly
 SELECT 
-  'geographic_features' as field,
-  array_agg(DISTINCT value) as unique_values
-FROM user_preferences, unnest(geographic_features) as value
-WHERE value IS NOT NULL
+  COUNT(*) as updated_count,
+  array_agg(DISTINCT unnest(geographic_features)) as all_geographic_values,
+  array_agg(DISTINCT unnest(vegetation_types)) as all_vegetation_values
+FROM user_preferences;
+
+-- If everything looks good:
+COMMIT;
+-- If there are issues:
+-- ROLLBACK;
+```
+
+#### **CRITICAL: NORMALIZE TOWNS TABLE**
+```sql
+BEGIN TRANSACTION;
+
+-- Step 1: Normalize geographic_features_actual in towns table
+UPDATE towns 
+SET geographic_features_actual = LOWER(geographic_features_actual)
+WHERE geographic_features_actual IS NOT NULL;
+
+-- Step 2: Normalize vegetation_type_actual in towns table
+UPDATE towns
+SET vegetation_type_actual = LOWER(vegetation_type_actual)
+WHERE vegetation_type_actual IS NOT NULL;
+
+-- Step 3: Handle any comma-separated values in towns
+UPDATE towns
+SET geographic_features_actual = REPLACE(LOWER(geographic_features_actual), ', ', ',')
+WHERE geographic_features_actual LIKE '%, %';
+
+-- VERIFICATION: Check towns data
+SELECT 
+  COUNT(*) as towns_updated,
+  COUNT(DISTINCT geographic_features_actual) as unique_geographic,
+  COUNT(DISTINCT vegetation_type_actual) as unique_vegetation
+FROM towns;
+
+-- Sample check
+SELECT name, geographic_features_actual, vegetation_type_actual 
+FROM towns 
+LIMIT 10;
+
+COMMIT;
+-- ROLLBACK; -- if issues
+```
+
+#### **POST-CLEANUP VERIFICATION QUERIES**
+```sql
+-- 1. Verify no uppercase values remain in user_preferences
+SELECT user_id, geographic_features 
+FROM user_preferences
+WHERE geographic_features::text ~ '[A-Z]';  -- Should return 0 rows
+
+-- 2. Verify no uppercase values remain in towns
+SELECT name, geographic_features_actual 
+FROM towns
+WHERE geographic_features_actual ~ '[A-Z]';  -- Should return 0 rows
+
+-- 3. Check for any remaining duplicates
+SELECT user_id, array_length(sunshine, 1) as total, array_length(array(SELECT DISTINCT unnest(sunshine)), 1) as unique_count
+FROM user_preferences
+WHERE array_length(sunshine, 1) != array_length(array(SELECT DISTINCT unnest(sunshine)), 1);
+
+-- 4. Verify data integrity
+SELECT 
+  'user_preferences' as table_name,
+  COUNT(*) as total_records,
+  COUNT(geographic_features) as with_geographic,
+  COUNT(vegetation_types) as with_vegetation
+FROM user_preferences
 UNION ALL
 SELECT 
-  'vegetation_types' as field,
-  array_agg(DISTINCT value) as unique_values
-FROM user_preferences, unnest(vegetation_types) as value
-WHERE value IS NOT NULL;
+  'towns' as table_name,
+  COUNT(*) as total_records,
+  COUNT(geographic_features_actual) as with_geographic,
+  COUNT(vegetation_type_actual) as with_vegetation
+FROM towns;
+```
+
+#### **ROLLBACK COMMANDS (IF NEEDED)**
+```sql
+-- If you need to rollback user_preferences to Title Case:
+UPDATE user_preferences 
+SET geographic_features = (
+  SELECT array_agg(DISTINCT INITCAP(value))
+  FROM unnest(geographic_features) AS value
+  WHERE value IS NOT NULL
+)
+WHERE geographic_features IS NOT NULL;
+
+-- If you need to rollback towns to Title Case:
+UPDATE towns 
+SET geographic_features_actual = INITCAP(geographic_features_actual)
+WHERE geographic_features_actual IS NOT NULL;
 ```
 
 ### STEP 6: UPDATE UI COMPONENTS TO USE VALUE/LABEL PATTERN
@@ -627,8 +768,17 @@ const validateAndSave = (formData) => {
 };
 ```
 
-### STEP 7: ADD DATABASE CONSTRAINTS (LOWERCASE)
+### STEP 7: ADD DATABASE CONSTRAINTS (ONLY AFTER DATA IS CLEAN!)
 ```sql
+-- ⚠️ CRITICAL: Only run these AFTER all data is normalized to lowercase
+-- These will BLOCK any insert/update with wrong case values
+
+-- First, verify data is clean:
+SELECT COUNT(*) FROM user_preferences WHERE geographic_features::text ~ '[A-Z]';
+-- Must return 0 before proceeding!
+
+BEGIN TRANSACTION;
+
 -- Add check constraints to prevent invalid values (ALL LOWERCASE)
 ALTER TABLE user_preferences
 ADD CONSTRAINT valid_sunshine_values CHECK (
@@ -649,6 +799,20 @@ ADD CONSTRAINT valid_vegetation_types CHECK (
   vegetation_types <@ ARRAY['tropical', 'subtropical', 'mediterranean', 
     'forest', 'grassland', 'desert']::text[]
 );
+
+-- Test the constraints work
+-- This should FAIL:
+-- INSERT INTO user_preferences (user_id, geographic_features) VALUES ('test', ARRAY['Coastal']);
+
+-- This should SUCCEED:
+-- INSERT INTO user_preferences (user_id, geographic_features) VALUES ('test', ARRAY['coastal']);
+
+COMMIT;
+
+-- ROLLBACK CONSTRAINTS IF NEEDED:
+-- ALTER TABLE user_preferences DROP CONSTRAINT IF EXISTS valid_sunshine_values;
+-- ALTER TABLE user_preferences DROP CONSTRAINT IF EXISTS valid_geographic_features;
+-- ALTER TABLE user_preferences DROP CONSTRAINT IF EXISTS valid_vegetation_types;
 
 -- Add trigger to deduplicate arrays on insert/update
 CREATE OR REPLACE FUNCTION deduplicate_arrays()
@@ -711,30 +875,35 @@ FOR EACH ROW EXECUTE FUNCTION deduplicate_arrays();
 
 ---
 
-## 🚀 EXECUTION TIMELINE
+## 🚀 SAFE EXECUTION CHECKLIST
 
-### **Phase 1: Preparation (30 min)**
-- [ ] Create comprehensive backup
-- [ ] Document current state
-- [ ] Set up rollback plan
+### **PRE-FLIGHT CHECKS**
+- [ ] Database snapshot created
+- [ ] Git committed and pushed
+- [ ] Dev environment (not production!)
+- [ ] Have rollback commands ready
+- [ ] Understand each step
 
-### **Phase 2: Data Cleanup (1 hour)**
-- [ ] Run dry-run cleanup script
-- [ ] Review proposed changes
-- [ ] Execute actual cleanup
-- [ ] Verify results
+### **EXECUTION ORDER (CRITICAL!)**
+1. [ ] **Backup** - Create snapshot
+2. [ ] **Verify Current State** - Run pre-execution queries
+3. [ ] **Clean User Preferences** - Normalize to lowercase
+4. [ ] **Clean Towns Data** - Normalize to lowercase
+5. [ ] **Verify Cleanup** - Run verification queries
+6. [ ] **ONLY THEN Add Constraints** - After data is clean
+7. [ ] **Update UI Components** - Add transformation layer
+8. [ ] **Test Everything** - Full onboarding flow
 
-### **Phase 3: Code Updates (2 hours)**
-- [ ] Update UI components for consistency
-- [ ] Add validation functions
-- [ ] Implement deduplication logic
-- [ ] Test onboarding flow
+### **DANGER ZONES**
+⚠️ **NEVER run constraints before data cleanup**
+⚠️ **ALWAYS use transactions for updates**
+⚠️ **VERIFY each step before proceeding**
 
-### **Phase 4: Prevention (1 hour)**
-- [ ] Add database constraints
-- [ ] Create monitoring queries
-- [ ] Document valid values
-- [ ] Update developer guidelines
+### **IDEMPOTENCY CHECK**
+✅ All SQL operations are idempotent (safe to run multiple times)
+✅ Lowercase operations won't change already-lowercase values
+✅ DISTINCT prevents adding duplicates
+✅ Constraints can be dropped and re-added safely
 
 ---
 
