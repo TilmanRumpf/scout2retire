@@ -81,18 +81,43 @@ export default function FilterBarV3({
   const getFilteredTowns = () => {
     if (!searchInput.trim()) return [];
     const search = searchInput.toLowerCase();
-    return availableTowns
-      .filter(town => 
-        town.name.toLowerCase().includes(search) ||
-        town.region?.toLowerCase().includes(search) ||
-        town.country?.toLowerCase().includes(search)
-      )
-      .slice(0, 8); // Limit to 8 results for dropdown
+    
+    // Filter and sort results
+    const filtered = availableTowns.filter(town => 
+      town.name.toLowerCase().includes(search) ||
+      town.region?.toLowerCase().includes(search) ||
+      town.country?.toLowerCase().includes(search)
+    );
+    
+    // Sort to prioritize exact matches and country matches
+    filtered.sort((a, b) => {
+      // Exact town name match comes first
+      const aNameMatch = a.name.toLowerCase() === search;
+      const bNameMatch = b.name.toLowerCase() === search;
+      if (aNameMatch && !bNameMatch) return -1;
+      if (!aNameMatch && bNameMatch) return 1;
+      
+      // Then prioritize country matches
+      const aCountryMatch = a.country?.toLowerCase().includes(search);
+      const bCountryMatch = b.country?.toLowerCase().includes(search);
+      if (aCountryMatch && !bCountryMatch) return -1;
+      if (!aCountryMatch && bCountryMatch) return 1;
+      
+      // Then town name starts with search
+      const aStartsWith = a.name.toLowerCase().startsWith(search);
+      const bStartsWith = b.name.toLowerCase().startsWith(search);
+      if (aStartsWith && !bStartsWith) return -1;
+      if (!aStartsWith && bStartsWith) return 1;
+      
+      return 0;
+    });
+    
+    return filtered.slice(0, 8); // Limit to 8 results for dropdown
   };
 
   const handleSearchSelect = (town) => {
-    // Keep the selected town name visible for better UX
-    setSearchInput(`${town.name}, ${town.country}`);
+    // Clear search immediately when user selects
+    setSearchInput('');
     setShowSearchDropdown(false);
     
     // Clear the search term so filtering doesn't apply
@@ -109,73 +134,35 @@ export default function FilterBarV3({
   const handleSearchInputChange = (e) => {
     const value = e.target.value;
     
-    // Allow deletion of completed selections
+    // JUST SET THE DAMN VALUE - NO FIGHTING!
     setSearchInput(value);
-    setIsTyping(true);
     
-    // Update search term in real time for filtering
+    // Update search term for filtering
     if (setSearchTerm) {
       setSearchTerm(value);
     }
     
-    // Clear any existing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-    
-    // Check for matches and show dropdown immediately
-    if (value.length > 0 && !value.includes(',')) {
+    // Show dropdown only if user has typed at least 2 characters
+    // This makes it less intrusive and gives user more control
+    if (value.length >= 2) {
       const search = value.toLowerCase();
       const filtered = availableTowns.filter(town => 
-        town.name.toLowerCase().startsWith(search) ||
-        town.name.toLowerCase().includes(search)
+        town.name.toLowerCase().includes(search) ||
+        town.region?.toLowerCase().includes(search) ||
+        town.country?.toLowerCase().includes(search)
       );
       
-      if (filtered.length > 1) {
-        // Multiple matches - show dropdown immediately
-        setShowSearchDropdown(true);
-      } else if (filtered.length === 0) {
-        // No matches
-        setShowSearchDropdown(false);
-      } else if (filtered.length === 1) {
-        // One match - show it in dropdown but wait LONGER to auto-complete
-        setShowSearchDropdown(true);
-        
-        // Set timeout to auto-complete after user stops typing (increased delay)
-        typingTimeoutRef.current = setTimeout(() => {
-          // Double-check that we still have only one match
-          const currentSearch = value.toLowerCase();
-          const currentFiltered = availableTowns.filter(town => 
-            town.name.toLowerCase().startsWith(currentSearch) ||
-            town.name.toLowerCase().includes(currentSearch)
-          );
-          
-          if (currentFiltered.length === 1) {
-            const selectedTown = currentFiltered[0];
-            const fullName = `${selectedTown.name}, ${selectedTown.country}`;
-            
-            // Auto-complete the input field with the full name
-            setSearchInput(fullName);
-            
-            // Select the town
-            if (setSelectedTown) {
-              setSelectedTown(selectedTown.id);
-            }
-            
-            // Clear search term so filtering shows all towns
-            if (setSearchTerm) {
-              setSearchTerm('');
-            }
-            
-            // Hide dropdown since we've auto-completed
-            setShowSearchDropdown(false);
-          }
-          setIsTyping(false);
-        }, 800); // Increased to 800ms - more human-friendly delay
+      // Show dropdown if there are matches
+      setShowSearchDropdown(filtered.length > 0);
+      
+      // Hide selected town if searching for a country
+      const countries = [...new Set(availableTowns.map(t => t.country?.toLowerCase()))];
+      const isCountrySearch = countries.some(c => c && c.startsWith(search));
+      if (isCountrySearch && setSelectedTown) {
+        setSelectedTown(null);
       }
     } else {
       setShowSearchDropdown(false);
-      setIsTyping(false);
     }
   };
 
@@ -242,11 +229,14 @@ export default function FilterBarV3({
                   if (setSearchTerm) {
                     setSearchTerm('');
                   }
-                } else if (searchInput.length > 0) {
+                }
+                // Only show dropdown if user has typed at least 2 characters
+                // This prevents dropdown from appearing immediately on focus
+                else if (searchInput.length >= 2) {
                   setShowSearchDropdown(true);
                 }
               }}
-              placeholder="Search cities..."
+              placeholder="Search..."
               className={`w-full h-9 pl-9 pr-8 text-sm ${uiConfig.colors.input} rounded-lg border ${uiConfig.colors.border} focus:outline-none focus:${uiConfig.colors.card} focus:border-${uiConfig.colors.accentBorder} transition-all`}
             />
             {searchInput && (
@@ -265,24 +255,111 @@ export default function FilterBarV3({
             )}
           </div>
           
-          {/* Search Dropdown */}
-          {showSearchDropdown && getFilteredTowns().length > 0 && (
-            <div className={`absolute z-[9999] w-full mt-2 ${uiConfig.colors.card} rounded-lg shadow-md max-h-60 overflow-auto`}
-                 style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}>
-              {getFilteredTowns().map((town) => (
-                <button
-                  key={town.id}
-                  onClick={() => handleSearchSelect(town)}
-                  className={`w-full text-left px-4 py-3 hover:${uiConfig.colors.secondary} transition-colors first:rounded-t-lg last:rounded-b-lg`}
-                >
-                  <div className={`font-medium ${uiConfig.colors.heading}`}>{town.name}</div>
-                  <div className={`text-xs ${uiConfig.colors.subtitle}`}>
-                    {town.region && `${town.region}, `}{town.country}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Search Dropdown - Countries first, then Towns */}
+          {showSearchDropdown && searchInput.length >= 2 && (() => {
+            const search = searchInput.toLowerCase();
+            const filteredTowns = getFilteredTowns();
+            
+            // Get unique countries that match the search
+            const allCountries = [...new Set(availableTowns.map(t => t.country))].filter(Boolean).sort();
+            
+            // Smart matching: Start of word gets priority, then contains
+            const matchingCountries = allCountries.filter(country => {
+              const countryLower = country.toLowerCase();
+              // Match from start of country name OR start of any word in the country name
+              const words = countryLower.split(' ');
+              return countryLower.startsWith(search) || 
+                     words.some(word => word.startsWith(search)) ||
+                     countryLower.includes(search);
+            }).sort((a, b) => {
+              // Prioritize exact starts, then word starts, then contains
+              const aLower = a.toLowerCase();
+              const bLower = b.toLowerCase();
+              const aStartsWith = aLower.startsWith(search);
+              const bStartsWith = bLower.startsWith(search);
+              
+              if (aStartsWith && !bStartsWith) return -1;
+              if (!aStartsWith && bStartsWith) return 1;
+              
+              return a.localeCompare(b);
+            });
+            
+            // Only show if we have either matching countries or towns
+            if (matchingCountries.length === 0 && filteredTowns.length === 0) {
+              return null;
+            }
+            
+            return (
+              <div className={`absolute z-[9999] w-full mt-2 ${uiConfig.colors.card} rounded-lg shadow-md max-h-60 overflow-auto`}
+                   style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}>
+                
+                {/* Countries Section */}
+                {matchingCountries.length > 0 && (
+                  <>
+                    <div className={`px-4 py-2 ${uiConfig.colors.secondary} border-b ${uiConfig.colors.border}`}>
+                      <div className={`text-xs font-semibold ${uiConfig.colors.subtitle} uppercase tracking-wide`}>
+                        Countries
+                      </div>
+                    </div>
+                    {matchingCountries.slice(0, 3).map((country) => ( // Show max 3 countries to keep it clean
+                      <button
+                        key={`country-${country}`}
+                        onClick={() => {
+                          // Set search to country name to filter by it
+                          setSearchInput(country);
+                          if (setSearchTerm) {
+                            setSearchTerm(country);
+                          }
+                          setShowSearchDropdown(false);
+                          // Clear selected town when selecting a country
+                          if (setSelectedTown) {
+                            setSelectedTown(null);
+                          }
+                        }}
+                        className={`w-full text-left px-4 py-3 hover:${uiConfig.colors.secondary} transition-colors`}
+                      >
+                        <div className={`font-medium ${uiConfig.colors.heading} flex items-center gap-2`}>
+                          <span className="text-xs opacity-50">🌍</span>
+                          {country}
+                        </div>
+                        <div className={`text-xs ${uiConfig.colors.subtitle}`}>
+                          {availableTowns.filter(t => t.country === country).length} towns
+                        </div>
+                      </button>
+                    ))}
+                  </>
+                )}
+                
+                {/* Towns Section */}
+                {filteredTowns.length > 0 && (
+                  <>
+                    {matchingCountries.length > 0 && (
+                      <div className={`px-4 py-2 ${uiConfig.colors.secondary} border-b ${uiConfig.colors.border}`}>
+                        <div className={`text-xs font-semibold ${uiConfig.colors.subtitle} uppercase tracking-wide`}>
+                          Towns
+                        </div>
+                      </div>
+                    )}
+                    {filteredTowns.slice(0, 8).map((town) => ( // Limit to 8 towns for cleaner UI
+                      <button
+                        key={town.id}
+                        onClick={() => handleSearchSelect(town)}
+                        className={`w-full text-left px-4 py-3 hover:${uiConfig.colors.secondary} transition-colors last:rounded-b-lg`}
+                      >
+                        <div className={`font-medium ${uiConfig.colors.heading} flex items-center gap-2`}>
+                          <span className="text-xs opacity-50">📍</span>
+                          {town.name}
+                        </div>
+                        <div className={`text-xs ${uiConfig.colors.subtitle} ml-6`}>
+                          {town.region && `${town.region}, `}{town.country}
+                        </div>
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         {/* No divider for cleaner look */}
