@@ -118,7 +118,7 @@ const PhysicalActivityModal = ({
                           handleCustomPhysicalToggle(activity);
                         }}
                         className={`p-2 ${uiConfig.layout.radius.md} border ${uiConfig.animation.transition} text-left ${
-                          formData.custom_physical.includes(activity)
+                          formData.custom_physical.includes(activity.toLowerCase().replace(/\s+/g, '_'))
                             ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-600 dark:text-scout-accent-400'
                             : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-300'
                         } ${uiConfig.font.size.sm}`}
@@ -278,7 +278,7 @@ const HobbiesModal = ({
                           handleCustomHobbiesToggle(hobby);
                         }}
                         className={`p-2 ${uiConfig.layout.radius.md} border ${uiConfig.animation.transition} text-left ${
-                          formData.custom_hobbies.includes(hobby)
+                          formData.custom_hobbies.includes(hobby.toLowerCase().replace(/\s+/g, '_'))
                             ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-600 dark:text-scout-accent-400'
                             : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-300'
                         } ${uiConfig.font.size.sm}`}
@@ -621,20 +621,26 @@ export default function OnboardingHobbies() {
   };
 
   const handleCustomPhysicalToggle = (activity) => {
+    // Normalize to lowercase to prevent duplicates
+    const normalizedActivity = activity.toLowerCase().replace(/\s+/g, '_');
+    
     setFormData(prev => ({
       ...prev,
-      custom_physical: prev.custom_physical.includes(activity)
-        ? prev.custom_physical.filter(item => item !== activity)
-        : [...prev.custom_physical, activity]
+      custom_physical: prev.custom_physical.includes(normalizedActivity)
+        ? prev.custom_physical.filter(item => item !== normalizedActivity)
+        : [...prev.custom_physical, normalizedActivity]
     }));
   };
 
   const handleCustomHobbiesToggle = (hobby) => {
+    // Normalize to lowercase to prevent duplicates
+    const normalizedHobby = hobby.toLowerCase().replace(/\s+/g, '_');
+    
     setFormData(prev => ({
       ...prev,
-      custom_hobbies: prev.custom_hobbies.includes(hobby)
-        ? prev.custom_hobbies.filter(item => item !== hobby)
-        : [...prev.custom_hobbies, hobby]
+      custom_hobbies: prev.custom_hobbies.includes(normalizedHobby)
+        ? prev.custom_hobbies.filter(item => item !== normalizedHobby)
+        : [...prev.custom_hobbies, normalizedHobby]
     }));
   };
 
@@ -704,12 +710,16 @@ export default function OnboardingHobbies() {
         return;
       }
       
+      // Merge activities with custom_physical and deduplicate
+      const mergedActivities = [...new Set([...formData.activities, ...formData.custom_physical])];
+      const mergedInterests = [...new Set([...formData.interests, ...formData.custom_hobbies])];
+      
       // Save only the fields that belong to the hobbies step
       const dataToSave = {
-        activities: formData.activities,
-        interests: formData.interests,
-        custom_physical: formData.custom_physical,
-        custom_hobbies: formData.custom_hobbies,
+        activities: mergedActivities,
+        interests: mergedInterests,
+        custom_physical: [],  // Clear these as they're now in activities
+        custom_hobbies: [],   // Clear these as they're now in interests
         travel_frequency: formData.travel_frequency
       };
       
@@ -892,29 +902,29 @@ export default function OnboardingHobbies() {
                 Your Activities & Preferences:
               </h3>
               <div className={`space-y-0.5 ${uiConfig.font.size.xs} ${uiConfig.colors.body}`}>
-                {formData.activities.length > 0 && (
-                  <div><span className={`${uiConfig.font.weight.medium}`}>Activities:</span> {formData.activities.map(id => {
-                    // Try to find in activity options first
-                    const activity = activityOptions.find(a => a.id === id);
-                    if (activity) return activity.title;
-                    // Otherwise, format the raw ID nicely
-                    return id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                  }).join(', ')}</div>
+                {(formData.activities.length > 0 || formData.custom_physical.length > 0) && (
+                  <div><span className={`${uiConfig.font.weight.medium}`}>Activities:</span> {
+                    // Merge and deduplicate activities and custom_physical
+                    [...new Set([...formData.activities, ...formData.custom_physical])].map(id => {
+                      // Try to find in activity options first
+                      const activity = activityOptions.find(a => a.id === id);
+                      if (activity) return activity.title;
+                      // Otherwise, format the raw ID nicely
+                      return id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    }).join(', ')
+                  }</div>
                 )}
-                {formData.custom_physical.length > 0 && (
-                  <div><span className={`${uiConfig.font.weight.medium}`}>More Activities:</span> {formData.custom_physical.join(', ')}</div>
-                )}
-                {formData.interests.length > 0 && (
-                  <div><span className={`${uiConfig.font.weight.medium}`}>Interests:</span> {formData.interests.map(id => {
-                    // Try to find in interest options first
-                    const interest = interestOptions.find(i => i.id === id);
-                    if (interest) return interest.title;
-                    // Otherwise, format the raw ID nicely
-                    return id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                  }).join(', ')}</div>
-                )}
-                {formData.custom_hobbies.length > 0 && (
-                  <div><span className={`${uiConfig.font.weight.medium}`}>More Hobbies:</span> {formData.custom_hobbies.join(', ')}</div>
+                {(formData.interests.length > 0 || formData.custom_hobbies.length > 0) && (
+                  <div><span className={`${uiConfig.font.weight.medium}`}>Interests:</span> {
+                    // Merge and deduplicate interests and custom_hobbies
+                    [...new Set([...formData.interests, ...formData.custom_hobbies])].map(id => {
+                      // Try to find in interest options first
+                      const interest = interestOptions.find(i => i.id === id);
+                      if (interest) return interest.title;
+                      // Otherwise, format the raw ID nicely
+                      return id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    }).join(', ')
+                  }</div>
                 )}
                 {formData.travel_frequency && (
                   <div><span className={`${uiConfig.font.weight.medium}`}>Travel:</span> {travelOptions.find(t => t.id === formData.travel_frequency)?.title || formData.travel_frequency}</div>

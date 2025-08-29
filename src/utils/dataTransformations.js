@@ -267,6 +267,24 @@ export const expandCompoundValues = (field, values) => {
     } else if (normalized === 'cooking_wine') {
       expanded.add('cooking');
       expanded.add('wine');
+    } else if (normalized === 'golf_tennis') {
+      expanded.add('golf');
+      expanded.add('tennis');
+      expanded.add('pickleball');
+      expanded.add('badminton');
+    } else if (normalized === 'water_sports') {
+      expanded.add('swimming');
+      expanded.add('snorkeling');
+    } else if (normalized === 'water_crafts') {
+      expanded.add('kayaking');
+      expanded.add('sailing');
+      expanded.add('boating');
+    } else if (normalized === 'winter_sports') {
+      expanded.add('skiing');
+      expanded.add('cross_country_skiing');
+    } else if (normalized === 'music_theater') {
+      expanded.add('music');
+      expanded.add('theater');
     } else if (normalized) {
       expanded.add(normalized);
     }
