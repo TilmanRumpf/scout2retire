@@ -88,40 +88,44 @@ export const fromDatabase = (record, fieldsToTransform = []) => {
 // FIXED: Complete VALUE_LABEL_MAPS with all options from UI and database
 export const VALUE_LABEL_MAPS = {
   geographic_features: {
+    // ONLY user preference values - lowercase for case-insensitive matching
     'coastal': 'Coastal',
-    'mountains': 'Mountains',
-    'mountain': 'Mountain', // Added for UI compatibility
+    'mountain': 'Mountain',
+    'island': 'Island',
+    'lake': 'Lake',
+    'river': 'River',
+    'valley': 'Valley',
     'desert': 'Desert',
-    'plains': 'Plains',
-    'volcanic': 'Volcanic',
-    'islands': 'Islands',
-    'island': 'Island', // Added for UI compatibility
-    'forests': 'Forests',
-    'forest': 'Forest', // Added for UI compatibility
-    'valleys': 'Valleys',
-    'valley': 'Valley', // Added for UI compatibility
-    'lake': 'Lake', // Added - missing from original
-    'river': 'River', // Added - missing from original
-    'hills': 'Hills', // Added - found in data
-    'fjords': 'Fjords', // Added - found in Nordic towns
-    'cliffs': 'Cliffs', // Added - found in coastal towns
-    'beaches': 'Beaches', // Added - found in coastal towns
-    'wetlands': 'Wetlands' // Added - found in some towns
+    'forest': 'Forest',
+    'plains': 'Plains'
+  },
+  geographic_features_actual: {  // For towns table
+    'coastal': 'Coastal',
+    'mountain': 'Mountain',
+    'island': 'Island',
+    'lake': 'Lake',
+    'river': 'River',
+    'valley': 'Valley',
+    'desert': 'Desert',
+    'forest': 'Forest',
+    'plains': 'Plains'
   },
   vegetation_types: {
-    'mediterranean': 'Mediterranean',
+    // ONLY user preference values - lowercase for case-insensitive matching
     'tropical': 'Tropical',
-    'temperate': 'Temperate',
-    'arid': 'Arid',
-    'alpine': 'Alpine',
-    'rainforest': 'Rainforest',
-    'forest': 'Forest', // Added - used in onboarding
-    'grassland': 'Grassland', // Added - used in onboarding
-    'subtropical': 'Subtropical', // Added - used in onboarding
-    'deciduous': 'Deciduous', // Added - common in temperate regions
-    'coniferous': 'Coniferous', // Added - common in northern regions
-    'savanna': 'Savanna', // Added - found in some regions
-    'tundra': 'Tundra' // Added - found in northern regions
+    'subtropical': 'Subtropical',
+    'mediterranean': 'Mediterranean',
+    'forest': 'Forest',
+    'grassland': 'Grassland',
+    'desert': 'Desert'
+  },
+  vegetation_type_actual: {  // For towns table
+    'tropical': 'Tropical',
+    'subtropical': 'Subtropical',
+    'mediterranean': 'Mediterranean',
+    'forest': 'Forest',
+    'grassland': 'Grassland',
+    'desert': 'Desert'
   },
   activities: {
     'hiking': 'Hiking',
@@ -149,6 +153,13 @@ export const VALUE_LABEL_MAPS = {
     'often_sunny': 'Often Sunny',
     'balanced': 'Balanced',
     'less_sunny': 'Less Sunny'
+    // NEVER add: mostly_sunny, abundant, sunny - these are INVALID!
+  },
+  sunshine_level_actual: {  // Added for towns table
+    'often_sunny': 'Often Sunny',
+    'balanced': 'Balanced',
+    'less_sunny': 'Less Sunny'
+    // NEVER add: mostly_sunny, abundant, sunny - these are INVALID!
   },
   precipitation: {
     'mostly_dry': 'Mostly Dry',
@@ -157,22 +168,67 @@ export const VALUE_LABEL_MAPS = {
     // NEVER add: often_rainy, dry, moderate - these are INVALID!
   },
   humidity_level: {
-    'low': 'Low',
-    'moderate': 'Moderate',
-    'high': 'High'
+    'dry': 'Dry',
+    'balanced': 'Balanced',
+    'humid': 'Humid'
+    // ONLY user preference values: dry, balanced, humid
+  },
+  humidity_level_actual: {  // For towns table
+    'dry': 'Dry',
+    'balanced': 'Balanced',
+    'humid': 'Humid'
+    // ONLY user preference values: dry, balanced, humid
   },
   temperature_summer: {
     'hot': 'Hot',
     'warm': 'Warm',
-    'moderate': 'Moderate',
+    'mild': 'Mild',  // FIXED: was 'moderate' - user preference rules!
     'cool': 'Cool'
   },
-  temperature_winter: {
+  summer_climate_actual: {  // Added for towns table
+    'hot': 'Hot',
     'warm': 'Warm',
-    'mild': 'Mild',
-    'cool': 'Cool',
+    'mild': 'Mild'
+    // ONLY these 3 values allowed!
+  },
+  temperature_winter: {
     'cold': 'Cold',
-    'very_cold': 'Very Cold'
+    'cool': 'Cool',
+    'mild': 'Mild'
+    // ONLY user preference values: cold, cool, mild - NO WARM!
+  },
+  winter_climate_actual: {  // For towns table
+    'cold': 'Cold',
+    'cool': 'Cool',
+    'mild': 'Mild'
+    // ONLY user preference values: cold, cool, mild - NO WARM!
+  },
+  // Culture fields
+  expat_community_size: {
+    'small': 'Small',
+    'moderate': 'Moderate',
+    'large': 'Large'
+    // ONLY user preference values - NO expat_population field
+  },
+  pace_of_life_preference: {
+    'relaxed': 'Relaxed',
+    'moderate': 'Moderate',
+    'fast': 'Fast'
+  },
+  pace_of_life_actual: {  // For towns table
+    'relaxed': 'Relaxed',
+    'moderate': 'Moderate',
+    'fast': 'Fast'
+  },
+  urban_rural: {
+    'rural': 'Rural',
+    'suburban': 'Suburban',
+    'urban': 'Urban'
+  },
+  urban_rural_character: {  // For towns table
+    'rural': 'Rural',
+    'suburban': 'Suburban',
+    'urban': 'Urban'
   }
 };
 

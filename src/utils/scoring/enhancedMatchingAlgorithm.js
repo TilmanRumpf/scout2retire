@@ -942,12 +942,12 @@ export function calculateClimateScore(preferences, town) {
 
 // Adjacency maps for gradual scoring
 const CULTURE_ADJACENCY = {
-  urban_rural: {
+  urban_rural_preference: {
     'urban': ['suburban'],
     'suburban': ['urban', 'rural'],
     'rural': ['suburban']
   },
-  pace_of_life: {
+  pace_of_life_preference: {
     'fast': ['moderate'],
     'moderate': ['fast', 'relaxed'],
     'relaxed': ['moderate']
@@ -965,8 +965,8 @@ export function calculateCultureScore(preferences, town) {
   
   // Check if user has any culture preferences at all
   const hasAnyPreferences = 
-    preferences.lifestyle_preferences?.urban_rural?.length ||
-    preferences.lifestyle_preferences?.pace_of_life?.length ||
+    preferences.lifestyle_preferences?.urban_rural_preference?.length ||
+    preferences.lifestyle_preferences?.pace_of_life_preference?.length ||
     preferences.expat_community_preference?.length ||
     preferences.language_comfort?.preferences?.length ||
     preferences.language_comfort?.already_speak?.length ||
@@ -981,7 +981,7 @@ export function calculateCultureScore(preferences, town) {
   }
   
   // 1. LIVING ENVIRONMENT (20 points)
-  const livingEnvPref = preferences.lifestyle_preferences?.urban_rural
+  const livingEnvPref = preferences.lifestyle_preferences?.urban_rural_preference
   if (!livingEnvPref || livingEnvPref.length === 0) {
     // User doesn't care - full points
     score += 20
@@ -995,7 +995,7 @@ export function calculateCultureScore(preferences, town) {
       // Check for adjacent match
       let isAdjacent = false
       for (const pref of livingEnvPref) {
-        if (CULTURE_ADJACENCY.urban_rural[pref]?.includes(town.urban_rural_character)) {
+        if (CULTURE_ADJACENCY.urban_rural_preference[pref]?.includes(town.urban_rural_character)) {
           isAdjacent = true
           break
         }
@@ -1014,8 +1014,8 @@ export function calculateCultureScore(preferences, town) {
   }
   
   // 2. PACE OF LIFE (20 points)
-  const pacePref = preferences.lifestyle_preferences?.pace_of_life
-  const townPace = town.pace_of_life_actual || town.pace_of_life // Use actual if available
+  const pacePref = preferences.lifestyle_preferences?.pace_of_life_preference
+  const townPace = town.pace_of_life_actual // Use actual field
   
   if (!pacePref || pacePref.length === 0) {
     // User doesn't care - full points
@@ -1030,7 +1030,7 @@ export function calculateCultureScore(preferences, town) {
       // Check for adjacent match
       let isAdjacent = false
       for (const pref of pacePref) {
-        if (CULTURE_ADJACENCY.pace_of_life[pref]?.includes(townPace)) {
+        if (CULTURE_ADJACENCY.pace_of_life_preference[pref]?.includes(townPace)) {
           isAdjacent = true
           break
         }
@@ -1149,8 +1149,10 @@ export function calculateCultureScore(preferences, town) {
     // User doesn't care - full points
     score += 10
     factors.push({ factor: 'Flexible on dining & nightlife', score: 10 })
-  } else if (town.dining_nightlife_level) {
-    const difference = Math.abs(diningImportance - town.dining_nightlife_level)
+  } else if (town.restaurants_rating && town.nightlife_rating) {
+    // Average the two ratings for comparison
+    const townDiningNightlife = Math.round((town.restaurants_rating + town.nightlife_rating) / 2)
+    const difference = Math.abs(diningImportance - townDiningNightlife)
     let points = 0
     
     if (difference === 0) {
@@ -1180,8 +1182,8 @@ export function calculateCultureScore(preferences, town) {
     // User doesn't care - full points
     score += 10
     factors.push({ factor: 'Flexible on cultural events', score: 10 })
-  } else if (town.cultural_events_level) {
-    const difference = Math.abs(eventsImportance - town.cultural_events_level)
+  } else if (town.cultural_events_rating) {
+    const difference = Math.abs(eventsImportance - town.cultural_events_rating)
     let points = 0
     
     if (difference === 0) {
@@ -1211,8 +1213,8 @@ export function calculateCultureScore(preferences, town) {
     // User doesn't care - full points
     score += 10
     factors.push({ factor: 'Flexible on museums & arts', score: 10 })
-  } else if (town.museums_level) {
-    const difference = Math.abs(museumsImportance - town.museums_level)
+  } else if (town.museums_rating) {
+    const difference = Math.abs(museumsImportance - town.museums_rating)
     let points = 0
     
     if (difference === 0) {

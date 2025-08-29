@@ -167,8 +167,8 @@ export default function OnboardingCulture() {
       cultural_events: 1
     },
     lifestyle_preferences: {
-      pace_of_life: [],
-      urban_rural: [],
+      pace_of_life_preference: [],
+      urban_rural_preference_preference: [],
       traditional_progressive: ''
     }
   });
@@ -272,12 +272,12 @@ export default function OnboardingCulture() {
             },
             lifestyle_preferences: {
               ...progressResult.data.culture_preferences.lifestyle_preferences,
-              pace_of_life: Array.isArray(progressResult.data.culture_preferences.lifestyle_preferences?.pace_of_life)
-                ? progressResult.data.culture_preferences.lifestyle_preferences.pace_of_life
-                : (progressResult.data.culture_preferences.lifestyle_preferences?.pace_of_life ? [progressResult.data.culture_preferences.lifestyle_preferences.pace_of_life] : []),
-              urban_rural: Array.isArray(progressResult.data.culture_preferences.lifestyle_preferences?.urban_rural)
-                ? progressResult.data.culture_preferences.lifestyle_preferences.urban_rural
-                : (progressResult.data.culture_preferences.lifestyle_preferences?.urban_rural ? [progressResult.data.culture_preferences.lifestyle_preferences.urban_rural] : []),
+              pace_of_life_preference: Array.isArray(progressResult.data.culture_preferences.lifestyle_preferences?.pace_of_life_preference)
+                ? progressResult.data.culture_preferences.lifestyle_preferences.pace_of_life_preference
+                : (progressResult.data.culture_preferences.lifestyle_preferences?.pace_of_life_preference ? [progressResult.data.culture_preferences.lifestyle_preferences.pace_of_life_preference] : []),
+              urban_rural_preference: Array.isArray(progressResult.data.culture_preferences.lifestyle_preferences?.urban_rural_preference)
+                ? progressResult.data.culture_preferences.lifestyle_preferences.urban_rural_preference
+                : (progressResult.data.culture_preferences.lifestyle_preferences?.urban_rural_preference ? [progressResult.data.culture_preferences.lifestyle_preferences.urban_rural_preference] : []),
             },
             cultural_importance: {
               // Handle legacy data: combine restaurants and nightlife if they exist separately
@@ -478,8 +478,8 @@ export default function OnboardingCulture() {
                 <SelectionCard
                   key={option.value}
                   title={option.label}
-                  isSelected={formData.lifestyle_preferences.urban_rural.includes(option.value)}
-                  onClick={() => handleMultiSelect('lifestyle_preferences.urban_rural', option.value, true)}
+                  isSelected={formData.lifestyle_preferences.urban_rural_preference.includes(option.value)}
+                  onClick={() => handleMultiSelect('lifestyle_preferences.urban_rural_preference', option.value, true)}
                   size="small"
                 />
               ))}
@@ -493,8 +493,8 @@ export default function OnboardingCulture() {
                 <SelectionCard
                   key={option.value}
                   title={option.label}
-                  isSelected={formData.lifestyle_preferences.pace_of_life.includes(option.value)}
-                  onClick={() => handleMultiSelect('lifestyle_preferences.pace_of_life', option.value, true)}
+                  isSelected={formData.lifestyle_preferences.pace_of_life_preference.includes(option.value)}
+                  onClick={() => handleMultiSelect('lifestyle_preferences.pace_of_life_preference', option.value, true)}
                   size="small"
                 />
               ))}
@@ -598,8 +598,8 @@ export default function OnboardingCulture() {
 
           {/* Summary Section */}
           {(formData.expat_community_preference.length > 0 ||
-            formData.lifestyle_preferences.pace_of_life.length > 0 ||
-            formData.lifestyle_preferences.urban_rural.length > 0 ||
+            formData.lifestyle_preferences.pace_of_life_preference.length > 0 ||
+            formData.lifestyle_preferences.urban_rural_preference.length > 0 ||
             formData.language_comfort.preferences.length > 0 ||
             formData.language_comfort.already_speak.length > 0) && (
             <div className={`mb-4 p-3 lg:p-4 ${uiConfig.colors.input} ${uiConfig.layout.radius.lg} lg:rounded-xl`}>
@@ -607,11 +607,11 @@ export default function OnboardingCulture() {
                 Your Culture & Lifestyle:
               </h3>
               <div className={`space-y-0.5 ${uiConfig.font.size.xs} ${uiConfig.colors.body}`}>
-                {formData.lifestyle_preferences.urban_rural.length > 0 && (
-                  <div><span className={`${uiConfig.font.weight.medium}`}>Environment:</span> {formData.lifestyle_preferences.urban_rural.join(', ')}</div>
+                {formData.lifestyle_preferences.urban_rural_preference.length > 0 && (
+                  <div><span className={`${uiConfig.font.weight.medium}`}>Environment:</span> {formData.lifestyle_preferences.urban_rural_preference.join(', ')}</div>
                 )}
-                {formData.lifestyle_preferences.pace_of_life.length > 0 && (
-                  <div><span className={`${uiConfig.font.weight.medium}`}>Pace:</span> {formData.lifestyle_preferences.pace_of_life.join(', ')}</div>
+                {formData.lifestyle_preferences.pace_of_life_preference.length > 0 && (
+                  <div><span className={`${uiConfig.font.weight.medium}`}>Pace:</span> {formData.lifestyle_preferences.pace_of_life_preference.join(', ')}</div>
                 )}
                 {formData.expat_community_preference.length > 0 && (
                   <div><span className={`${uiConfig.font.weight.medium}`}>Community:</span> {formData.expat_community_preference.join(', ')}</div>

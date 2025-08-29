@@ -185,16 +185,16 @@ export default function OnboardingReview() {
                 {data.expat_community_preference.join(', ')}
               </p>
             )}
-            {data.lifestyle_preferences?.pace_of_life && data.lifestyle_preferences.pace_of_life.length > 0 && (
+            {data.lifestyle_preferences?.pace_of_life_preference && data.lifestyle_preferences.pace_of_life_preference.length > 0 && (
               <p>
                 <span className={`${uiConfig.font.weight.medium}`}>Pace:</span>{' '}
-                {data.lifestyle_preferences.pace_of_life.join(', ')}
+                {data.lifestyle_preferences.pace_of_life_preference.join(', ')}
               </p>
             )}
-            {data.lifestyle_preferences?.urban_rural && data.lifestyle_preferences.urban_rural.length > 0 && (
+            {data.lifestyle_preferences?.urban_rural_preference && data.lifestyle_preferences.urban_rural_preference.length > 0 && (
               <p>
                 <span className={`${uiConfig.font.weight.medium}`}>Setting:</span>{' '}
-                {data.lifestyle_preferences.urban_rural.join(', ')}
+                {data.lifestyle_preferences.urban_rural_preference.join(', ')}
               </p>
             )}
             {data.language_comfort?.already_speak && Array.isArray(data.language_comfort.already_speak) && data.language_comfort.already_speak.length > 0 && (

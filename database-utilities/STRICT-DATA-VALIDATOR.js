@@ -11,23 +11,39 @@
 export const ALLOWED_VALUES = {
   precipitation_level_actual: ['mostly_dry', 'balanced', 'less_dry', null],
   
-  humidity_level: ['low', 'moderate', 'high', null],
+  sunshine_level_actual: ['often_sunny', 'balanced', 'less_sunny', null],
+  // NEVER: mostly_sunny, abundant, sunny, partly_sunny, often_cloudy
   
-  temperature_summer: ['hot', 'warm', 'moderate', 'cool', null],
+  humidity_level_actual: ['dry', 'balanced', 'humid', null],
+  // ONLY user preference values allowed: dry, balanced, humid
   
-  temperature_winter: ['warm', 'mild', 'cool', 'cold', 'very_cold', null],
+  
+  summer_climate_actual: ['hot', 'warm', 'mild', null],
+  // ONLY these 3 values - NEVER 'moderate' or 'cool'
+  
+  winter_climate_actual: ['cold', 'cool', 'mild', null],
+  // ONLY user preference values: cold, cool, mild - NO WARM!
   
   geographic_features_actual: [
-    'coastal', 'mountains', 'desert', 'plains', 'volcanic', 
-    'islands', 'forests', 'valleys', 'lake', 'river', 'hills',
-    'fjords', 'cliffs', 'beaches', 'wetlands'
+    'coastal', 'mountain', 'island', 'lake', 'river', 
+    'valley', 'desert', 'forest', 'plains'
   ],
+  // ONLY user preference values - no plurals, no compounds
   
   vegetation_type_actual: [
-    'mediterranean', 'tropical', 'temperate', 'arid', 'alpine',
-    'rainforest', 'forest', 'grassland', 'subtropical', 
-    'deciduous', 'coniferous', 'savanna', 'tundra'
-  ]
+    'tropical', 'subtropical', 'mediterranean', 'forest', 'grassland', 'desert'
+  ],
+  // ONLY user preference values - 6 types from UI
+  
+  // Culture fields
+  expat_community_size: ['small', 'moderate', 'large', null],
+  // ONLY user preference values - NO expat_population field exists
+  
+  pace_of_life_actual: ['relaxed', 'moderate', 'fast', null],
+  // ONLY user preference values
+  
+  urban_rural_character: ['rural', 'suburban', 'urban', null]
+  // ONLY user preference values
 };
 
 /**
@@ -68,27 +84,50 @@ export function validateTown(town) {
   }
   
   // Check humidity
-  if (!validateValue('humidity_level', town.humidity_level)) {
-    errors.push(`Invalid humidity: ${town.humidity_level}`);
+  if (!validateValue('humidity_level_actual', town.humidity_level_actual)) {
+    errors.push(`Invalid humidity: ${town.humidity_level_actual}`);
   }
   
   // Check temperatures
-  if (!validateValue('temperature_summer', town.temperature_summer)) {
-    errors.push(`Invalid summer temp: ${town.temperature_summer}`);
+  if (!validateValue('summer_climate_actual', town.summer_climate_actual)) {
+    errors.push(`Invalid summer temp: ${town.summer_climate_actual}`);
   }
   
-  if (!validateValue('temperature_winter', town.temperature_winter)) {
-    errors.push(`Invalid winter temp: ${town.temperature_winter}`);
+  if (!validateValue('winter_climate_actual', town.winter_climate_actual)) {
+    errors.push(`Invalid winter temp: ${town.winter_climate_actual}`);
   }
   
-  // Check geographic features
-  if (town.geographic_features_actual && !validateValue('geographic_features_actual', town.geographic_features_actual)) {
-    errors.push(`Invalid geographic features: ${town.geographic_features_actual}`);
+  // Check geographic features (array)
+  if (town.geographic_features_actual && Array.isArray(town.geographic_features_actual)) {
+    const invalidFeatures = town.geographic_features_actual.filter(
+      f => !ALLOWED_VALUES.geographic_features_actual.includes(f)
+    );
+    if (invalidFeatures.length > 0) {
+      errors.push(`Invalid geographic features: ${invalidFeatures.join(', ')}`);
+    }
   }
   
-  // Check vegetation
-  if (town.vegetation_type_actual && !validateValue('vegetation_type_actual', town.vegetation_type_actual)) {
-    errors.push(`Invalid vegetation: ${town.vegetation_type_actual}`);
+  // Check vegetation (array)
+  if (town.vegetation_type_actual && Array.isArray(town.vegetation_type_actual)) {
+    const invalidVeg = town.vegetation_type_actual.filter(
+      v => !ALLOWED_VALUES.vegetation_type_actual.includes(v)
+    );
+    if (invalidVeg.length > 0) {
+      errors.push(`Invalid vegetation: ${invalidVeg.join(', ')}`);
+    }
+  }
+  
+  // Check culture fields
+  if (!validateValue('expat_community_size', town.expat_community_size)) {
+    errors.push(`Invalid expat community size: ${town.expat_community_size}`);
+  }
+  
+  if (!validateValue('pace_of_life_actual', town.pace_of_life_actual)) {
+    errors.push(`Invalid pace of life: ${town.pace_of_life_actual}`);
+  }
+  
+  if (!validateValue('urban_rural_character', town.urban_rural_character)) {
+    errors.push(`Invalid urban/rural: ${town.urban_rural_character}`);
   }
   
   if (errors.length > 0) {
