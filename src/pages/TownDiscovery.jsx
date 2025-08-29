@@ -684,7 +684,7 @@ export default function TownDiscovery() {
                           {selectedTownData.primary_language && <div>Primary language: {selectedTownData.primary_language}</div>}
                           {selectedTownData.english_proficiency_level && <div>English level: {selectedTownData.english_proficiency_level}</div>}
                           {selectedTownData.expat_community_size && <div>Expat community: {selectedTownData.expat_community_size}</div>}
-                          {selectedTownData.cultural_events_level && <div>Cultural events: {selectedTownData.cultural_events_level}/10</div>}
+                          {selectedTownData.cultural_events_rating && <div>Cultural events: {selectedTownData.cultural_events_rating}/10</div>}
                           {selectedTownData.nightlife_rating && <div>Nightlife: {selectedTownData.nightlife_rating}/10</div>}
                           {selectedTownData.restaurants_rating && <div>Restaurants: {selectedTownData.restaurants_rating}/10</div>}
                           {selectedTownData.museums_rating && <div>Museums: {selectedTownData.museums_rating}/10</div>}

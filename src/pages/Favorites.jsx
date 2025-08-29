@@ -89,7 +89,7 @@ export default function Favorites() {
               townIds,
               userId: user.id,
               component: 'Favorites',
-              usePersonalization: false  // CRITICAL: Don't use personalization for favorites!
+              usePersonalization: true  // Use personalization to get match scores (townIds ensures we get ALL favorites)
             });
             if (townsResult.success) {
               console.log('Loaded favorite towns:', townsResult.towns.length, 'towns for', townIds.length, 'favorite IDs');
@@ -106,7 +106,7 @@ export default function Favorites() {
         const allTownsResult = await fetchTowns({ 
           userId: user.id,
           component: 'Favorites-Search',
-          usePersonalization: false,  // CRITICAL: Get ALL towns, not personalized subset
+          usePersonalization: true,  // Changed to true to get match scores for all towns
           limit: 500  // Get all towns, not just default limit
         });
         if (allTownsResult.success) {

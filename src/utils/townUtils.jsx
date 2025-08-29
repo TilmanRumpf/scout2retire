@@ -49,7 +49,7 @@ export const fetchTowns = async (filters = {}) => {
       walkability, expat_community_size,
       geographic_features, geographic_features_actual, vegetation_type_actual,
       geo_region, regions, urban_rural_character,
-      primary_language, cultural_events_level, nightlife_rating,
+      primary_language, cultural_events_rating, nightlife_rating,
       restaurants_rating, museums_rating, shopping_rating,
       pace_of_life_actual, cultural_landmark_1, social_atmosphere,
       outdoor_rating, outdoor_activities_rating, beaches_nearby,
