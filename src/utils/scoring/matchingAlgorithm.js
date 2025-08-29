@@ -70,7 +70,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
         expat_community_preference: 'moderate',
         lifestyle_preferences: {
           pace_of_life: 'relaxed',
-          urban_rural: 'small_city'
+          urban_rural_preference: 'small_city'
         }
       },
       hobbies: {
@@ -131,8 +131,8 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       beaches_nearby, golf_courses_count, hiking_trails_km,
       tennis_courts_count, marinas_count, ski_resorts_within_100km,
       dog_parks_count, farmers_markets, water_bodies, walkability,
-      expat_population, expat_community_size, english_proficiency_level,
-      primary_language, cultural_events_level, museums_rating,
+      expat_community_size, english_proficiency_level,
+      primary_language, cultural_events_rating, museums_rating,
       restaurants_rating, shopping_rating, cultural_landmark_1,
       social_atmosphere, pace_of_life_actual, urban_rural_character,
       visa_requirements, visa_on_arrival_countries, residency_path_info,
@@ -722,8 +722,8 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
 //     }
 //     
 //     // Urban/rural
-//     if (lifestyle.urban_rural) {
-//       const urbanPrefs = lifestyle.urban_rural.join(' ').toLowerCase();
+//     if (lifestyle.urban_rural_preference) {
+//       const urbanPrefs = lifestyle.urban_rural_preference.join(' ').toLowerCase();
 //       if (urbanPrefs.includes('urban') && townDesc.includes('city')) score += 10;
 //       if (urbanPrefs.includes('suburban') && townDesc.includes('suburban')) score += 10;
 //       if (urbanPrefs.includes('rural') && townDesc.includes('rural')) score += 10;

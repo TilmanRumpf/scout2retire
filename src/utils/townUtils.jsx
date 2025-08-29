@@ -46,7 +46,7 @@ export const fetchTowns = async (filters = {}) => {
       humidity_average, humidity_level_actual, seasonal_variation_actual,
       air_quality_index, elevation_meters, distance_to_ocean_km,
       airport_distance, nearest_airport, english_proficiency_level,
-      walkability, expat_population, expat_community_size,
+      walkability, expat_community_size,
       geographic_features, geographic_features_actual, vegetation_type_actual,
       geo_region, regions, urban_rural_character,
       primary_language, cultural_events_level, nightlife_rating,

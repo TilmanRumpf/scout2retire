@@ -21,7 +21,8 @@ export const expandedTownData = [
     geographic_features: "Coastal, River Douro, Hills",
     primary_language: "Portuguese",
     english_proficiency_score: 65,
-    expat_population: "Large and growing",
+    // expat_population field removed - use expat_community_size instead
+    // expat_population: "Large and growing",
     internet_speed_mbps: 100,
     public_transport_score: 8,
     airport_distance_km: 15,
@@ -71,7 +72,8 @@ export const expandedTownData = [
     geographic_features: "Coastal, Beaches, Near capital",
     primary_language: "Portuguese",
     english_proficiency_score: 75,
-    expat_population: "Very large international community",
+    // expat_population field removed - use expat_community_size instead
+    // expat_population: "Very large international community",
     internet_speed_mbps: 150,
     public_transport_score: 7,
     airport_distance_km: 35,
@@ -122,7 +124,8 @@ export const expandedTownData = [
     geographic_features: "Coastal, Beaches, Urban parks",
     primary_language: "Spanish",
     english_proficiency_score: 55,
-    expat_population: "Large and diverse",
+    // expat_population field removed - use expat_community_size instead
+    // expat_population: "Large and diverse",
     internet_speed_mbps: 120,
     public_transport_score: 9,
     airport_distance_km: 8,
@@ -173,7 +176,8 @@ export const expandedTownData = [
     geographic_features: "Caribbean coast, Beaches, Coral reefs",
     primary_language: "Spanish",
     english_proficiency_score: 70,
-    expat_population: "Very large North American community",
+    // expat_population field removed - use expat_community_size instead
+    // expat_population: "Very large North American community",
     internet_speed_mbps: 50,
     public_transport_score: 6,
     airport_distance_km: 55,
@@ -223,7 +227,8 @@ export const expandedTownData = [
     geographic_features: "Highland, Colonial city, Mountains nearby",
     primary_language: "Spanish",
     english_proficiency_score: 65,
-    expat_population: "Very large (10% of population)",
+    // expat_population field removed - use expat_community_size instead
+    // expat_population: "Very large (10% of population)",
     internet_speed_mbps: 40,
     public_transport_score: 5,
     airport_distance_km: 100,
@@ -274,7 +279,8 @@ export const expandedTownData = [
     geographic_features: "Pacific beaches, Tropical dry forest",
     primary_language: "Spanish",
     english_proficiency_score: 75,
-    expat_population: "Large, especially North Americans",
+    // expat_population field removed - use expat_community_size instead
+    // expat_population: "Large, especially North Americans",
     internet_speed_mbps: 35,
     public_transport_score: 4,
     airport_distance_km: 65,
@@ -325,7 +331,8 @@ export const expandedTownData = [
     geographic_features: "Mountains, Cloud forest, Rivers",
     primary_language: "Spanish",
     english_proficiency_score: 60,
-    expat_population: "Very large relative to town size",
+    // expat_population field removed - use expat_community_size instead
+    // expat_population: "Very large relative to town size",
     internet_speed_mbps: 25,
     public_transport_score: 3,
     airport_distance_km: 480,
@@ -376,7 +383,8 @@ export const expandedTownData = [
     geographic_features: "Mountains, Forests, Rivers",
     primary_language: "Thai",
     english_proficiency_score: 45,
-    expat_population: "Very large and diverse",
+    // expat_population field removed - use expat_community_size instead
+    // expat_population: "Very large and diverse",
     internet_speed_mbps: 60,
     public_transport_score: 5,
     airport_distance_km: 4,
@@ -427,7 +435,8 @@ export const expandedTownData = [
     geographic_features: "Island, Beaches, Hills",
     primary_language: "Malay",
     english_proficiency_score: 85,
-    expat_population: "Very large international community",
+    // expat_population field removed - use expat_community_size instead
+    // expat_population: "Very large international community",
     internet_speed_mbps: 80,
     public_transport_score: 6,
     airport_distance_km: 20,
@@ -478,7 +487,8 @@ export const expandedTownData = [
     geographic_features: "Mediterranean coast, Alps nearby",
     primary_language: "French",
     english_proficiency_score: 50,
-    expat_population: "Large international community",
+    // expat_population field removed - use expat_community_size instead
+    // expat_population: "Large international community",
     internet_speed_mbps: 100,
     public_transport_score: 8,
     airport_distance_km: 7,
@@ -529,7 +539,8 @@ export const expandedTownData = [
     geographic_features: "Andes mountains, Rivers, Valley",
     primary_language: "Spanish",
     english_proficiency_score: 40,
-    expat_population: "Large and growing rapidly",
+    // expat_population field removed - use expat_community_size instead
+    // expat_population: "Large and growing rapidly",
     internet_speed_mbps: 30,
     public_transport_score: 6,
     airport_distance_km: 5,
@@ -580,7 +591,8 @@ export const expandedTownData = [
     geographic_features: "Tuscan hills, Near coast",
     primary_language: "Italian",
     english_proficiency_score: 45,
-    expat_population: "Moderate but established",
+    // expat_population field removed - use expat_community_size instead
+    // expat_population: "Moderate but established",
     internet_speed_mbps: 50,
     public_transport_score: 7,
     airport_distance_km: 20,
@@ -631,7 +643,8 @@ export const expandedTownData = [
     geographic_features: "Andes valley, Mountains",
     primary_language: "Spanish",
     english_proficiency_score: 35,
-    expat_population: "Growing rapidly",
+    // expat_population field removed - use expat_community_size instead
+    // expat_population: "Growing rapidly",
     internet_speed_mbps: 70,
     public_transport_score: 8,
     airport_distance_km: 35,
@@ -682,7 +695,8 @@ export const expandedTownData = [
     geographic_features: "Mediterranean coast, Mountains",
     primary_language: "Turkish",
     english_proficiency_score: 40,
-    expat_population: "Large Russian and European",
+    // expat_population field removed - use expat_community_size instead
+    // expat_population: "Large Russian and European",
     internet_speed_mbps: 50,
     public_transport_score: 7,
     airport_distance_km: 15,
@@ -733,7 +747,8 @@ export const expandedTownData = [
     geographic_features: "Island, Beaches, Mountains",
     primary_language: "Greek",
     english_proficiency_score: 60,
-    expat_population: "Growing international community",
+    // expat_population field removed - use expat_community_size instead
+    // expat_population: "Growing international community",
     internet_speed_mbps: 40,
     public_transport_score: 5,
     airport_distance_km: 5,

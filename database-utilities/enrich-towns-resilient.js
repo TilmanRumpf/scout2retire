@@ -469,9 +469,9 @@ async function enrichAllTowns() {
       // Update sunshine level
       if (updates.annual_sunshine_hours) {
         if (updates.annual_sunshine_hours >= 2800) {
-          updates.sunshine_level_actual = 'abundant';
+          updates.sunshine_level_actual = 'often_sunny';  // FIXED: was 'abundant'
         } else if (updates.annual_sunshine_hours >= 2200) {
-          updates.sunshine_level_actual = 'mostly_sunny';
+          updates.sunshine_level_actual = 'often_sunny';  // FIXED: was 'mostly_sunny'
         } else if (updates.annual_sunshine_hours >= 1600) {
           updates.sunshine_level_actual = 'balanced';
         } else {

@@ -104,11 +104,11 @@ export default function OnboardingComplete() {
       });
     }
     
-    if (userPreferences.culture_preferences?.lifestyle_preferences?.pace_of_life?.[0]) {
+    if (userPreferences.culture_preferences?.lifestyle_preferences?.pace_of_life_preference?.[0]) {
       summary.push({
         icon: Users,
         label: 'Lifestyle',
-        value: userPreferences.culture_preferences.lifestyle_preferences.pace_of_life[0]
+        value: userPreferences.culture_preferences.lifestyle_preferences.pace_of_life_preference[0]
       });
     }
     

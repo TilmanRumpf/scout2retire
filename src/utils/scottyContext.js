@@ -108,7 +108,7 @@ export async function getUserContext(userId) {
 
       // Cultural & Lifestyle
       culture: {
-        urban_rural: userProfile.lifestyle_urban_rural,
+        urban_rural_preference: userProfile.lifestyle_urban_rural,
         pace: userProfile.lifestyle_pace,
         social_atmosphere: userProfile.lifestyle_social_atmosphere,
         political_lean: userProfile.lifestyle_political_lean,
@@ -310,7 +310,7 @@ function formatLegacyContext(userProfile, onboardingData, favorites = []) {
     },
 
     culture: {
-      urban_rural: culture?.lifestyle?.urban_rural,
+      urban_rural_preference: culture?.lifestyle?.urban_rural_preference,
       pace: culture?.lifestyle?.pace,
       social_atmosphere: culture?.lifestyle?.social_atmosphere,
       political_lean: culture?.lifestyle?.political_lean,
