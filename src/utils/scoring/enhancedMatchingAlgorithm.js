@@ -709,8 +709,8 @@ export function calculateClimateScore(preferences, town) {
   const precipitationAdjacency = {
     'mostly_dry': ['balanced'],
     'dry': ['balanced'],           // Alternative spelling
-    'balanced': ['mostly_dry', 'dry', 'often_rainy', 'wet'],
-    'often_rainy': ['balanced'],
+    'balanced': ['mostly_dry', 'dry', 'less_dry', 'wet'],
+    'less_dry': ['balanced'],
     'wet': ['balanced']            // Alternative spelling
   }
   
@@ -745,7 +745,7 @@ export function calculateClimateScore(preferences, town) {
     } else if (town.annual_rainfall < 1000) {
       inferredPrecipitation = 'balanced'
     } else {
-      inferredPrecipitation = 'often_rainy'
+      inferredPrecipitation = 'less_dry'
     }
     
     const precipitationResult = calculateGradualClimateScoreForArray(
@@ -772,7 +772,7 @@ export function calculateClimateScore(preferences, town) {
     } else if (climateDesc.includes('mediterranean') || climateDesc.includes('temperate')) {
       inferredPrecipitation = 'balanced'
     } else if (climateDesc.includes('tropical') || climateDesc.includes('rainforest') || climateDesc.includes('wet')) {
-      inferredPrecipitation = 'often_rainy'
+      inferredPrecipitation = 'less_dry'
     }
     
     if (inferredPrecipitation) {

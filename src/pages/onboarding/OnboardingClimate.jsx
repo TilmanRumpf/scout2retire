@@ -362,7 +362,9 @@ export default function OnboardingClimate() {
                   <div><span className={`${uiConfig.font.weight.medium}`}>Sunshine:</span> {formData.sunshine.join(', ')}</div>
                 )}
                 {formData.precipitation.length > 0 && (
-                  <div><span className={`${uiConfig.font.weight.medium}`}>Precipitation:</span> {formData.precipitation.join(', ')}</div>
+                  <div><span className={`${uiConfig.font.weight.medium}`}>Precipitation:</span> {formData.precipitation.map(p => 
+                    precipitationOptions.find(opt => opt.value === p)?.label || p
+                  ).join(', ')}</div>
                 )}
                 {formData.seasonal_preference && formData.seasonal_preference !== 'Optional' && (
                   <div><span className={`${uiConfig.font.weight.medium}`}>Seasonal:</span> {formData.seasonal_preference.replace(/_/g, ' ')}</div>
