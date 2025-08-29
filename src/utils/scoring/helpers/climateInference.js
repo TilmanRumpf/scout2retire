@@ -140,7 +140,8 @@ export function mapToStandardValue(value, category) {
       'mostly_dry': 'mostly_dry',
       'moderate': 'balanced',
       'balanced': 'balanced',
-      'often_rainy': 'often_rainy'
+      'often_rainy': 'less_dry',  // Map old value to new
+      'less_dry': 'less_dry'
     }
   };
   
