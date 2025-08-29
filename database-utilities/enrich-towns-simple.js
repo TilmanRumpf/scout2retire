@@ -222,7 +222,7 @@ async function enrichWithSimpleClimate() {
     } else if (adjusted.rainfall < 800) {
       updates.precipitation_level_actual = 'balanced';
     } else {
-      updates.precipitation_level_actual = 'often_rainy';
+      updates.precipitation_level_actual = 'less_dry';  // FIXED: was often_rainy
     }
     
     const { error: updateError } = await supabase
