@@ -12,7 +12,7 @@ async function finalHobbyAnalysis() {
   try {
     // Get the complete picture
     const { data: allAssignments, error } = await supabase
-      .from('town_hobbies')
+      .from('towns_hobbies')
       .select(`
         town_id,
         hobbies!inner(id, name, required_conditions)
@@ -91,7 +91,7 @@ async function finalHobbyAnalysis() {
 
     // Get some specific examples
     const { data: sampleAssignments, error: sampleError } = await supabase
-      .from('town_hobbies')
+      .from('towns_hobbies')
       .select(`
         towns!inner(name, country, climate_zone, average_temp_winter),
         hobbies!inner(name)

@@ -50,7 +50,7 @@ async function verifyHobbies() {
     .limit(1);
   
   const { error: townHobbiesError } = await supabase
-    .from('town_hobbies')
+    .from('towns_hobbies')
     .select('id')
     .limit(1);
   

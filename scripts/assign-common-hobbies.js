@@ -84,7 +84,7 @@ async function assignCommonHobbies() {
     // 3. Get existing assignments to avoid duplicates
     console.log('🔍 Checking existing assignments...');
     const { data: existingAssignments } = await supabase
-      .from('town_hobbies')
+      .from('towns_hobbies')
       .select('town_id, hobby_id');
     
     // Create lookup map
@@ -143,7 +143,7 @@ async function assignCommonHobbies() {
         const batch = newAssignments.slice(i, i + batchSize);
         
         const { error } = await supabase
-          .from('town_hobbies')
+          .from('towns_hobbies')
           .insert(batch);
         
         if (error) {
@@ -164,7 +164,7 @@ async function assignCommonHobbies() {
     
     // Check how many hobbies each town has now
     const { data: townCounts } = await supabase
-      .from('town_hobbies')
+      .from('towns_hobbies')
       .select('town_id')
       .in('hobby_id', hobbiesToAssign.map(h => h.id));
     

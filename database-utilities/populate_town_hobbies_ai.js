@@ -122,7 +122,7 @@ async function populateTownHobbies() {
 
       // Insert into town_hobbies table
       const { error: insertError } = await supabase
-        .from('town_hobbies')
+        .from('towns_hobbies')
         .insert(townHobbies);
 
       if (insertError) {
@@ -155,7 +155,7 @@ async function populateTownHobbies() {
 
   // Verify a sample
   const { data: sample } = await supabase
-    .from('town_hobbies')
+    .from('towns_hobbies')
     .select(`
       town:towns(name),
       hobby:hobbies(name)

@@ -34,7 +34,7 @@ async function populateSpecificHobbies() {
   console.log(`🏘️ Processing ${towns.length} towns...\n`);
 
   // Clear existing town_hobbies (start fresh)
-  await supabase.from('town_hobbies').delete().gte('id', '00000000-0000-0000-0000-000000000000');
+  await supabase.from('towns_hobbies').delete().gte('id', '00000000-0000-0000-0000-000000000000');
 
   let totalAssociations = 0;
 
@@ -119,7 +119,7 @@ async function populateSpecificHobbies() {
     // Insert hobbies for this town
     if (townHobbies.length > 0) {
       const { error: insertError } = await supabase
-        .from('town_hobbies')
+        .from('towns_hobbies')
         .insert(townHobbies);
 
       if (!insertError) {
@@ -140,7 +140,7 @@ async function populateSpecificHobbies() {
   
   // Show sample
   const { data: sample } = await supabase
-    .from('town_hobbies')
+    .from('towns_hobbies')
     .select(`
       town:towns(name, state_code),
       hobby:hobbies(name, required_conditions)

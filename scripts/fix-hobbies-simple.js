@@ -28,7 +28,7 @@ async function fixHobbies() {
       .not('image_url_1', 'is', null);
     
     const { data: townsWithHobbies } = await supabase
-      .from('town_hobbies')
+      .from('towns_hobbies')
       .select('town_id');
     
     const townIdsWithHobbies = new Set(townsWithHobbies.map(t => t.town_id));
@@ -110,7 +110,7 @@ async function fixHobbies() {
         
         // Use upsert to avoid duplicates
         const { data, error } = await supabase
-          .from('town_hobbies')
+          .from('towns_hobbies')
           .upsert(batch, { onConflict: 'town_id,hobby_id' });
         
         if (error) {
@@ -126,7 +126,7 @@ async function fixHobbies() {
     // 5. Verify the fix
     console.log('\n📊 Verification:');
     const { count: townsWithHobbiesAfter } = await supabase
-      .from('town_hobbies')
+      .from('towns_hobbies')
       .select('town_id', { count: 'exact', head: true });
     
     console.log(`Towns with hobbies: ${townsWithHobbiesAfter}`);

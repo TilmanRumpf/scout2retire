@@ -27,7 +27,7 @@ const HobbiesDisplay = ({ townId, townName }) => {
 
       // Get town-specific hobbies
       const { data: townHobbies, error: townError } = await supabase
-        .from('town_hobbies')
+        .from('town_hobbies')  // TEMPORARY: Using existing table name until renamed in Supabase
         .select('hobby_id')
         .eq('town_id', townId);
 

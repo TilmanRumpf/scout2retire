@@ -211,7 +211,7 @@ async function verifyAndFixHobbies() {
     
     // 3. Get current town_hobbies assignments
     const { data: currentAssignments, error: assignError } = await supabase
-      .from('town_hobbies')
+      .from('towns_hobbies')
       .select('town_id, hobby_id');
     
     if (assignError) throw assignError;
@@ -304,7 +304,7 @@ async function verifyAndFixHobbies() {
           }));
           
           const { error } = await supabase
-            .from('town_hobbies')
+            .from('towns_hobbies')
             .insert(batch);
           
           if (error) {
