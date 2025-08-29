@@ -219,7 +219,7 @@ export default function OnboardingClimate() {
   const precipitationOptions = [
     { value: 'mostly_dry', label: 'Mostly Dry' },
     { value: 'balanced', label: 'Balanced' },
-    { value: 'often_rainy', label: 'Often Rainy' }
+    { value: 'less_dry', label: 'Less Dry' }
   ];
 
   return (
