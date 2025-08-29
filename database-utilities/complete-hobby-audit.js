@@ -17,10 +17,10 @@ async function completeAudit() {
       { count: totalTowns },
       { count: totalAssignments }
     ] = await Promise.all([
-      supabase.from('town_hobbies').select('town_id, hobby_id'),
+      supabase.from('towns_hobbies').select('town_id, hobby_id'),
       supabase.from('hobbies').select('id, name, required_conditions'),
       supabase.from('towns').select('*', { count: 'exact', head: true }),
-      supabase.from('town_hobbies').select('*', { count: 'exact', head: true })
+      supabase.from('towns_hobbies').select('*', { count: 'exact', head: true })
     ]);
 
     if (assignmentsError || hobbiesError) {

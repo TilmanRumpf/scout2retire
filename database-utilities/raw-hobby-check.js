@@ -18,7 +18,7 @@ async function rawCheck() {
       
       // Manual count
       const { data: rawData, error: rawError } = await supabase
-        .from('town_hobbies')
+        .from('towns_hobbies')
         .select('hobby_id');
       
       const { data: hobbies, error: hobbiesError } = await supabase

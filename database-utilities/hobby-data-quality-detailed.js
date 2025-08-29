@@ -21,7 +21,7 @@ async function detailedAnalysis() {
       .not('image_url_1', 'is', null);
     
     const { count: totalAssignments } = await supabase
-      .from('town_hobbies')
+      .from('towns_hobbies')
       .select('*', { count: 'exact', head: true });
     
     const { count: totalHobbies } = await supabase
@@ -40,7 +40,7 @@ async function detailedAnalysis() {
 
     // Get top hobby assignments
     const { data: hobbyAssignments, error } = await supabase
-      .from('town_hobbies')
+      .from('towns_hobbies')
       .select(`
         hobby_id,
         hobbies!inner(name)
@@ -152,7 +152,7 @@ async function detailedAnalysis() {
         `)
         .in('id', 
           supabase
-            .from('town_hobbies')
+            .from('towns_hobbies')
             .select('town_id')
             .in('hobby_id', 
               supabase

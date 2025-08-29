@@ -73,7 +73,7 @@ async function setupHobbiesTablesAlternative() {
     
     // 1. Drop existing tables
     console.log('🗑️ Dropping existing tables...');
-    await supabase.from('town_hobbies').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('towns_hobbies').delete().neq('id', '00000000-0000-0000-0000-000000000000');
     await supabase.from('user_hobbies').delete().neq('id', '00000000-0000-0000-0000-000000000000');
     await supabase.from('hobbies').delete().neq('id', '00000000-0000-0000-0000-000000000000');
     

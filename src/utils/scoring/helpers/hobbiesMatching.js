@@ -47,7 +47,7 @@ async function getAllHobbies() {
 async function getTownHobbies(townId) {
   try {
     const { data, error } = await supabase
-      .from('town_hobbies')
+      .from('town_hobbies')  // TEMPORARY: Using existing table name until renamed in Supabase
       .select('hobby_id')
       .eq('town_id', townId);
     
@@ -55,7 +55,7 @@ async function getTownHobbies(townId) {
     
     return data.map(th => th.hobby_id);
   } catch (error) {
-    console.error('Error fetching town hobbies:', error);
+    console.error('Error fetching town hobbies from towns_hobbies:', error);
     return [];
   }
 }
@@ -184,9 +184,15 @@ export async function calculateHobbiesScore(userHobbies, town) {
     });
   }
   
-  // Add custom activities
+  // Add custom activities (ensure Title Case)
   if (userHobbies.custom_activities?.length) {
-    userHobbyNames.push(...userHobbies.custom_activities);
+    userHobbies.custom_activities.forEach(activity => {
+      // Convert to Title Case to match database format
+      const titleCased = activity.split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+      userHobbyNames.push(titleCased);
+    });
   }
 
   // Calculate matches
