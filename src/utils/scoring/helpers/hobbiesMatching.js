@@ -47,7 +47,7 @@ async function getAllHobbies() {
 async function getTownHobbies(townId) {
   try {
     const { data, error } = await supabase
-      .from('town_hobbies')  // TEMPORARY: Using existing table name until renamed in Supabase
+      .from('towns_hobbies')
       .select('hobby_id')
       .eq('town_id', townId);
     
