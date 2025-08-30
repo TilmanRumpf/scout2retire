@@ -41,23 +41,23 @@ async function runQueries() {
 
     // Check towns_hobbies
     try {
-      const { data, error } = await supabase.from('towns_hobbies').select('*').limit(1);
+      const { data, error } = await supabase.from('town_hobbies').select('*').limit(1);
       if (!error) {
         hasTownsHobbies = true;
-        console.log('✅ towns_hobbies exists');
+        console.log('✅ town_hobbies exists');
       }
     } catch (err) {
-      console.log('❌ towns_hobbies does not exist or is not accessible');
+      console.log('❌ town_hobbies does not exist or is not accessible');
     }
 
     console.log(`\nTable status:`);
     console.log(`- town_hobbies exists: ${hasTownHobbies ? '✅' : '❌'}`);
-    console.log(`- towns_hobbies exists: ${hasTownsHobbies ? '✅' : '❌'}`);
+    console.log(`- town_hobbies exists: ${hasTownsHobbies ? '✅' : '❌'}`);
 
     // Since we cannot execute DDL commands via the SDK, we need to report what needs to be done
     if (hasTownHobbies && !hasTownsHobbies) {
       console.log('\n⚠️  MANUAL ACTION REQUIRED:');
-      console.log('The town_hobbies table exists but towns_hobbies does not.');
+      console.log('The town_hobbies table exists and is accessible.');
       console.log('Please execute the following SQL commands manually in your Supabase dashboard:');
       console.log('');
       console.log('-- Rename table');
