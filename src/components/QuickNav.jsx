@@ -54,9 +54,8 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
     try {
       const { user: currentUser } = await getCurrentUser();
       if (currentUser) {
-        // Check if user is admin
-        const adminEmails = ['tilman.rumpf@gmail.com', 'tobias.rumpf1@gmail.com', 'madara.grisule@gmail.com'];
-        setIsAdmin(adminEmails.includes(currentUser.email));
+        // Check if user is admin from database
+        setIsAdmin(currentUser.is_admin === true);
         
         // Check for pending invitations
         const { data, error } = await supabase

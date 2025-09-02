@@ -15,88 +15,164 @@ const TOBIAS_EMAIL = 'tobiasrumpf@gmx.de';
 const TOBIAS_USER_ID = 'd1039857-71e2-4562-86aa-1f0b4a0c17c8';
 
 async function runQueries() {
-  console.log('🔍 HOBBIES JUNCTION TABLE CHECK');
+  console.log('🔧 FIXING BATCH 15 HOBBIES WITH SENSIBLE CLASSIFICATIONS');
   console.log('=' .repeat(80));
-  console.log('Checking which hobbies junction table exists');
+  console.log('Updating Sudoku, Surfing, Swimming, Swimming Laps, Tai Chi, Tango, Tennis, Theater, Travel Planning, Trivia Nights');
   console.log('=' .repeat(80));
   console.log('');
 
   try {
-    // Step 1: Check which table exists by trying to query them
-    console.log('Step 1: Checking which hobbies junction table exists...');
-    
-    let hasTownHobbies = false;
-    let hasTownsHobbies = false;
-
-    // Check town_hobbies
-    try {
-      const { data, error } = await supabase.from('town_hobbies').select('*').limit(1);
-      if (!error) {
-        hasTownHobbies = true;
-        console.log('✅ town_hobbies exists');
+    const hobbiesUpdates = [
+      {
+        name: 'Sudoku',
+        updates: {
+          category: 'interest',
+          verification_method: 'universal',
+          is_universal: true,
+          verification_query: null,
+          verification_notes: 'Number puzzles available in books, newspapers, apps. Can solve anywhere. No equipment needed.',
+          required_conditions: null
+        }
+      },
+      {
+        name: 'Tai Chi',
+        updates: {
+          category: 'activity',
+          verification_method: 'universal',
+          is_universal: true,
+          verification_query: null,
+          verification_notes: 'Gentle martial art practiced anywhere. Online videos, apps teach forms. Parks and classes enhance.',
+          required_conditions: null
+        }
+      },
+      {
+        name: 'Travel Planning',
+        updates: {
+          category: 'interest',
+          verification_method: 'universal',
+          is_universal: true,
+          verification_query: null,
+          verification_notes: 'Research and plan trips anywhere. Online tools, guides, booking sites. Travel agents enhance.',
+          required_conditions: null
+        }
+      },
+      {
+        name: 'Tango',
+        updates: {
+          category: 'activity',
+          verification_method: 'universal',
+          is_universal: true,
+          verification_query: null,
+          verification_notes: 'Can learn basic steps at home with videos. Partner dancing. Milongas and classes enhance.',
+          required_conditions: null
+        }
+      },
+      {
+        name: 'Surfing',
+        updates: {
+          verification_query: 'Find surf breaks, surf schools, or suitable ocean conditions for surfing near {town}',
+          verification_notes: 'Requires ocean waves and surfboards. Coastal areas with breaks. Surf schools teach beginners.',
+          required_conditions: null
+        }
+      },
+      {
+        name: 'Swimming',
+        updates: {
+          verification_query: 'Find swimming pools, beaches, lakes, or aquatic centers in {town}',
+          verification_notes: 'Requires water access. Pools, beaches, lakes. Most towns have public pools.',
+          required_conditions: null
+        }
+      },
+      {
+        name: 'Swimming Laps',
+        updates: {
+          verification_query: 'Find lap pools, aquatic centers, or gyms with pools for lap swimming in {town}',
+          verification_notes: 'Requires lap pool access. Gyms, YMCAs, aquatic centers. Lane swimming times vary.',
+          required_conditions: null
+        }
+      },
+      {
+        name: 'Tennis',
+        updates: {
+          verification_query: 'Find tennis courts, clubs, or recreation centers with tennis facilities in {town}',
+          verification_notes: 'Requires courts and equipment. Public parks, clubs, schools often have courts.',
+          required_conditions: null
+        }
+      },
+      {
+        name: 'Theater',
+        updates: {
+          category: 'interest',
+          verification_query: 'Find theaters, playhouses, or performing arts venues in {town}',
+          verification_notes: 'Live performances at local venues. Community theaters, professional stages vary by city.',
+          required_conditions: null
+        }
+      },
+      {
+        name: 'Trivia Nights',
+        updates: {
+          verification_query: 'Find bars, restaurants, or venues hosting trivia nights in {town}',
+          verification_notes: 'Pub quiz events at bars, restaurants. Weekly schedules vary. Social team activity.',
+          required_conditions: null
+        }
       }
-    } catch (err) {
-      console.log('❌ town_hobbies does not exist or is not accessible');
-    }
+    ];
 
-    // Check towns_hobbies
-    try {
-      const { data, error } = await supabase.from('town_hobbies').select('*').limit(1);
-      if (!error) {
-        hasTownsHobbies = true;
-        console.log('✅ town_hobbies exists');
-      }
-    } catch (err) {
-      console.log('❌ town_hobbies does not exist or is not accessible');
-    }
+    let updatedCount = 0;
+    let errorCount = 0;
 
-    console.log(`\nTable status:`);
-    console.log(`- town_hobbies exists: ${hasTownHobbies ? '✅' : '❌'}`);
-    console.log(`- town_hobbies exists: ${hasTownsHobbies ? '✅' : '❌'}`);
-
-    // Since we cannot execute DDL commands via the SDK, we need to report what needs to be done
-    if (hasTownHobbies && !hasTownsHobbies) {
-      console.log('\n⚠️  MANUAL ACTION REQUIRED:');
-      console.log('The town_hobbies table exists and is accessible.');
-      console.log('Please execute the following SQL commands manually in your Supabase dashboard:');
-      console.log('');
-      console.log('-- Rename table');
-      console.log('ALTER TABLE IF EXISTS town_hobbies RENAME TO towns_hobbies;');
-      console.log('');
-      console.log('-- Rename indexes');
-      console.log('ALTER INDEX IF EXISTS idx_town_hobbies_town_id RENAME TO idx_towns_hobbies_town_id;');
-      console.log('ALTER INDEX IF EXISTS idx_town_hobbies_hobby_id RENAME TO idx_towns_hobbies_hobby_id;');
-      console.log('');
-
-    } else if (hasTownsHobbies && !hasTownHobbies) {
-      console.log('\n✅ PERFECT: towns_hobbies already exists and town_hobbies does not exist');
-      console.log('No rename needed - the table naming is correct!');
-
-    } else if (hasTownHobbies && hasTownsHobbies) {
-      console.log('\n⚠️  WARNING: Both tables exist - manual intervention required');
-      console.log('Please check the data in both tables and decide which one to keep.');
-
-    } else {
-      console.log('\n❌ ERROR: Neither table exists');
-      console.log('This might indicate a more serious database issue.');
+    for (const hobbyUpdate of hobbiesUpdates) {
+      console.log(`\n🔧 Updating ${hobbyUpdate.name}...`);
       
-      // Let's also check if there are any hobbies or towns tables at all
-      try {
-        const { data: hobbiesData } = await supabase.from('hobbies').select('id').limit(1);
-        const { data: townsData } = await supabase.from('towns').select('id').limit(1);
-        
-        console.log(`Hobbies table accessible: ${hobbiesData ? '✅' : '❌'}`);
-        console.log(`Towns table accessible: ${townsData ? '✅' : '❌'}`);
-      } catch (err) {
-        console.log('Error checking base tables:', err.message);
+      const { data, error } = await supabase
+        .from('hobbies')
+        .update(hobbyUpdate.updates)
+        .eq('name', hobbyUpdate.name)
+        .select();
+
+      if (error) {
+        console.log(`❌ Error updating ${hobbyUpdate.name}: ${error.message}`);
+        errorCount++;
+      } else if (data && data.length > 0) {
+        console.log(`✅ Updated ${hobbyUpdate.name} successfully`);
+        updatedCount++;
+      } else {
+        console.log(`⚠️ No rows updated for ${hobbyUpdate.name} (hobby not found?)`);
+        errorCount++;
       }
     }
+
+    console.log(`\n📊 UPDATE SUMMARY:`);
+    console.log(`   Successful updates: ${updatedCount}`);
+    console.log(`   Errors/Not found: ${errorCount}`);
+    console.log(`   Total attempted: ${hobbiesUpdates.length}`);
+
+    // Verify the updates
+    console.log(`\n🔍 VERIFYING BATCH 15 UPDATES:`);
+    console.log('=' .repeat(80));
+    
+    const { data: verifyData, error: verifyError } = await supabase
+      .from('hobbies')
+      .select('name, category, verification_method, is_universal, verification_notes')
+      .in('name', hobbiesUpdates.map(h => h.name))
+      .order('name');
+
+    if (verifyError) {
+      console.log('❌ Error verifying updates:', verifyError.message);
+      return;
+    }
+
+    verifyData.forEach(hobby => {
+      console.log(`\n${hobby.name}:`);
+      console.log(`   Category: ${hobby.category || 'NULL'}`);
+      console.log(`   Method: ${hobby.verification_method || 'NULL'}`);
+      console.log(`   Universal: ${hobby.is_universal ? 'YES' : 'NO'}`);
+      console.log(`   Notes: ${hobby.verification_notes ? `${hobby.verification_notes.substring(0, 60)}...` : 'NULL'}`);
+    });
 
   } catch (error) {
     console.error('❌ Unexpected error:', error);
   }
-
-  console.log('\n✅ Hobbies junction table check completed!');
 }
 
 // Run the queries
