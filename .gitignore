@@ -144,3 +144,10 @@ node_modules
 
 # macOS system files
 .DS_Store
+
+# Playwright
+playwright-report/
+test-results/
+chrome/
+.pw-user/
+.pw-user-a/

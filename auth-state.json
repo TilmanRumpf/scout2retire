@@ -1,0 +1,22 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://127.0.0.1:5173",
+      "localStorage": [
+        {
+          "name": "sb-axlruvvsjepsulcbqlho-auth-token",
+          "value": "{\"access_token\":\"eyJhbGciOiJIUzI1NiIsImtpZCI6IllWdysxb2JQRi9laGN1K2oiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2F4bHJ1dnZzamVwc3VsY2JxbGhvLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI4M2QyODViMi1iMjFiLTRkMTMtYTFhMS02ZDUxYjY3MzNkNTIiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzU2ODY4OTM4LCJpYXQiOjE3NTY4NjUzMzgsImVtYWlsIjoidGlsbWFuLnJ1bXBmQGdtYWlsLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWwiOiJ0aWxtYW4ucnVtcGZAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBob25lX3ZlcmlmaWVkIjpmYWxzZSwic3ViIjoiODNkMjg1YjItYjIxYi00ZDEzLWExYTEtNmQ1MWI2NzMzZDUyIn0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTY4NjUzMzh9XSwic2Vzc2lvbl9pZCI6ImI1NzliZTliLWI0YjMtNDE1NC05YzFkLWEzMmQ2NWM3MWQxMyIsImlzX2Fub255bW91cyI6ZmFsc2V9.IWm2MJVJBjLCnTfmKaeRwzwb7-xr-PGvsB_fwgarvpA\",\"token_type\":\"bearer\",\"expires_in\":3600,\"expires_at\":1756868938,\"refresh_token\":\"rv2pixuwwyje\",\"user\":{\"id\":\"83d285b2-b21b-4d13-a1a1-6d51b6733d52\",\"aud\":\"authenticated\",\"role\":\"authenticated\",\"email\":\"tilman.rumpf@gmail.com\",\"email_confirmed_at\":\"2025-05-31T18:46:43.007926Z\",\"phone\":\"\",\"confirmed_at\":\"2025-05-31T18:46:43.007926Z\",\"last_sign_in_at\":\"2025-09-03T02:08:58.699157756Z\",\"app_metadata\":{\"provider\":\"email\",\"providers\":[\"email\"]},\"user_metadata\":{\"email\":\"tilman.rumpf@gmail.com\",\"email_verified\":true,\"phone_verified\":false,\"sub\":\"83d285b2-b21b-4d13-a1a1-6d51b6733d52\"},\"identities\":[{\"identity_id\":\"cb8cdeb4-c75b-40eb-a56f-af7523ad9e0e\",\"id\":\"83d285b2-b21b-4d13-a1a1-6d51b6733d52\",\"user_id\":\"83d285b2-b21b-4d13-a1a1-6d51b6733d52\",\"identity_data\":{\"email\":\"tilman.rumpf@gmail.com\",\"email_verified\":false,\"phone_verified\":false,\"sub\":\"83d285b2-b21b-4d13-a1a1-6d51b6733d52\"},\"provider\":\"email\",\"last_sign_in_at\":\"2025-05-31T18:46:43.000908Z\",\"created_at\":\"2025-05-31T18:46:43.000964Z\",\"updated_at\":\"2025-05-31T18:46:43.000964Z\",\"email\":\"tilman.rumpf@gmail.com\"}],\"created_at\":\"2025-05-31T18:46:42.984615Z\",\"updated_at\":\"2025-09-03T02:08:58.708041Z\",\"is_anonymous\":false}}"
+        },
+        {
+          "name": "scout2retire_last_email",
+          "value": "tilman.rumpf@gmail.com"
+        },
+        {
+          "name": "s2r-theme",
+          "value": "light"
+        }
+      ]
+    }
+  ]
+}

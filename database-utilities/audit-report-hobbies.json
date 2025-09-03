@@ -1,0 +1,368 @@
+{
+  "timestamp": "2025-09-03T00:06:47.048Z",
+  "stats": {
+    "ui_total": 153,
+    "db_total": 173,
+    "exact_matches": 72,
+    "case_mismatches": 81,
+    "ui_not_in_db": 0,
+    "db_not_in_ui": 20
+  },
+  "mismatches": {
+    "case": [
+      {
+        "ui": "Mountain biking",
+        "db": "Mountain Biking"
+      },
+      {
+        "ui": "Walking groups",
+        "db": "Walking Groups"
+      },
+      {
+        "ui": "Bocce ball",
+        "db": "Bocce Ball"
+      },
+      {
+        "ui": "Ping pong",
+        "db": "Ping Pong"
+      },
+      {
+        "ui": "Swimming laps",
+        "db": "Swimming Laps"
+      },
+      {
+        "ui": "Water aerobics",
+        "db": "Water Aerobics"
+      },
+      {
+        "ui": "Water polo",
+        "db": "Water Polo"
+      },
+      {
+        "ui": "Deep sea fishing",
+        "db": "Deep Sea Fishing"
+      },
+      {
+        "ui": "Scuba diving",
+        "db": "Scuba Diving"
+      },
+      {
+        "ui": "Stand-up paddleboarding",
+        "db": "Stand-up Paddleboarding"
+      },
+      {
+        "ui": "Yacht racing",
+        "db": "Yacht Racing"
+      },
+      {
+        "ui": "Cross-country skiing",
+        "db": "Cross-country Skiing"
+      },
+      {
+        "ui": "Downhill skiing",
+        "db": "Downhill Skiing"
+      },
+      {
+        "ui": "Ice fishing",
+        "db": "Ice Fishing"
+      },
+      {
+        "ui": "Ice hockey",
+        "db": "Ice Hockey"
+      },
+      {
+        "ui": "Ice skating",
+        "db": "Ice Skating"
+      },
+      {
+        "ui": "Fitness classes",
+        "db": "Fitness Classes"
+      },
+      {
+        "ui": "Martial arts",
+        "db": "Martial Arts"
+      },
+      {
+        "ui": "Spa & wellness",
+        "db": "Spa & Wellness"
+      },
+      {
+        "ui": "Tai chi",
+        "db": "Tai Chi"
+      },
+      {
+        "ui": "Horseback riding",
+        "db": "Horseback Riding"
+      },
+      {
+        "ui": "Hot air ballooning",
+        "db": "Hot Air Ballooning"
+      },
+      {
+        "ui": "Rock climbing",
+        "db": "Rock Climbing"
+      },
+      {
+        "ui": "Aquarium keeping",
+        "db": "Aquarium Keeping"
+      },
+      {
+        "ui": "Dog training",
+        "db": "Dog Training"
+      },
+      {
+        "ui": "Dog walking",
+        "db": "Dog Walking"
+      },
+      {
+        "ui": "Flower arranging",
+        "db": "Flower Arranging"
+      },
+      {
+        "ui": "Greenhouse gardening",
+        "db": "Greenhouse Gardening"
+      },
+      {
+        "ui": "Herb gardening",
+        "db": "Herb Gardening"
+      },
+      {
+        "ui": "Nature walks",
+        "db": "Nature Walks"
+      },
+      {
+        "ui": "Orchid growing",
+        "db": "Orchid Growing"
+      },
+      {
+        "ui": "Vegetable gardening",
+        "db": "Vegetable Gardening"
+      },
+      {
+        "ui": "Glass blowing",
+        "db": "Glass Blowing"
+      },
+      {
+        "ui": "Jewelry making",
+        "db": "Jewelry Making"
+      },
+      {
+        "ui": "Leather crafting",
+        "db": "Leather Crafting"
+      },
+      {
+        "ui": "Stained glass",
+        "db": "Stained Glass"
+      },
+      {
+        "ui": "Watercolor painting",
+        "db": "Watercolor Painting"
+      },
+      {
+        "ui": "Wildlife photography",
+        "db": "Wildlife Photography"
+      },
+      {
+        "ui": "Ballroom dancing",
+        "db": "Ballroom Dancing"
+      },
+      {
+        "ui": "Choir singing",
+        "db": "Choir Singing"
+      },
+      {
+        "ui": "Community theater",
+        "db": "Community Theater"
+      },
+      {
+        "ui": "Film appreciation",
+        "db": "Film Appreciation"
+      },
+      {
+        "ui": "Jazz appreciation",
+        "db": "Jazz Appreciation"
+      },
+      {
+        "ui": "Line dancing",
+        "db": "Line Dancing"
+      },
+      {
+        "ui": "Salsa dancing",
+        "db": "Salsa Dancing"
+      },
+      {
+        "ui": "Square dancing",
+        "db": "Square Dancing"
+      },
+      {
+        "ui": "Cheese making",
+        "db": "Cheese Making"
+      },
+      {
+        "ui": "Coffee culture",
+        "db": "Coffee Culture"
+      },
+      {
+        "ui": "Cooking classes",
+        "db": "Cooking Classes"
+      },
+      {
+        "ui": "Farmers markets",
+        "db": "Farmers Markets"
+      },
+      {
+        "ui": "Food tours",
+        "db": "Food Tours"
+      },
+      {
+        "ui": "Home brewing",
+        "db": "Home Brewing"
+      },
+      {
+        "ui": "Organic groceries",
+        "db": "Organic Groceries"
+      },
+      {
+        "ui": "Wine tasting",
+        "db": "Wine Tasting"
+      },
+      {
+        "ui": "Antique collecting",
+        "db": "Antique Collecting"
+      },
+      {
+        "ui": "Historical sites",
+        "db": "Historical Sites"
+      },
+      {
+        "ui": "Art fairs",
+        "db": "Art Fairs"
+      },
+      {
+        "ui": "Bible study",
+        "db": "Bible Study"
+      },
+      {
+        "ui": "Book clubs",
+        "db": "Book Clubs"
+      },
+      {
+        "ui": "Cultural festivals",
+        "db": "Cultural Festivals"
+      },
+      {
+        "ui": "Flea markets",
+        "db": "Flea Markets"
+      },
+      {
+        "ui": "Grandchildren activities",
+        "db": "Grandchildren Activities"
+      },
+      {
+        "ui": "Outdoor concerts",
+        "db": "Outdoor Concerts"
+      },
+      {
+        "ui": "Street festivals",
+        "db": "Street Festivals"
+      },
+      {
+        "ui": "Board games",
+        "db": "Board Games"
+      },
+      {
+        "ui": "Card games",
+        "db": "Card Games"
+      },
+      {
+        "ui": "Crossword puzzles",
+        "db": "Crossword Puzzles"
+      },
+      {
+        "ui": "Jigsaw puzzles",
+        "db": "Jigsaw Puzzles"
+      },
+      {
+        "ui": "Trivia nights",
+        "db": "Trivia Nights"
+      },
+      {
+        "ui": "Video gaming",
+        "db": "Video Gaming"
+      },
+      {
+        "ui": "Collecting coins",
+        "db": "Collecting Coins"
+      },
+      {
+        "ui": "Collecting stamps",
+        "db": "Collecting Stamps"
+      },
+      {
+        "ui": "Metal detecting",
+        "db": "Metal Detecting"
+      },
+      {
+        "ui": "Model building",
+        "db": "Model Building"
+      },
+      {
+        "ui": "Radio amateur",
+        "db": "Radio Amateur"
+      },
+      {
+        "ui": "Creative writing",
+        "db": "Creative Writing"
+      },
+      {
+        "ui": "Digital photography",
+        "db": "Digital Photography"
+      },
+      {
+        "ui": "Language learning",
+        "db": "Language Learning"
+      },
+      {
+        "ui": "RV traveling",
+        "db": "Rv Traveling"
+      },
+      {
+        "ui": "Travel planning",
+        "db": "Travel Planning"
+      },
+      {
+        "ui": "Writing memoirs",
+        "db": "Writing Memoirs"
+      }
+    ],
+    "ui_missing": [],
+    "db_missing": [
+      "Arts & Crafts",
+      "Cooking",
+      "Cycling",
+      "Dancing",
+      "Gardening",
+      "Golf",
+      "Golfing",
+      "History",
+      "Music",
+      "Photography",
+      "Reading",
+      "Swimming",
+      "Theater",
+      "Ukulele",
+      "Walking",
+      "Walking Clubs",
+      "Water Sports",
+      "Wine",
+      "Winter Sports",
+      "Wood Carving"
+    ]
+  },
+  "recommendations": [
+    "Fix case mismatches",
+    "Add missing hobbies to database",
+    "Update compound mappings",
+    "Implement UUID mapping"
+  ]
+}
