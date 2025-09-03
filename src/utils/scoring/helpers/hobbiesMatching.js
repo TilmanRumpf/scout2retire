@@ -231,12 +231,12 @@ export async function calculateHobbiesScore(userHobbies, town) {
     }
   });
 
-  // Calculate base score - REALISTIC scoring based on actual matches
+  // Calculate base score - PROPER scoring based on actual matches
   if (totalUserHobbies > 0) {
     const matchPercentage = (totalMatches / totalUserHobbies) * 100;
     
-    // Direct proportional scoring - no inflation
-    score = Math.min(85, matchPercentage * 0.85);  // Cap at 85 to leave room for bonuses
+    // Direct proportional scoring - FULL credit for matches
+    score = Math.min(85, matchPercentage);  // Cap at 85 to leave room for bonuses
     
     // Add factors based on match quality
     if (matchPercentage >= 80) {
