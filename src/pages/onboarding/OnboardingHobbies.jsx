@@ -453,7 +453,7 @@ export default function OnboardingHobbies() {
     ].sort(),
     
     'Other Sports & Fitness': [
-      'Archery', 'Basketball', 'Bowling', 'Fencing', 'Fitness classes', 
+      'Archery', 'Basketball', 'Bowling', 'Fencing', 
       'Martial arts', 'Pilates', 'Spa & wellness', 'Tai chi', 'Yoga', 'Zumba'
     ].sort(),
     
@@ -572,54 +572,25 @@ export default function OnboardingHobbies() {
           // Reconstruct UI state from database data
           const reconstructedActivities = [];
           const reconstructedInterests = [];
-          const customPhysical = [...loadedCustomPhysical]; // Start with existing custom
+          // Keep custom_physical as loaded (fitness_classes has been removed from DB)
+          const customPhysical = [...loadedCustomPhysical];
           const customHobbies = [...loadedCustomHobbies]; // Start with existing custom
           
-          // Process activities - reconstruct compound IDs and separate custom
+          // Process activities - reconstruct compound IDs but keep non-compound items in activities
           loadedActivities.forEach(activity => {
-            let belongsToCompound = false;
-            
-            // Check if this activity belongs to any compound button
-            for (const [compoundId, parts] of Object.entries(compoundMappings)) {
-              if (compoundId.includes('_') && activityOptions.find(a => a.id === compoundId)) {
-                // This is an activity compound
-                if (parts.includes(activity) || activity === compoundId) {
-                  if (!reconstructedActivities.includes(compoundId)) {
-                    reconstructedActivities.push(compoundId);
-                  }
-                  belongsToCompound = true;
-                  break;
-                }
-              }
-            }
-            
-            // If doesn't belong to any compound, it's custom
-            if (!belongsToCompound && !customPhysical.includes(activity)) {
-              customPhysical.push(activity);
+            // Simply add all activities to reconstructedActivities
+            // Don't try to separate "custom" items - they should stay in activities array
+            if (!reconstructedActivities.includes(activity)) {
+              reconstructedActivities.push(activity);
             }
           });
           
-          // Process interests - reconstruct compound IDs and separate custom
+          // Process interests - reconstruct but keep non-compound items in interests
           loadedInterests.forEach(interest => {
-            let belongsToCompound = false;
-            
-            // Check if this interest belongs to any compound button
-            for (const [compoundId, parts] of Object.entries(compoundMappings)) {
-              if (interestOptions.find(i => i.id === compoundId)) {
-                // This is an interest compound
-                if (parts.includes(interest) || interest === compoundId) {
-                  if (!reconstructedInterests.includes(compoundId)) {
-                    reconstructedInterests.push(compoundId);
-                  }
-                  belongsToCompound = true;
-                  break;
-                }
-              }
-            }
-            
-            // If doesn't belong to any compound, it's custom
-            if (!belongsToCompound && !customHobbies.includes(interest)) {
-              customHobbies.push(interest);
+            // Simply add all interests to reconstructedInterests
+            // Don't try to separate "custom" items - they should stay in interests array
+            if (!reconstructedInterests.includes(interest)) {
+              reconstructedInterests.push(interest);
             }
           });
           
@@ -1025,26 +996,52 @@ export default function OnboardingHobbies() {
               <div className={`space-y-0.5 ${uiConfig.font.size.xs} ${uiConfig.colors.body}`}>
                 {(formData.activities.length > 0 || formData.custom_physical.length > 0) && (
                   <div><span className={`${uiConfig.font.weight.medium}`}>Activities:</span> {
-                    // Merge and deduplicate activities and custom_physical
-                    [...new Set([...formData.activities, ...formData.custom_physical])].map(id => {
-                      // Try to find in activity options first
-                      const activity = activityOptions.find(a => a.id === id);
-                      if (activity) return activity.title;
-                      // Otherwise, format the raw ID nicely
-                      return id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                    }).join(', ')
+                    (() => {
+                      // Only show items that are actually selected - match the button selection logic
+                      const selectedActivities = [];
+                      
+                      // Check each activity option to see if it's selected (using same logic as buttons)
+                      activityOptions.forEach(option => {
+                        const splitItems = splitCompoundItem(option.id);
+                        // Use .some() to match how buttons determine selection (line 941)
+                        const isSelected = splitItems.some(item => formData.activities.includes(item));
+                        if (isSelected) {
+                          selectedActivities.push(option.title);
+                        }
+                      });
+                      
+                      // Add custom physical activities
+                      formData.custom_physical.forEach(activity => {
+                        selectedActivities.push(activity.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+                      });
+                      
+                      return selectedActivities.join(', ');
+                    })()
                   }</div>
                 )}
                 {(formData.interests.length > 0 || formData.custom_hobbies.length > 0) && (
                   <div><span className={`${uiConfig.font.weight.medium}`}>Interests:</span> {
-                    // Merge and deduplicate interests and custom_hobbies
-                    [...new Set([...formData.interests, ...formData.custom_hobbies])].map(id => {
-                      // Try to find in interest options first
-                      const interest = interestOptions.find(i => i.id === id);
-                      if (interest) return interest.title;
-                      // Otherwise, format the raw ID nicely
-                      return id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                    }).join(', ')
+                    (() => {
+                      // Only show items that are actually selected - match the button selection logic
+                      const selectedInterests = [];
+                      
+                      // Check each interest option to see if it's selected (using same logic as buttons)
+                      interestOptions.forEach(option => {
+                        const splitItems = splitCompoundItem(option.id);
+                        // Use .some() to match how buttons determine selection (line 976)
+                        const isSelected = splitItems.some(item => formData.interests.includes(item));
+                        if (isSelected) {
+                          selectedInterests.push(option.title);
+                        }
+                      });
+                      
+                      // Add custom hobbies
+                      formData.custom_hobbies.forEach(hobby => {
+                        selectedInterests.push(hobby.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+                      });
+                      
+                      return selectedInterests.join(', ');
+                    })()
                   }</div>
                 )}
                 {formData.travel_frequency && (
