@@ -108,24 +108,30 @@ const PhysicalActivityModal = ({
                     {category}
                   </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {activities.map((activity) => (
-                      <button
-                        key={activity}
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleCustomPhysicalToggle(activity);
-                        }}
-                        className={`p-2 ${uiConfig.layout.radius.md} border ${uiConfig.animation.transition} text-left ${
-                          formData.custom_physical.includes(activity.toLowerCase().replace(/\s+/g, '_'))
-                            ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-600 dark:text-scout-accent-400'
-                            : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-300'
-                        } ${uiConfig.font.size.sm}`}
-                      >
-                        {activity}
-                      </button>
-                    ))}
+                    {activities.map((activity) => {
+                      const normalizedActivity = activity.toLowerCase().replace(/\s+/g, '_');
+                      // Check BOTH arrays - activities (from quick selections) AND custom_physical (from modal)
+                      const isSelected = formData.activities.includes(normalizedActivity) || 
+                                       formData.custom_physical.includes(normalizedActivity);
+                      return (
+                        <button
+                          key={activity}
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleCustomPhysicalToggle(activity);
+                          }}
+                          className={`p-2 ${uiConfig.layout.radius.md} border ${uiConfig.animation.transition} text-left ${
+                            isSelected
+                              ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-600 dark:text-scout-accent-400'
+                              : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-300'
+                          } ${uiConfig.font.size.sm}`}
+                        >
+                          {activity}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -268,24 +274,30 @@ const HobbiesModal = ({
                     {category}
                   </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {hobbies.map((hobby) => (
-                      <button
-                        key={hobby}
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleCustomHobbiesToggle(hobby);
-                        }}
-                        className={`p-2 ${uiConfig.layout.radius.md} border ${uiConfig.animation.transition} text-left ${
-                          formData.custom_hobbies.includes(hobby.toLowerCase().replace(/\s+/g, '_'))
-                            ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-600 dark:text-scout-accent-400'
-                            : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-300'
-                        } ${uiConfig.font.size.sm}`}
-                      >
-                        {hobby}
-                      </button>
-                    ))}
+                    {hobbies.map((hobby) => {
+                      const normalizedHobby = hobby.toLowerCase().replace(/\s+/g, '_');
+                      // Check BOTH arrays - interests (from quick selections) AND custom_hobbies (from modal)
+                      const isSelected = formData.interests.includes(normalizedHobby) || 
+                                       formData.custom_hobbies.includes(normalizedHobby);
+                      return (
+                        <button
+                          key={hobby}
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleCustomHobbiesToggle(hobby);
+                          }}
+                          className={`p-2 ${uiConfig.layout.radius.md} border ${uiConfig.animation.transition} text-left ${
+                            isSelected
+                              ? 'border-scout-accent-500 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-600 dark:text-scout-accent-400'
+                              : 'border-gray-300 dark:border-gray-600 hover:border-scout-accent-300'
+                          } ${uiConfig.font.size.sm}`}
+                        >
+                          {hobby}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -343,6 +355,8 @@ export default function OnboardingHobbies() {
   const [showHobbiesModal, setShowHobbiesModal] = useState(false);
   const [physicalSearch, setPhysicalSearch] = useState('');
   const [hobbiesSearch, setHobbiesSearch] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   
   // Temporary state for modal changes (for cancel functionality)
   const [tempPhysicalSelections, setTempPhysicalSelections] = useState([]);
@@ -353,29 +367,49 @@ export default function OnboardingHobbies() {
   // Auto-hide navigation on scroll
   const { isVisible: isNavVisible } = useHideOnScroll();
   
-  // Enable auto-save for this page
-  // TEMPORARILY DISABLED to fix scroll issue
-  // const autoSave = useOnboardingAutoSave(formData, 'hobbies');
+  // Manual save function - called explicitly when needed
   const autoSave = async () => {
-    // Manual save function without the problematic hook
     try {
+      setIsSaving(true);
       const userResult = await getCurrentUser();
-      if (!userResult.user) return false;
+      if (!userResult.user) {
+        setIsSaving(false);
+        return false;
+      }
+      
+      // DON'T MERGE! Keep activities and custom_physical separate
+      // This way custom_physical survives refresh and shows in "Add More" button
+      const dataToSave = {
+        activities: formData.activities,  // Keep separate
+        interests: formData.interests,    // Keep separate
+        custom_physical: formData.custom_physical,  // KEEP these populated!
+        custom_hobbies: formData.custom_hobbies,    // KEEP these populated!
+        travel_frequency: formData.travel_frequency
+      };
       
       const { success } = await saveOnboardingStep(
         userResult.user.id,
-        formData,
+        dataToSave,
         'hobbies'
       );
       
+      if (success) {
+        console.log('Hobbies saved successfully');
+      }
+      
+      setIsSaving(false);
       return success;
     } catch (err) {
       console.error('Save error:', err);
+      setIsSaving(false);
       return false;
     }
   };
+  
+  // REMOVED auto-save on formData changes - was causing infinite loops
+  // Instead, we save explicitly when user makes selections
 
-  // Activity options with descriptions and Winter Sports added
+  // Activity options with descriptions - defined early for use in data loading
   const activityOptions = [
     { id: 'walking_cycling', title: 'Walking & Cycling', description: 'trails • parks • paths' },
     { id: 'golf_tennis', title: 'Golf & Tennis', description: 'courses • courts • clubs' },
@@ -384,7 +418,7 @@ export default function OnboardingHobbies() {
     { id: 'winter_sports', title: 'Winter Sports', description: 'ski • snowboard • skate' }
   ];
 
-  // Interest options with descriptions
+  // Interest options with descriptions - defined early for use in data loading
   const interestOptions = [
     { id: 'gardening', title: 'Gardening & Pets', description: 'vegetables • flowers • pets' },
     { id: 'arts', title: 'Arts & Crafts', description: 'painting • pottery • crafts' },
@@ -513,12 +547,95 @@ export default function OnboardingHobbies() {
         
         // If hobbies data exists, load it
         if (progressResult.data && progressResult.data.hobbies) {
+          // Define compound items and their parts
+          const compoundMappings = {
+            // Activities
+            'golf_tennis': ['golf', 'tennis'],
+            'walking_cycling': ['walking', 'cycling'],
+            'water_sports': ['swimming', 'pools', 'beaches'],
+            'water_crafts': ['kayaking', 'sailing', 'boating'],
+            'winter_sports': ['ski', 'snowboard', 'skate'],
+            // Interests
+            'gardening': ['gardening', 'vegetables', 'flowers', 'pets'],
+            'arts': ['painting', 'pottery', 'crafts'],
+            'music_theater': ['music', 'theater', 'concerts', 'plays', 'opera'],
+            'cooking_wine': ['cooking', 'wine', 'cuisines', 'tasting', 'baking'],
+            'history': ['museums', 'history', 'exhibits', 'tours', 'lectures']
+          };
+          
+          // Load raw data from database
+          const loadedActivities = progressResult.data.hobbies.activities || [];
+          const loadedInterests = progressResult.data.hobbies.interests || [];
+          const loadedCustomPhysical = progressResult.data.hobbies.custom_physical || [];
+          const loadedCustomHobbies = progressResult.data.hobbies.custom_hobbies || [];
+          
+          // Reconstruct UI state from database data
+          const reconstructedActivities = [];
+          const reconstructedInterests = [];
+          const customPhysical = [...loadedCustomPhysical]; // Start with existing custom
+          const customHobbies = [...loadedCustomHobbies]; // Start with existing custom
+          
+          // Process activities - reconstruct compound IDs and separate custom
+          loadedActivities.forEach(activity => {
+            let belongsToCompound = false;
+            
+            // Check if this activity belongs to any compound button
+            for (const [compoundId, parts] of Object.entries(compoundMappings)) {
+              if (compoundId.includes('_') && activityOptions.find(a => a.id === compoundId)) {
+                // This is an activity compound
+                if (parts.includes(activity) || activity === compoundId) {
+                  if (!reconstructedActivities.includes(compoundId)) {
+                    reconstructedActivities.push(compoundId);
+                  }
+                  belongsToCompound = true;
+                  break;
+                }
+              }
+            }
+            
+            // If doesn't belong to any compound, it's custom
+            if (!belongsToCompound && !customPhysical.includes(activity)) {
+              customPhysical.push(activity);
+            }
+          });
+          
+          // Process interests - reconstruct compound IDs and separate custom
+          loadedInterests.forEach(interest => {
+            let belongsToCompound = false;
+            
+            // Check if this interest belongs to any compound button
+            for (const [compoundId, parts] of Object.entries(compoundMappings)) {
+              if (interestOptions.find(i => i.id === compoundId)) {
+                // This is an interest compound
+                if (parts.includes(interest) || interest === compoundId) {
+                  if (!reconstructedInterests.includes(compoundId)) {
+                    reconstructedInterests.push(compoundId);
+                  }
+                  belongsToCompound = true;
+                  break;
+                }
+              }
+            }
+            
+            // If doesn't belong to any compound, it's custom
+            if (!belongsToCompound && !customHobbies.includes(interest)) {
+              customHobbies.push(interest);
+            }
+          });
+          
+          console.log('Reconstructed state from DB:', {
+            activities: reconstructedActivities,
+            interests: reconstructedInterests,
+            custom_physical: customPhysical,
+            custom_hobbies: customHobbies
+          });
+          
           setFormData(prev => ({
             ...prev,
-            activities: progressResult.data.hobbies.activities || [],
-            interests: progressResult.data.hobbies.interests || [],
-            custom_physical: progressResult.data.hobbies.custom_physical || [],
-            custom_hobbies: progressResult.data.hobbies.custom_hobbies || [],
+            activities: reconstructedActivities,
+            interests: reconstructedInterests,
+            custom_physical: customPhysical,
+            custom_hobbies: customHobbies,
             travel_frequency: progressResult.data.hobbies.travel_frequency || ''
           }));
         }
@@ -710,16 +827,13 @@ export default function OnboardingHobbies() {
         return;
       }
       
-      // Merge activities with custom_physical and deduplicate
-      const mergedActivities = [...new Set([...formData.activities, ...formData.custom_physical])];
-      const mergedInterests = [...new Set([...formData.interests, ...formData.custom_hobbies])];
-      
-      // Save only the fields that belong to the hobbies step
+      // DON'T MERGE - keep them separate so "Add More" button shows selections
+      // The matching algorithm will handle both arrays properly
       const dataToSave = {
-        activities: mergedActivities,
-        interests: mergedInterests,
-        custom_physical: [],  // Clear these as they're now in activities
-        custom_hobbies: [],   // Clear these as they're now in interests
+        activities: formData.activities,
+        interests: formData.interests,
+        custom_physical: formData.custom_physical,  // KEEP populated for button display
+        custom_hobbies: formData.custom_hobbies,    // KEEP populated for button display
         travel_frequency: formData.travel_frequency
       };
       
@@ -810,6 +924,7 @@ export default function OnboardingHobbies() {
             <Lightbulb size={16} className="mr-2 text-orange-500 flex-shrink-0 mt-0.5" strokeWidth={3} />
             <p className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.colors.body}`}>
               <span className={`${uiConfig.font.weight.medium}`}>Pro Tip:</span> Your hobbies help us identify locations with active communities and facilities that match your interests.
+              {isSaving && <span className="ml-2 text-green-600 font-medium">(Saving...)</span>}
             </p>
           </div>
           
@@ -836,7 +951,10 @@ export default function OnboardingHobbies() {
               <SelectionCard
                 title="Add More"
                 description={formData.custom_physical.length > 0 
-                  ? formData.custom_physical.slice(0, 2).join(', ') + (formData.custom_physical.length > 2 ? '...' : '')
+                  ? formData.custom_physical.slice(0, 2).map(item => 
+                      // Convert from normalized format (e.g., "mountain_biking") to display format ("Mountain biking")
+                      item.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                    ).join(', ') + (formData.custom_physical.length > 2 ? '...' : '')
                   : 'More activities'
                 }
                 isSelected={formData.custom_physical.length > 0}
@@ -867,7 +985,10 @@ export default function OnboardingHobbies() {
               <SelectionCard
                 title="Add More"
                 description={formData.custom_hobbies.length > 0 
-                  ? formData.custom_hobbies.slice(0, 2).join(', ') + (formData.custom_hobbies.length > 2 ? '...' : '')
+                  ? formData.custom_hobbies.slice(0, 2).map(item => 
+                      // Convert from normalized format (e.g., "needle_point") to display format ("Needle Point")
+                      item.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                    ).join(', ') + (formData.custom_hobbies.length > 2 ? '...' : '')
                   : 'More hobbies'
                 }
                 icon={Plus}

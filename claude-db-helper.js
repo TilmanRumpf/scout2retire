@@ -15,160 +15,134 @@ const TOBIAS_EMAIL = 'tobiasrumpf@gmx.de';
 const TOBIAS_USER_ID = 'd1039857-71e2-4562-86aa-1f0b4a0c17c8';
 
 async function runQueries() {
-  console.log('🔧 FIXING BATCH 15 HOBBIES WITH SENSIBLE CLASSIFICATIONS');
+  console.log('🚫 REMOVING "READING" FROM USER HOBBIES');
   console.log('=' .repeat(80));
-  console.log('Updating Sudoku, Surfing, Swimming, Swimming Laps, Tai Chi, Tango, Tennis, Theater, Travel Planning, Trivia Nights');
+  console.log('User ID: 83d285b2-b21b-4d13-a1a1-6d51b6733d52');
   console.log('=' .repeat(80));
   console.log('');
 
+  const targetUserId = '83d285b2-b21b-4d13-a1a1-6d51b6733d52';
+
   try {
-    const hobbiesUpdates = [
-      {
-        name: 'Sudoku',
-        updates: {
-          category: 'interest',
-          verification_method: 'universal',
-          is_universal: true,
-          verification_query: null,
-          verification_notes: 'Number puzzles available in books, newspapers, apps. Can solve anywhere. No equipment needed.',
-          required_conditions: null
-        }
-      },
-      {
-        name: 'Tai Chi',
-        updates: {
-          category: 'activity',
-          verification_method: 'universal',
-          is_universal: true,
-          verification_query: null,
-          verification_notes: 'Gentle martial art practiced anywhere. Online videos, apps teach forms. Parks and classes enhance.',
-          required_conditions: null
-        }
-      },
-      {
-        name: 'Travel Planning',
-        updates: {
-          category: 'interest',
-          verification_method: 'universal',
-          is_universal: true,
-          verification_query: null,
-          verification_notes: 'Research and plan trips anywhere. Online tools, guides, booking sites. Travel agents enhance.',
-          required_conditions: null
-        }
-      },
-      {
-        name: 'Tango',
-        updates: {
-          category: 'activity',
-          verification_method: 'universal',
-          is_universal: true,
-          verification_query: null,
-          verification_notes: 'Can learn basic steps at home with videos. Partner dancing. Milongas and classes enhance.',
-          required_conditions: null
-        }
-      },
-      {
-        name: 'Surfing',
-        updates: {
-          verification_query: 'Find surf breaks, surf schools, or suitable ocean conditions for surfing near {town}',
-          verification_notes: 'Requires ocean waves and surfboards. Coastal areas with breaks. Surf schools teach beginners.',
-          required_conditions: null
-        }
-      },
-      {
-        name: 'Swimming',
-        updates: {
-          verification_query: 'Find swimming pools, beaches, lakes, or aquatic centers in {town}',
-          verification_notes: 'Requires water access. Pools, beaches, lakes. Most towns have public pools.',
-          required_conditions: null
-        }
-      },
-      {
-        name: 'Swimming Laps',
-        updates: {
-          verification_query: 'Find lap pools, aquatic centers, or gyms with pools for lap swimming in {town}',
-          verification_notes: 'Requires lap pool access. Gyms, YMCAs, aquatic centers. Lane swimming times vary.',
-          required_conditions: null
-        }
-      },
-      {
-        name: 'Tennis',
-        updates: {
-          verification_query: 'Find tennis courts, clubs, or recreation centers with tennis facilities in {town}',
-          verification_notes: 'Requires courts and equipment. Public parks, clubs, schools often have courts.',
-          required_conditions: null
-        }
-      },
-      {
-        name: 'Theater',
-        updates: {
-          category: 'interest',
-          verification_query: 'Find theaters, playhouses, or performing arts venues in {town}',
-          verification_notes: 'Live performances at local venues. Community theaters, professional stages vary by city.',
-          required_conditions: null
-        }
-      },
-      {
-        name: 'Trivia Nights',
-        updates: {
-          verification_query: 'Find bars, restaurants, or venues hosting trivia nights in {town}',
-          verification_notes: 'Pub quiz events at bars, restaurants. Weekly schedules vary. Social team activity.',
-          required_conditions: null
-        }
-      }
-    ];
+    // First, check current state
+    console.log('🔍 CHECKING CURRENT STATE:');
+    console.log('-'.repeat(40));
 
-    let updatedCount = 0;
-    let errorCount = 0;
+    // Check user_preferences
+    const { data: userPrefs, error: userPrefsError } = await supabase
+      .from('user_preferences')
+      .select('custom_hobbies, updated_at')
+      .eq('user_id', targetUserId);
 
-    for (const hobbyUpdate of hobbiesUpdates) {
-      console.log(`\n🔧 Updating ${hobbyUpdate.name}...`);
-      
-      const { data, error } = await supabase
-        .from('hobbies')
-        .update(hobbyUpdate.updates)
-        .eq('name', hobbyUpdate.name)
+    if (userPrefsError) {
+      console.log('❌ Error checking user_preferences:', userPrefsError.message);
+    } else {
+      console.log('user_preferences current state:');
+      console.log('  custom_hobbies:', JSON.stringify(userPrefs[0]?.custom_hobbies || null, null, 2));
+      console.log('  updated_at:', userPrefs[0]?.updated_at || 'null');
+    }
+
+    // Check onboarding_responses
+    const { data: onboardingResp, error: onboardingError } = await supabase
+      .from('onboarding_responses')
+      .select('hobbies')
+      .eq('user_id', targetUserId);
+
+    if (onboardingError) {
+      console.log('❌ Error checking onboarding_responses:', onboardingError.message);
+    } else {
+      console.log('onboarding_responses current state:');
+      console.log('  hobbies:', JSON.stringify(onboardingResp[0]?.hobbies || null, null, 2));
+    }
+
+    console.log('\n🔧 EXECUTING UPDATES:');
+    console.log('-'.repeat(40));
+
+    // Update 1: user_preferences table
+    console.log('1. Updating user_preferences table...');
+    const { data: updatePrefsData, error: updatePrefsError } = await supabase
+      .from('user_preferences')
+      .update({
+        custom_hobbies: [],
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', targetUserId)
+      .select();
+
+    if (updatePrefsError) {
+      console.log(`❌ Error updating user_preferences: ${updatePrefsError.message}`);
+    } else {
+      console.log(`✅ Updated user_preferences successfully`);
+      console.log(`   Rows affected: ${updatePrefsData?.length || 0}`);
+    }
+
+    // Update 2: onboarding_responses table
+    console.log('2. Updating onboarding_responses table...');
+    
+    // First get the current hobbies data to modify it
+    const { data: currentOnboarding, error: getCurrentError } = await supabase
+      .from('onboarding_responses')
+      .select('hobbies')
+      .eq('user_id', targetUserId)
+      .single();
+
+    if (getCurrentError) {
+      console.log(`❌ Error getting current onboarding_responses: ${getCurrentError.message}`);
+    } else {
+      const currentHobbies = currentOnboarding.hobbies || {};
+      const updatedHobbies = {
+        ...currentHobbies,
+        custom_hobbies: []
+      };
+
+      const { data: updateOnboardingData, error: updateOnboardingError } = await supabase
+        .from('onboarding_responses')
+        .update({
+          hobbies: updatedHobbies
+        })
+        .eq('user_id', targetUserId)
         .select();
 
-      if (error) {
-        console.log(`❌ Error updating ${hobbyUpdate.name}: ${error.message}`);
-        errorCount++;
-      } else if (data && data.length > 0) {
-        console.log(`✅ Updated ${hobbyUpdate.name} successfully`);
-        updatedCount++;
+      if (updateOnboardingError) {
+        console.log(`❌ Error updating onboarding_responses: ${updateOnboardingError.message}`);
       } else {
-        console.log(`⚠️ No rows updated for ${hobbyUpdate.name} (hobby not found?)`);
-        errorCount++;
+        console.log(`✅ Updated onboarding_responses successfully`);
+        console.log(`   Rows affected: ${updateOnboardingData?.length || 0}`);
       }
     }
 
-    console.log(`\n📊 UPDATE SUMMARY:`);
-    console.log(`   Successful updates: ${updatedCount}`);
-    console.log(`   Errors/Not found: ${errorCount}`);
-    console.log(`   Total attempted: ${hobbiesUpdates.length}`);
+    console.log('\n🔍 VERIFICATION - CHECKING FINAL STATE:');
+    console.log('-'.repeat(40));
 
-    // Verify the updates
-    console.log(`\n🔍 VERIFYING BATCH 15 UPDATES:`);
-    console.log('=' .repeat(80));
-    
-    const { data: verifyData, error: verifyError } = await supabase
-      .from('hobbies')
-      .select('name, category, verification_method, is_universal, verification_notes')
-      .in('name', hobbiesUpdates.map(h => h.name))
-      .order('name');
+    // Verify user_preferences
+    const { data: verifyUserPrefs, error: verifyUserPrefsError } = await supabase
+      .from('user_preferences')
+      .select('custom_hobbies, updated_at')
+      .eq('user_id', targetUserId);
 
-    if (verifyError) {
-      console.log('❌ Error verifying updates:', verifyError.message);
-      return;
+    if (verifyUserPrefsError) {
+      console.log('❌ Error verifying user_preferences:', verifyUserPrefsError.message);
+    } else {
+      console.log('user_preferences final state:');
+      console.log('  custom_hobbies:', JSON.stringify(verifyUserPrefs[0]?.custom_hobbies || null, null, 2));
+      console.log('  updated_at:', verifyUserPrefs[0]?.updated_at || 'null');
     }
 
-    verifyData.forEach(hobby => {
-      console.log(`\n${hobby.name}:`);
-      console.log(`   Category: ${hobby.category || 'NULL'}`);
-      console.log(`   Method: ${hobby.verification_method || 'NULL'}`);
-      console.log(`   Universal: ${hobby.is_universal ? 'YES' : 'NO'}`);
-      console.log(`   Notes: ${hobby.verification_notes ? `${hobby.verification_notes.substring(0, 60)}...` : 'NULL'}`);
-    });
+    // Verify onboarding_responses
+    const { data: verifyOnboarding, error: verifyOnboardingError } = await supabase
+      .from('onboarding_responses')
+      .select('hobbies')
+      .eq('user_id', targetUserId);
+
+    if (verifyOnboardingError) {
+      console.log('❌ Error verifying onboarding_responses:', verifyOnboardingError.message);
+    } else {
+      console.log('onboarding_responses final state:');
+      console.log('  hobbies:', JSON.stringify(verifyOnboarding[0]?.hobbies || null, null, 2));
+    }
+
+    console.log('\n✅ OPERATION COMPLETE');
+    console.log('Reading should now be removed from user hobbies.');
 
   } catch (error) {
     console.error('❌ Unexpected error:', error);

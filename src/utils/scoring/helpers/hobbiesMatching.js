@@ -64,12 +64,12 @@ async function getTownHobbies(townId) {
  * Map old activity/interest strings to hobby names for backward compatibility
  */
 const legacyMapping = {
-  // Compound mappings (expand to multiple hobbies)
+  // Compound mappings (expand to multiple hobbies) - exact DB names
   'walking_cycling': ['Walking', 'Cycling'],
   'golf_tennis': ['Golf', 'Tennis'],
   'water_sports': ['Swimming', 'Water Sports'],
   'water_crafts': ['Kayaking', 'Sailing', 'Boating'],
-  'winter_sports': ['Winter Sports', 'Ice skating', 'Cross-country skiing'],
+  'winter_sports': ['Winter Sports', 'Ice Skating', 'Cross-country Skiing'],
   'arts_culture': ['Arts & Crafts', 'Theater', 'Music'],
   'food_drink': ['Cooking', 'Wine', 'Baking'],
   
@@ -184,14 +184,19 @@ export async function calculateHobbiesScore(userHobbies, town) {
     });
   }
   
-  // Add custom activities (ensure Title Case)
-  if (userHobbies.custom_activities?.length) {
-    userHobbies.custom_activities.forEach(activity => {
-      // Convert to Title Case to match database format
-      const titleCased = activity.split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' ');
-      userHobbyNames.push(titleCased);
+  // Add custom physical activities from "Add More" button (1.5x weight later)
+  if (userHobbies.custom_physical?.length) {
+    userHobbies.custom_physical.forEach(activity => {
+      // Pass through as-is - the matching logic handles case
+      userHobbyNames.push(activity);
+    });
+  }
+  
+  // Add custom hobbies from "Add More" button (1.5x weight later)
+  if (userHobbies.custom_hobbies?.length) {
+    userHobbies.custom_hobbies.forEach(hobby => {
+      // Pass through as-is - the matching logic handles case
+      userHobbyNames.push(hobby);
     });
   }
 
