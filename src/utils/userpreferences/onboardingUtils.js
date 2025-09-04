@@ -288,6 +288,7 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
         interests: data.interests || [],
         custom_physical: data.custom_physical || [],
         custom_hobbies: data.custom_hobbies || [],
+        custom_activities: data.custom_activities || [],  // CRITICAL: Include compound button IDs
         travel_frequency: data.travel_frequency,
         lifestyle_importance: data.lifestyle_importance || {}
       },

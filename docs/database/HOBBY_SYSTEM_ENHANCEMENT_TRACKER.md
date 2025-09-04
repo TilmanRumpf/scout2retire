@@ -381,6 +381,88 @@ done
 
 ---
 
+## 🚨 QUALITY CHECKPOINT: VERIFY COMPOUND BUTTONS REALLY SAVE
+
+### CRITICAL: Verify Real Database Saves (NOT Test Data!)
+**Date Added:** 2025-09-04  
+**Reason:** Past failures where we thought data was saving but it was hardcoded test data
+
+#### Verification Steps:
+
+1. **Check ACTUAL user data in database:**
+```sql
+-- Check what's really saved for a specific user
+SELECT 
+  user_id,
+  custom_activities,  -- Should contain compound button IDs
+  activities,         -- Should contain expanded hobbies
+  interests,
+  custom_physical,
+  custom_hobbies
+FROM user_preferences
+WHERE user_id = 'YOUR_USER_ID';
+
+-- Verify non-empty compound buttons
+SELECT COUNT(*) as users_with_compound_buttons
+FROM user_preferences
+WHERE custom_activities IS NOT NULL 
+  AND json_array_length(custom_activities::json) > 0;
+```
+
+2. **Test with a NEW user (not test data):**
+```javascript
+// Create test script to verify REAL saves
+const testRealSave = async () => {
+  // 1. Create new test user
+  // 2. Select compound buttons
+  // 3. Query database directly
+  // 4. Verify custom_activities contains ['water_sports', 'golf_tennis']
+  // 5. Verify activities contains all expanded hobbies
+};
+```
+
+3. **Check both tables are synced:**
+```sql
+-- Compare data between tables
+SELECT 
+  'user_preferences' as table_name,
+  COUNT(*) as records_with_hobbies
+FROM user_preferences
+WHERE activities IS NOT NULL
+UNION ALL
+SELECT 
+  'onboarding_responses' as table_name,
+  COUNT(*) as records_with_hobbies
+FROM onboarding_responses
+WHERE hobbies IS NOT NULL;
+```
+
+4. **Verify expansion actually happens:**
+```sql
+-- If user selected 'water_sports', activities should contain:
+-- swimming, snorkeling, water_skiing, swimming_laps, water_aerobics
+SELECT 
+  custom_activities,
+  activities
+FROM user_preferences
+WHERE 'water_sports' = ANY(custom_activities);
+```
+
+### ⚠️ RED FLAGS TO WATCH FOR:
+- Empty `custom_activities` field = NOT SAVING
+- Only 1-2 hobbies when compound selected = NOT EXPANDING
+- Same data for all users = HARDCODED TEST DATA
+- Data only in one table = SYNC FAILURE
+
+### ✅ SUCCESS CRITERIA:
+- [ ] Real user has non-empty `custom_activities` array
+- [ ] Compound button expands to 5+ hobbies in `activities`
+- [ ] Data exists in BOTH tables
+- [ ] Different users have different selections
+- [ ] Selections persist after browser refresh
+
+---
+
 ## STEP 2: FIX DATA MAPPING ✅ COMPLETED
 
 ### Compound Mappings Implemented:
