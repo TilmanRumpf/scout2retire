@@ -61,46 +61,65 @@ async function getTownHobbies(townId) {
 }
 
 /**
- * Map old activity/interest strings to hobby names for backward compatibility
+ * Map activity strings to proper hobby names in database
+ * UPDATED: Now handles both old compound buttons AND new expanded hobbies
  */
 const legacyMapping = {
-  // Compound mappings (expand to multiple hobbies) - exact DB names
-  'walking_cycling': ['Walking', 'Cycling'],
-  'golf_tennis': ['Golf', 'Tennis'],
-  'water_sports': ['Swimming', 'Water Sports'],
-  'water_crafts': ['Kayaking', 'Sailing', 'Boating'],
-  'winter_sports': ['Winter Sports', 'Ice Skating', 'Cross-country Skiing'],
-  'arts_culture': ['Arts & Crafts', 'Theater', 'Music'],
-  'food_drink': ['Cooking', 'Wine', 'Baking'],
+  // OLD FORMAT: Compound buttons that need expansion (shouldn't see these anymore)
+  'walking_cycling': ['Walking', 'Cycling', 'Hiking', 'Mountain Biking'],
+  'golf_tennis': ['Golf', 'Tennis', 'Pickleball', 'Bocce Ball', 'Petanque'],
+  'water_sports': ['Swimming', 'Snorkeling', 'Water Skiing', 'Swimming Laps', 'Water Aerobics'],
+  'water_crafts': ['Kayaking', 'Sailing', 'Boating', 'Canoeing', 'Paddleboarding'],
+  'winter_sports': ['Downhill Skiing', 'Cross-country Skiing', 'Ice Skating', 'Snowboarding'],
   
-  // Activities
-  'walking': 'Walking',
+  // NEW FORMAT: Direct hobby mappings (lowercase to proper case)
   'swimming': 'Swimming',
-  'cycling': 'Cycling',
+  'snorkeling': 'Snorkeling', 
+  'water_skiing': 'Water Skiing',
+  'swimming_laps': 'Swimming Laps',
+  'water_aerobics': 'Water Aerobics',
   'golf': 'Golf',
   'tennis': 'Tennis',
-  'water_sports': 'Water Sports',
-  'winter_sports': 'Winter Sports',
+  'pickleball': 'Pickleball',
+  'bocce_ball': 'Bocce Ball',
+  'petanque': 'Petanque',
+  'shuffleboard': 'Shuffleboard',
+  'ping_pong': 'Ping Pong',
+  'walking': 'Walking',
+  'cycling': 'Cycling',
+  'hiking': 'Hiking',
+  'jogging': 'Jogging',
+  'mountain_biking': 'Mountain Biking',
+  'nordic_walking': 'Nordic Walking',
   'fishing': 'Fishing',
   'gardening': 'Gardening',
+  'skiing': 'Downhill Skiing',
+  'cross_country_skiing': 'Cross-country Skiing',
+  'ice_skating': 'Ice Skating',
+  'snowboarding': 'Snowboarding',
+  'sailing': 'Sailing',
+  'kayaking': 'Kayaking',
+  'canoeing': 'Canoeing',
+  'boating': 'Boating',
+  'paddleboarding': 'Paddleboarding',
   
   // Interests
   'arts': 'Arts & Crafts',
+  'crafts': 'Arts & Crafts',
   'music': 'Music',
   'theater': 'Theater',
   'reading': 'Reading',
   'cooking': 'Cooking',
-  'wine': 'Wine',
+  'wine': 'Wine Tasting',
+  'museums': 'Museums',
   'history': 'History',
   'photography': 'Photography',
-  'volunteering': 'Volunteering',
-  
-  // Common alternatives
-  'hiking': 'Hiking',
-  'sailing': 'Sailing',
-  'yoga': 'Yoga',
+  'painting': 'Painting',
+  'drawing': 'Drawing',
+  'pottery': 'Pottery',
   'dancing': 'Dancing',
-  'museums': 'Museums'
+  'yoga': 'Yoga',
+  'volunteering': 'Volunteering'
 };
 
 /**

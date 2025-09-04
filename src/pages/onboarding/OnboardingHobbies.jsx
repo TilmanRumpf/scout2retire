@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Plane, Activity, ShoppingBag, Sparkles, Lightbulb, Search, X, Snowflake, Plus } from 'lucide-react';
 import { getCurrentUser } from '../../utils/authUtils';
@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 import { isIOS } from '../../utils/platformDetection';
 import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
+import { getCompoundMappings, getReverseMapping, getHobbiesForButtons, reconstructCompoundButtons, getHardcodedMappings } from '../../utils/hobbies/compoundButtonMappings';
 
 // Physical Activities Modal Component - Moved outside to prevent recreation
 const PhysicalActivityModal = ({ 
@@ -69,7 +70,7 @@ const PhysicalActivityModal = ({
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-3">
             <h3 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
-              Add More Physical Activities
+              Explore More Physical Activities
             </h3>
             <button
               onClick={() => setShowModal(false)}
@@ -235,7 +236,7 @@ const HobbiesModal = ({
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-3">
             <h3 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
-              Add More Hobbies & Interests
+              Explore More Hobbies & Interests
             </h3>
             <button
               onClick={() => setShowModal(false)}
@@ -363,12 +364,22 @@ export default function OnboardingHobbies() {
   const [tempHobbiesSelections, setTempHobbiesSelections] = useState([]);
   
   const navigate = useNavigate();
+  const autoSaveTimeoutRef = useRef(null);
   
   // Auto-hide navigation on scroll
   const { isVisible: isNavVisible } = useHideOnScroll();
   
+  // Clean up timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, []);
+  
   // Manual save function - called explicitly when needed
-  const autoSave = async () => {
+  const autoSave = async (dataOverride = null) => {
     try {
       setIsSaving(true);
       const userResult = await getCurrentUser();
@@ -377,15 +388,36 @@ export default function OnboardingHobbies() {
         return false;
       }
       
-      // DON'T MERGE! Keep activities and custom_physical separate
-      // This way custom_physical survives refresh and shows in "Add More" button
+      // Use passed data or fall back to current formData
+      const dataToUse = dataOverride || formData;
+      
+      // DEBUG: Museums & History saving
+      console.log('🔍 AUTO-SAVE DEBUG:');
+      console.log('Using data source:', dataOverride ? 'passed data' : 'formData state');
+      console.log('formData.activities:', dataToUse.activities);
+      console.log('formData.interests:', dataToUse.interests);
+      console.log('Has history?:', dataToUse.interests.includes('history'));
+      
+      // Expand compound buttons to ALL hobbies for matching  
+      const expandedActivities = await getHobbiesForButtons(dataToUse.activities);
+      const expandedInterests = await getHobbiesForButtons(dataToUse.interests);
+      
+      // CLEVER APPROACH: Use existing fields intelligently!
       const dataToSave = {
-        activities: formData.activities,  // Keep separate
-        interests: formData.interests,    // Keep separate
-        custom_physical: formData.custom_physical,  // KEEP these populated!
-        custom_hobbies: formData.custom_hobbies,    // KEEP these populated!
-        travel_frequency: formData.travel_frequency
+        // Save EXPANDED hobbies for matching algorithm
+        activities: [...new Set([...expandedActivities, ...dataToUse.custom_physical])],
+        interests: [...new Set([...expandedInterests, ...dataToUse.custom_hobbies])],
+        // Save ALL compound button IDs (both activity and interest) for UI reconstruction
+        custom_activities: [...dataToUse.activities, ...dataToUse.interests.map(i => `interest_${i}`)],
+        // Keep modal selections for display
+        custom_physical: dataToUse.custom_physical,
+        custom_hobbies: dataToUse.custom_hobbies,
+        travel_frequency: dataToUse.travel_frequency
       };
+      
+      // DEBUG: What are we saving?
+      console.log('custom_activities being saved:', dataToSave.custom_activities);
+      console.log('Has interest_history?:', dataToSave.custom_activities.includes('interest_history'));
       
       const { success } = await saveOnboardingStep(
         userResult.user.id,
@@ -393,8 +425,26 @@ export default function OnboardingHobbies() {
         'hobbies'
       );
       
-      if (success) {
-        console.log('Hobbies saved successfully');
+      // Also save to user_preferences table (this is what the app actually uses!)
+      let prefSuccess = false;
+      try {
+        const { success: prefSaveSuccess, error: prefError } = await saveUserPreferences(
+          userResult.user.id,
+          'hobbies',
+          dataToSave
+        );
+        prefSuccess = prefSaveSuccess;
+        if (!prefSuccess) {
+          console.error('❌ Failed to save to user_preferences:', prefError);
+        }
+      } catch (err) {
+        console.error('Failed to save to user_preferences:', err);
+      }
+      
+      if (success && prefSuccess) {
+        console.log('✅ Hobbies saved to both tables successfully');
+      } else if (success && !prefSuccess) {
+        console.error('⚠️ CRITICAL: Saved to onboarding_responses but NOT to user_preferences - UI will not persist!');
       }
       
       setIsSaving(false);
@@ -411,20 +461,20 @@ export default function OnboardingHobbies() {
 
   // Activity options with descriptions - defined early for use in data loading
   const activityOptions = [
-    { id: 'walking_cycling', title: 'Walking & Cycling', description: 'trails • parks • paths' },
-    { id: 'golf_tennis', title: 'Golf & Tennis', description: 'courses • courts • clubs' },
-    { id: 'water_sports', title: 'Water Sports', description: 'swimming • pools • beaches' },
-    { id: 'water_crafts', title: 'Water Crafts', description: 'kayaking • sailing • boating' },
-    { id: 'winter_sports', title: 'Winter Sports', description: 'ski • snowboard • skate' }
+    { id: 'walking_cycling', title: 'Walking & Cycling', description: 'and related activities...' },
+    { id: 'golf_tennis', title: 'Golf & Tennis', description: 'and related activities...' },
+    { id: 'water_sports', title: 'Water Sports', description: 'and related activities...' },
+    { id: 'water_crafts', title: 'Water Crafts', description: 'and related activities...' },
+    { id: 'winter_sports', title: 'Winter Sports', description: 'and related activities...' }
   ];
 
   // Interest options with descriptions - defined early for use in data loading
   const interestOptions = [
-    { id: 'gardening', title: 'Gardening & Pets', description: 'vegetables • flowers • pets' },
-    { id: 'arts', title: 'Arts & Crafts', description: 'painting • pottery • crafts' },
-    { id: 'music_theater', title: 'Music & Theater', description: 'concerts • plays • opera' },
-    { id: 'cooking_wine', title: 'Cooking & Wine', description: 'cuisines • tasting • baking' },
-    { id: 'history', title: 'Museums & History', description: 'exhibits • tours • lectures' }
+    { id: 'gardening', title: 'Gardening & Pets', description: 'and related activities...' },
+    { id: 'arts', title: 'Arts & Crafts', description: 'and related activities...' },
+    { id: 'music_theater', title: 'Music & Theater', description: 'and related activities...' },
+    { id: 'cooking_wine', title: 'Cooking & Wine', description: 'and related activities...' },
+    { id: 'history', title: 'Museums & History', description: 'and related activities...' }
   ];
 
   // Organized hobbies matching main page button groupings
@@ -547,52 +597,90 @@ export default function OnboardingHobbies() {
         
         // If hobbies data exists, load it
         if (progressResult.data && progressResult.data.hobbies) {
-          // Define compound items and their parts
-          const compoundMappings = {
-            // Activities
-            'golf_tennis': ['golf', 'tennis'],
-            'walking_cycling': ['walking', 'cycling'],
-            'water_sports': ['swimming', 'pools', 'beaches'],
-            'water_crafts': ['kayaking', 'sailing', 'boating'],
-            'winter_sports': ['ski', 'snowboard', 'skate'],
-            // Interests
-            'gardening': ['gardening', 'vegetables', 'flowers', 'pets'],
-            'arts': ['painting', 'pottery', 'crafts'],
-            'music_theater': ['music', 'theater', 'concerts', 'plays', 'opera'],
-            'cooking_wine': ['cooking', 'wine', 'cuisines', 'tasting', 'baking'],
-            'history': ['museums', 'history', 'exhibits', 'tours', 'lectures']
-          };
+          // Fetch compound mappings from database groups
+          let compoundMappings;
+          let reverseMapping;
+          
+          try {
+            // Try to get mappings from database
+            compoundMappings = await getCompoundMappings();
+            reverseMapping = await getReverseMapping();
+          } catch (error) {
+            console.error('Failed to load mappings from database, using fallback:', error);
+            // Fall back to hard-coded mappings if database fails
+            compoundMappings = getHardcodedMappings();
+            // Create reverse mapping from fallback
+            reverseMapping = {};
+            Object.entries(compoundMappings).forEach(([compound, items]) => {
+              items.forEach(item => {
+                if (!reverseMapping[item]) reverseMapping[item] = [];
+                reverseMapping[item].push(compound);
+              });
+            });
+          }
           
           // Load raw data from database
+          // NEW: custom_activities now stores compound button IDs
+          const loadedCompoundButtons = progressResult.data.hobbies.custom_activities || [];
           const loadedActivities = progressResult.data.hobbies.activities || [];
           const loadedInterests = progressResult.data.hobbies.interests || [];
           const loadedCustomPhysical = progressResult.data.hobbies.custom_physical || [];
           const loadedCustomHobbies = progressResult.data.hobbies.custom_hobbies || [];
           
           // Reconstruct UI state from database data
-          const reconstructedActivities = [];
-          const reconstructedInterests = [];
-          // Keep custom_physical as loaded (fitness_classes has been removed from DB)
+          // NEW: custom_activities stores both activity and interest compound button IDs
+          console.log('🔍 LOADING DEBUG for Museums & History:');
+          console.log('loadedCompoundButtons:', loadedCompoundButtons);
+          console.log('Has interest_history?:', loadedCompoundButtons.includes('interest_history'));
+          
+          const reconstructedActivities = loadedCompoundButtons.filter(id => !id.startsWith('interest_'));
+          const reconstructedInterests = loadedCompoundButtons
+            .filter(id => id.startsWith('interest_'))
+            .map(id => id.replace('interest_', ''));
+          
+          console.log('reconstructedInterests:', reconstructedInterests);
+          console.log('Has history after reconstruction?:', reconstructedInterests.includes('history'));
+          
+          // Keep custom selections as loaded
           const customPhysical = [...loadedCustomPhysical];
-          const customHobbies = [...loadedCustomHobbies]; // Start with existing custom
+          const customHobbies = [...loadedCustomHobbies];
           
-          // Process activities - reconstruct compound IDs but keep non-compound items in activities
-          loadedActivities.forEach(activity => {
-            // Simply add all activities to reconstructedActivities
-            // Don't try to separate "custom" items - they should stay in activities array
-            if (!reconstructedActivities.includes(activity)) {
-              reconstructedActivities.push(activity);
-            }
-          });
+          // For backward compatibility: if no compound buttons saved but activities exist,
+          // try to reconstruct from individual activities (old data format)
+          if (reconstructedActivities.length === 0 && loadedActivities.length > 0) {
+            console.log('Using backward compatibility mode to reconstruct buttons');
+            console.log('Loaded activities from DB:', loadedActivities);
+            
+            loadedActivities.forEach(activity => {
+              // Check if this is a compound button ID (like 'water_sports', 'golf_tennis')
+              const isCompoundButton = ['walking_cycling', 'golf_tennis', 'water_sports', 'water_crafts', 'winter_sports'].includes(activity);
+              
+              if (isCompoundButton) {
+                // It's already a compound button ID - just add it
+                if (!reconstructedActivities.includes(activity)) {
+                  reconstructedActivities.push(activity);
+                  console.log(`Added compound button: ${activity}`);
+                }
+              }
+              // Don't try to map individual hobbies back to buttons - that was causing the issue
+            });
+          }
           
-          // Process interests - reconstruct but keep non-compound items in interests
-          loadedInterests.forEach(interest => {
-            // Simply add all interests to reconstructedInterests
-            // Don't try to separate "custom" items - they should stay in interests array
-            if (!reconstructedInterests.includes(interest)) {
-              reconstructedInterests.push(interest);
-            }
-          });
+          // Process interests similarly
+          if (reconstructedInterests.length === 0 && loadedInterests.length > 0) {
+            loadedInterests.forEach(interest => {
+              // Check if this is a compound button ID
+              const isCompoundButton = ['gardening', 'arts', 'music_theater', 'cooking_wine', 'history'].includes(interest);
+              
+              if (isCompoundButton) {
+                // It's already a compound button ID - just add it
+                if (!reconstructedInterests.includes(interest)) {
+                  reconstructedInterests.push(interest);
+                }
+              }
+              // Don't try to map individual hobbies back to buttons
+            });
+          }
           
           console.log('Reconstructed state from DB:', {
             activities: reconstructedActivities,
@@ -600,6 +688,11 @@ export default function OnboardingHobbies() {
             custom_physical: customPhysical,
             custom_hobbies: customHobbies
           });
+          
+          console.log('🎯 FINAL CHECK - Setting formData with:');
+          console.log('  Activities:', reconstructedActivities);
+          console.log('  Interests:', reconstructedInterests);
+          console.log('  Has history in interests?:', reconstructedInterests.includes('history'));
           
           setFormData(prev => ({
             ...prev,
@@ -637,74 +730,102 @@ export default function OnboardingHobbies() {
     }
     
     // Handle specific IDs that should be split
-    // Based on underscore compounds
+    // Based on underscore compounds - save actual activities not the compound ID
     if (itemId === 'cooking_wine') return ['cooking', 'wine'];
     if (itemId === 'music_theater') return ['music', 'theater'];
     if (itemId === 'walking_cycling') return ['walking', 'cycling'];
     if (itemId === 'golf_tennis') return ['golf', 'tennis'];
-    if (itemId === 'water_sports') return ['water_sports']; // Keep as one
+    if (itemId === 'water_sports') return ['swimming']; // Main water activity
+    if (itemId === 'water_crafts') return ['boating']; // Main water craft
+    if (itemId === 'winter_sports') return ['skiing']; // Main winter sport
     
     // Based on titles with '&'
-    if (itemId === 'gardening') return ['gardening', 'pets']; // "Gardening & Pets"
+    if (itemId === 'gardening') return ['gardening']; // Just gardening
     if (itemId === 'arts') return ['arts', 'crafts']; // "Arts & Crafts"
     if (itemId === 'history') return ['museums', 'history']; // "Museums & History"
     
     return [itemId];
   };
 
-  const handleActivityToggle = (itemId) => {
-    const itemsToToggle = splitCompoundItem(itemId);
+  const handleActivityToggle = async (itemId) => {
+    // DON'T split compound IDs - keep them as-is for proper persistence
+    // The expansion happens during save, not in UI state
+    
+    console.log(`Activity toggle clicked: ${itemId}`);
     
     setFormData(prev => {
       let newActivities = [...prev.activities];
       
-      // Check if ANY of the split items are already selected
-      const anySelected = itemsToToggle.some(item => newActivities.includes(item));
-      
-      if (anySelected) {
-        // Remove all split items
-        newActivities = newActivities.filter(item => !itemsToToggle.includes(item));
+      // Simple toggle - add or remove the compound button ID
+      if (newActivities.includes(itemId)) {
+        // Remove the compound button ID
+        newActivities = newActivities.filter(item => item !== itemId);
+        console.log(`Removed ${itemId} from activities:`, newActivities);
       } else {
-        // Add all split items (avoiding duplicates)
-        itemsToToggle.forEach(item => {
-          if (!newActivities.includes(item)) {
-            newActivities.push(item);
-          }
-        });
+        // Add the compound button ID
+        newActivities.push(itemId);
+        console.log(`Added ${itemId} to activities:`, newActivities);
       }
       
-      return {
+      const updatedFormData = {
         ...prev,
         activities: newActivities
       };
+      
+      // Schedule auto-save with the UPDATED data
+      // Clear any pending save
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+      
+      // Schedule new save with updated state
+      autoSaveTimeoutRef.current = setTimeout(async () => {
+        console.log('⏰ Auto-save triggered for activities with updated data');
+        await autoSave(updatedFormData);
+      }, 1500); // 1.5 seconds delay for debouncing
+      
+      return updatedFormData;
     });
   };
 
-  const handleInterestToggle = (itemId) => {
-    const itemsToToggle = splitCompoundItem(itemId);
+  const handleInterestToggle = async (itemId) => {
+    // DON'T split compound IDs - keep them as-is for proper persistence
+    // The expansion happens during save, not in UI state
+    
+    console.log(`Interest toggle clicked: ${itemId}`);
     
     setFormData(prev => {
       let newInterests = [...prev.interests];
       
-      // Check if ANY of the split items are already selected
-      const anySelected = itemsToToggle.some(item => newInterests.includes(item));
-      
-      if (anySelected) {
-        // Remove all split items
-        newInterests = newInterests.filter(item => !itemsToToggle.includes(item));
+      // Simple toggle - add or remove the compound button ID
+      if (newInterests.includes(itemId)) {
+        // Remove the compound button ID
+        newInterests = newInterests.filter(item => item !== itemId);
+        console.log(`Removed ${itemId} from interests:`, newInterests);
       } else {
-        // Add all split items (avoiding duplicates)
-        itemsToToggle.forEach(item => {
-          if (!newInterests.includes(item)) {
-            newInterests.push(item);
-          }
-        });
+        // Add the compound button ID
+        newInterests.push(itemId);
+        console.log(`Added ${itemId} to interests:`, newInterests);
       }
       
-      return {
+      const updatedFormData = {
         ...prev,
         interests: newInterests
       };
+      
+      // Schedule auto-save with the UPDATED data
+      // Clear any pending save
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+      
+      // Schedule new save with updated state
+      autoSaveTimeoutRef.current = setTimeout(async () => {
+        console.log('⏰ Auto-save triggered for interests with updated data');
+        await autoSave(updatedFormData);
+      }, 1500); // 1.5 seconds delay for debouncing
+      
+      return updatedFormData;
     });
   };
 
@@ -798,15 +919,29 @@ export default function OnboardingHobbies() {
         return;
       }
       
-      // DON'T MERGE - keep them separate so "Add More" button shows selections
-      // The matching algorithm will handle both arrays properly
+      // Expand compound buttons to ALL hobbies for matching
+      const expandedActivities = await getHobbiesForButtons(formData.activities);
+      const expandedInterests = await getHobbiesForButtons(formData.interests);
+      
+      // CLEVER APPROACH: Use existing fields intelligently!
       const dataToSave = {
-        activities: formData.activities,
-        interests: formData.interests,
-        custom_physical: formData.custom_physical,  // KEEP populated for button display
-        custom_hobbies: formData.custom_hobbies,    // KEEP populated for button display
+        // Save EXPANDED hobbies for matching algorithm
+        activities: [...new Set([...expandedActivities, ...formData.custom_physical])],
+        interests: [...new Set([...expandedInterests, ...formData.custom_hobbies])],
+        // Save ALL compound button IDs (both activity and interest) for UI reconstruction
+        custom_activities: [...formData.activities, ...formData.interests.map(i => `interest_${i}`)],
+        // Keep modal selections for display
+        custom_physical: formData.custom_physical,
+        custom_hobbies: formData.custom_hobbies,
         travel_frequency: formData.travel_frequency
       };
+      
+      console.log('💾 Saving expanded hobbies:', {
+        'Compound buttons selected': [...formData.activities, ...formData.interests],
+        'Expanded to hobbies': [...expandedActivities, ...expandedInterests],
+        'Total activities': dataToSave.activities.length,
+        'Total interests': dataToSave.interests.length
+      });
       
       const { success, error } = await saveOnboardingStep(
         userResult.user.id,
@@ -823,6 +958,7 @@ export default function OnboardingHobbies() {
       toast.success('Hobbies, health & interests saved!');
       
       // Also save to new user_preferences table
+      console.log('📝 Attempting to save to user_preferences with data:', dataToSave);
       try {
         const { success: prefSuccess, error: prefError } = await saveUserPreferences(
           userResult.user.id,
@@ -830,11 +966,14 @@ export default function OnboardingHobbies() {
           dataToSave
         );
         if (prefSuccess) {
+          console.log('✅ Successfully saved hobbies to user_preferences');
         } else {
           console.error('❌ Failed to save hobbies to user_preferences:', prefError);
+          toast.error('Failed to update preferences - please try again');
         }
       } catch (err) {
         console.error('Error saving hobbies to user_preferences:', err);
+        toast.error('Error updating preferences');
       }
       
       // Add a small delay to ensure data is saved before navigation
@@ -903,9 +1042,8 @@ export default function OnboardingHobbies() {
           <SelectionSection icon={Activity} title="Physical Activities">
             <SelectionGrid>
               {activityOptions.map((activity) => {
-                // Check if any of the split items are selected
-                const splitItems = splitCompoundItem(activity.id);
-                const isSelected = splitItems.some(item => formData.activities.includes(item));
+                // Check if the compound button ID is selected
+                const isSelected = formData.activities.includes(activity.id);
                 
                 return (
                   <SelectionCard
@@ -918,9 +1056,9 @@ export default function OnboardingHobbies() {
                   />
                 );
               })}
-              {/* Add More Physical Activities Button */}
+              {/* Explore More Physical Activities Button */}
               <SelectionCard
-                title="Add More"
+                title="Explore More..."
                 description={formData.custom_physical.length > 0 
                   ? formData.custom_physical.slice(0, 2).map(item => 
                       // Convert from normalized format (e.g., "mountain_biking") to display format ("Mountain biking")
@@ -928,6 +1066,7 @@ export default function OnboardingHobbies() {
                     ).join(', ') + (formData.custom_physical.length > 2 ? '...' : '')
                   : 'More activities'
                 }
+                icon={Plus}
                 isSelected={formData.custom_physical.length > 0}
                 onClick={openPhysicalModal}
               />
@@ -938,9 +1077,8 @@ export default function OnboardingHobbies() {
           <SelectionSection icon={Heart} title="Hobbies & Interests">
             <SelectionGrid>
               {interestOptions.map((interest) => {
-                // Check if any of the split items are selected
-                const splitItems = splitCompoundItem(interest.id);
-                const isSelected = splitItems.some(item => formData.interests.includes(item));
+                // Check if the compound button ID is selected
+                const isSelected = formData.interests.includes(interest.id);
                 
                 return (
                   <SelectionCard
@@ -952,9 +1090,9 @@ export default function OnboardingHobbies() {
                   />
                 );
               })}
-              {/* Add More Hobbies Button */}
+              {/* Explore More Hobbies Button */}
               <SelectionCard
-                title="Add More"
+                title="Explore More..."
                 description={formData.custom_hobbies.length > 0 
                   ? formData.custom_hobbies.slice(0, 2).map(item => 
                       // Convert from normalized format (e.g., "needle_point") to display format ("Needle Point")
@@ -978,7 +1116,16 @@ export default function OnboardingHobbies() {
                   title={option.title}
                   description={option.description}
                   isSelected={formData.travel_frequency === option.id}
-                  onClick={() => setFormData(prev => ({ ...prev, travel_frequency: option.id }))}
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, travel_frequency: option.id }));
+                    // Auto-save after selection
+                    if (autoSaveTimeoutRef.current) {
+                      clearTimeout(autoSaveTimeoutRef.current);
+                    }
+                    autoSaveTimeoutRef.current = setTimeout(async () => {
+                      await autoSave();
+                    }, 1000);
+                  }}
                 />
               ))}
             </SelectionGrid>
@@ -1002,9 +1149,8 @@ export default function OnboardingHobbies() {
                       
                       // Check each activity option to see if it's selected (using same logic as buttons)
                       activityOptions.forEach(option => {
-                        const splitItems = splitCompoundItem(option.id);
-                        // Use .some() to match how buttons determine selection (line 941)
-                        const isSelected = splitItems.some(item => formData.activities.includes(item));
+                        // Check if the compound button ID is selected
+                        const isSelected = formData.activities.includes(option.id);
                         if (isSelected) {
                           selectedActivities.push(option.title);
                         }
@@ -1027,9 +1173,8 @@ export default function OnboardingHobbies() {
                       
                       // Check each interest option to see if it's selected (using same logic as buttons)
                       interestOptions.forEach(option => {
-                        const splitItems = splitCompoundItem(option.id);
-                        // Use .some() to match how buttons determine selection (line 976)
-                        const isSelected = splitItems.some(item => formData.interests.includes(item));
+                        // Check if the compound button ID is selected
+                        const isSelected = formData.interests.includes(option.id);
                         if (isSelected) {
                           selectedInterests.push(option.title);
                         }

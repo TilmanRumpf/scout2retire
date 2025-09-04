@@ -1,17 +1,25 @@
 # 📍 LATEST CHECKPOINT POINTER
 
-## CURRENT CHECKPOINT: 2025-08-29 23:45
-- **File:** `docs/recovery/CHECKPOINT_2025-08-29_DATA_QUALITY_OVERHAUL.md`
-- **Status:** ✅ WORKING - Major Data Quality Improvements
-- **Main Achievement:** Fixed all hobby capitalization, added water hobbies, created data management blueprint
-- **Git Commit:** 9c82271
-- **Database Snapshot:** `database-snapshots/2025-08-29T23-45-46/`
+## CURRENT CHECKPOINT: 2025-09-03 12:21
+- **File:** `docs/project-history/CHECKPOINT-2025-09-03-1221.md`
+- **Status:** ⚠️ PARTIALLY WORKING - Hobby System Architecture Fixed
+- **Main Achievement:** Redesigned hobby system from 58,993 to 1,033 rows (98% reduction), removed 0.85 multiplier
+- **Git Commit:** 7f54bd3
+- **Git Tag:** checkpoint-2025-09-03-1221
+- **Database Snapshot:** `database-snapshots/2025-09-03T12-21-59/`
 
 ---
 
 ## CHECKPOINT HISTORY (Most Recent First)
 
-### 1. 2025-08-29 23:45 ✅ 🎯
+### 1. 2025-09-03 12:21 ⚠️ 🔧
+- **File:** docs/project-history/CHECKPOINT-2025-09-03-1221.md
+- **Achievement:** Fixed hobby architecture, improved scoring by 15-20%, created scalable system
+- **State:** Hobby matching working but missing critical hobbies (Fishing, Pickleball)
+- **Commit:** 7f54bd3
+- **Note:** Solved "hobby rating is shit" crisis, system now scales to 5,000+ towns
+
+### 2. 2025-08-29 23:45 ✅ 🎯
 - **File:** docs/recovery/CHECKPOINT_2025-08-29_DATA_QUALITY_OVERHAUL.md
 - **Achievement:** Fixed 84 hobby capitalizations, doubled Lemmer match score, 8K+ word data system
 - **State:** All hobbies Title Case, matching works, infrastructure audit complete
