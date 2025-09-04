@@ -587,6 +587,14 @@ export default function OnboardingHobbies() {
         }
         
         const progressResult = await getOnboardingProgress(userResult.user.id);
+        
+        // DEBUG: Add logging to trace the issue
+        console.log('🔍 DEBUG: Loading user data');
+        console.log('User ID:', userResult.user?.id);
+        console.log('Progress result:', progressResult);
+        console.log('Hobbies data:', progressResult.data?.hobbies);
+        console.log('custom_activities:', progressResult.data?.hobbies?.custom_activities);
+        
         if (!progressResult.success) {
           console.error("Error loading existing data:", progressResult.error);
           setInitialLoading(false);
@@ -694,14 +702,17 @@ export default function OnboardingHobbies() {
           console.log('  Interests:', reconstructedInterests);
           console.log('  Has history in interests?:', reconstructedInterests.includes('history'));
           
-          setFormData(prev => ({
-            ...prev,
+          // CRITICAL FIX: Ensure we're setting the right data
+          const newFormData = {
             activities: reconstructedActivities,
             interests: reconstructedInterests,
             custom_physical: customPhysical,
             custom_hobbies: customHobbies,
             travel_frequency: progressResult.data.hobbies.travel_frequency || ''
-          }));
+          };
+          
+          console.log('🔧 FIX: Setting formData to:', newFormData);
+          setFormData(newFormData);
         }
       } catch (err) {
         console.error("Unexpected error loading data:", err);
