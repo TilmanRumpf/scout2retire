@@ -140,7 +140,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       natural_disaster_risk, internet_speed,
       geographic_features, geographic_features_actual, vegetation_type_actual,
       elevation_meters, distance_to_ocean_km, nearest_airport,
-      airport_distance, geo_region, regions
+      airport_distance, geo_region, regions, top_hobbies
     `;
     let query = supabase.from('towns').select(selectColumns);
     

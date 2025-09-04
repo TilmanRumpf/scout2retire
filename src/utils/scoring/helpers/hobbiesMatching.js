@@ -1,10 +1,11 @@
 import supabase from '../../supabaseClient.js';
+import { inferHobbyAvailability, calculateHobbyScore as inferenceScore } from '../geographicInference.js';
 
 /**
- * Enhanced hobbies matching using normalized hobbies database
+ * Enhanced hobbies matching using Geographic Inference System
  * 
- * This function intelligently matches user hobbies with town offerings
- * using the normalized hobbies table with universal vs specific hobbies
+ * Instead of using towns_hobbies table (865k relationships),
+ * we infer hobby availability from town characteristics
  */
 
 // Cache for hobbies data to avoid repeated fetches
@@ -42,22 +43,13 @@ async function getAllHobbies() {
 }
 
 /**
- * Get hobbies available in a specific town
+ * Get hobbies available in a specific town using Geographic Inference
+ * No longer uses towns_hobbies table
  */
-async function getTownHobbies(townId) {
-  try {
-    const { data, error } = await supabase
-      .from('towns_hobbies')
-      .select('hobby_id')
-      .eq('town_id', townId);
-    
-    if (error) throw error;
-    
-    return data.map(th => th.hobby_id);
-  } catch (error) {
-    console.error('Error fetching town hobbies from towns_hobbies:', error);
-    return [];
-  }
+async function getTownHobbies(town) {
+  // This function is now deprecated - we use inference directly
+  // Kept for backwards compatibility but returns empty
+  return [];
 }
 
 /**
@@ -69,7 +61,7 @@ const legacyMapping = {
   'walking_cycling': ['Walking', 'Cycling', 'Hiking', 'Mountain Biking'],
   'golf_tennis': ['Golf', 'Tennis', 'Pickleball', 'Bocce Ball', 'Petanque'],
   'water_sports': ['Swimming', 'Snorkeling', 'Water Skiing', 'Swimming Laps', 'Water Aerobics'],
-  'water_crafts': ['Kayaking', 'Sailing', 'Boating', 'Canoeing', 'Paddleboarding'],
+  'water_crafts': ['Kayaking', 'Sailing', 'Boating', 'Canoeing', 'Stand-up Paddleboarding'],
   'winter_sports': ['Downhill Skiing', 'Cross-country Skiing', 'Ice Skating', 'Snowboarding'],
   
   // NEW FORMAT: Direct hobby mappings (lowercase to proper case)
@@ -111,6 +103,8 @@ const legacyMapping = {
   'reading': 'Reading',
   'cooking': 'Cooking',
   'wine': 'Wine Tasting',
+  'cooking_wine': ['Cooking', 'Wine Tasting', 'Wine'],
+  'Cooking & Wine': ['Cooking', 'Wine Tasting', 'Wine'],
   'museums': 'Museums',
   'history': 'History',
   'photography': 'Photography',
@@ -157,23 +151,6 @@ export async function calculateHobbiesScore(userHobbies, town) {
     };
   }
 
-  // Get all hobbies data
-  const allHobbies = await getAllHobbies();
-  const townSpecificHobbyIds = await getTownHobbies(town.id);
-  
-  // Create lookup maps
-  const hobbyByName = {};
-  const hobbyById = {};
-  const universalHobbies = new Set();
-  
-  allHobbies.forEach(hobby => {
-    hobbyByName[hobby.name.toLowerCase()] = hobby;
-    hobbyById[hobby.id] = hobby;
-    if (hobby.is_universal) {
-      universalHobbies.add(hobby.name.toLowerCase());
-    }
-  });
-
   // Collect all user hobbies (normalize names)
   const userHobbyNames = [];
   
@@ -203,61 +180,39 @@ export async function calculateHobbiesScore(userHobbies, town) {
     });
   }
   
-  // Add custom physical activities from "Add More" button (1.5x weight later)
+  // Add custom physical activities from "Add More" button
   if (userHobbies.custom_physical?.length) {
     userHobbies.custom_physical.forEach(activity => {
-      // Pass through as-is - the matching logic handles case
       userHobbyNames.push(activity);
     });
   }
   
-  // Add custom hobbies from "Add More" button (1.5x weight later)
+  // Add custom hobbies from "Add More" button
   if (userHobbies.custom_hobbies?.length) {
     userHobbies.custom_hobbies.forEach(hobby => {
-      // Pass through as-is - the matching logic handles case
       userHobbyNames.push(hobby);
     });
   }
 
-  // Calculate matches
-  let totalMatches = 0;
+  // Use Geographic Inference to determine available hobbies
+  const inference = inferHobbyAvailability(town, userHobbyNames);
+  const inferredScore = inferenceScore(town, userHobbyNames);
+  
+  // Extract details from inference
+  matchedHobbies = inference.availableHobbies;
+  missingHobbies = inference.details.notAvailable;
+  const universalMatches = inference.details.universal;
   const totalUserHobbies = userHobbyNames.length;
-  const universalMatches = [];
+  const totalMatches = matchedHobbies.length;
 
-  userHobbyNames.forEach(hobbyName => {
-    const normalizedName = hobbyName.toLowerCase();
-    const hobby = hobbyByName[normalizedName];
-    
-    if (hobby) {
-      // Check if hobby is available in this town
-      if (hobby.is_universal) {
-        // Universal hobbies are available everywhere
-        totalMatches++;
-        matchedHobbies.push(hobbyName);
-        universalMatches.push(hobbyName);
-      } else if (townSpecificHobbyIds.includes(hobby.id)) {
-        // Location-specific hobby is available in this town
-        totalMatches++;
-        matchedHobbies.push(hobbyName);
-      } else {
-        // Hobby not available in this town
-        missingHobbies.push(hobbyName);
-      }
-    } else {
-      // Hobby not in database (shouldn't happen with good data)
-      // console.warn(`Hobby not found in database: ${hobbyName}`);
-      missingHobbies.push(hobbyName);
-    }
-  });
-
-  // Calculate base score - PROPER scoring based on actual matches
+  // Use inference-based scoring which considers distinctive vs universal hobbies
   if (totalUserHobbies > 0) {
-    const matchPercentage = (totalMatches / totalUserHobbies) * 100;
-    
-    // Direct proportional scoring - FULL credit for matches
-    score = Math.min(85, matchPercentage);  // Cap at 85 to leave room for bonuses
+    // Use the sophisticated inference score
+    score = inferredScore.score;
     
     // Add factors based on match quality
+    const matchPercentage = inferredScore.matchPercentage;
+    
     if (matchPercentage >= 80) {
       factors.push({ 
         factor: `${totalMatches}/${totalUserHobbies} hobbies available`, 
@@ -284,6 +239,15 @@ export async function calculateHobbiesScore(userHobbies, town) {
         score: Math.round(score) 
       });
     }
+    
+    // Add detail about distinctive hobbies if present
+    if (inference.details.distinctive.length > 0) {
+      factors.push({
+        factor: `Town specializes in: ${inference.details.distinctive.slice(0, 3).join(', ')}`,
+        score: 10
+      });
+      score = Math.min(100, score + 10);
+    }
   }
 
   // Bonus for travel infrastructure (up to 15 points)
@@ -305,8 +269,8 @@ export async function calculateHobbiesScore(userHobbies, town) {
     }
   }
 
-  // Count town's specific hobbies for context
-  const townSpecificCount = townSpecificHobbyIds.length;
+  // Count town's distinctive hobbies for context
+  const townSpecificCount = town.top_hobbies?.length || 0;
 
   // Ensure score is between 0 and 100
   score = Math.min(100, Math.max(0, score));
@@ -327,30 +291,42 @@ export async function calculateHobbiesScore(userHobbies, town) {
 }
 
 /**
- * Get hobby recommendations for a town
+ * Get hobby recommendations for a town using inference
  */
-export async function getTownHobbyRecommendations(townId) {
+export async function getTownHobbyRecommendations(town) {
+  // Get all possible hobbies
   const allHobbies = await getAllHobbies();
-  const townSpecificHobbyIds = await getTownHobbies(townId);
+  const allHobbyNames = allHobbies.map(h => h.name);
   
-  // Get all available hobbies (universal + town-specific)
+  // Use inference to determine which are available
+  const inference = inferHobbyAvailability(town, allHobbyNames);
+  const availableNames = new Set(inference.availableHobbies);
+  
+  // Filter to only available hobbies
   const availableHobbies = allHobbies.filter(hobby => 
-    hobby.is_universal || townSpecificHobbyIds.includes(hobby.id)
+    availableNames.has(hobby.name)
   );
+  
+  // Separate distinctive (from top_hobbies) and others
+  const distinctiveHobbies = town.top_hobbies || [];
+  const highlights = [];
+  
+  // Add distinctive hobbies as highlights
+  distinctiveHobbies.slice(0, 5).forEach(hobbyName => {
+    highlights.push(`${hobbyName} (Town specialty)`);
+  });
   
   // Group by category
   const grouped = {
+    distinctive: distinctiveHobbies,
     activities: availableHobbies.filter(h => h.category === 'activity'),
     interests: availableHobbies.filter(h => h.category === 'interest'),
-    custom: availableHobbies.filter(h => h.category === 'custom')
+    universal: inference.details.universal
   };
   
   return {
     total: availableHobbies.length,
     grouped,
-    highlights: availableHobbies
-      .filter(h => h.description)
-      .slice(0, 5)
-      .map(h => `${h.name}: ${h.description}`)
+    highlights
   };
 }

@@ -53,6 +53,7 @@ export const fetchTowns = async (filters = {}) => {
       restaurants_rating, museums_rating, shopping_rating,
       pace_of_life_actual, cultural_landmark_1, social_atmosphere,
       outdoor_rating, outdoor_activities_rating, beaches_nearby,
+      top_hobbies,
       golf_courses_count, hiking_trails_km, tennis_courts_count,
       marinas_count, ski_resorts_within_100km, dog_parks_count,
       farmers_markets, water_bodies, activities_available,
