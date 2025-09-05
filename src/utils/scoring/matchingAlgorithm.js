@@ -40,6 +40,10 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
   try {
     const { limit = 100, offset = 0, townIds } = options; // Default to 100 to show all towns
 
+    // CRITICAL DEBUG: Which user is being scored?
+    console.log('🚨🚨🚨 SCORING FOR USER ID:', userId);
+    console.log('🚨🚨🚨 CHECK IF THIS MATCHES LOGGED-IN USER!');
+    
     // 1. Get user's onboarding preferences (skip auth check for algorithm)
     const { success: onboardingSuccess, data: userPreferences } = await getOnboardingProgress(userId, true);
     
@@ -140,7 +144,8 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       natural_disaster_risk, internet_speed,
       geographic_features, geographic_features_actual, vegetation_type_actual,
       elevation_meters, distance_to_ocean_km, nearest_airport,
-      airport_distance, geo_region, regions, top_hobbies
+      airport_distance, geo_region, regions, top_hobbies,
+      government_efficiency_rating, political_stability_rating
     `;
     let query = supabase.from('towns').select(selectColumns);
     

@@ -174,6 +174,17 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
       .eq('user_id', userId)
       .single();
     
+    // DEBUG: What's actually in the database?
+    if (data && userId === '83d285b2-b21b-4d13-a1a1-6d51b6733d52') {
+      console.log('📊 TILMAN PREFERENCES FROM DB:', {
+        healthcare: data.healthcare_quality,
+        safety: data.safety_importance,
+        government: data.government_efficiency,
+        political: data.political_stability,
+        emergency: data.emergency_services
+      });
+    }
+    
     // Define the expected steps - Updated 19JUN25: Using 'costs' to match database
     const steps = [
       'current_status',
