@@ -1,0 +1,47 @@
+{
+  "processedTowns": [
+    "aa3e5f0f-dab5-480c-829f-5625fd19957f"
+  ],
+  "successCount": 1,
+  "errorCount": 0,
+  "totalCost": 0.000125,
+  "auditRecords": [
+    {
+      "town_id": "aa3e5f0f-dab5-480c-829f-5625fd19957f",
+      "column_name": "cost_of_living_usd",
+      "old_value": "2100",
+      "new_value": "2500",
+      "data_source": "claude-haiku-research",
+      "enrichment_method": "claude-haiku",
+      "cost_usd": 0.00008333333333333333,
+      "operator": "unified-enrichment",
+      "success": true,
+      "timestamp": "2025-09-05T20:34:34.002Z"
+    },
+    {
+      "town_id": "aa3e5f0f-dab5-480c-829f-5625fd19957f",
+      "column_name": "meal_cost",
+      "old_value": null,
+      "new_value": "25",
+      "data_source": "claude-haiku-research",
+      "enrichment_method": "claude-haiku",
+      "cost_usd": 0.00008333333333333333,
+      "operator": "unified-enrichment",
+      "success": true,
+      "timestamp": "2025-09-05T20:34:34.132Z"
+    },
+    {
+      "town_id": "aa3e5f0f-dab5-480c-829f-5625fd19957f",
+      "column_name": "groceries_cost",
+      "old_value": "260",
+      "new_value": "400",
+      "data_source": "claude-haiku-research",
+      "enrichment_method": "claude-haiku",
+      "cost_usd": 0.00008333333333333333,
+      "operator": "unified-enrichment",
+      "success": true,
+      "timestamp": "2025-09-05T20:34:34.213Z"
+    }
+  ],
+  "lastUpdate": "2025-09-05T20:34:34.512Z"
+}

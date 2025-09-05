@@ -1380,51 +1380,36 @@ function calculateGradualAdminScore(actualScore, userPref, maxPoints) {
   
   // Define scoring tiers based on user preference
   if (userPref === 'good') {
-    // User wants high quality (ideal 9+)
-    if (actualScore >= 9.0) {
-      return { score: maxPoints, description: 'exceeds requirements' }
-    } else if (actualScore >= 8.0) {
-      return { score: Math.round(maxPoints * 0.8), description: 'very good quality' }
-    } else if (actualScore >= 7.0) {
-      return { score: Math.round(maxPoints * 0.6), description: 'acceptable quality' }
+    // User wants good quality (target ≥7.0)
+    if (actualScore >= 7.0) {
+      return { score: maxPoints, description: 'meets good requirements' }
     } else if (actualScore >= 6.0) {
-      return { score: Math.round(maxPoints * 0.4), description: 'below ideal but adequate' }
+      return { score: Math.round(maxPoints * 0.85), description: 'almost good quality' }
     } else if (actualScore >= 5.0) {
-      return { score: Math.round(maxPoints * 0.2), description: 'concerns about quality' }
+      return { score: Math.round(maxPoints * 0.65), description: 'functional quality' }
+    } else if (actualScore >= 4.0) {
+      return { score: Math.round(maxPoints * 0.4), description: 'basic quality' }
     } else {
-      return { score: 0, description: 'inadequate quality' }
+      return { score: Math.round(maxPoints * 0.15), description: 'below basic quality' }
     }
   } else if (userPref === 'functional') {
-    // User wants adequate quality (ideal 6+, but reward exceeding)
-    if (actualScore >= 9.0) {
-      return { score: maxPoints, description: 'far exceeds requirements' }
-    } else if (actualScore >= 8.0) {
-      return { score: maxPoints, description: 'exceeds requirements' }
-    } else if (actualScore >= 7.0) {
-      return { score: maxPoints, description: 'exceeds requirements' }
-    } else if (actualScore >= 6.0) {
-      return { score: Math.round(maxPoints * 0.9), description: 'meets requirements' }
-    } else if (actualScore >= 5.0) {
-      return { score: Math.round(maxPoints * 0.7), description: 'nearly meets requirements' }
-    } else if (actualScore >= 4.0) {
-      return { score: Math.round(maxPoints * 0.5), description: 'basic but functional' }
-    } else {
-      return { score: 0, description: 'below functional level' }
+    // User wants functional quality - LINEAR GRADUAL SCORING for real differentiation
+    // Score linearly from 0-10 to create actual variation
+    const percentage = actualScore / 10.0  // Convert 0-10 score to 0-1 percentage
+    return { 
+      score: Math.round(maxPoints * percentage), 
+      description: `${Math.round(actualScore * 10)}/100 rating` 
     }
   } else if (userPref === 'basic') {
-    // User wants minimal quality (ideal 4+, but reward exceeding)
-    if (actualScore >= 8.0) {
-      return { score: maxPoints, description: 'far exceeds requirements' }
-    } else if (actualScore >= 6.0) {
-      return { score: maxPoints, description: 'exceeds requirements' }
-    } else if (actualScore >= 5.0) {
-      return { score: maxPoints, description: 'meets requirements' }
-    } else if (actualScore >= 4.0) {
-      return { score: Math.round(maxPoints * 0.9), description: 'meets basic requirements' }
+    // User wants basic quality (target ≥4.0)
+    if (actualScore >= 4.0) {
+      return { score: maxPoints, description: 'meets basic requirements' }
     } else if (actualScore >= 3.0) {
-      return { score: Math.round(maxPoints * 0.7), description: 'nearly meets basic requirements' }
+      return { score: Math.round(maxPoints * 0.7), description: 'almost basic' }
+    } else if (actualScore >= 2.0) {
+      return { score: Math.round(maxPoints * 0.4), description: 'below basic' }
     } else {
-      return { score: 0, description: 'below minimum standards' }
+      return { score: Math.round(maxPoints * 0.15), description: 'lowest baseline' }
     }
   }
   
@@ -1595,7 +1580,21 @@ export function calculateAdminScore(preferences, town) {
   let score = 0
   let factors = []
   
-  // Debug logs removed - too verbose for production
+  // URGENT DEBUG: Why are all towns showing 62% or 66%?
+  console.log('🚨 ADMIN SCORE DEBUG:', {
+    town: town.name,
+    healthcare_score: town.healthcare_score,
+    safety_score: town.safety_score,
+    gov_rating: town.government_efficiency_rating,
+    political_rating: town.political_stability_rating,
+    prefs: {
+      healthcare: preferences.healthcare_quality,
+      safety: preferences.safety_importance,
+      government: preferences.government_efficiency,
+      political: preferences.political_stability,
+      visa: preferences.visa_preference
+    }
+  })
   
   // If user has NO admin preferences at all, they're flexible - give perfect score
   if (!preferences.healthcare_quality?.length && 
@@ -1659,26 +1658,19 @@ export function calculateAdminScore(preferences, town) {
   const govArray = preferences.government_efficiency || []
   const govPref = Array.isArray(govArray) ? govArray[0] : govArray
   
-  if (town.government_efficiency_rating && govPref) {
+  if (town.government_efficiency_rating) {
     // Government rating is 0-100, convert to 0-10 scale for scoring
     const govScore = town.government_efficiency_rating / 10
-    const govResult = calculateGradualAdminScore(govScore, govPref, 15)
+    // Use user preference if exists, otherwise default to 'functional'
+    const prefToUse = govPref || 'functional'
+    const govResult = calculateGradualAdminScore(govScore, prefToUse, 15)
     
     score += govResult.score
     factors.push({ 
       factor: `Government efficiency ${govResult.description} (rating: ${town.government_efficiency_rating})`, 
       score: govResult.score 
     })
-  } else if (town.government_efficiency_rating && !govPref) {
-    // No preference but data exists - give partial credit
-    const govScore = town.government_efficiency_rating / 10
-    const govResult = calculateGradualAdminScore(govScore, 'functional', 15)
-    score += govResult.score
-    factors.push({ 
-      factor: `Government efficiency rating: ${town.government_efficiency_rating}`, 
-      score: govResult.score 
-    })
-  } else if (!town.government_efficiency_rating) {
+  } else {
     // No data available - minimal credit
     score += 3
     factors.push({ factor: 'Government efficiency data not available', score: 3 })
@@ -1710,30 +1702,35 @@ export function calculateAdminScore(preferences, town) {
     factors.push({ factor: 'Good environmental health', score: 15 })
   }
   
-  // Political stability bonus (10 points)
+  // Political stability bonus (10 points) - now with gradual scoring
   const stabilityArray = preferences.political_stability || []
   const stabilityPref = Array.isArray(stabilityArray) ? stabilityArray[0] : stabilityArray
   
   if (town.political_stability_rating) {
-    if ((stabilityPref === 'good' && town.political_stability_rating >= 80) ||
-        (stabilityPref === 'functional' && town.political_stability_rating >= 60) ||
-        (stabilityPref === 'basic' && town.political_stability_rating >= 40)) {
-      score += 10
-      factors.push({ factor: `Political stability matches preference (rating: ${town.political_stability_rating})`, score: 10 })
-    } else if (!stabilityPref && town.political_stability_rating >= 60) {
-      // No preference - give credit for decent stability
-      score += 5
-      factors.push({ factor: `Political stability rating: ${town.political_stability_rating}`, score: 5 })
-    } else if (stabilityPref && town.political_stability_rating < 60) {
-      // Has preference but stability is poor
-      factors.push({ factor: `Political stability below requirements (${town.political_stability_rating})`, score: 0 })
-    }
-  } else if (stabilityPref) {
-    // User wants stability data but it's missing
-    factors.push({ factor: 'Political stability data not available', score: 0 })
+    const prefToUse = stabilityPref || 'functional' // Default to functional if no preference
+    const stabilityScore = town.political_stability_rating / 10 // Convert to 0-10 scale
+    const stabilityResult = calculateGradualAdminScore(stabilityScore, prefToUse, 10)
+    
+    score += stabilityResult.score
+    factors.push({ 
+      factor: `Political stability ${stabilityResult.description} (rating: ${town.political_stability_rating})`, 
+      score: stabilityResult.score 
+    })
+  } else {
+    // No data available - minimal credit
+    score += 2
+    factors.push({ factor: 'Political stability data not available', score: 2 })
   }
   
   const finalScore = Math.min(score, 100);
+  
+  // DEBUG: Show final calculation
+  console.log('🎯 ADMIN FINAL:', {
+    town: town.name,
+    rawScore: score,
+    finalScore: finalScore,
+    factors: factors.map(f => `${f.factor}: ${f.score}`)
+  })
   
   return {
     score: finalScore,
