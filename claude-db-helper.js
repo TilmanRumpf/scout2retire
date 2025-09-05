@@ -4,12 +4,21 @@
 // This is the CORRECT way to execute SQL against the ONLINE Supabase instance
 // Modified to investigate ALL user data for tobiasrumpf@gmx.de
 
+import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 
+dotenv.config();
+
 const supabase = createClient(
-  'https://axlruvvsjepsulcbqlho.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4bHJ1dnZzamVwc3VsY2JxbGhvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODcwNjM0NSwiZXhwIjoyMDY0MjgyMzQ1fQ.cdsyW8_ithcO3WZ4iEs9RsdrzefoaD4v_xhb9TXpCz8'
+  process.env.VITE_SUPABASE_URL || 'https://axlruvvsjepsulcbqlho.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.error('❌ SUPABASE_SERVICE_ROLE_KEY not found in .env file');
+  console.error('Please ensure your .env file contains SUPABASE_SERVICE_ROLE_KEY');
+  process.exit(1);
+}
 
 const TOBIAS_EMAIL = 'tobiasrumpf@gmx.de';
 const TOBIAS_USER_ID = 'd1039857-71e2-4562-86aa-1f0b4a0c17c8';
