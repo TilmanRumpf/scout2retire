@@ -1,11 +1,19 @@
+import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
 
+dotenv.config();
+
 const supabase = createClient(
-  'https://axlruvvsjepsulcbqlho.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4bHJ1dnZzamVwc3VsY2JxbGhvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODcwNjM0NSwiZXhwIjoyMDY0MjgyMzQ1fQ.cdsyW8_ithcO3WZ4iEs9RsdrzefoaD4v_xhb9TXpCz8'
+  process.env.VITE_SUPABASE_URL || 'https://axlruvvsjepsulcbqlho.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.error('❌ SUPABASE_SERVICE_ROLE_KEY not found in .env file');
+  process.exit(1);
+}
 
 async function createSnapshot() {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
