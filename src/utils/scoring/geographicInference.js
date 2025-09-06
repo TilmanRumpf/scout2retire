@@ -58,12 +58,15 @@ export function inferHobbyAvailability(town, userHobbies) {
     }
   });
   
-  // 2. Check distinctive hobbies from top_hobbies (case-insensitive)
+  // 2. Check distinctive hobbies from top_hobbies (case-insensitive + underscore/space)
   if (town.top_hobbies && town.top_hobbies.length > 0) {
     userHobbies.forEach(hobby => {
-      // Check case-insensitive match
+      // Normalize: lowercase and replace underscores with spaces
+      const normalizedUserHobby = hobby.toLowerCase().replace(/_/g, ' ');
+      
+      // Check case-insensitive match with underscore/space normalization
       const matchFound = town.top_hobbies.some(townHobby => 
-        townHobby.toLowerCase() === hobby.toLowerCase()
+        townHobby.toLowerCase().replace(/_/g, ' ') === normalizedUserHobby
       );
       if (matchFound) {
         availableHobbies.add(hobby);
@@ -113,7 +116,9 @@ function inferFromGeography(town, userHobbies) {
          'Water Skiing', 'Swimming Laps', 'Water Aerobics', 'Stand-up Paddleboarding',
          'Canoeing', 'Jet Skiing', 'Deep Sea Fishing'];
     
-    if (waterSports.some(sport => sport.toLowerCase() === hobby.toLowerCase())) {
+    // Normalize hobby name for comparison (handle underscores)
+    const normalizedHobby = hobby.toLowerCase().replace(/_/g, ' ');
+    if (waterSports.some(sport => sport.toLowerCase().replace(/_/g, ' ') === normalizedHobby)) {
       // Check geographic features with case-insensitive comparison
       const hasCoastal = town.geographic_features_actual?.some(f => 
         f && f.toString().toLowerCase() === 'coastal'
