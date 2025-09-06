@@ -194,9 +194,25 @@ export async function calculateHobbiesScore(userHobbies, town) {
     });
   }
 
+  // DEBUG: Log what we're sending to inference
+  console.log('🔍 HOBBIES DEBUG:', {
+    townName: town.name,
+    userHobbyNames: userHobbyNames.slice(0, 10),
+    userHobbyCount: userHobbyNames.length,
+    townTopHobbies: town.top_hobbies
+  });
+  
   // Use Geographic Inference to determine available hobbies
   const inference = inferHobbyAvailability(town, userHobbyNames);
   const inferredScore = inferenceScore(town, userHobbyNames);
+  
+  console.log('🎯 INFERENCE RESULT:', {
+    townName: town.name,
+    available: inference.availableHobbies.length,
+    distinctive: inference.details.distinctive,
+    matchPercentage: inference.matchPercentage,
+    score: inferredScore.score
+  });
   
   // Extract details from inference
   matchedHobbies = inference.availableHobbies;
