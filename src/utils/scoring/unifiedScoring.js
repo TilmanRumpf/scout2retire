@@ -3,7 +3,7 @@
  * Single source of truth for scoring towns against user preferences
  */
 
-import { calculateEnhancedMatch } from './enhancedMatchingAlgorithm';
+import { calculateEnhancedMatch } from './enhancedMatchingAlgorithm.js';
 
 /**
  * Simple implementations of insight generation functions
@@ -53,8 +53,8 @@ const generateEnhancedHighlights = (_town, scores) => {
  * Handles both nested (old format) and flat (current database) structures
  */
 export const convertPreferencesToAlgorithmFormat = (userPreferences) => {
-  // DEBUG: Fixed - was case sensitivity issue
-  // console.log('🔍 DEBUG: Raw user preferences from DB:', userPreferences);
+  // DEBUG: Enable to see what's being loaded
+  console.log('🔍 DEBUG: Raw user preferences from DB:', userPreferences);
   
   // Handle region preferences - combine countries and regions from top-level fields
   const regionPreferences = userPreferences.region || userPreferences.region_preferences || {};
@@ -76,59 +76,145 @@ export const convertPreferencesToAlgorithmFormat = (userPreferences) => {
     regionPreferences.provinces = userPreferences.provinces;
   }
   
-  // console.log('🔍 DEBUG: Converted region preferences:', regionPreferences);
+  // Build climate preferences - FIXED: Only use fields that actually exist
+  const climatePrefs = userPreferences.climate || userPreferences.climate_preferences || {};
+  
+  // Only add fields from root level if they actually have values
+  if (userPreferences.summer_climate_preference !== undefined && userPreferences.summer_climate_preference !== null) {
+    climatePrefs.summer_climate_preference = userPreferences.summer_climate_preference;
+  }
+  if (userPreferences.winter_climate_preference !== undefined && userPreferences.winter_climate_preference !== null) {
+    climatePrefs.winter_climate_preference = userPreferences.winter_climate_preference;
+  }
+  if (userPreferences.humidity_level !== undefined && userPreferences.humidity_level !== null) {
+    climatePrefs.humidity_level = userPreferences.humidity_level;
+  }
+  if (userPreferences.sunshine !== undefined && userPreferences.sunshine !== null) {
+    climatePrefs.sunshine = userPreferences.sunshine;
+  }
+  if (userPreferences.precipitation !== undefined && userPreferences.precipitation !== null) {
+    climatePrefs.precipitation = userPreferences.precipitation;
+  }
+  if (userPreferences.seasonal_preference !== undefined && userPreferences.seasonal_preference !== null) {
+    climatePrefs.seasonal_preference = userPreferences.seasonal_preference;
+  }
+  
+  // Build culture preferences - FIXED: Only use fields that actually exist
+  const culturePrefs = userPreferences.culture || userPreferences.culture_preferences || {};
+  
+  if (userPreferences.expat_community_preference !== undefined && userPreferences.expat_community_preference !== null) {
+    culturePrefs.expat_community_preference = userPreferences.expat_community_preference;
+  }
+  if (userPreferences.language_comfort !== undefined && userPreferences.language_comfort !== null) {
+    culturePrefs.language_comfort = userPreferences.language_comfort;
+  }
+  if (userPreferences.cultural_importance !== undefined && userPreferences.cultural_importance !== null) {
+    culturePrefs.cultural_importance = userPreferences.cultural_importance;
+  }
+  if (userPreferences.lifestyle_preferences !== undefined && userPreferences.lifestyle_preferences !== null) {
+    culturePrefs.lifestyle_preferences = userPreferences.lifestyle_preferences;
+  }
+  
+  // Build hobbies preferences - FIXED: Only use fields that actually exist
+  const hobbiesPrefs = userPreferences.hobbies || userPreferences.hobbies_preferences || {};
+  
+  if (userPreferences.activities !== undefined && userPreferences.activities !== null) {
+    hobbiesPrefs.activities = userPreferences.activities;
+  }
+  if (userPreferences.interests !== undefined && userPreferences.interests !== null) {
+    hobbiesPrefs.interests = userPreferences.interests;
+  }
+  if (userPreferences.travel_frequency !== undefined && userPreferences.travel_frequency !== null) {
+    hobbiesPrefs.travel_frequency = userPreferences.travel_frequency;
+  }
+  if (userPreferences.lifestyle_importance !== undefined && userPreferences.lifestyle_importance !== null) {
+    hobbiesPrefs.lifestyle_importance = userPreferences.lifestyle_importance;
+  }
+  if (userPreferences.custom_activities !== undefined && userPreferences.custom_activities !== null) {
+    hobbiesPrefs.custom_activities = userPreferences.custom_activities;
+  }
+  
+  console.log('🔍 DEBUG: Converted preferences:', {
+    climate: climatePrefs,
+    hobbies: hobbiesPrefs
+  });
   
   return {
     region_preferences: regionPreferences,
-    climate_preferences: userPreferences.climate || userPreferences.climate_preferences || {
-      // Extract climate fields from root level
-      summer_climate_preference: userPreferences.summer_climate_preference,
-      winter_climate_preference: userPreferences.winter_climate_preference,
-      humidity_level: userPreferences.humidity_level,
-      sunshine: userPreferences.sunshine,
-      precipitation: userPreferences.precipitation,
-      seasonal_preference: userPreferences.seasonal_preference
-    },
-    culture_preferences: userPreferences.culture || userPreferences.culture_preferences || {
-      // Extract culture fields from root level
-      expat_community_preference: userPreferences.expat_community_preference,
-      language_comfort: userPreferences.language_comfort,
-      cultural_importance: userPreferences.cultural_importance,
-      lifestyle_preferences: userPreferences.lifestyle_preferences
-    },
-    hobbies_preferences: userPreferences.hobbies || userPreferences.hobbies_preferences || {
-      // Extract hobbies fields from root level
-      activities: userPreferences.activities,
-      interests: userPreferences.interests,
-      travel_frequency: userPreferences.travel_frequency,
-      lifestyle_importance: userPreferences.lifestyle_importance,
-      custom_activities: userPreferences.custom_activities
-    },
-    admin_preferences: userPreferences.administration || userPreferences.admin_preferences || {
-      // Extract admin fields from root level (where they're stored in user_preferences table)
-      healthcare_quality: userPreferences.healthcare_quality,
-      safety_importance: userPreferences.safety_importance,
-      government_efficiency: userPreferences.government_efficiency,
-      political_stability: userPreferences.political_stability,
-      visa_preference: userPreferences.visa_preference,
-      health_considerations: userPreferences.health_considerations,
-      insurance_importance: userPreferences.insurance_importance,
-      emergency_services: userPreferences.emergency_services,
-      tax_preference: userPreferences.tax_preference,
-      stay_duration: userPreferences.stay_duration,
-      residency_path: userPreferences.residency_path
-    },
-    cost_preferences: userPreferences.costs || userPreferences.cost_preferences || {
-      // Extract budget fields from root level
-      total_monthly_budget: userPreferences.total_monthly_budget,
-      max_monthly_rent: userPreferences.max_monthly_rent,
-      max_home_price: userPreferences.max_home_price,
-      monthly_healthcare_budget: userPreferences.monthly_healthcare_budget,
-      mobility: userPreferences.mobility,
-      property_tax_sensitive: userPreferences.property_tax_sensitive,
-      sales_tax_sensitive: userPreferences.sales_tax_sensitive,
-      income_tax_sensitive: userPreferences.income_tax_sensitive
-    },
+    climate_preferences: climatePrefs,
+    culture_preferences: culturePrefs,
+    hobbies_preferences: hobbiesPrefs,
+    admin_preferences: (() => {
+      const adminPrefs = userPreferences.administration || userPreferences.admin_preferences || {};
+      
+      // Only add fields from root level if they actually have values
+      if (userPreferences.healthcare_quality !== undefined && userPreferences.healthcare_quality !== null) {
+        adminPrefs.healthcare_quality = userPreferences.healthcare_quality;
+      }
+      if (userPreferences.safety_importance !== undefined && userPreferences.safety_importance !== null) {
+        adminPrefs.safety_importance = userPreferences.safety_importance;
+      }
+      if (userPreferences.government_efficiency !== undefined && userPreferences.government_efficiency !== null) {
+        adminPrefs.government_efficiency = userPreferences.government_efficiency;
+      }
+      if (userPreferences.political_stability !== undefined && userPreferences.political_stability !== null) {
+        adminPrefs.political_stability = userPreferences.political_stability;
+      }
+      if (userPreferences.visa_preference !== undefined && userPreferences.visa_preference !== null) {
+        adminPrefs.visa_preference = userPreferences.visa_preference;
+      }
+      if (userPreferences.health_considerations !== undefined && userPreferences.health_considerations !== null) {
+        adminPrefs.health_considerations = userPreferences.health_considerations;
+      }
+      if (userPreferences.insurance_importance !== undefined && userPreferences.insurance_importance !== null) {
+        adminPrefs.insurance_importance = userPreferences.insurance_importance;
+      }
+      if (userPreferences.emergency_services !== undefined && userPreferences.emergency_services !== null) {
+        adminPrefs.emergency_services = userPreferences.emergency_services;
+      }
+      if (userPreferences.tax_preference !== undefined && userPreferences.tax_preference !== null) {
+        adminPrefs.tax_preference = userPreferences.tax_preference;
+      }
+      if (userPreferences.stay_duration !== undefined && userPreferences.stay_duration !== null) {
+        adminPrefs.stay_duration = userPreferences.stay_duration;
+      }
+      if (userPreferences.residency_path !== undefined && userPreferences.residency_path !== null) {
+        adminPrefs.residency_path = userPreferences.residency_path;
+      }
+      
+      return adminPrefs;
+    })(),
+    cost_preferences: (() => {
+      const costPrefs = userPreferences.costs || userPreferences.cost_preferences || {};
+      
+      // Only add fields from root level if they actually have values
+      if (userPreferences.total_monthly_budget !== undefined && userPreferences.total_monthly_budget !== null) {
+        costPrefs.total_monthly_budget = userPreferences.total_monthly_budget;
+      }
+      if (userPreferences.max_monthly_rent !== undefined && userPreferences.max_monthly_rent !== null) {
+        costPrefs.max_monthly_rent = userPreferences.max_monthly_rent;
+      }
+      if (userPreferences.max_home_price !== undefined && userPreferences.max_home_price !== null) {
+        costPrefs.max_home_price = userPreferences.max_home_price;
+      }
+      if (userPreferences.monthly_healthcare_budget !== undefined && userPreferences.monthly_healthcare_budget !== null) {
+        costPrefs.monthly_healthcare_budget = userPreferences.monthly_healthcare_budget;
+      }
+      if (userPreferences.mobility !== undefined && userPreferences.mobility !== null) {
+        costPrefs.mobility = userPreferences.mobility;
+      }
+      if (userPreferences.property_tax_sensitive !== undefined && userPreferences.property_tax_sensitive !== null) {
+        costPrefs.property_tax_sensitive = userPreferences.property_tax_sensitive;
+      }
+      if (userPreferences.sales_tax_sensitive !== undefined && userPreferences.sales_tax_sensitive !== null) {
+        costPrefs.sales_tax_sensitive = userPreferences.sales_tax_sensitive;
+      }
+      if (userPreferences.income_tax_sensitive !== undefined && userPreferences.income_tax_sensitive !== null) {
+        costPrefs.income_tax_sensitive = userPreferences.income_tax_sensitive;
+      }
+      
+      return costPrefs;
+    })(),
     current_status: userPreferences.current_status || {
       citizenship: userPreferences.primary_citizenship || userPreferences.citizenship
     }
