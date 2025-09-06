@@ -195,24 +195,18 @@ export async function calculateHobbiesScore(userHobbies, town) {
   }
 
   // DEBUG: Log what we're sending to inference
-  console.log('🔍 HOBBIES DEBUG:', {
-    townName: town.name,
-    userHobbyNames: userHobbyNames.slice(0, 10),
-    userHobbyCount: userHobbyNames.length,
-    townTopHobbies: town.top_hobbies
-  });
+  console.log(`🔥 HOBBIES for ${town.name}:`, userHobbyNames.length, 'hobbies');
+  console.log('  First 10:', userHobbyNames.slice(0, 10));
+  console.log('  Town has:', town.top_hobbies);
   
   // Use Geographic Inference to determine available hobbies
   const inference = inferHobbyAvailability(town, userHobbyNames);
   const inferredScore = inferenceScore(town, userHobbyNames);
   
-  console.log('🎯 INFERENCE RESULT:', {
-    townName: town.name,
-    available: inference.availableHobbies.length,
-    distinctive: inference.details.distinctive,
-    matchPercentage: inference.matchPercentage,
-    score: inferredScore.score
-  });
+  console.log(`🎯 RESULTS for ${town.name}:`);
+  console.log('  Matched:', inference.availableHobbies.length, '/', userHobbyNames.length);
+  console.log('  Score:', inferredScore.score + '%');
+  console.log('  Distinctive:', inference.details.distinctive);
   
   // Extract details from inference
   matchedHobbies = inference.availableHobbies;
