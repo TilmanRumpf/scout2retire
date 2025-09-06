@@ -58,10 +58,14 @@ export function inferHobbyAvailability(town, userHobbies) {
     }
   });
   
-  // 2. Check distinctive hobbies from top_hobbies
+  // 2. Check distinctive hobbies from top_hobbies (case-insensitive)
   if (town.top_hobbies && town.top_hobbies.length > 0) {
     userHobbies.forEach(hobby => {
-      if (town.top_hobbies.includes(hobby)) {
+      // Check case-insensitive match
+      const matchFound = town.top_hobbies.some(townHobby => 
+        townHobby.toLowerCase() === hobby.toLowerCase()
+      );
+      if (matchFound) {
         availableHobbies.add(hobby);
         inferenceDetails.distinctive.push(hobby);
       }
@@ -103,11 +107,13 @@ function inferFromGeography(town, userHobbies) {
   const inferred = [];
   
   userHobbies.forEach(hobby => {
-    // WATER SPORTS - Coastal or lake towns
-    if (['Swimming', 'Sailing', 'Surfing', 'Scuba Diving', 'Kayaking', 
+    // WATER SPORTS - Coastal or lake towns (case-insensitive check)
+    const waterSports = ['Swimming', 'Sailing', 'Surfing', 'Scuba Diving', 'Kayaking', 
          'Fishing', 'Boating', 'Windsurfing', 'Kitesurfing', 'Snorkeling',
          'Water Skiing', 'Swimming Laps', 'Water Aerobics', 'Stand-up Paddleboarding',
-         'Canoeing'].includes(hobby)) {
+         'Canoeing', 'Jet Skiing', 'Deep Sea Fishing'];
+    
+    if (waterSports.some(sport => sport.toLowerCase() === hobby.toLowerCase())) {
       // Check geographic features with case-insensitive comparison
       const hasCoastal = town.geographic_features_actual?.some(f => 
         f && f.toString().toLowerCase() === 'coastal'
@@ -120,8 +126,9 @@ function inferFromGeography(town, userHobbies) {
     }
     
     // WINTER SPORTS - Mountain towns with elevation
-    if (['Downhill Skiing', 'Snowboarding', 'Cross-country Skiing', 'Snowshoeing',
-         'Ice Skating', 'Skiing'].includes(hobby)) {
+    const winterSports = ['Downhill Skiing', 'Snowboarding', 'Cross-country Skiing', 'Snowshoeing',
+         'Ice Skating', 'Skiing'];
+    if (winterSports.some(sport => sport.toLowerCase() === hobby.toLowerCase())) {
       // Check geographic features with case-insensitive comparison
       const hasMountain = town.geographic_features_actual?.some(f => 
         f && f.toString().toLowerCase() === 'mountain'
@@ -134,39 +141,44 @@ function inferFromGeography(town, userHobbies) {
     }
     
     // GOLF - Infrastructure dependent
-    if (hobby === 'Golf' && town.golf_courses_count > 0) {
+    if (hobby.toLowerCase() === 'golf' && town.golf_courses_count > 0) {
       inferred.push(hobby);
     }
     
     // TENNIS/RACQUET SPORTS - Infrastructure dependent
-    if (['Tennis', 'Padel', 'Pickleball', 'Bocce Ball', 'Petanque'].includes(hobby) && 
+    const racquetSports = ['Tennis', 'Padel', 'Pickleball', 'Bocce Ball', 'Petanque'];
+    if (racquetSports.some(sport => sport.toLowerCase() === hobby.toLowerCase()) && 
         town.tennis_courts_count > 0) {
       inferred.push(hobby);
     }
     
     // CULTURAL ACTIVITIES - Urban areas
-    if (['Museums', 'Theater', 'Opera', 'Art Galleries', 'Concerts',
-         'Food Tours', 'Ballet'].includes(hobby)) {
+    const culturalActivities = ['Museums', 'Theater', 'Opera', 'Art Galleries', 'Concerts',
+         'Food Tours', 'Ballet'];
+    if (culturalActivities.some(activity => activity.toLowerCase() === hobby.toLowerCase())) {
       if (town.population >= 100000 || town.distance_to_urban_center === 0) {
         inferred.push(hobby);
       }
       // Smaller towns near urban centers get partial access
       else if (town.distance_to_urban_center <= 40 && town.population >= 20000) {
-        if (['Museums', 'Theater', 'Concerts'].includes(hobby)) {
+        const partialCultural = ['Museums', 'Theater', 'Concerts'];
+        if (partialCultural.some(activity => activity.toLowerCase() === hobby.toLowerCase())) {
           inferred.push(hobby);
         }
       }
     }
     
     // MARKETS - Most towns have some form
-    if (['Farmers Markets', 'Flea Markets'].includes(hobby)) {
+    const markets = ['Farmers Markets', 'Flea Markets'];
+    if (markets.some(market => market.toLowerCase() === hobby.toLowerCase())) {
       if (town.population >= 10000) {
         inferred.push(hobby);
       }
     }
     
     // WINE/VINEYARD activities - Wine regions
-    if (['Wine Tasting', 'Vineyards', 'Wine'].includes(hobby)) {
+    const wineActivities = ['Wine Tasting', 'Vineyards', 'Wine'];
+    if (wineActivities.some(activity => activity.toLowerCase() === hobby.toLowerCase())) {
       // Mediterranean countries are wine regions
       if (['Spain', 'France', 'Italy', 'Portugal', 'Greece'].includes(town.country)) {
         inferred.push(hobby);
@@ -179,7 +191,8 @@ function inferFromGeography(town, userHobbies) {
     }
     
     // FITNESS/WELLNESS - Urban and tourist areas
-    if (['Fitness Classes', 'Pilates', 'Spa & Wellness', 'Gym'].includes(hobby)) {
+    const fitnessActivities = ['Fitness Classes', 'Pilates', 'Spa & Wellness', 'Gym'];
+    if (fitnessActivities.some(activity => activity.toLowerCase() === hobby.toLowerCase())) {
       if (town.population >= 50000 || 
           town.distance_to_urban_center <= 20 ||
           town.distance_to_ocean_km === 0) {
@@ -188,26 +201,27 @@ function inferFromGeography(town, userHobbies) {
     }
     
     // OUTDOOR ACTIVITIES - Walking, Hiking, Cycling
-    if (['Walking', 'Hiking', 'Cycling', 'Mountain Biking'].includes(hobby)) {
+    const outdoorActivities = ['Walking', 'Hiking', 'Cycling', 'Mountain Biking'];
+    if (outdoorActivities.some(activity => activity.toLowerCase() === hobby.toLowerCase())) {
       // Walking is universal but we still add it
-      if (hobby === 'Walking') {
+      if (hobby.toLowerCase() === 'walking') {
         inferred.push(hobby);
       }
       // Hiking in elevated or natural areas
-      else if (hobby === 'Hiking' && 
+      else if (hobby.toLowerCase() === 'hiking' && 
           (town.elevation_meters > 200 || 
            town.geographic_features_actual?.some(f => f && f.toString().toLowerCase() === 'mountain') ||
            town.hiking_trails_km > 0)) {
         inferred.push(hobby);
       }
       // Mountain biking in elevated areas
-      else if (hobby === 'Mountain Biking' && 
+      else if (hobby.toLowerCase() === 'mountain biking' && 
           (town.elevation_meters > 500 || 
            town.geographic_features_actual?.some(f => f && f.toString().toLowerCase() === 'mountain'))) {
         inferred.push(hobby);
       }
       // Regular cycling in most developed areas
-      else if (hobby === 'Cycling' && town.population >= 20000) {
+      else if (hobby.toLowerCase() === 'cycling' && town.population >= 20000) {
         inferred.push(hobby);
       }
     }
