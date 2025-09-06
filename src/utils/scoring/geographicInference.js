@@ -10,9 +10,9 @@
  * These don't need to be in top_hobbies
  */
 const UNIVERSAL_HOBBIES = [
-  'Walking', 'Reading', 'Cooking', 'Gardening', 'Photography',
-  'Yoga', 'Meditation', 'Bird Watching', 'Writing', 'Painting',
-  'Music', 'Chess', 'Board Games', 'Knitting', 'Hiking'
+  'walking', 'reading', 'cooking', 'gardening', 'photography',
+  'yoga', 'meditation', 'bird watching', 'writing', 'painting',
+  'music', 'chess', 'board games', 'knitting', 'hiking'
 ];
 
 /**
