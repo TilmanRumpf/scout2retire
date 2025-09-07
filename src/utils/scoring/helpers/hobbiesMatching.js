@@ -159,48 +159,57 @@ export async function calculateHobbiesScore(userHobbies, town) {
     };
   }
 
-  // Collect all user hobbies (normalize names)
+  // Collect all user hobbies (normalize names) with tier tracking
   const userHobbyNames = [];
+  const hobbyTiers = {}; // Track which tier each hobby came from
   
-  // Add activities
+  // Create a Set of custom_physical items for fast lookup
+  const customPhysicalSet = new Set(userHobbies.custom_physical || []);
+  
+  // Add activities with proper tier assignment
   if (userHobbies.activities?.length) {
     userHobbies.activities.forEach(activity => {
       const mapped = legacyMapping[activity] || activity;
       // Handle both single strings and arrays
       if (Array.isArray(mapped)) {
-        userHobbyNames.push(...mapped);
+        mapped.forEach(h => {
+          userHobbyNames.push(h);
+          // Check if this activity is from Explore More (Tier 2) or compound button (Tier 1)
+          hobbyTiers[h] = customPhysicalSet.has(h) ? 2 : 1;
+        });
       } else {
         userHobbyNames.push(mapped);
+        // Check if this activity is from Explore More (Tier 2) or compound button (Tier 1)
+        hobbyTiers[mapped] = customPhysicalSet.has(activity) ? 2 : 1;
       }
     });
   }
   
-  // Add interests  
+  // Create a Set of custom_hobbies items for fast lookup
+  const customHobbiesSet = new Set(userHobbies.custom_hobbies || []);
+  
+  // Add interests with proper tier assignment
   if (userHobbies.interests?.length) {
     userHobbies.interests.forEach(interest => {
       const mapped = legacyMapping[interest] || interest;
       // Handle both single strings and arrays
       if (Array.isArray(mapped)) {
-        userHobbyNames.push(...mapped);
+        mapped.forEach(h => {
+          userHobbyNames.push(h);
+          // Check if this interest is from Explore More (Tier 2) or compound button (Tier 1)
+          hobbyTiers[h] = customHobbiesSet.has(h) ? 2 : 1;
+        });
       } else {
         userHobbyNames.push(mapped);
+        // Check if this interest is from Explore More (Tier 2) or compound button (Tier 1)
+        hobbyTiers[mapped] = customHobbiesSet.has(interest) ? 2 : 1;
       }
     });
   }
   
-  // Add custom physical activities from "Add More" button
-  if (userHobbies.custom_physical?.length) {
-    userHobbies.custom_physical.forEach(activity => {
-      userHobbyNames.push(activity);
-    });
-  }
-  
-  // Add custom hobbies from "Add More" button
-  if (userHobbies.custom_hobbies?.length) {
-    userHobbies.custom_hobbies.forEach(hobby => {
-      userHobbyNames.push(hobby);
-    });
-  }
+  // Note: We don't need to add custom_physical and custom_hobbies separately
+  // because they're already included in activities/interests arrays (see OnboardingHobbies.jsx line 940)
+  // The tier assignment above already handles them correctly
 
   // Use Geographic Inference to determine available hobbies
   const inference = inferHobbyAvailability(town, userHobbyNames);
@@ -213,10 +222,37 @@ export async function calculateHobbiesScore(userHobbies, town) {
   const totalUserHobbies = userHobbyNames.length;
   const totalMatches = matchedHobbies.length;
 
-  // Use inference-based scoring which considers distinctive vs universal hobbies
+  // Use inference-based scoring with TIERED weighting
   if (totalUserHobbies > 0) {
-    // Use the sophisticated inference score
-    score = inferredScore.score;
+    // Calculate weighted score based on tiers
+    let weightedMatches = 0;
+    let totalWeight = 0;
+    
+    // Count weighted matches
+    matchedHobbies.forEach(hobby => {
+      const tier = hobbyTiers[hobby] || 1;
+      const weight = tier === 2 ? 2 : 1; // Tier 2 gets 2x weight
+      weightedMatches += weight;
+    });
+    
+    // Count total weights for all user hobbies
+    userHobbyNames.forEach(hobby => {
+      const tier = hobbyTiers[hobby] || 1;
+      const weight = tier === 2 ? 2 : 1;
+      totalWeight += weight;
+    });
+    
+    // Calculate weighted percentage
+    const weightedPercentage = totalWeight > 0 ? (weightedMatches / totalWeight * 100) : 0;
+    
+    // Base score on weighted percentage
+    score = Math.round(weightedPercentage);
+    
+    // Add bonus for native matches (from inference score)
+    if (inferredScore.score > score) {
+      // Native matches can boost score up to 95%
+      score = Math.min(95, Math.max(score, inferredScore.score));
+    }
     
     // Add factors based on match quality
     const matchPercentage = inferredScore.matchPercentage;

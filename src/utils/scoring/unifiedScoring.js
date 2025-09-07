@@ -132,6 +132,9 @@ export const convertPreferencesToAlgorithmFormat = (userPreferences) => {
   if (userPreferences.custom_activities !== undefined && userPreferences.custom_activities !== null) {
     hobbiesPrefs.custom_activities = userPreferences.custom_activities;
   }
+  if (userPreferences.custom_physical !== undefined && userPreferences.custom_physical !== null) {
+    hobbiesPrefs.custom_physical = userPreferences.custom_physical;
+  }
   
   // Preferences converted successfully
   
