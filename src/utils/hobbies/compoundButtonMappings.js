@@ -157,8 +157,8 @@ export function getHardcodedMappings() {
     // Activities
     'golf_tennis': ['golf', 'tennis', 'pickleball', 'bocce_ball', 'petanque', 'shuffleboard', 'ping_pong'],
     'walking_cycling': ['walking', 'cycling', 'hiking', 'jogging', 'mountain_biking', 'nordic_walking', 'geocaching', 'orienteering', 'walking_groups'],
-    'water_sports': ['swimming', 'snorkeling', 'water_skiing', 'swimming_laps', 'water_aerobics'],
-    'water_crafts': ['boating', 'canoeing', 'kayaking', 'paddleboarding', 'sailing', 'rowing', 'jet_skiing', 'fishing', 'deep_sea_fishing'],
+    'water_sports': ['swimming', 'snorkeling', 'water_skiing', 'swimming_laps', 'water_aerobics', 'surfing', 'scuba_diving', 'windsurfing', 'kitesurfing', 'water_polo', 'synchronized_swimming', 'free_diving', 'bodyboarding', 'wakeboarding'],
+    'water_crafts': ['boating', 'canoeing', 'kayaking', 'paddleboarding', 'sailing', 'rowing', 'jet_skiing', 'fishing', 'deep_sea_fishing', 'stand-up_paddleboarding', 'rafting', 'yachting', 'catamaran_sailing', 'dinghy_sailing'],
     'winter_sports': ['skiing', 'cross_country_skiing', 'downhill_skiing', 'snowboarding', 'ice_skating', 'sledding', 'snowshoeing', 'snowmobiling', 'curling', 'ice_fishing'],
     // Interests
     'gardening': ['gardening', 'herb_gardening', 'vegetable_gardening', 'flower_arranging', 'birdwatching', 'beekeeping', 'dog_walking', 'dog_training', 'nature_walks', 'aquarium_keeping'],

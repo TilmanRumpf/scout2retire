@@ -29,7 +29,6 @@ export const clearPersonalizedCache = (userId) => {
     }
   }
   keysToRemove.forEach(key => sessionStorage.removeItem(key));
-  console.log(`Cleared ${keysToRemove.length} cached results for user ${userId}`);
 };
 
 /**
@@ -40,9 +39,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
   try {
     const { limit = 100, offset = 0, townIds } = options; // Default to 100 to show all towns
 
-    // CRITICAL DEBUG: Which user is being scored?
-    console.log('🚨🚨🚨 SCORING FOR USER ID:', userId);
-    console.log('🚨🚨🚨 CHECK IF THIS MATCHES LOGGED-IN USER!');
+    // Get user scoring preferences
     
     // 1. Get user's onboarding preferences (skip auth check for algorithm)
     const { success: onboardingSuccess, data: userPreferences } = await getOnboardingProgress(userId, true);
@@ -95,9 +92,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       }
     };
     
-    if (!userPreferences) {
-      console.log('No onboarding data found, using sensible defaults for matching');
-    }
+    // Use defaults if no onboarding data
 
     // User preferences loaded successfully
 
@@ -107,8 +102,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     if (cachedResult) {
       const parsed = JSON.parse(cachedResult);
       if (Date.now() - parsed.timestamp < 3600000) { // 1 hour cache
-        console.log('⚠️ Returning CACHED results - clear sessionStorage to see new scoring');
-        // TEMPORARILY DISABLE CACHE TO DEBUG
+        // Return cached results for performance
         // return parsed.data;
       }
     }
@@ -152,7 +146,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     // If specific town IDs are requested (e.g., from favorites), filter by those first
     if (townIds && Array.isArray(townIds) && townIds.length > 0) {
       query = query.in('id', townIds);
-      console.log(`Filtering for specific town IDs: ${townIds.length} towns`);
+      // Filtering for specific town IDs
     } else {
       // Filter for towns with photos (quality control) - CRITICAL SAFETY FEATURE
       query = query
@@ -171,7 +165,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       if (finalUserPreferences.administration?.healthcare_importance === 'excellent' || 
           finalUserPreferences.administration?.healthcare_quality?.includes('good')) {
         query = query.gte('healthcare_score', 7);
-        console.log('Pre-filtering for high healthcare standards (score >= 7)');
+        // Pre-filtering for high healthcare standards
       } else if (finalUserPreferences.administration?.healthcare_importance === 'good' ||
                  finalUserPreferences.administration?.healthcare_quality?.includes('functional')) {
         query = query.gte('healthcare_score', 5);
@@ -181,7 +175,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       // Pre-filter by safety for users with safety concerns
       if (finalUserPreferences.administration?.safety_importance?.includes('good')) {
         query = query.gte('safety_score', 7);
-        console.log('Pre-filtering for high safety (score >= 7)');
+        // Pre-filtering for high safety
       }
     }
     
@@ -195,7 +189,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     
     // If pre-filtering was too restrictive, fall back to broader search
     if (allTowns.length < 10) {
-      console.log(`Only ${allTowns.length} towns found with filters, expanding search...`);
+      // Expanding search due to limited results
       
       // Retry without healthcare/safety filters
       const { data: moreTowns, error: retryError } = await supabase
@@ -208,7 +202,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
         
       if (!retryError && moreTowns) {
         allTowns.push(...(moreTowns?.filter(t => !allTowns.find(existing => existing.id === t.id)) || []));
-        console.log(`Expanded search found ${allTowns.length} total towns`);
+        // Expanded search completed
       }
     }
 
@@ -229,16 +223,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
         .slice(offset, offset + limit);
     }
 
-    console.log(`Personalized recommendations for user ${userId}:`, {
-      totalFetched: allTowns.length,
-      totalScored: scoredTowns.length,
-      returned: sortedTowns.length,
-      topScores: sortedTowns.slice(0, 3).map(t => ({ 
-        name: t.name, 
-        score: t.matchScore,
-        categories: t.categoryScores 
-      }))
-    });
+    // Personalized recommendations generated
 
     const result = {
       success: true,
