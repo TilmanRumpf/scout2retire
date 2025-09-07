@@ -1,18 +1,19 @@
-# LATEST CHECKPOINT: 2025-09-05T22-05-41
+# LATEST CHECKPOINT: 2025-09-07T04-02-25
 
-## 🔒 SECURITY BREACH RESOLVED ✅
+## 🔧 HOBBY SCORING FIXED & CONSOLE CLEANED ✅
 
 ### Quick Summary
-- **CRITICAL**: Rotated all Supabase keys after GitHub exposure
-- Database snapshot created: 2025-09-05T22-05-41
-- Git commit: "CRITICAL SECURITY FIX: Rotated all Supabase keys"
-- Old exposed keys are DEAD
-- System fully functional with new secure keys
+- **FIXED**: Hobby scoring now 85-95% for native matches (water sports + coastal)
+- **CLEANED**: All debug console.log statements removed
+- **RESOLVED**: JavaScript syntax errors that broke Vite
+- Database snapshot created: 2025-09-07T04-02-25
+- Git commit: fc95a4f "CHECKPOINT: Hobby Scoring Fixed & Console Cleaned"
+- System fully functional with clean console
 
 ### To Restore:
 ```bash
-node restore-database-snapshot.js 2025-09-05T22-05-41
-git reset --hard 0186d81
+cat database-snapshots/snapshot-2025-09-07T04-02-25.json | node restore-snapshot.js
+git checkout fc95a4f
 ```
 
 ---

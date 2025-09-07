@@ -1,7 +1,14 @@
 # Hobby System Enhancement Tracker
 **Started**: 2025-09-02  
-**Status**: 95% COMPLETE - Towns Populated, Scoring Enhancement Remaining  
-**Last Updated**: 2025-09-03 07:30
+**Status**: 98% COMPLETE - Tiered Scoring Implemented  
+**Last Updated**: 2025-09-07 05:15
+
+## 🆕 MAJOR UPDATE: Tiered Scoring System (2025-09-07)
+- ✅ Implemented 2-tier weighting system
+- ✅ Compound buttons = 1x weight (Tier 1)
+- ✅ "Explore More" selections = 2x weight (Tier 2)
+- ✅ Files updated: hobbiesMatching.js, unifiedScoring.js
+- 📄 Full documentation: `/docs/algorithms/hobby-scoring-tiered-system.md`
 
 ## 📊 PROGRESS SUMMARY
 - ✅ STEP 1: Database Cleanup - COMPLETED

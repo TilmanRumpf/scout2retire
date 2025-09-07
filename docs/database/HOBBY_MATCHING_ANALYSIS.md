@@ -1,8 +1,9 @@
 # Comprehensive Analysis: Scout2Retire Hobby Matching System
 **Date:** 2025-09-03  
+**Updated:** 2025-09-07 - Added Tiered Scoring Implementation
 **User Case Study:** tilman.rumpf@gmail.com  
 **Test Town:** Alicante, Spain  
-**Current Score:** 38% (Should be 50%+)
+**Current Score:** 59% (Fixed from 38%, now uses tiered scoring)
 
 ## Executive Summary
 
@@ -261,6 +262,29 @@ towns_hobbies
 - No 0% matches for common activities
 - Query time < 100ms per town
 - User reported accuracy > 85%
+
+## UPDATE: Tiered Scoring Implementation (2025-09-07)
+
+### What Was Fixed
+1. **Implemented Tiered Scoring System**
+   - Compound button selections = 1x weight (Tier 1)
+   - "Explore More" specific selections = 2x weight (Tier 2)
+   - Files modified:
+     - `/src/utils/scoring/helpers/hobbiesMatching.js` (lines 166-214, 227-257)
+     - `/src/utils/scoring/unifiedScoring.js` (lines 135-137)
+
+2. **How It Works**
+   - System checks if activity is in `custom_physical` or `custom_hobbies` arrays
+   - Those get 2x weight in scoring calculation
+   - Rewards users who specify exact preferences
+
+3. **Current Limitations**
+   - Cannot retroactively apply to existing data
+   - Historical selections don't track selection method
+   - Only benefits new selections going forward
+
+### Implementation Details
+See `/docs/algorithms/hobby-scoring-tiered-system.md` for full documentation
 
 ## Conclusion
 

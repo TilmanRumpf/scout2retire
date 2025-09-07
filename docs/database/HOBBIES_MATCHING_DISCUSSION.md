@@ -48,6 +48,12 @@ Enable accurate hobby-based matching between users and 5,000+ retirement destina
 - 40% "Lazy Users": Only 2-3 compound button clicks
 - 30% "Engaged Users": 12-15 mixed selections
 - 20% "ADHD Users": 25+ chaotic selections
+
+**UPDATE 2025-09-07**: Tiered Scoring System Implemented
+- Compound button selections = 1x weight (Tier 1)
+- "Explore More" specific selections = 2x weight (Tier 2)
+- Rewards users who take time to specify exact preferences
+- See `/docs/algorithms/hobby-scoring-tiered-system.md` for implementation
 - 10% "Perfectionists": 30+ precise selections
 
 **Implication**: System MUST work with minimal input
