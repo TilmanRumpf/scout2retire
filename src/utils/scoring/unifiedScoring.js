@@ -54,7 +54,6 @@ const generateEnhancedHighlights = (_town, scores) => {
  */
 export const convertPreferencesToAlgorithmFormat = (userPreferences) => {
   // DEBUG: Enable to see what's being loaded
-  console.log('🔍 DEBUG: Raw user preferences from DB:', userPreferences);
   
   // Handle region preferences - combine countries and regions from top-level fields
   const regionPreferences = userPreferences.region || userPreferences.region_preferences || {};
@@ -134,10 +133,7 @@ export const convertPreferencesToAlgorithmFormat = (userPreferences) => {
     hobbiesPrefs.custom_activities = userPreferences.custom_activities;
   }
   
-  console.log('🔍 DEBUG: Converted preferences:', {
-    climate: climatePrefs,
-    hobbies: hobbiesPrefs
-  });
+  // Preferences converted successfully
   
   return {
     region_preferences: regionPreferences,

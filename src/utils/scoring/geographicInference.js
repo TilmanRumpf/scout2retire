@@ -267,9 +267,159 @@ export function calculateHobbyScore(town, userHobbies) {
   inference.details.inferred.forEach(() => score += weights.inferred);
   inference.details.universal.forEach(() => score += weights.universal);
   
-  // Normalize to 0-100
-  const maxPossibleScore = userHobbies.length;
-  const normalizedScore = Math.round((score / maxPossibleScore) * 100);
+  // SMART SCORING: True native matches score HIGH (85-95%)
+  // But must be ACTUAL native matches, not loose associations
+  
+  // Define STRICT native match patterns
+  const nativeMatches = [
+    // Water Sports/Crafts + TRULY COASTAL (not just any river!)
+    {
+      userPattern: h => h.includes('swim') || h.includes('surf') || h.includes('sail') || 
+                       h.includes('kayak') || h.includes('boat') || h.includes('diving') ||
+                       h.includes('water') || h.includes('paddle') || h.includes('fish'),
+      townPattern: t => {
+        // Must be COASTAL or have MAJOR water bodies, not just a river
+        // Handle both string and array formats
+        const geoFeatures = Array.isArray(t.geographic_features_actual) 
+          ? t.geographic_features_actual.join(' ').toLowerCase()
+          : (typeof t.geographic_features_actual === 'string' ? t.geographic_features_actual.toLowerCase() : '');
+        
+        const isCoastal = geoFeatures.includes('coastal');
+        const hasLake = geoFeatures.includes('lake');
+        // Must have actual water activities in top_hobbies to qualify
+        const hasWaterHobbies = t.top_hobbies?.some(h => 
+          h.toLowerCase().includes('swim') || h.toLowerCase().includes('surf') ||
+          h.toLowerCase().includes('sail') || h.toLowerCase().includes('diving') ||
+          h.toLowerCase().includes('kayak') || h.toLowerCase().includes('boat')
+        );
+        
+        // STRICT: Must be coastal/lake AND have water hobbies listed
+        return (isCoastal || hasLake) && hasWaterHobbies;
+      }
+    },
+    // Winter Sports + ACTUAL SKI RESORTS
+    {
+      userPattern: h => h.includes('ski') || h.includes('snow') || h.includes('ice') || 
+                       h.includes('winter'),
+      townPattern: t => {
+        // Must have actual ski/winter facilities mentioned
+        const hasWinterHobbies = t.top_hobbies?.some(h => 
+          h.toLowerCase().includes('ski') || h.toLowerCase().includes('snow') ||
+          h.toLowerCase().includes('ice skat') || h.toLowerCase().includes('winter')
+        );
+        const geoFeatures = Array.isArray(t.geographic_features_actual) 
+          ? t.geographic_features_actual.join(' ').toLowerCase()
+          : (typeof t.geographic_features_actual === 'string' ? t.geographic_features_actual.toLowerCase() : '');
+        
+        const isMountainous = geoFeatures.includes('mountain') || geoFeatures.includes('alpine');
+        
+        // STRICT: Must have winter activities listed, mountains alone aren't enough
+        return hasWinterHobbies && isMountainous;
+      }
+    },
+    // Golf & Tennis + ACTUAL GOLF COURSES/TENNIS COURTS
+    {
+      userPattern: h => h.includes('golf') || h.includes('tennis') || h.includes('pickleball'),
+      townPattern: t => {
+        // Must explicitly mention golf/tennis, not just "high outdoor rating"
+        return t.top_hobbies?.some(h => 
+          h.toLowerCase().includes('golf') || 
+          h.toLowerCase().includes('tennis') ||
+          h.toLowerCase().includes('pickleball')
+        );
+      }
+    },
+    // Hiking & Nature + ACTUAL TRAILS (not just walking which is everywhere)
+    {
+      userPattern: h => h.includes('hik') || h.includes('mountain') || h.includes('trail') ||
+                       h.includes('trekking') || h.includes('climb'),
+      townPattern: t => {
+        const hasHikingHobbies = t.top_hobbies?.some(h => 
+          h.toLowerCase().includes('hik') || h.toLowerCase().includes('trail') ||
+          h.toLowerCase().includes('trek') || h.toLowerCase().includes('climb')
+        );
+        const geoFeatures = Array.isArray(t.geographic_features_actual) 
+          ? t.geographic_features_actual.join(' ').toLowerCase()
+          : (typeof t.geographic_features_actual === 'string' ? t.geographic_features_actual.toLowerCase() : '');
+        
+        const hasMountains = geoFeatures.includes('mountain') || geoFeatures.includes('hill');
+        
+        return hasHikingHobbies || (hasMountains && t.outdoor_rating >= 8);
+      }
+    },
+    // Arts & Crafts + ACTUAL ART FACILITIES
+    {
+      userPattern: h => h.includes('art') || h.includes('craft') || h.includes('paint') || 
+                       h.includes('pottery') || h.includes('sculpt'),
+      townPattern: t => {
+        // Must have actual art activities mentioned, not just "cultural"
+        return t.top_hobbies?.some(h => 
+          h.toLowerCase().includes('art') || h.toLowerCase().includes('craft') ||
+          h.toLowerCase().includes('paint') || h.toLowerCase().includes('pottery') ||
+          h.toLowerCase().includes('museum') || h.toLowerCase().includes('gallery')
+        );
+      }
+    },
+    // Music & Theater + ACTUAL VENUES
+    {
+      userPattern: h => h.includes('music') || h.includes('theater') || h.includes('dance') || 
+                       h.includes('choir') || h.includes('opera'),
+      townPattern: t => {
+        // Must have actual music/theater activities listed
+        return t.top_hobbies?.some(h => 
+          h.toLowerCase().includes('music') || h.toLowerCase().includes('theater') ||
+          h.toLowerCase().includes('concert') || h.toLowerCase().includes('opera') ||
+          h.toLowerCase().includes('dance') || h.toLowerCase().includes('perform')
+        );
+      }
+    }
+  ];
+  
+  // Check for any native match
+  for (const pattern of nativeMatches) {
+    const hasUserActivities = userHobbies.some(pattern.userPattern);
+    const townSupports = pattern.townPattern(town);
+    
+    if (hasUserActivities && townSupports) {
+      // Count specific matches for this pattern
+      const specificMatches = inference.details.distinctive.filter(pattern.userPattern).length;
+      
+      // Native match = 85% base + up to 15% bonus for specific matches
+      const baseScore = 85;
+      const bonusPerMatch = Math.min(15, specificMatches * 2);
+      
+      return {
+        score: Math.min(100, baseScore + bonusPerMatch),
+        available: inference.availableHobbies.length,
+        requested: userHobbies.length,
+        matchPercentage: inference.matchPercentage,
+        details: inference.details,
+        nativeMatch: true
+      };
+    }
+  }
+  
+  // For non-native matches, use percentage of AVAILABLE activities that match
+  // Not percentage of user's total hobbies (which is nonsensical)
+  const matchedCount = inference.details.distinctive.length + 
+                       (inference.details.inferred.length * 0.8) +
+                       (inference.details.universal.length * 0.5);
+  
+  // If town has hobbies, score based on how many match
+  if (town.top_hobbies && town.top_hobbies.length > 0) {
+    const normalizedScore = Math.round((matchedCount / town.top_hobbies.length) * 100);
+    return {
+      score: Math.min(100, normalizedScore),
+      available: inference.availableHobbies.length,
+      requested: userHobbies.length,
+      matchPercentage: inference.matchPercentage,
+      details: inference.details
+    };
+  }
+  
+  // Fallback: score based on matched vs requested (but cap at 70% for non-native)
+  const fallbackScore = Math.round((matchedCount / Math.max(10, userHobbies.length)) * 100);
+  const normalizedScore = Math.min(70, fallbackScore);
   
   return {
     score: normalizedScore,

@@ -51,21 +51,7 @@ export function calculateRegionScore(preferences, town) {
   
   // DEBUG: Log when score is unexpectedly low
   const DEBUG = false  // Fixed: was case sensitivity issue
-  if (DEBUG && town.country === 'Spain') {
-    console.log(`\n=== REGION SCORING DEBUG for ${town.name} ===`)
-    console.log('User preferences:', {
-      countries: preferences.countries,
-      regions: preferences.regions,
-      geographic_features: preferences.geographic_features,
-      vegetation_types: preferences.vegetation_types
-    })
-    console.log('Town data:', {
-      country: town.country,
-      geo_region: town.geo_region,
-      geographic_features_actual: town.geographic_features_actual,
-      vegetation_type_actual: town.vegetation_type_actual
-    })
-  }
+  // Debug logging disabled
   
   // If user has NO preferences at all, they're open to anywhere - give perfect score
   if (!hasCountryPrefs && !hasRegionPrefs && !hasGeoPrefs && !hasVegPrefs) {
@@ -284,11 +270,7 @@ export function calculateRegionScore(preferences, town) {
   const percentage = Math.round((score / totalPossible) * 100)
   
   // DEBUG: Log final score breakdown
-  if (DEBUG && town.country === 'Spain' && percentage < 70) {
-    console.log(`\nFINAL SCORE: ${percentage}% (${score}/${totalPossible})`)
-    console.log('Breakdown:', factors)
-    console.log('=== END DEBUG ===\n')
-  }
+  // Debug logging disabled
   
   return {
     score: percentage,
@@ -1580,21 +1562,7 @@ export function calculateAdminScore(preferences, town) {
   let score = 0
   let factors = []
   
-  // URGENT DEBUG: Why are all towns showing 62% or 66%?
-  console.log('🚨 ADMIN SCORE DEBUG:', {
-    town: town.name,
-    healthcare_score: town.healthcare_score,
-    safety_score: town.safety_score,
-    gov_rating: town.government_efficiency_rating,
-    political_rating: town.political_stability_rating,
-    prefs: {
-      healthcare: preferences.healthcare_quality,
-      safety: preferences.safety_importance,
-      government: preferences.government_efficiency,
-      political: preferences.political_stability,
-      visa: preferences.visa_preference
-    }
-  })
+  // Admin score calculation
   
   // If user has NO admin preferences at all, they're flexible - give perfect score
   if (!preferences.healthcare_quality?.length && 
@@ -1724,13 +1692,7 @@ export function calculateAdminScore(preferences, town) {
   
   const finalScore = Math.min(score, 100);
   
-  // DEBUG: Show final calculation
-  console.log('🎯 ADMIN FINAL:', {
-    town: town.name,
-    rawScore: score,
-    finalScore: finalScore,
-    factors: factors.map(f => `${f.factor}: ${f.score}`)
-  })
+  // Final score calculated
   
   return {
     score: finalScore,

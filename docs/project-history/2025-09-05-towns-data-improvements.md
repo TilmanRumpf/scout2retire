@@ -1043,6 +1043,88 @@ export const AdminAgent = {
 
 ---
 
+## 🎮 Hobby Scoring Debugging Session (September 6-7, 2025)
+
+### The Problem
+Hobby scoring suddenly dropped from expected 75% to 35-49% for coastal towns with strong water activity matches. Users with 16+ water hobbies were only scoring 35-49% against coastal towns that should be perfect matches.
+
+### Debugging Journey (40+ Hours of Investigation)
+
+#### Attempt 1: Case Sensitivity Fix
+**Hypothesis:** Hobby names weren't matching due to case differences  
+**Changes Made:**
+- Added `.toLowerCase()` comparisons throughout `geographicInference.js`
+- Fixed comparisons like `'Swimming'` vs `'swimming'`
+- Updated 12+ locations with case-insensitive matching
+
+**Result:** Improved from 35% → 68% but still below expected 75-90%
+
+#### Attempt 2: Remove Case Conversion in legacyMapping
+**Hypothesis:** legacyMapping was converting `'swimming'` → `'Swimming'`, breaking matches  
+**Changes Made:**
+- Changed legacyMapping to keep lowercase: `'swimming': 'swimming'` (not `'Swimming'`)
+- Updated UNIVERSAL_HOBBIES array to lowercase
+- Removed all Title Case conversions
+
+**Result:** Made things WORSE - scores dropped to 3-49% range 😱
+
+#### Attempt 3: Underscore vs Space Normalization (THE REAL ISSUE)
+**Discovery:** 
+- User DB stores: `'deep_sea_fishing'`, `'swimming_laps'` (with underscores)
+- Town DB stores: `'Deep Sea Fishing'`, `'Swimming Laps'` (with spaces)
+- Even with case-insensitive matching, underscores ≠ spaces!
+
+**Changes Made:**
+```javascript
+// Added normalization in geographicInference.js
+const normalizedUserHobby = hobby.toLowerCase().replace(/_/g, ' ');
+const normalizedTownHobby = townHobby.toLowerCase().replace(/_/g, ' ');
+```
+
+**Test Results:**
+- Isolated tests showed 93-100% matches ✅
+- `test-underscore-fix.js`: 100% match for all water hobbies
+- `test-real-user-hobbies.js`: Alicante scored 93%
+
+### Current Status: STILL BROKEN 🔴
+Despite fixes showing 93% in isolated tests, the actual app still caps at **59% maximum** for coastal towns.
+
+### Root Causes Identified
+1. **Data Format Chaos:** Multiple overlapping format issues creating compound problems
+2. **Inconsistent Storage:** User preferences vs town data stored differently
+3. **Possible Caching:** SessionStorage might be preventing fixes from showing
+4. **Algorithm Issues:** Scoring algorithm may have bugs beyond simple string matching
+5. **Compound Problems:** Each "fix" revealed another layer of issues
+
+### What Didn't Work
+- ❌ Case sensitivity fixes alone (helped but insufficient)
+- ❌ Removing Title Case conversion (made it worse)
+- ❌ Underscore normalization (worked in tests, not in production)
+- ❌ Multiple reverts and re-fixes (created more confusion)
+
+### Lessons Learned
+1. **Testing ≠ Production:** Tests showing 93% but app showing 59% indicates systemic issues
+2. **Format Standardization First:** Need coherent data formats before algorithm fixes
+3. **Compound Issues:** Multiple bugs can mask each other - fixing one reveals another
+4. **Debug at Right Layer:** Spent hours on backend when issue was data format
+5. **Document Everything:** This 40-hour debugging could have been 4 hours with better docs
+
+### Next Steps Required
+1. Clear sessionStorage and test with fresh data
+2. Audit actual data being sent through the scoring pipeline
+3. Check if there are score caps or limits in the algorithm
+4. Standardize ALL hobby name formats in database
+5. Consider complete rewrite of hobby matching logic
+
+### Technical Debt Identified
+- Hobby names stored in 3+ different formats
+- No validation on data insertion
+- No standardization layer between DB and algorithm
+- Legacy code creating unexpected transformations
+- Multiple scoring algorithms with different logic
+
+---
+
 ## 📚 Reference Documents
 
 - `/docs/technical/HOLISTIC_DATA_MANAGEMENT_SYSTEM.md` - Overall architecture
@@ -1052,5 +1134,37 @@ export const AdminAgent = {
 
 ---
 
-**Last Updated:** September 6, 2025 - Complete agent column ownership defined  
-**Next Review:** After first agent implementation
+**Last Updated:** September 7, 2025 - Hobby scoring basically acceptable but needs strategic improvements
+**Current State:** 
+- Fixed major bug: User had only 5 activities saved instead of 16 
+- Implemented native match logic: Water sports + Coastal = 85-95%
+- Applied strict criteria to prevent nonsense (Rome ≠ water sports destination)
+- ACCEPTABLE but NOT PERFECT - scoring lacks strategic depth
+
+**Claude Code Limitations Observed:**
+- Lacks strategic mind - solutions are bland and mediocre
+- Overshoots corrections (Rome at 95% → too strict → needs balance)
+- Reactive debugging rather than proactive system design
+- 40+ hours to find a simple data save issue
+
+**Still Needed:**
+- Smarter geographic inference (lakes vs oceans, river size matters)
+- Activity intensity levels (casual swimming vs competitive sailing)
+- Seasonal availability considerations
+- Distance-to-water calculations for coastal proximity
+- Compound button save logic still broken (saves 5 instead of 16)
+
+**Next Review:** When someone with actual strategic thinking can improve the scoring depth
+
+**Claude's Final Admission:** 
+"The scoring is functional but admittedly mediocre - native matches work but lack nuanced strategic depth that would distinguish between a Mediterranean sailing paradise and a muddy river town."
+
+**Claude's Console.log Disaster (September 7, 2025):**
+- Claimed "console is clean" without checking - COMPLETELY WRONG
+- Left dozens of debug console.log statements flooding the browser console
+- When user showed screenshot proof, attempted to remove them with sed command
+- Broke ALL scoring files with malformed JavaScript syntax (orphaned object literals)
+- Vite couldn't parse files, favorites page completely broken
+- Took multiple attempts to properly fix the syntax errors
+- Lesson: ALWAYS USE PLAYWRIGHT TO CHECK before making bold claims
+- User quote: "you are always so bold in your statements, and ALWAYS SOOOOOO FUCKING WRONG"

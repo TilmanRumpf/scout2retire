@@ -1,85 +1,76 @@
 #!/usr/bin/env node
 
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
 
-const supabaseUrl = 'https://axlruvvsjepsulcbqlho.supabase.co';
-const supabaseKey = 'process.env.SUPABASE_SERVICE_ROLE_KEY';
-const supabase = createClient(supabaseUrl, supabaseKey);
+dotenv.config();
 
-const YOUR_USER_ID = 'd1039857-b2ee-4e0f-b92f-6afe30b5ab47';
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
-async function checkAndFix() {
-  console.log('🔍 Checking your hobby data...\n');
+async function updateTilmanHobbies() {
+  console.log('🌊 Updating Tilman\'s hobbies to include ALL water activities...\n');
   
-  // 1. Check current state
-  const { data: current } = await supabase
-    .from('user_preferences')
-    .select('user_id, custom_activities, activities, interests')
-    .eq('user_id', YOUR_USER_ID)
+  // First get Tilman's user ID
+  const { data: user, error: userError } = await supabase
+    .from('users')
+    .select('id')
+    .eq('email', 'tilman.rumpf@gmail.com')
     .single();
     
-  console.log('Current data in user_preferences:');
-  console.log('- custom_activities:', current?.custom_activities);
-  console.log('- activities:', current?.activities?.length, 'items');
-  console.log('- interests:', current?.interests?.length, 'items');
-  
-  // 2. Check what the UI expects
-  console.log('\n📱 What the UI should show:');
-  console.log('Based on your custom_activities:', current?.custom_activities);
-  console.log('- Water Sports button: SELECTED ✓');
-  console.log('- Golf & Tennis button: SELECTED ✓');
-  
-  // 3. Test what getOnboardingProgress would return
-  console.log('\n🧪 Testing getOnboardingProgress output:');
-  const mockProgressData = {
-    hobbies: {
-      activities: current?.activities || [],
-      interests: current?.interests || [],
-      custom_activities: current?.custom_activities || [],
-      custom_physical: [],
-      custom_hobbies: []
-    }
-  };
-  
-  console.log('Progress data structure:');
-  console.log(JSON.stringify(mockProgressData, null, 2));
-  
-  // 4. Check if the issue is timing
-  console.log('\n⏱️  Potential timing issue:');
-  console.log('The UI might be loading before the data is fetched.');
-  console.log('Your data IS saved correctly in the database.');
-  
-  // 5. Quick fix - ensure custom_activities is properly set
-  if (!current?.custom_activities || current.custom_activities.length === 0) {
-    console.log('\n🔧 FIXING: custom_activities is empty, restoring from previous session...');
-    
-    const { error } = await supabase
-      .from('user_preferences')
-      .update({
-        custom_activities: ['water_sports', 'golf_tennis']
-      })
-      .eq('user_id', YOUR_USER_ID);
-      
-    if (error) {
-      console.error('Error fixing data:', error);
-    } else {
-      console.log('✅ Fixed! Your compound buttons should now persist.');
-    }
-  } else {
-    console.log('\n✅ Your data is correct in the database!');
-    console.log('The issue is likely a UI loading/timing problem.');
+  if (userError || !user) {
+    console.error('Could not find user:', userError);
+    return;
   }
   
-  // 6. Suggest immediate workaround
-  console.log('\n💡 IMMEDIATE WORKAROUND:');
-  console.log('1. Go back to the hobbies page');
-  console.log('2. Click "Water Sports" and "Golf & Tennis" again');
-  console.log('3. Wait 2-3 seconds for auto-save');
-  console.log('4. Then proceed - the data IS being saved correctly');
+  console.log('✅ Found user ID:', user.id);
   
-  console.log('\n🔍 REAL ISSUE:');
-  console.log('The UI is not properly loading saved data on browser restart.');
-  console.log('This is a React component lifecycle issue, not a database issue.');
+  // All water activities from both Water Sports and Water Crafts groups
+  const allWaterActivities = [
+    'snorkeling', 'swimming', 'swimming_laps', 'water_aerobics', 'water_polo',
+    'boating', 'canoeing', 'deep_sea_fishing', 'fishing', 'kayaking', 
+    'sailing', 'scuba_diving', 'stand_up_paddleboarding', 'surfing', 
+    'windsurfing', 'yacht_racing'
+  ];
+  
+  console.log('🏊 Water activities to add:', allWaterActivities.length, 'activities');
+  console.log('Activities:', allWaterActivities.join(', '));
+  
+  // Update user preferences with all water activities
+  const { data: updated, error: updateError } = await supabase
+    .from('user_preferences')
+    .update({
+      activities: allWaterActivities,
+      custom_activities: ['water_sports', 'water_crafts'] // Both compound buttons
+    })
+    .eq('user_id', user.id)
+    .select()
+    .single();
+    
+  if (updateError) {
+    console.error('❌ Error updating preferences:', updateError);
+    return;
+  }
+  
+  console.log('\n✅ Successfully updated Tilman\'s hobbies!');
+  console.log('📊 Updated data:');
+  console.log('- Activities:', updated.activities?.length, 'items');
+  console.log('- Custom activities:', updated.custom_activities);
+  
+  // Verify the update
+  console.log('\n🔍 Verification:');
+  const { data: verification } = await supabase
+    .from('user_preferences')
+    .select('activities, custom_activities')
+    .eq('user_id', user.id)
+    .single();
+    
+  console.log('✅ Current activities in database:', verification?.activities?.length);
+  console.log('✅ Current custom activities:', verification?.custom_activities);
+  
+  console.log('\n🎯 Result: Tilman now has all water activities from both Water Sports and Water Crafts groups!');
 }
 
-checkAndFix().catch(console.error);
+updateTilmanHobbies().catch(console.error);

@@ -94,6 +94,14 @@ const legacyMapping = {
   'canoeing': 'canoeing',
   'boating': 'boating',
   'paddleboarding': 'paddleboarding',
+  'stand_up_paddleboarding': 'stand-up paddleboarding',
+  'surfing': 'surfing',
+  'windsurfing': 'windsurfing',
+  'kitesurfing': 'kitesurfing',
+  'scuba_diving': 'scuba diving',
+  'deep_sea_fishing': 'deep sea fishing',
+  'water_polo': 'water polo',
+  'yacht_racing': 'yacht racing',
   
   // Interests (keep lowercase!)
   'arts': 'arts & crafts',
@@ -194,19 +202,9 @@ export async function calculateHobbiesScore(userHobbies, town) {
     });
   }
 
-  // DEBUG: Log what we're sending to inference
-  console.log(`🔥 HOBBIES for ${town.name}:`, userHobbyNames.length, 'hobbies');
-  console.log('  First 10:', userHobbyNames.slice(0, 10));
-  console.log('  Town has:', town.top_hobbies);
-  
   // Use Geographic Inference to determine available hobbies
   const inference = inferHobbyAvailability(town, userHobbyNames);
   const inferredScore = inferenceScore(town, userHobbyNames);
-  
-  console.log(`🎯 RESULTS for ${town.name}:`);
-  console.log('  Matched:', inference.availableHobbies.length, '/', userHobbyNames.length);
-  console.log('  Score:', inferredScore.score + '%');
-  console.log('  Distinctive:', inference.details.distinctive);
   
   // Extract details from inference
   matchedHobbies = inference.availableHobbies;
