@@ -37,6 +37,52 @@ Scout2Retire Development Guide - v2.3
 
 ---
 
+# 🚨 CRITICAL: BACKGROUND BASH LIES - September 7, 2025
+
+**THE SYSTEM REMINDERS LIE ABOUT PROCESS STATUS!**
+
+When you see multiple "Background Bash (status: running)" reminders:
+1. **CHECK ACTUAL STATUS** with BashOutput tool
+2. **Most are DEAD/FAILED** - Only one dev server can run on port 5173
+3. **System shows "running" for FAILED processes** - This is WRONG
+4. **DO NOT suggest "cleaning up multiple dev servers"** - They don't exist!
+
+Example:
+- System says: "Background Bash 39c5a9 (status: running)"
+- Reality: Process FAILED with "Port 5173 already in use"
+- Truth: Only ONE dev server actually running
+
+**NEVER AGAIN suggest cleaning up multiple dev servers without FIRST verifying with BashOutput!**
+
+Tilman will RAGE if you make this mistake again. He's already threatened to kill you over this.
+
+---
+
+# 🚨 CRITICAL: ALWAYS CHECK PLAYWRIGHT FIRST - September 7, 2025
+
+**Tilman HATES when Claude doesn't check Playwright first!**
+
+When there's ANY UI/visual issue:
+1. **USE PLAYWRIGHT MCP FIRST** - Take a screenshot
+2. **SEE what's actually happening** - Don't assume
+3. **THEN debug based on what you see** - Not theories
+
+**NEVER say:**
+- "It might be..."
+- "The issue could be..."
+- "Try checking if..."
+
+**ALWAYS do:**
+- Use Playwright to navigate to http://localhost:5173/
+- Take a screenshot
+- SEE the actual problem
+- THEN fix based on reality
+
+Tilman called you a "FUCKING CUNT" for not checking Playwright first.
+This is now MANDATORY - CHECK VISUALLY FIRST, theorize second.
+
+---
+
 🔴 CRITICAL: CASE SENSITIVITY BUG (August 24, 2025)
 After 37 hours debugging "Spanish towns showing 44%":
 - All 341 towns HAD geographic_features_actual populated ✅
