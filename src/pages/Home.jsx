@@ -34,7 +34,36 @@ export default function Home() {
           // Fetch favorites
           const { success, favorites: userFavorites } = await fetchFavorites(currentUser.id);
           if (success) {
-            setFavorites(userFavorites);
+            // Score the favorite towns for display
+            const { getOnboardingProgress } = await import('../utils/userpreferences/onboardingUtils');
+            const { scoreTown } = await import('../utils/scoring/unifiedScoring');
+
+            // Get user preferences
+            const { success: prefSuccess, data: userPreferences } = await getOnboardingProgress(currentUser.id, true);
+
+            if (prefSuccess && userPreferences) {
+              // Score each favorite's town data
+              const scoredFavorites = await Promise.all(
+                userFavorites.map(async (favorite) => {
+                  if (favorite.towns) {
+                    try {
+                      const scoredTown = await scoreTown(favorite.towns, userPreferences);
+                      return {
+                        ...favorite,
+                        towns: scoredTown
+                      };
+                    } catch (e) {
+                      console.warn('Failed to score favorite:', e);
+                      return favorite;
+                    }
+                  }
+                  return favorite;
+                })
+              );
+              setFavorites(scoredFavorites);
+            } else {
+              setFavorites(userFavorites);
+            }
           }
           
           // Check if this is their first visit after onboarding
