@@ -1,5 +1,10 @@
 # 🚨 CLAUDE: READ THIS ENTIRE FILE FIRST OR DIE
 
+## 📚 MANDATORY READING BEFORE ANY WORK
+1. **THIS FILE (CLAUDE.md)** - All rules and warnings
+2. **docs/project-history/LESSONS_LEARNED.md** - Past disasters to avoid
+3. **Check both BEFORE debugging** - Or repeat same 40-hour mistakes
+
 ## 🔴 TOP PRIORITY: PROGRAMMATIC FIXES ONLY
 1. **ALWAYS FIX PROGRAMMATICALLY** - Use JavaScript, not manual SQL
 2. **NEVER SAY** "Run this in Supabase SQL Editor" - Write JS code instead
@@ -58,11 +63,13 @@
 - **When fields undefined**: Check SELECT statement, not RLS/permissions
 
 # ⚡ QUICK CHECKS BEFORE ANY WORK
+□ Read docs/project-history/LESSONS_LEARNED.md FIRST
 □ Run `node create-database-snapshot.js` if touching data
 □ Check localhost:5173 with Playwright FIRST for UI issues
 □ Use `.toLowerCase()` on ALL string comparisons
 □ Never create files in root (except configs)
 □ If stuck 2+ hours, you're solving wrong problem
+□ Check for duplicate definitions: `grep -n "const sameName"`
 
 🛑 ABSOLUTE PROHIBITION: NO BAND-AID FIXES! NO ISLAND SOLUTIONS!
 📖 MANDATORY: I MUST READ THIS ENTIRE CLAUDE.MD FILE BEFORE EVERY RESPONSE
