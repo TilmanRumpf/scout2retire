@@ -2,6 +2,40 @@ import supabase from './supabaseClient';
 import { logTownActivity } from './journalUtils';
 import { getPersonalizedTowns } from './scoring'; // NEW: Added import
 
+// SINGLE SOURCE OF TRUTH FOR TOWN COLUMNS - NEVER DUPLICATE!
+// This caused the 3-hour climate scoring disaster when duplicated
+const TOWN_SELECT_COLUMNS = `
+  id, name, country, population, region, geo_region, regions,
+  image_url_1, image_url_2, image_url_3,
+  latitude, longitude, description,
+  cost_of_living_usd, typical_monthly_living_cost, cost_index,
+  healthcare_score, safety_score, healthcare_cost_monthly,
+  avg_temp_summer, avg_temp_winter, climate, climate_description,
+  summer_climate_actual, winter_climate_actual,
+  sunshine_hours, sunshine_level_actual, annual_rainfall,
+  humidity_average, humidity_level_actual, seasonal_variation_actual,
+  precipitation_level_actual,
+  air_quality_index, elevation_meters, distance_to_ocean_km,
+  airport_distance, nearest_airport, english_proficiency_level,
+  walkability, expat_community_size,
+  geographic_features, geographic_features_actual, vegetation_type_actual,
+  urban_rural_character, pace_of_life_actual,
+  primary_language, cultural_events_rating, nightlife_rating,
+  restaurants_rating, museums_rating, shopping_rating,
+  cultural_landmark_1, social_atmosphere,
+  outdoor_rating, outdoor_activities_rating, beaches_nearby,
+  top_hobbies,
+  golf_courses_count, hiking_trails_km, tennis_courts_count,
+  marinas_count, ski_resorts_within_100km, dog_parks_count,
+  farmers_markets, water_bodies, activities_available,
+  hospital_count, nearest_major_hospital_km, english_speaking_doctors,
+  visa_requirements, visa_on_arrival_countries, retirement_visa_available,
+  digital_nomad_visa, crime_rate, natural_disaster_risk, internet_speed,
+  rent_1bed, rent_2bed_usd, groceries_cost, meal_cost, utilities_cost,
+  income_tax_rate_pct, sales_tax_rate_pct, property_tax_rate_pct,
+  tax_haven_status, foreign_income_taxed
+`;
+
 // Town management
 export const fetchTowns = async (filters = {}) => {
   
@@ -32,41 +66,10 @@ export const fetchTowns = async (filters = {}) => {
       }
     }
 
-    // EXISTING: Your original logic unchanged
-    // SELECT needed columns INCLUDING fields required for region scoring
-    const selectColumns = `
-      id, name, country, population, region,
-      image_url_1, image_url_2, image_url_3,
-      latitude, longitude, description,
-      cost_of_living_usd, typical_monthly_living_cost, cost_index,
-      healthcare_score, safety_score, healthcare_cost_monthly,
-      avg_temp_summer, avg_temp_winter, climate, 
-      summer_climate_actual, winter_climate_actual,
-      sunshine_hours, sunshine_level_actual, annual_rainfall,
-      humidity_average, humidity_level_actual, seasonal_variation_actual,
-      air_quality_index, elevation_meters, distance_to_ocean_km,
-      airport_distance, nearest_airport, english_proficiency_level,
-      walkability, expat_community_size,
-      geographic_features, geographic_features_actual, vegetation_type_actual,
-      geo_region, regions, urban_rural_character,
-      primary_language, cultural_events_rating, nightlife_rating,
-      restaurants_rating, museums_rating, shopping_rating,
-      pace_of_life_actual, cultural_landmark_1, social_atmosphere,
-      outdoor_rating, outdoor_activities_rating, beaches_nearby,
-      top_hobbies,
-      golf_courses_count, hiking_trails_km, tennis_courts_count,
-      marinas_count, ski_resorts_within_100km, dog_parks_count,
-      farmers_markets, water_bodies, activities_available,
-      hospital_count, nearest_major_hospital_km, english_speaking_doctors,
-      visa_requirements, visa_on_arrival_countries, retirement_visa_available,
-      digital_nomad_visa, crime_rate, natural_disaster_risk, internet_speed,
-      rent_1bed, rent_2bed_usd, groceries_cost, meal_cost, utilities_cost,
-      income_tax_rate_pct, sales_tax_rate_pct, property_tax_rate_pct,
-      tax_haven_status, foreign_income_taxed
-    `;
+    // Use the single source of truth - NO DUPLICATES!
     let query = supabase
       .from('towns')
-      .select(selectColumns);
+      .select(TOWN_SELECT_COLUMNS);
 
     // Filter for towns with photos (quality control)
     query = query
@@ -400,28 +403,13 @@ export const getTownOfTheDay = async (userId) => {
       });
     });
     
-    // Prepare base query
-    const selectColumns = `
-      id, name, country, population, region, geo_region, regions,
-      image_url_1, image_url_2, image_url_3,
-      latitude, longitude, description,
-      geographic_features_actual, vegetation_type_actual,
-      cost_of_living_usd, typical_monthly_living_cost, cost_index,
-      healthcare_score, safety_score, healthcare_cost_monthly,
-      avg_temp_summer, avg_temp_winter, climate,
-      summer_climate_actual, winter_climate_actual,
-      sunshine_hours, sunshine_level_actual, annual_rainfall,
-      humidity_average, humidity_level_actual, seasonal_variation_actual,
-      precipitation_level_actual,
-      air_quality_index, elevation_meters, distance_to_ocean_km,
-      pace_of_life_actual, urban_rural_character
-    `;
+    // Use the single source of truth - NO MORE DUPLICATES!
     
     // TIER 1: Exact match - user's selected countries
     if (userCountries.length > 0) {
       let tier1Query = supabase
         .from('towns')
-        .select(selectColumns)
+        .select(TOWN_SELECT_COLUMNS)
         .in('country', userCountries)
         .not('image_url_1', 'is', null)
         .not('image_url_1', 'eq', '');
@@ -454,7 +442,7 @@ export const getTownOfTheDay = async (userId) => {
     if (neighborCountries.size > 0) {
       let tier2Query = supabase
         .from('towns')
-        .select(selectColumns)
+        .select(TOWN_SELECT_COLUMNS)
         .in('country', Array.from(neighborCountries))
         .not('image_url_1', 'is', null)
         .not('image_url_1', 'eq', '');
@@ -495,7 +483,7 @@ export const getTownOfTheDay = async (userId) => {
       if (continentCountries.size > 0) {
         let tier3Query = supabase
           .from('towns')
-          .select(selectColumns)
+          .select(TOWN_SELECT_COLUMNS)
           .in('country', Array.from(continentCountries))
           .not('image_url_1', 'is', null)
           .not('image_url_1', 'eq', '');
