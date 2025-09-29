@@ -11,6 +11,8 @@ import HeaderSpacer from '../components/HeaderSpacer';
 import { fetchFavorites } from '../utils/townUtils.jsx';
 import { saveJournalEntry } from '../utils/journalUtils';
 import { sanitizeJournalEntry, MAX_LENGTHS } from '../utils/sanitizeUtils';
+import { scoreTown } from '../utils/scoring';
+import { getUserPreferences } from '../utils/preferenceUtils';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 

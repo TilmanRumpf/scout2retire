@@ -225,6 +225,21 @@ export const convertPreferencesToAlgorithmFormat = (userPreferences) => {
  * Returns complete scoring result with insights, warnings, and category breakdowns
  */
 export const scoreTown = async (town, userPreferences) => {
+  // DEBUG: What are we receiving?
+  if (town.name === 'Granada' || town.name === 'Puerto de la Cruz' || town.name === 'Castro Urdiales') {
+    console.log(`🔍 UNIFIED SCORING DEBUG for ${town.name}:`);
+    console.log('Town climate fields:', {
+      summer: town.summer_climate_actual,
+      winter: town.winter_climate_actual,
+      humidity: town.humidity_level_actual
+    });
+    console.log('User preferences received:', {
+      summer: userPreferences?.summer_climate_preference,
+      winter: userPreferences?.winter_climate_preference,
+      humidity: userPreferences?.humidity_level
+    });
+  }
+
   // Convert preferences to algorithm format
   const convertedPreferences = convertPreferencesToAlgorithmFormat(userPreferences);
   

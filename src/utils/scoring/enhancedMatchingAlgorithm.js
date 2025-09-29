@@ -393,12 +393,36 @@ function calculateGradualClimateScoreForArray(userPrefs, townActual, maxPoints, 
 export function calculateClimateScore(preferences, town) {
   let score = 0
   let factors = []
-  
+
+  // DEBUG: Log what we're receiving
+  if (town.name === 'Castro Urdiales' || town.name === 'Puerto de la Cruz' || town.name === 'Granada') {
+    console.log(`🔍 CLIMATE DEBUG for ${town.name}:`);
+    console.log('Preferences received:', preferences);
+    console.log('Preferences type:', typeof preferences);
+    console.log('Keys in preferences:', Object.keys(preferences));
+    console.log('summer_climate_preference:', preferences.summer_climate_preference);
+    console.log('Is summer an array?:', Array.isArray(preferences.summer_climate_preference));
+    console.log('Town climate data:', {
+      summer: town.summer_climate_actual,
+      winter: town.winter_climate_actual,
+      humidity: town.humidity_level_actual,
+      avgSummer: town.avg_temp_summer,
+      avgWinter: town.avg_temp_winter
+    });
+  }
+
+  // If preferences is empty object or undefined, return 0 (not 100!)
+  if (!preferences || Object.keys(preferences).length === 0) {
+    console.log('❌ NO PREFERENCES PASSED - returning 0%');
+    return { score: 0, factors: [{ factor: 'No climate preferences available', score: 0 }], category: 'Climate' }
+  }
+
   // If user has NO climate preferences at all, they're flexible - give perfect score
-  if (!preferences.summer_climate_preference?.length && 
+  if (!preferences.summer_climate_preference?.length &&
       !preferences.winter_climate_preference?.length &&
       !preferences.humidity_level?.length &&
-      !preferences.sunshine?.length) {
+      !preferences.sunshine?.length &&
+      !preferences.precipitation?.length) {
     score = 100
     factors.push({ factor: 'Open to any climate', score: 100 })
     return { score, factors, category: 'Climate' }

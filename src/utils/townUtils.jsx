@@ -272,7 +272,15 @@ export const fetchFavorites = async (userId, component = 'unknown') => {
       .from('favorites')
       .select(`
         *,
-        towns:town_id(*)
+        towns:town_id(
+          *,
+          summer_climate_actual,
+          winter_climate_actual,
+          humidity_level_actual,
+          sunshine_level_actual,
+          precipitation_level_actual,
+          seasonal_variation_actual
+        )
       `)
       .eq('user_id', userIdString);
 

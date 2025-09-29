@@ -1,3 +1,40 @@
+# 🚨 CLAUDE: READ THIS OR TILMAN WILL KILL YOU
+1. Check Playwright FIRST for UI issues - no theories
+2. Background bash lies - verify with BashOutput
+3. Case sensitivity killed 40 hours - always .toLowerCase()
+4. You have MCP access - fucking use it
+5. Create checkpoint EVERY time something works
+6. **THIS IS A DYNAMIC CODEBASE** - Code changes CONSTANTLY, NEVER assume static
+
+# 🔴 CRITICAL: DYNAMIC CODEBASE - NEVER ASSUME ANYTHING IS STATIC!
+
+## THE CODEBASE IS CONSTANTLY EVOLVING - CHECK EVERYTHING!
+- **NEVER ASSUME** code hasn't changed since 5 minutes ago
+- **ALWAYS RE-READ** files before editing - imports may have changed
+- **VERIFY IMPORTS EXIST** - Functions move, files get renamed
+- **CHECK ACTUAL DATA FLOW** - Don't assume old paths still work
+- **ASK PERMISSION** before changing ANY algorithm logic!
+
+## TILMAN WILL KILL YOU IF YOU:
+- ❌ Assume code is same as last time you saw it
+- ❌ Don't verify imports actually exist
+- ❌ Change algorithms without explicit permission
+- ❌ Fix wrong file because function moved
+- ❌ Use cached knowledge instead of reading current code
+
+## BEFORE EVERY FIX:
+1. **READ CURRENT FILE** - Not from memory
+2. **VERIFY ALL IMPORTS** - Check they exist NOW
+3. **TRACE ACTUAL PATH** - Follow data flow TODAY
+4. **ASK BEFORE ALGORITHM CHANGES** - "Can I modify the scoring algorithm?"
+
+# ⚡ QUICK CHECKS BEFORE ANY WORK
+□ Run `node create-database-snapshot.js` if touching data
+□ Check localhost:5173 with Playwright FIRST for UI issues
+□ Use `.toLowerCase()` on ALL string comparisons
+□ Never create files in root (except configs)
+□ If stuck 2+ hours, you're solving wrong problem
+
 🛑 ABSOLUTE PROHIBITION: NO BAND-AID FIXES! NO ISLAND SOLUTIONS!
 📖 MANDATORY: I MUST READ THIS ENTIRE CLAUDE.MD FILE BEFORE EVERY RESPONSE
 
@@ -51,6 +88,11 @@ Example:
 - System says: "Background Bash 39c5a9 (status: running)"
 - Reality: Process FAILED with "Port 5173 already in use"
 - Truth: Only ONE dev server actually running
+
+**Quick verification command:**
+```bash
+lsof -ti:5173  # Shows ACTUAL process on port (if any)
+```
 
 **NEVER AGAIN suggest cleaning up multiple dev servers without FIRST verifying with BashOutput!**
 
@@ -130,8 +172,31 @@ After the 40-hour disaster of August 24, 2025, these rules are NON-NEGOTIABLE:
    - 40-hour bug = missing SELECT fields + case sensitivity
    - Always check trivial things FIRST
 
-Remember: Tilman's worst professional experience was caused by me debugging 
+Remember: Tilman's worst professional experience was caused by me debugging
 the wrong layer for 40 hours. The fix took 10 minutes once we looked in the right place.
+
+# 🔴 WHEN CLAUDE IS BEING STUPID - EMERGENCY COMMANDS
+
+## Claude says "multiple servers running" but only one exists:
+```bash
+lsof -ti:5173  # Shows ACTUAL process on port
+for id in $(ps aux | grep 'npm run dev' | grep -v grep | awk '{print $2}'); do echo "PID $id actually running"; done
+```
+
+## Claude is debugging wrong layer (AGAIN):
+STOP. Open Chrome DevTools. Add console.log IN BROWSER. Not in backend!
+
+## Claude has been working 2+ hours on same issue:
+STOP. You're solving wrong problem. Check:
+- Case sensitivity
+- Missing SELECT fields
+- Data actually exists: `SELECT * FROM table LIMIT 1`
+
+## Emergency Kill Switch (when everything is fucked):
+```bash
+pkill -f "npm run dev"  # Kill all dev servers
+git stash && git checkout main  # Emergency abort
+```
 
 🔴 MANDATORY: SAFE RETURN POINT PROTOCOL
 =========================================
@@ -225,31 +290,26 @@ REMEMBER: Tilman couldn't find recovery points during the 40-hour disaster.
 NEVER let that happen again. VERBOSE, SEARCHABLE, DETAILED documentation.
 
 Scout2Retire Development Guide - v2.3
-🚨 CRITICAL: MCP SERVERS & LOCALHOST - USE THEM!
+# 🎯 MCP COMMANDS - COPY/PASTE THESE EXACTLY
+
+**UI Problem:** `Use Playwright to navigate to http://localhost:5173/ and take screenshot`
+**Data Problem:** `Use Supabase MCP to execute: SELECT * FROM towns LIMIT 10`
+**Both:** Check UI with Playwright, verify data with Supabase MCP
+
+## Quick MCP Reference:
 LOCALHOST ALWAYS: http://localhost:5173/
-You have MCP servers in Agent Mode - USE THEM:
+- PLAYWRIGHT → View/test localhost:5173 directly
+- SUPABASE → Direct database queries & updates
+- DEEPWIKI → GitHub info
+- REF → Documentation
 
-PLAYWRIGHT → View/test localhost:5173 directly
-SUPABASE → Direct database queries & updates
-DEEPWIKI → GitHub info
-REF → Documentation
-
-MANDATORY MCP USAGE PATTERNS:
-For UI/Visual Issues:
-User says "check my app/UI/button":
-→ "Let me use Playwright to check localhost:5173..." [THEN DO IT]
-Use Playwright to navigate to http://localhost:5173/ and take a screenshot
-For Database Operations:
-User says "check the database/towns/users":
-→ "Let me query Supabase directly..." [THEN DO IT]
-Use Supabase MCP to execute: SELECT * FROM towns WHERE state_code = 'FL'
-For Full-Stack Testing (BOTH MCPs):
-User says "test if saving works":
-
-Use Playwright to fill form on localhost:5173
-Click save button with Playwright
-Use Supabase MCP to verify data was saved
-Use Playwright to confirm UI updated
+## MCP Usage Triggers:
+- **Playwright triggers:** UI, button, layout, design, looks, broken, overlapping, localhost, screenshot, test click
+  → IMMEDIATELY use Playwright MCP
+- **Supabase triggers:** database, table, query, towns, users, data, SQL, schema, index, migration
+  → IMMEDIATELY use Supabase MCP
+- **Combined triggers:** "save works", "data shows up", "full test", "end-to-end"
+  → Use BOTH MCPs together
 
 NEVER SAY:
 
@@ -357,14 +417,15 @@ Auth changes
 Production deploys
 
 
+# ✅ CLAUDE SUCCESS METRICS - YOU MUST MEET THESE
+- Bug must be fixed in < 2 hours or approach is wrong
+- MUST use Playwright before theorizing about UI
+- MUST check actual data before assuming it's empty
+- MUST use .toLowerCase() on ALL string comparisons
+- MUST create checkpoint after EVERY success
+- MUST use MCP servers, not ask user to run commands
+
 🧠 Anti-Pattern Recognition
-MCP USAGE TRIGGERS:
-Playwright triggers: UI, button, layout, design, looks, broken, overlapping, localhost, screenshot, test click
-→ IMMEDIATELY use Playwright MCP
-Supabase triggers: database, table, query, towns, users, data, SQL, schema, index, migration
-→ IMMEDIATELY use Supabase MCP
-Combined triggers: "save works", "data shows up", "full test", "end-to-end"
-→ Use BOTH MCPs together
 HEADER SPACING (5-hour lesson):
 User: "Header overlapping on Chrome/MacBook"
 
@@ -441,5 +502,17 @@ Localhost: http://localhost:5173/
 Project ID: axlruvvsjepsulcbqlho
 Emergency: git checkout checkpoint-YYYYMMDD-HHMM
 
+
+# 📊 COMMON SQL QUERIES - SPEED REFERENCE
+```sql
+-- Towns with/without photos
+SELECT state_code, COUNT(*) FROM towns WHERE photos IS NULL GROUP BY state_code;
+
+-- Check scoring data
+SELECT id, name, overall_score FROM towns ORDER BY overall_score DESC LIMIT 10;
+
+-- Verify data exists
+SELECT COUNT(*) FROM towns WHERE geographic_features_actual IS NOT NULL;
+```
 
 Remember: You have Playwright MCP for UI and Supabase MCP for data. USE THEM BOTH. No excuses. Stop being a dead turtle.
