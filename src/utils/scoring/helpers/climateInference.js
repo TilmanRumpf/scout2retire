@@ -12,7 +12,7 @@
  */
 export function inferHumidity(town) {
   // Priority 1: Check climate description for keywords
-  if (town.climate_description) {
+  if (town.climate_description && typeof town.climate_description === 'string') {
     const desc = town.climate_description.toLowerCase();
     
     // High confidence keywords
@@ -115,8 +115,27 @@ export function mapToStandardValue(value, category) {
   if (!value) return null;
   
   const mappings = {
+    summer: {
+      'cool': 'cool',
+      'mild': 'mild',
+      'warm': 'warm',
+      'hot': 'hot',
+      // Handle variations and typos
+      'Cool': 'cool',
+      'Mild': 'mild',
+      'Warm': 'warm',
+      'Hot': 'hot'
+    },
     winter: {
-      'warm': 'mild'  // Warm winters map to mild
+      'warm': 'mild',  // Warm winters map to mild
+      'cold': 'cold',
+      'cool': 'cool',
+      'mild': 'mild',
+      // Handle variations
+      'Cold': 'cold',
+      'Cool': 'cool',
+      'Mild': 'mild',
+      'Warm': 'mild'
     },
     humidity: {
       'low': 'dry',

@@ -466,28 +466,35 @@ export function calculateClimateScore(preferences, town) {
     }
   } else if (town.summer_climate_actual) {
     // Fall back to string matching with array handling
-    const summerPrefs = Array.isArray(preferences.summer_climate_preference) 
-      ? preferences.summer_climate_preference 
-      : [preferences.summer_climate_preference].filter(Boolean)
-    
-    if (summerPrefs.includes(town.summer_climate_actual)) {
+    const summerPrefs = Array.isArray(preferences.summer_climate_preference)
+      ? preferences.summer_climate_preference.map(p => p?.toLowerCase())
+      : [preferences.summer_climate_preference].filter(Boolean).map(p => p?.toLowerCase())
+
+    if (summerPrefs.includes(town.summer_climate_actual?.toLowerCase())) {
       score += 25
       factors.push({ factor: 'Perfect summer climate match', score: 25 })
-    } else if (summerPrefs.includes('warm') && town.summer_climate_actual === 'hot') {
+    } else if (summerPrefs.includes('warm') && town.summer_climate_actual?.toLowerCase() === 'hot') {
       // Hot is BETTER than warm for someone wanting warm!
       score += 25
       factors.push({ factor: 'Even warmer than requested', score: 25 })
-    } else if (summerPrefs.includes('warm') && town.summer_climate_actual === 'mild') {
+    } else if (summerPrefs.includes('warm') && town.summer_climate_actual?.toLowerCase() === 'mild') {
       score += 15
       factors.push({ factor: 'Acceptable summer climate', score: 15 })
     }
   } else if (!town.summer_climate_actual && !town.avg_temp_summer && town.climate_description) {
     // Last fallback: parse climate description
-    const climateDesc = town.climate_description.toLowerCase()
-    if (preferences.summer_climate_preference === 'warm' && (climateDesc.includes('warm') || climateDesc.includes('mediterranean'))) {
+    const climateDesc = typeof town.climate_description === 'string'
+      ? town.climate_description.toLowerCase()
+      : ''
+    // Handle both array and string preferences
+    const summerPrefForFallback = Array.isArray(preferences.summer_climate_preference)
+      ? preferences.summer_climate_preference[0]?.toLowerCase()
+      : preferences.summer_climate_preference?.toLowerCase()
+
+    if (summerPrefForFallback === 'warm' && (climateDesc.includes('warm') || climateDesc.includes('mediterranean'))) {
       score += 13
       factors.push({ factor: 'Climate appears suitable', score: 13 })
-    } else if (preferences.summer_climate_preference === 'hot' && (climateDesc.includes('hot') || climateDesc.includes('tropical'))) {
+    } else if (summerPrefForFallback === 'hot' && (climateDesc.includes('hot') || climateDesc.includes('tropical'))) {
       score += 13
       factors.push({ factor: 'Climate appears suitable', score: 13 })
     }
@@ -540,7 +547,7 @@ export function calculateClimateScore(preferences, town) {
       score += 25
       factors.push({ factor: `Perfect winter climate match (${town.winter_climate_actual})`, score: 25 })
     } else if (
-      (winterPrefs.includes('mild') && (standardizedWinter === 'cool' || town.winter_climate_actual === 'warm')) ||
+      (winterPrefs.includes('mild') && (standardizedWinter === 'cool' || town.winter_climate_actual?.toLowerCase() === 'warm')) ||
       (winterPrefs.includes('cool') && standardizedWinter === 'mild')
     ) {
       score += 15
@@ -548,8 +555,15 @@ export function calculateClimateScore(preferences, town) {
     }
   } else if (!town.winter_climate_actual && !town.avg_temp_winter && town.climate_description) {
     // Last fallback: parse climate description
-    const climateDesc = town.climate_description.toLowerCase()
-    if (preferences.winter_climate_preference === 'mild' && (climateDesc.includes('mild') || climateDesc.includes('mediterranean'))) {
+    const climateDesc = typeof town.climate_description === 'string'
+      ? town.climate_description.toLowerCase()
+      : ''
+    // Handle both array and string preferences
+    const winterPrefForFallback = Array.isArray(preferences.winter_climate_preference)
+      ? preferences.winter_climate_preference[0]?.toLowerCase()
+      : preferences.winter_climate_preference?.toLowerCase()
+
+    if (winterPrefForFallback === 'mild' && (climateDesc.includes('mild') || climateDesc.includes('mediterranean'))) {
       score += 13
       factors.push({ factor: 'Winter climate appears suitable', score: 13 })
     }
@@ -586,7 +600,9 @@ export function calculateClimateScore(preferences, town) {
     }
   } else if (!town.humidity_level_actual && town.climate_description && preferences.humidity_level?.length > 0) {
     // Fallback: try to infer from climate description
-    const climateDesc = town.climate_description.toLowerCase()
+    const climateDesc = typeof town.climate_description === 'string'
+      ? town.climate_description.toLowerCase()
+      : ''
     let inferredHumidity = null
     
     if (climateDesc.includes('arid') || climateDesc.includes('desert') || climateDesc.includes('dry')) {
@@ -682,7 +698,9 @@ export function calculateClimateScore(preferences, town) {
     }
   } else if (!town.sunshine_level_actual && !town.sunshine_hours && town.climate_description && preferences.sunshine?.length > 0) {
     // Last fallback: infer from climate description
-    const climateDesc = town.climate_description.toLowerCase()
+    const climateDesc = typeof town.climate_description === 'string'
+      ? town.climate_description.toLowerCase()
+      : ''
     let inferredSunshine = null
     
     if (climateDesc.includes('sunny') || climateDesc.includes('desert') || climateDesc.includes('arid')) {
@@ -770,7 +788,9 @@ export function calculateClimateScore(preferences, town) {
     }
   } else if (!town.precipitation_level_actual && !town.annual_rainfall && town.climate_description && preferences.precipitation?.length > 0) {
     // Last fallback: infer from climate description
-    const climateDesc = town.climate_description.toLowerCase()
+    const climateDesc = typeof town.climate_description === 'string'
+      ? town.climate_description.toLowerCase()
+      : ''
     let inferredPrecipitation = null
     
     if (climateDesc.includes('arid') || climateDesc.includes('desert') || climateDesc.includes('dry')) {
@@ -817,8 +837,8 @@ export function calculateClimateScore(preferences, town) {
   else if (town.avg_temp_summer !== null && town.avg_temp_summer !== undefined &&
            town.avg_temp_winter !== null && town.avg_temp_winter !== undefined) {
     
-    const seasonPref = preferences.seasonal_preference
-    
+    const seasonPref = preferences.seasonal_preference?.toLowerCase()
+
     if (seasonPref === 'summer_focused' || seasonPref === 'warm_seasons' || seasonPref === 'prefer_warm_seasons') {
       // User prefers warm seasons - check if Summer Climate fits = 15 Pts
       let seasonScore = 0
@@ -826,12 +846,25 @@ export function calculateClimateScore(preferences, town) {
       
       // Check if summer climate matches preference
       if (preferences.summer_climate_preference) {
-        if (town.summer_climate_actual === preferences.summer_climate_preference) {
+        // Handle both array and string preferences
+        const summerPrefs = Array.isArray(preferences.summer_climate_preference)
+          ? preferences.summer_climate_preference.map(p => p?.toLowerCase())
+          : [preferences.summer_climate_preference].filter(Boolean).map(p => p?.toLowerCase())
+
+        const townSummer = town.summer_climate_actual?.toLowerCase()
+
+        if (townSummer && summerPrefs.includes(townSummer)) {
           summerFits = true
-        } else if (town.avg_temp_summer !== null && TEMP_RANGES.summer[preferences.summer_climate_preference]) {
-          // Use temperature-based check as fallback
-          const tempScore = calculateTemperatureScore(town.avg_temp_summer, TEMP_RANGES.summer[preferences.summer_climate_preference])
-          summerFits = tempScore >= 80 // Consider it a fit if temperature is good/perfect
+        } else if (town.avg_temp_summer !== null) {
+          // Use temperature-based check as fallback - check against first preference
+          const firstPref = Array.isArray(preferences.summer_climate_preference)
+            ? preferences.summer_climate_preference[0]
+            : preferences.summer_climate_preference
+
+          if (TEMP_RANGES.summer[firstPref]) {
+            const tempScore = calculateTemperatureScore(town.avg_temp_summer, TEMP_RANGES.summer[firstPref])
+            summerFits = tempScore >= 80 // Consider it a fit if temperature is good/perfect
+          }
         }
       } else {
         summerFits = true // No preference = fits
@@ -885,12 +918,25 @@ export function calculateClimateScore(preferences, town) {
       
       // Check if summer climate matches preference
       if (preferences.summer_climate_preference) {
-        if (town.summer_climate_actual === preferences.summer_climate_preference) {
+        // Handle both array and string preferences
+        const summerPrefs = Array.isArray(preferences.summer_climate_preference)
+          ? preferences.summer_climate_preference.map(p => p?.toLowerCase())
+          : [preferences.summer_climate_preference].filter(Boolean).map(p => p?.toLowerCase())
+
+        const townSummer = town.summer_climate_actual?.toLowerCase()
+
+        if (townSummer && summerPrefs.includes(townSummer)) {
           summerFits = true
-        } else if (town.avg_temp_summer !== null && TEMP_RANGES.summer[preferences.summer_climate_preference]) {
-          // Use temperature-based check as fallback
-          const tempScore = calculateTemperatureScore(town.avg_temp_summer, TEMP_RANGES.summer[preferences.summer_climate_preference])
-          summerFits = tempScore >= 80 // Consider it a fit if temperature is good/perfect
+        } else if (town.avg_temp_summer !== null) {
+          // Use temperature-based check as fallback - check against first preference
+          const firstPref = Array.isArray(preferences.summer_climate_preference)
+            ? preferences.summer_climate_preference[0]
+            : preferences.summer_climate_preference
+
+          if (TEMP_RANGES.summer[firstPref]) {
+            const tempScore = calculateTemperatureScore(town.avg_temp_summer, TEMP_RANGES.summer[firstPref])
+            summerFits = tempScore >= 80 // Consider it a fit if temperature is good/perfect
+          }
         }
       } else {
         summerFits = true // No preference = fits

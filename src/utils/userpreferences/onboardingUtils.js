@@ -2,6 +2,7 @@
 // Updated to ensure data structure matches exactly what Supabase expects
 import supabase from '../supabaseClient';
 import { clearPersonalizedCache } from '../scoring';
+import { DEBUG_CONFIG } from '../constants';
 
 // Transformation function to ensure data matches Supabase format
 const transformAdministrationData = (data) => {
@@ -175,8 +176,8 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
       .single();
     
     // DEBUG: What's actually in the database?
-    if (data && userId === '83d285b2-b21b-4d13-a1a1-6d51b6733d52') {
-      console.log('📊 TILMAN PREFERENCES FROM DB:', {
+    if (data && DEBUG_CONFIG.DEBUG_USER_ID && userId === DEBUG_CONFIG.DEBUG_USER_ID) {
+      console.log('📊 DEBUG USER PREFERENCES FROM DB:', {
         healthcare: data.healthcare_quality,
         safety: data.safety_importance,
         government: data.government_efficiency,
