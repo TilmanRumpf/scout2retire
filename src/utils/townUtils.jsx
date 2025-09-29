@@ -272,15 +272,7 @@ export const fetchFavorites = async (userId, component = 'unknown') => {
       .from('favorites')
       .select(`
         *,
-        towns:town_id(
-          *,
-          summer_climate_actual,
-          winter_climate_actual,
-          humidity_level_actual,
-          sunshine_level_actual,
-          precipitation_level_actual,
-          seasonal_variation_actual
-        )
+        towns:town_id(*)
       `)
       .eq('user_id', userIdString);
 
@@ -413,7 +405,16 @@ export const getTownOfTheDay = async (userId) => {
       id, name, country, population, region, geo_region, regions,
       image_url_1, image_url_2, image_url_3,
       latitude, longitude, description,
-      geographic_features_actual, vegetation_type_actual
+      geographic_features_actual, vegetation_type_actual,
+      cost_of_living_usd, typical_monthly_living_cost, cost_index,
+      healthcare_score, safety_score, healthcare_cost_monthly,
+      avg_temp_summer, avg_temp_winter, climate,
+      summer_climate_actual, winter_climate_actual,
+      sunshine_hours, sunshine_level_actual, annual_rainfall,
+      humidity_average, humidity_level_actual, seasonal_variation_actual,
+      precipitation_level_actual,
+      air_quality_index, elevation_meters, distance_to_ocean_km,
+      pace_of_life_actual, urban_rural_character
     `;
     
     // TIER 1: Exact match - user's selected countries

@@ -226,7 +226,7 @@ export const convertPreferencesToAlgorithmFormat = (userPreferences) => {
  */
 export const scoreTown = async (town, userPreferences) => {
   // DEBUG: What are we receiving?
-  if (town.name === 'Granada' || town.name === 'Puerto de la Cruz' || town.name === 'Castro Urdiales') {
+  if (town.name === 'Granada' || town.name === 'Puerto de la Cruz' || town.name === 'Castro Urdiales' || town.name === 'Baiona') {
     console.log(`🔍 UNIFIED SCORING DEBUG for ${town.name}:`);
     console.log('Town climate fields:', {
       summer: town.summer_climate_actual,

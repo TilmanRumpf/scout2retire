@@ -1,3 +1,17 @@
+# 🚨 CLAUDE: READ THIS ENTIRE FILE FIRST OR DIE
+
+## 🔴 TOP PRIORITY: PROGRAMMATIC FIXES ONLY
+1. **ALWAYS FIX PROGRAMMATICALLY** - Use JavaScript, not manual SQL
+2. **NEVER SAY** "Run this in Supabase SQL Editor" - Write JS code instead
+3. **AUTOMATE EVERYTHING** - If it can't be automated, it's wrong
+4. **NO MANUAL STEPS** - Every fix must be code-executable
+
+## 📖 MANDATORY CLAUDE.MD PROTOCOL
+1. **READ CLAUDE.MD FIRST** - Before EVERY single response
+2. **RECOMMEND IMPROVEMENTS** - When you learn something, add it
+3. **UPDATE AFTER MISTAKES** - Every fuck-up becomes a new rule
+4. **THIS IS YOUR BIBLE** - Violate it and Tilman will kill you
+
 # 🚨 CLAUDE: READ THIS OR TILMAN WILL KILL YOU
 1. Check Playwright FIRST for UI issues - no theories
 2. Background bash lies - verify with BashOutput
@@ -5,6 +19,15 @@
 4. You have MCP access - fucking use it
 5. Create checkpoint EVERY time something works
 6. **THIS IS A DYNAMIC CODEBASE** - Code changes CONSTANTLY, NEVER assume static
+
+# 🔴 CRITICAL: DYNAMIC CODEBASE - NEVER ASSUME ANYTHING IS STATIC!
+
+## NO HARDCODING - FIX THE ROOT CAUSE LIKE A MAN!
+- **NEVER HARDCODE FIELD NAMES** - If fields are missing, find WHY
+- **LEGACY HARDCODING = INSTANT FIX** - See hardcoded values? Replace with dynamic solution
+- **DON'T BANDAID** - Fix the actual problem, not symptoms
+- **When fields are undefined:** Check RLS, check views, check permissions - DON'T just list fields
+- **Tilman says:** "Whenever you see legacy hard coding fix it like a man. fucker gaylord motherfucker"
 
 # 🔴 CRITICAL: DYNAMIC CODEBASE - NEVER ASSUME ANYTHING IS STATIC!
 
@@ -27,6 +50,12 @@
 2. **VERIFY ALL IMPORTS** - Check they exist NOW
 3. **TRACE ACTUAL PATH** - Follow data flow TODAY
 4. **ASK BEFORE ALGORITHM CHANGES** - "Can I modify the scoring algorithm?"
+
+## 🚨 DUPLICATE DEFINITIONS = DEATH
+- **CHECK FOR DUPLICATES** - `grep -n "const sameName"` - if >1 result = DISASTER
+- **The 3-Hour Shithole**: Two `selectColumns` definitions, second missing fields
+- **NEVER define same variable twice** - Use constants and reuse
+- **When fields undefined**: Check SELECT statement, not RLS/permissions
 
 # ⚡ QUICK CHECKS BEFORE ANY WORK
 □ Run `node create-database-snapshot.js` if touching data
