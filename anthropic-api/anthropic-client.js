@@ -1,35 +1,49 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { createClient } from '@supabase/supabase-js';
 
-// Get your API key from the .env file
-const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+// Initialize Supabase client
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Create the Anthropic client
-const anthropic = new Anthropic({
-  apiKey: apiKey,
-  dangerouslyAllowBrowser: true
-});
-
-// Function to send a message to Claude with a specific consultant persona
-export async function askConsultant(message, consultantPersona = '') {
+// Function to send a message to Claude via secure Edge Function
+export async function askConsultant(message, consultantPersona = '', conversationHistory = null) {
   try {
-    const systemPrompt = consultantPersona || 'You are a helpful assistant.';
-    
-    const response = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20241022",
-      max_tokens: 1000,
-      system: systemPrompt,
-      messages: [
-        {
-          role: "user",
-          content: message
-        }
-      ]
+    // Get the current user's session for authentication
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError || !session) {
+      console.error('Authentication required:', sessionError);
+      return 'Please log in to chat with Scotty.';
+    }
+
+    // Call the Edge Function with authentication
+    const { data, error } = await supabase.functions.invoke('chat-with-scotty', {
+      body: {
+        message,
+        consultantPersona: consultantPersona || 'You are Scotty, a helpful retirement planning assistant.',
+        conversationHistory
+      },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
     });
-    
-    return response.content[0].text;
+
+    if (error) {
+      console.error('Error calling Edge Function:', error);
+      return 'Sorry, there was an error connecting to Scotty.';
+    }
+
+    // Extract the text response from Claude's API format
+    if (data && data.content && data.content[0] && data.content[0].text) {
+      return data.content[0].text;
+    }
+
+    console.error('Unexpected response format:', data);
+    return 'Sorry, there was an error processing the response.';
+
   } catch (error) {
     console.error('Error talking to Claude:', error);
-    return 'Sorry, there was an error connecting to Claude.';
+    return 'Sorry, there was an error connecting to Scotty.';
   }
 }
 

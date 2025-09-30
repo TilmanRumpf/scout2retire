@@ -221,14 +221,22 @@ const TownsManager = () => {
       
       console.log('✅ User authenticated:', user.email);
       console.log('User metadata:', user.user_metadata);
-      
-      // Check if user is admin
-      if (user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+
+      // Check if user is admin using database is_admin column
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+
+      if (userError || !userData?.is_admin) {
         console.error('❌ Not authorized - user is not admin');
         toast.error('You are not authorized to access the admin panel.');
         navigate('/');
         return;
       }
+
+      console.log('✅ Admin access confirmed via database');
       
       // Try to get avatar from different sources
       let avatarUrl = null;
