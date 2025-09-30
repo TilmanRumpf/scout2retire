@@ -64,8 +64,12 @@ export default function TownComparison() {
         // Parse town IDs from URL
         const params = new URLSearchParams(location.search);
         const townIdsParam = params.get('towns');
-        const urlTownIds = townIdsParam ? townIdsParam.split(',') : [];
-        
+        const urlTownIds = townIdsParam
+          ? townIdsParam.split(',').filter(id => id && id.length > 0) // Filter out empty strings
+          : [];
+
+        console.log('[TownComparison] URL town IDs:', urlTownIds);
+
         if (urlTownIds.length > 0) {
           // Set selected town IDs from URL
           setSelectedTownIds(urlTownIds.slice(0, 3)); // Max 3 towns
