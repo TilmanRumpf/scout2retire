@@ -392,12 +392,6 @@ export default function OnboardingHobbies() {
       const dataToUse = dataOverride || formData;
       
       // DEBUG: Museums & History saving
-      console.log('🔍 AUTO-SAVE DEBUG:');
-      console.log('Using data source:', dataOverride ? 'passed data' : 'formData state');
-      console.log('formData.activities:', dataToUse.activities);
-      console.log('formData.interests:', dataToUse.interests);
-      console.log('Has history?:', dataToUse.interests.includes('history'));
-      
       // Expand compound buttons to ALL hobbies for matching  
       const expandedActivities = await getHobbiesForButtons(dataToUse.activities);
       const expandedInterests = await getHobbiesForButtons(dataToUse.interests);
@@ -414,11 +408,7 @@ export default function OnboardingHobbies() {
         custom_hobbies: dataToUse.custom_hobbies,
         travel_frequency: dataToUse.travel_frequency
       };
-      
-      // DEBUG: What are we saving?
-      console.log('custom_activities being saved:', dataToSave.custom_activities);
-      console.log('Has interest_history?:', dataToSave.custom_activities.includes('interest_history'));
-      
+
       const { success } = await saveOnboardingStep(
         userResult.user.id,
         dataToSave,
@@ -588,13 +578,6 @@ export default function OnboardingHobbies() {
         
         const progressResult = await getOnboardingProgress(userResult.user.id);
         
-        // DEBUG: Add logging to trace the issue
-        console.log('🔍 DEBUG: Loading user data');
-        console.log('User ID:', userResult.user?.id);
-        console.log('Progress result:', progressResult);
-        console.log('Hobbies data:', progressResult.data?.hobbies);
-        console.log('custom_activities:', progressResult.data?.hobbies?.custom_activities);
-        
         if (!progressResult.success) {
           console.error("Error loading existing data:", progressResult.error);
           setInitialLoading(false);
@@ -637,17 +620,10 @@ export default function OnboardingHobbies() {
           
           // Reconstruct UI state from database data
           // NEW: custom_activities stores both activity and interest compound button IDs
-          console.log('🔍 LOADING DEBUG for Museums & History:');
-          console.log('loadedCompoundButtons:', loadedCompoundButtons);
-          console.log('Has interest_history?:', loadedCompoundButtons.includes('interest_history'));
-          
           const reconstructedActivities = loadedCompoundButtons.filter(id => !id.startsWith('interest_'));
           const reconstructedInterests = loadedCompoundButtons
             .filter(id => id.startsWith('interest_'))
             .map(id => id.replace('interest_', ''));
-          
-          console.log('reconstructedInterests:', reconstructedInterests);
-          console.log('Has history after reconstruction?:', reconstructedInterests.includes('history'));
           
           // Keep custom selections as loaded
           const customPhysical = [...loadedCustomPhysical];
@@ -656,18 +632,14 @@ export default function OnboardingHobbies() {
           // For backward compatibility: if no compound buttons saved but activities exist,
           // try to reconstruct from individual activities (old data format)
           if (reconstructedActivities.length === 0 && loadedActivities.length > 0) {
-            console.log('Using backward compatibility mode to reconstruct buttons');
-            console.log('Loaded activities from DB:', loadedActivities);
-            
             loadedActivities.forEach(activity => {
               // Check if this is a compound button ID (like 'water_sports', 'golf_tennis')
               const isCompoundButton = ['walking_cycling', 'golf_tennis', 'water_sports', 'water_crafts', 'winter_sports'].includes(activity);
-              
+
               if (isCompoundButton) {
                 // It's already a compound button ID - just add it
                 if (!reconstructedActivities.includes(activity)) {
                   reconstructedActivities.push(activity);
-                  console.log(`Added compound button: ${activity}`);
                 }
               }
               // Don't try to map individual hobbies back to buttons - that was causing the issue
@@ -689,19 +661,7 @@ export default function OnboardingHobbies() {
               // Don't try to map individual hobbies back to buttons
             });
           }
-          
-          console.log('Reconstructed state from DB:', {
-            activities: reconstructedActivities,
-            interests: reconstructedInterests,
-            custom_physical: customPhysical,
-            custom_hobbies: customHobbies
-          });
-          
-          console.log('🎯 FINAL CHECK - Setting formData with:');
-          console.log('  Activities:', reconstructedActivities);
-          console.log('  Interests:', reconstructedInterests);
-          console.log('  Has history in interests?:', reconstructedInterests.includes('history'));
-          
+
           // CRITICAL FIX: Ensure we're setting the right data
           const newFormData = {
             activities: reconstructedActivities,
@@ -710,8 +670,6 @@ export default function OnboardingHobbies() {
             custom_hobbies: customHobbies,
             travel_frequency: progressResult.data.hobbies.travel_frequency || ''
           };
-          
-          console.log('🔧 FIX: Setting formData to:', newFormData);
           setFormData(newFormData);
         }
       } catch (err) {
@@ -761,37 +719,32 @@ export default function OnboardingHobbies() {
   const handleActivityToggle = async (itemId) => {
     // DON'T split compound IDs - keep them as-is for proper persistence
     // The expansion happens during save, not in UI state
-    
-    console.log(`Activity toggle clicked: ${itemId}`);
-    
+
     setFormData(prev => {
       let newActivities = [...prev.activities];
-      
+
       // Simple toggle - add or remove the compound button ID
       if (newActivities.includes(itemId)) {
         // Remove the compound button ID
         newActivities = newActivities.filter(item => item !== itemId);
-        console.log(`Removed ${itemId} from activities:`, newActivities);
       } else {
         // Add the compound button ID
         newActivities.push(itemId);
-        console.log(`Added ${itemId} to activities:`, newActivities);
       }
-      
+
       const updatedFormData = {
         ...prev,
         activities: newActivities
       };
-      
+
       // Schedule auto-save with the UPDATED data
       // Clear any pending save
       if (autoSaveTimeoutRef.current) {
         clearTimeout(autoSaveTimeoutRef.current);
       }
-      
+
       // Schedule new save with updated state
       autoSaveTimeoutRef.current = setTimeout(async () => {
-        console.log('⏰ Auto-save triggered for activities with updated data');
         await autoSave(updatedFormData);
       }, 1500); // 1.5 seconds delay for debouncing
       
@@ -802,37 +755,32 @@ export default function OnboardingHobbies() {
   const handleInterestToggle = async (itemId) => {
     // DON'T split compound IDs - keep them as-is for proper persistence
     // The expansion happens during save, not in UI state
-    
-    console.log(`Interest toggle clicked: ${itemId}`);
-    
+
     setFormData(prev => {
       let newInterests = [...prev.interests];
-      
+
       // Simple toggle - add or remove the compound button ID
       if (newInterests.includes(itemId)) {
         // Remove the compound button ID
         newInterests = newInterests.filter(item => item !== itemId);
-        console.log(`Removed ${itemId} from interests:`, newInterests);
       } else {
         // Add the compound button ID
         newInterests.push(itemId);
-        console.log(`Added ${itemId} to interests:`, newInterests);
       }
-      
+
       const updatedFormData = {
         ...prev,
         interests: newInterests
       };
-      
+
       // Schedule auto-save with the UPDATED data
       // Clear any pending save
       if (autoSaveTimeoutRef.current) {
         clearTimeout(autoSaveTimeoutRef.current);
       }
-      
+
       // Schedule new save with updated state
       autoSaveTimeoutRef.current = setTimeout(async () => {
-        console.log('⏰ Auto-save triggered for interests with updated data');
         await autoSave(updatedFormData);
       }, 1500); // 1.5 seconds delay for debouncing
       
@@ -946,15 +894,8 @@ export default function OnboardingHobbies() {
         custom_hobbies: formData.custom_hobbies,
         travel_frequency: formData.travel_frequency
       };
-      
-      console.log('💾 Saving expanded hobbies:', {
-        'Compound buttons selected': [...formData.activities, ...formData.interests],
-        'Expanded to hobbies': [...expandedActivities, ...expandedInterests],
-        'Total activities': dataToSave.activities.length,
-        'Total interests': dataToSave.interests.length
-      });
-      
-      const { success, error } = await saveOnboardingStep(
+
+      const { success, error} = await saveOnboardingStep(
         userResult.user.id,
         dataToSave,
         'hobbies'
