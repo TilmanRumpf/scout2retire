@@ -1,47 +1,54 @@
-# LATEST CHECKPOINT: 2025-09-30T02-32-52
+# LATEST CHECKPOINT: 2025-09-30T03-06-30
 
-## ✨ OPTION B: HIGH PRIORITY CLEANUP ✅
+## 🐛 CRITICAL BUG FIX: Stuck "Analyzing..." Overlay ✅
 
 ### Quick Summary
-- **DELETED**: 550 lines of dead code from matchingAlgorithm.js
-- **REMOVED**: 28 debug console.logs from OnboardingHobbies.jsx
-- **CLEANED**: Unused React imports from 3 files (React 18.2+ best practice)
-- Database snapshot: 2025-09-30T02-32-52
-- Git commit: d51b023 "OPTION B COMPLETE"
-- All changes agent-verified, zero functionality broken
+- **FIXED**: Compare page "Analyzing..." overlay stuck indefinitely
+- **ADDED**: appealStatement generation to scoreTown function
+- **ADDED**: Try-catch error handling to prevent Promise hangs
+- **CHANGED**: Total Costs display from cost_index to cost_of_living_usd
+- **REMOVED**: Exposed Supabase key from CLAUDE.md
+- Database snapshot: 2025-09-30T03-06-30
+- Git commit: a21c909 "FIX: Stuck Analyzing overlay"
+- All 3 towns now show proper category matches (Region Match: 100%, etc.)
 
 ### To Restore:
 ```bash
-node restore-database-snapshot.js 2025-09-30T02-32-52
-git checkout d51b023
+node restore-database-snapshot.js 2025-09-30T03-06-30
+git checkout a21c909
 ```
 
-### What Was Cleaned:
-1. ✅ **matchingAlgorithm.js** (829 → 279 lines, 66% reduction)
-   - Deleted 9 commented-out functions (lines 253-802)
-   - Zero cross-references in entire codebase (verified by agent)
+### What Was Fixed:
+1. ✅ **Analyzing Overlay Bug** (unifiedScoring.js)
+   - Added appealStatement generation based on best category score
+   - Format: "Region Match: 100%", "Climate Match: 92%", etc.
+   - Added to both success return (line 306) and error return (line 332)
+   - Root cause: TownImageOverlay checks for appealStatement, showed "Analyzing..." when undefined
 
-2. ✅ **OnboardingHobbies.jsx** (28 debug logs removed)
-   - Preserved 3 error logs for production monitoring
-   - Auto-save logic intact, toggle handlers intact
+2. ✅ **Error Handling** (unifiedScoring.js lines 228-334)
+   - Wrapped scoreTown in try-catch to prevent Promise.all hangs
+   - Added defensive check: `(enhancedResult.top_factors || [])`
+   - Returns safe defaults with appealStatement on error
 
-3. ✅ **React imports** (3 files modernized)
-   - HeaderSpacer.jsx, Logo.jsx, main.jsx
-   - All use JSX auto-transform (React 18.2.0 + Vite)
-   - 14 importing files verified working
+3. ✅ **Total Costs Display** (CategoryContent.jsx line 79)
+   - Changed from `cost_index` (0-100 scale) to `cost_of_living_usd`
+   - Format: "2,300$/month" instead of "68"
+
+4. ✅ **Security** (CLAUDE.md line 487)
+   - Removed exposed Supabase service_role key
+   - Replaced with environment variable pattern
 
 ### Key Files Changed:
-- `src/utils/scoring/matchingAlgorithm.js` - Dead code eliminated
-- `src/pages/onboarding/OnboardingHobbies.jsx` - Debug logs removed
-- `src/components/HeaderSpacer.jsx` - React import removed
-- `src/components/Logo.jsx` - React import removed
-- `src/main.jsx` - React import removed
+- `src/utils/scoring/unifiedScoring.js` - Added appealStatement + error handling
+- `src/components/TownComparison/CategoryContent.jsx` - Cost display fix
+- `CLAUDE.md` - Removed exposed API key
 
 ### Impact:
-- Cleaner codebase (550+ lines removed)
-- Cleaner production logs
-- Modern React 18.2+ conventions
-- Ready for Option C (or other work)
+- Compare page now fully functional
+- No more stuck overlays
+- Proper category match display
+- Error-resistant scoring
+- Security improved
 
 ---
 
