@@ -76,7 +76,7 @@ const CategoryContent = React.memo(({ town, category }) => {
                 <div className="text-center">
                   <p className={`text-xs ${uiConfig.colors.hint} mb-1`}>Total Costs/Month</p>
                   <p className={`text-2xl font-bold ${uiConfig.colors.success}`}>
-                    ${town.cost_index || 'N/A'}
+                    {town.cost_of_living_usd ? `${town.cost_of_living_usd.toLocaleString()}$/month` : 'N/A'}
                   </p>
                 </div>
               </div>

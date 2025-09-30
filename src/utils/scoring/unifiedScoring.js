@@ -225,72 +225,113 @@ export const convertPreferencesToAlgorithmFormat = (userPreferences) => {
  * Returns complete scoring result with insights, warnings, and category breakdowns
  */
 export const scoreTown = async (town, userPreferences) => {
-  // DEBUG: What are we receiving?
-  if (town.name === 'Granada' || town.name === 'Puerto de la Cruz' || town.name === 'Castro Urdiales' || town.name === 'Baiona') {
-    console.log(`🔍 UNIFIED SCORING DEBUG for ${town.name}:`);
-    console.log('Town climate fields:', {
-      summer: town.summer_climate_actual,
-      winter: town.winter_climate_actual,
-      humidity: town.humidity_level_actual
-    });
-    console.log('User preferences received:', {
-      summer: userPreferences?.summer_climate_preference,
-      winter: userPreferences?.winter_climate_preference,
-      humidity: userPreferences?.humidity_level
-    });
-  }
+  try {
+    // DEBUG: What are we receiving?
+    if (town.name === 'Granada' || town.name === 'Puerto de la Cruz' || town.name === 'Castro Urdiales' || town.name === 'Baiona') {
+      console.log(`🔍 UNIFIED SCORING DEBUG for ${town.name}:`);
+      console.log('Town climate fields:', {
+        summer: town.summer_climate_actual,
+        winter: town.winter_climate_actual,
+        humidity: town.humidity_level_actual
+      });
+      console.log('User preferences received:', {
+        summer: userPreferences?.summer_climate_preference,
+        winter: userPreferences?.winter_climate_preference,
+        humidity: userPreferences?.humidity_level
+      });
+    }
 
-  // Convert preferences to algorithm format
-  const convertedPreferences = convertPreferencesToAlgorithmFormat(userPreferences);
-  
-  // Calculate match using enhanced algorithm
-  const enhancedResult = await calculateEnhancedMatch(convertedPreferences, town);
-  
-  // DEBUG: Fixed - was case sensitivity issue
-  // if (town.country === 'Spain') {
-  //   console.log(`🎯 DEBUG: Scoring for ${town.name}, Spain:`, {
-  //     totalScore: enhancedResult.match_score,
-  //     categoryScores: enhancedResult.category_scores,
-  //     topFactors: enhancedResult.top_factors?.slice(0, 3)
-  //   });
-  // }
-  
-  // Generate additional insights
-  const insights = generateEnhancedInsights(town, convertedPreferences, enhancedResult.category_scores);
-  const warnings = generateEnhancedWarnings(town, convertedPreferences);
-  const highlights = generateEnhancedHighlights(town, enhancedResult.category_scores);
-  
-  // Convert match factors to match reasons
-  const matchReasons = enhancedResult.top_factors
-    .filter(f => f.score > 0)
-    .map(f => f.factor);
-  
-  // Calculate confidence based on category scores
-  const avgScore = Object.values(enhancedResult.category_scores).reduce((a, b) => a + b, 0) / 
-                   Object.values(enhancedResult.category_scores).length;
-  const confidence = avgScore >= 80 ? 'High' : avgScore >= 60 ? 'Medium' : 'Low';
-  
-  // Calculate value rating
-  const valueRating = enhancedResult.category_scores.cost >= 80 ? 5 : 
-                     enhancedResult.category_scores.cost >= 60 ? 4 :
-                     enhancedResult.category_scores.cost >= 40 ? 3 : 2;
-  
-  // Use category scores directly (no mapping needed anymore)
-  const mappedCategoryScores = enhancedResult.category_scores;
-  
-  return {
-    ...town,
-    matchScore: enhancedResult.match_score,
-    matchReasons: matchReasons,
-    categoryScores: mappedCategoryScores,
-    warnings: warnings,
-    insights: insights,
-    highlights: highlights,
-    confidence: confidence,
-    valueRating: valueRating,
-    match_factors: enhancedResult.match_factors,
-    match_quality: enhancedResult.match_quality
-  };
+    // Convert preferences to algorithm format
+    const convertedPreferences = convertPreferencesToAlgorithmFormat(userPreferences);
+
+    // Calculate match using enhanced algorithm
+    const enhancedResult = await calculateEnhancedMatch(convertedPreferences, town);
+
+    // DEBUG: Fixed - was case sensitivity issue
+    // if (town.country === 'Spain') {
+    //   console.log(`🎯 DEBUG: Scoring for ${town.name}, Spain:`, {
+    //     totalScore: enhancedResult.match_score,
+    //     categoryScores: enhancedResult.category_scores,
+    //     topFactors: enhancedResult.top_factors?.slice(0, 3)
+    //   });
+    // }
+
+    // Generate additional insights
+    const insights = generateEnhancedInsights(town, convertedPreferences, enhancedResult.category_scores);
+    const warnings = generateEnhancedWarnings(town, convertedPreferences);
+    const highlights = generateEnhancedHighlights(town, enhancedResult.category_scores);
+
+    // Convert match factors to match reasons (DEFENSIVE: check top_factors exists)
+    const matchReasons = (enhancedResult.top_factors || [])
+      .filter(f => f.score > 0)
+      .map(f => f.factor);
+
+    // Calculate confidence based on category scores
+    const avgScore = Object.values(enhancedResult.category_scores).reduce((a, b) => a + b, 0) /
+                     Object.values(enhancedResult.category_scores).length;
+    const confidence = avgScore >= 80 ? 'High' : avgScore >= 60 ? 'Medium' : 'Low';
+
+    // Calculate value rating
+    const valueRating = enhancedResult.category_scores.cost >= 80 ? 5 :
+                       enhancedResult.category_scores.cost >= 60 ? 4 :
+                       enhancedResult.category_scores.cost >= 40 ? 3 : 2;
+
+    // Use category scores directly (no mapping needed anymore)
+    const mappedCategoryScores = enhancedResult.category_scores;
+
+    // Generate appealStatement based on best category match (fixes "Analyzing..." stuck overlay)
+    const categories = [
+      { name: "Region", score: mappedCategoryScores.region || 0 },
+      { name: "Climate", score: mappedCategoryScores.climate || 0 },
+      { name: "Culture", score: mappedCategoryScores.culture || 0 },
+      { name: "Hobbies", score: mappedCategoryScores.hobbies || 0 },
+      { name: "Admin", score: mappedCategoryScores.administration || 0 },
+      { name: "Costs", score: mappedCategoryScores.cost || 0 }
+    ];
+    const bestCategory = categories.reduce((max, cat) => cat.score > max.score ? cat : max);
+    const appealStatement = `${bestCategory.name} Match: ${Math.round(bestCategory.score)}%`;
+
+    return {
+      ...town,
+      matchScore: enhancedResult.match_score,
+      matchReasons: matchReasons,
+      categoryScores: mappedCategoryScores,
+      warnings: warnings,
+      insights: insights,
+      highlights: highlights,
+      confidence: confidence,
+      valueRating: valueRating,
+      match_factors: enhancedResult.match_factors,
+      match_quality: enhancedResult.match_quality,
+      appealStatement: appealStatement
+    };
+  } catch (error) {
+    // ERROR HANDLING: If scoring fails, return safe defaults so UI doesn't hang
+    console.error(`❌ Error scoring town ${town.name}:`, error);
+
+    // Return town with safe default scores to prevent "Analyzing..." hang
+    return {
+      ...town,
+      matchScore: 50, // Neutral score
+      matchReasons: ['Error calculating match'],
+      categoryScores: {
+        region: 50,
+        climate: 50,
+        culture: 50,
+        hobbies: 50,
+        administration: 50,
+        cost: 50
+      },
+      warnings: ['Unable to calculate complete match score'],
+      insights: [],
+      highlights: [],
+      confidence: 'Low',
+      valueRating: 3,
+      match_factors: [],
+      match_quality: 'Error',
+      appealStatement: 'Error: Unable to score'
+    };
+  }
 };
 
 /**
