@@ -1,47 +1,50 @@
-# LATEST CHECKPOINT: 2025-09-30T01-58-16
+# LATEST CHECKPOINT: 2025-09-30T02-15-07
 
-## 🔒 PHASE 1 SECURITY COMPLETE ✅
+## 🐛 OPTION A: 3 CRITICAL BUGS FIXED ✅
 
 ### Quick Summary
-- **ROTATED**: Exposed Supabase & Anthropic API keys
-- **CLEANED**: Git history purged of .env files (510 commits)
-- **SECURED**: Anthropic API moved to Edge Function with auth
-- **FIXED**: Admin authorization now database-driven with RLS
-- **FIXED**: SECURITY DEFINER functions with auth.uid() validation
-- **OPTIMIZED**: 5 database indexes added for performance
-- Database snapshot: 2025-09-30T01-58-16
-- Git commit: e22043b "PHASE 1 SECURITY COMPLETE"
-- System fully functional and secure
+- **FIXED**: Undefined variable crash (townUtils.jsx:520)
+- **FIXED**: Undefined component crash (TownCard.jsx:61)
+- **FIXED**: Duplicate CATEGORY_WEIGHTS constants (shithole pattern eliminated)
+- Database snapshot: 2025-09-30T02-15-07
+- Git commit: 2b844f4 "FIX: 3 Critical Bugs"
+- System fully functional
 
 ### To Restore:
 ```bash
-node restore-database-snapshot.js 2025-09-30T01-58-16
-git checkout e22043b
+node restore-database-snapshot.js 2025-09-30T02-15-07
+git checkout 2b844f4
 ```
 
 ### What Was Fixed:
-1. ✅ API key rotation (Supabase + Anthropic)
-2. ✅ Git history cleaned with BFG Repo-Cleaner
-3. ✅ Edge Function created for secure API calls
-4. ✅ Admin authorization using database is_admin column
-5. ✅ RLS policies for admin operations
-6. ✅ SECURITY DEFINER auth.uid() validation
-7. ✅ Performance indexes (country, region, name, cost_index, image_url_1)
+1. ✅ Changed `selectColumns` → `TOWN_SELECT_COLUMNS` (townUtils.jsx:520)
+2. ✅ Changed `LazyImage` → `OptimizedImage` (TownCard.jsx:61)
+3. ✅ Eliminated duplicate CATEGORY_WEIGHTS constant
+   - Removed from enhancedMatchingAlgorithm.js
+   - Now imports from config.js (single source of truth)
+   - Updated config.js keys: admin→administration, budget→cost
 
 ### Key Files Changed:
-- `anthropic-api/anthropic-client.js` - Rewritten for Edge Function
-- `src/pages/admin/TownsManager.jsx` - Database-driven admin check
-- `supabase/functions/chat-with-scotty/index.ts` - NEW secure API
-- `supabase/migrations/20250929213035_add_admin_rls_policies.sql` - NEW
-- `supabase/migrations/20250929214000_fix_security_definer_functions.sql` - NEW
-- `supabase/migrations/20250929215000_add_performance_indexes.sql` - NEW
+- `src/utils/townUtils.jsx` - Fixed undefined variable
+- `src/components/TownCard.jsx` - Fixed undefined component
+- `src/utils/scoring/config.js` - Updated to match actual usage
+- `src/utils/scoring/enhancedMatchingAlgorithm.js` - Now imports from config
 
-### Full Documentation:
-See `/docs/project-history/RECOVERY_CHECKPOINT_2025-09-30_Phase1_Complete.md`
+### Impact:
+- Eliminated 2 crash bugs
+- Eliminated "duplicate constants shithole" pattern from LESSONS_LEARNED.md
+- Ready for Option B (high priority cleanup)
 
 ---
 
 ## Previous Checkpoints
+
+### 2025-09-30T01-58-16: Phase 1 Security Complete
+- Rotated API keys (Supabase + Anthropic)
+- Cleaned git history with BFG
+- Created Edge Function for secure API calls
+- Database-driven admin authorization with RLS
+- Git commit: e22043b, 74d9ca5
 
 ### 2025-09-29T11-48-09: All Critical Shitholes Fixed
 - Fixed: TypeError toLowerCase() on arrays
