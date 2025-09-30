@@ -517,7 +517,7 @@ export const getTownOfTheDay = async (userId) => {
     console.log("Daily town: No geographic matches, falling back to random selection");
     let tier4Query = supabase
       .from('towns')
-      .select(selectColumns)
+      .select(TOWN_SELECT_COLUMNS)
       .not('image_url_1', 'is', null)
       .not('image_url_1', 'eq', '');
     

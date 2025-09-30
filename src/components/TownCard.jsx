@@ -58,7 +58,7 @@ export default function TownCard({
       <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden flex ${className}`}>
         <Link to={`/discover?town=${town.id}`} className="flex flex-1">
           <div className="w-24 h-24">
-            <LazyImage
+            <OptimizedImage
               src={town.image_url_1}
               alt={town.name}
               className="w-full h-full object-cover"

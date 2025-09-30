@@ -9,12 +9,12 @@
 // CATEGORY WEIGHTS (must add up to 100)
 // ============================================
 export const CATEGORY_WEIGHTS = {
-  region: 20,      // Geographic location match
-  climate: 15,     // Weather preferences
-  culture: 15,     // Language, pace of life, expat community
-  hobbies: 10,     // Activities & interests
-  admin: 20,       // Healthcare, safety, visa
-  budget: 20       // Cost of living match
+  region: 20,         // Geographic location match
+  climate: 15,        // Weather preferences
+  culture: 15,        // Language, pace of life, expat community
+  hobbies: 10,        // Activities & interests
+  administration: 20, // Healthcare, safety, visa
+  cost: 20            // Cost of living match
 };
 
 // Verify weights add up to 100 (safety check)

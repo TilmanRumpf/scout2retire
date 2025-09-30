@@ -4,17 +4,10 @@
 import supabase from '../supabaseClient.js'
 import { mapToStandardValue } from './helpers/climateInference.js'
 import { calculateHobbiesScore as calculateNormalizedHobbiesScore } from './helpers/hobbiesMatching.js'
+import { CATEGORY_WEIGHTS } from './config.js'
 
 // Weights optimized for 55+ retirees: equal emphasis on location preference, budget constraints, and healthcare/safety (60% combined), with climate and culture as secondary factors
-// Score weights for each category (total = 100)
-const CATEGORY_WEIGHTS = {
-  region: 20,      // Geographic match
-  climate: 15,     // Climate preferences 
-  culture: 15,     // Cultural fit
-  hobbies: 10,     // Activities & interests
-  administration: 20,       // Healthcare, safety, visa
-  cost: 20       // Financial fit
-}
+// CATEGORY_WEIGHTS now imported from config.js - SINGLE SOURCE OF TRUTH
 
 // Helper function to calculate array overlap score
 function calculateArrayOverlap(userArray, townArray, maxScore = 100) {
