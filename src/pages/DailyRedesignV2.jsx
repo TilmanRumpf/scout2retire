@@ -39,6 +39,9 @@ export default function DailyRedesignV2() {
   const [dailyTip, setDailyTip] = useState(null);
   const [topMatches, setTopMatches] = useState([]);
   const [pageVisible, setPageVisible] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [mapMarkersData, setMapMarkersData] = useState([]);
+  const [mapCenter, setMapCenter] = useState({ lat: 0, lng: 0 });
   const navigate = useNavigate();
 
   // Smooth page fade-in
@@ -48,6 +51,71 @@ export default function DailyRedesignV2() {
     }, 100);
     return () => clearTimeout(timer);
   }, []);
+
+  // Initialize Leaflet map when modal opens
+  useEffect(() => {
+    if (!showMapModal || mapMarkersData.length === 0) return;
+
+    // Load Leaflet CSS and JS dynamically
+    const loadLeaflet = async () => {
+      // Check if Leaflet is already loaded
+      if (window.L) {
+        initializeMap();
+        return;
+      }
+
+      // Load Leaflet CSS
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+
+      // Load Leaflet JS
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.onload = () => initializeMap();
+      document.body.appendChild(script);
+    };
+
+    const initializeMap = () => {
+      const container = document.getElementById('map-container');
+      if (!container || !window.L) return;
+
+      // Clear any existing map
+      container.innerHTML = '<div id="leaflet-map" style="width: 100%; height: 100%;"></div>';
+
+      // Initialize map
+      const map = window.L.map('leaflet-map');
+
+      // Add OpenStreetMap tiles
+      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(map);
+
+      // Add markers
+      const markerObjects = [];
+      mapMarkersData.forEach(markerData => {
+        const marker = window.L.marker([markerData.lat, markerData.lng])
+          .addTo(map)
+          .bindPopup(`<div style="padding: 8px; font-size: 14px;"><strong>${markerData.name}</strong></div>`);
+        markerObjects.push(marker);
+      });
+
+      // Fit bounds to show all markers
+      if (markerObjects.length > 0) {
+        const group = new window.L.featureGroup(markerObjects);
+        map.fitBounds(group.getBounds().pad(0.5), {
+          maxZoom: 7,
+          padding: [50, 50]
+        });
+      } else {
+        map.setView([mapCenter.lat, mapCenter.lng], 7);
+      }
+    };
+
+    loadLeaflet();
+  }, [showMapModal, mapMarkersData, mapCenter]);
   
   // Load user data on mount
   useEffect(() => {
@@ -658,7 +726,6 @@ export default function DailyRedesignV2() {
                       </Link>
                       <button
                         onClick={() => {
-                          // Build HTML for a standalone map page with markers using Leaflet.js + OpenStreetMap (FREE, no API key)
                           const townsWithCoords = inspirationTowns.filter(t => {
                             const hasLat = t.latitude !== null && t.latitude !== undefined && t.latitude !== '';
                             const hasLng = t.longitude !== null && t.longitude !== undefined && t.longitude !== '';
@@ -669,7 +736,6 @@ export default function DailyRedesignV2() {
 
                           if (townsWithCoords.length === 0) {
                             alert(`No towns in ${todaysInspiration.region} have valid coordinates in the database.`);
-                            window.open(`https://www.google.com/maps/search/${encodeURIComponent(todaysInspiration.region)}`, '_blank');
                             return;
                           }
 
@@ -684,63 +750,10 @@ export default function DailyRedesignV2() {
                             name: town.name
                           }));
 
-                          // Open a new window with Leaflet.js + OpenStreetMap (100% FREE)
-                          const mapWindow = window.open('', '_blank');
-                          mapWindow.document.write(`
-                            <!DOCTYPE html>
-                            <html>
-                            <head>
-                              <title>Towns in ${todaysInspiration.region}</title>
-                              <meta charset="utf-8" />
-                              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                              <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-                              <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-                              <style>
-                                body, html { margin: 0; padding: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
-                                #map { height: 100%; width: 100%; }
-                              </style>
-                            </head>
-                            <body>
-                              <div id="map"></div>
-                              <script>
-                                // Initialize map without setting view yet
-                                const map = L.map('map');
-
-                                // Add OpenStreetMap tiles (FREE, no API key needed)
-                                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                                  maxZoom: 19
-                                }).addTo(map);
-
-                                // Add markers for each town
-                                const markers = ${JSON.stringify(markersData)};
-                                const markerObjects = [];
-
-                                markers.forEach(markerData => {
-                                  const marker = L.marker([markerData.lat, markerData.lng])
-                                    .addTo(map)
-                                    .bindPopup('<div style="padding: 8px; font-size: 14px;"><strong>' + markerData.name + '</strong></div>');
-                                  markerObjects.push(marker);
-                                });
-
-                                // Fit map to show all markers automatically (works for any country size)
-                                if (markerObjects.length > 0) {
-                                  const group = new L.featureGroup(markerObjects);
-
-                                  // Fit bounds with padding and max zoom constraint
-                                  // maxZoom prevents extreme close-up when only 1-2 markers
-                                  map.fitBounds(group.getBounds().pad(0.5), {
-                                    maxZoom: 7,  // Country/regional level view - prevents zooming too close
-                                    padding: [50, 50]  // Additional pixel padding
-                                  });
-                                } else {
-                                  // Fallback center if no markers
-                                  map.setView([${avgLat}, ${avgLng}], 7);
-                                }
-                              </script>
-                            </body>
-                            </html>
-                          `);
+                          // Open modal instead of new window
+                          setMapMarkersData(markersData);
+                          setMapCenter({ lat: avgLat, lng: avgLng });
+                          setShowMapModal(true);
                         }}
                         className={`${uiConfig.colors.success} text-sm hover:underline cursor-pointer`}
                       >
@@ -961,6 +974,30 @@ export default function DailyRedesignV2() {
           </section>
         </main>
       </UnifiedErrorBoundary>
+
+      {/* Map Modal */}
+      {showMapModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" onClick={() => setShowMapModal(false)}>
+          <div className="relative w-full h-full max-w-6xl max-h-[90vh] bg-white dark:bg-gray-800 rounded-lg shadow-2xl overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            {/* Header with close button */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Towns in {todaysInspiration?.region || 'Region'}
+              </h3>
+              <button
+                onClick={() => setShowMapModal(false)}
+                className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium flex items-center gap-2"
+              >
+                <span>✕</span>
+                <span>Close</span>
+              </button>
+            </div>
+
+            {/* Map container */}
+            <div id="map-container" className="flex-1 w-full"></div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
