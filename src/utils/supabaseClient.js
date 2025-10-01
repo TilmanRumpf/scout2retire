@@ -228,83 +228,48 @@ supabase.auth.onAuthStateChange((event, session) => {
 
 // Utility functions for common operations
 
-// Sign up new user
-export const signUp = async (email, password, options = {}) => {
-  try {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options
-    })
-    
-    if (error) {
-      console.error('Sign up error:', error.message)
-      return { success: false, error: error.message }
-    }
-    
-    console.log('Sign up successful:', data)
-    return { success: true, data }
-  } catch (error) {
-    console.error('Sign up failed:', error)
-    return { success: false, error: error.message }
-  }
-}
+// ============================================================================
+// DEPRECATION NOTICE: Auth functions moved to authUtils.js
+// ============================================================================
+// The following functions are deprecated in this file.
+// Please import from '../utils/authUtils' instead:
+//
+// import { signUp, signIn, signOut, getCurrentUser } from '../utils/authUtils';
+//
+// These re-exports are provided for backwards compatibility only
+// and will be removed in a future version.
+// ============================================================================
 
-// Sign in user
-export const signIn = async (email, password) => {
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
-    
-    if (error) {
-      console.error('Sign in error:', error.message)
-      return { success: false, error: error.message }
-    }
-    
-    console.log('Sign in successful:', data)
-    return { success: true, data }
-  } catch (error) {
-    console.error('Sign in failed:', error)
-    return { success: false, error: error.message }
-  }
-}
+import {
+  signUp as authUtilsSignUp,
+  signIn as authUtilsSignIn,
+  signOut as authUtilsSignOut,
+  getCurrentUser as authUtilsGetCurrentUser
+} from './authUtils';
 
-// Sign out user
-export const signOut = async () => {
-  try {
-    const { error } = await supabase.auth.signOut()
-    
-    if (error) {
-      console.error('Sign out error:', error.message)
-      return { success: false, error: error.message }
-    }
-    
-    console.log('Sign out successful')
-    return { success: true }
-  } catch (error) {
-    console.error('Sign out failed:', error)
-    return { success: false, error: error.message }
-  }
-}
+/**
+ * @deprecated Import from authUtils.js instead
+ */
+export const signUp = authUtilsSignUp;
 
-// Get current user
-export const getCurrentUser = async () => {
-  try {
-    const { data: { user }, error } = await supabase.auth.getUser()
-    
-    if (error) {
-      console.error('Get user error:', error.message)
-      return null
-    }
-    
-    return user
-  } catch (error) {
-    console.error('Get user failed:', error)
-    return null
-  }
-}
+/**
+ * @deprecated Import from authUtils.js instead
+ */
+export const signIn = authUtilsSignIn;
+
+/**
+ * @deprecated Import from authUtils.js instead
+ */
+export const signOut = authUtilsSignOut;
+
+/**
+ * @deprecated Import from authUtils.js instead
+ */
+export const getCurrentUser = authUtilsGetCurrentUser;
+
+// ============================================================================
+// END DEPRECATED SECTION
+// ============================================================================
 
 // Database query helper
 export const queryTable = async (tableName, options = {}) => {
