@@ -47,6 +47,11 @@
   border-bottom: none;
 }
 
+/* Scotty AI Chat page - remove border since it has external second row */
+.scotty-header-wrapper .ios-header {
+  border-bottom: none !important;
+}
+
 /* Filter row specific styling */
 .filter-row {
   /* Ensure consistent height */

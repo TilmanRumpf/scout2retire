@@ -21,7 +21,10 @@ function ScottyGuide() {
   const [contextLoading, setContextLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
   const [activeTown, setActiveTown] = useState(null);
+  const [availableTowns, setAvailableTowns] = useState([]);
+  const [historyDropdownOpen, setHistoryDropdownOpen] = useState(false);
   const messagesEndRef = useRef(null);
+  const historyDropdownRef = useRef(null);
   const navigate = useNavigate();
 
   const scrollToBottom = () => {
@@ -32,6 +35,29 @@ function ScottyGuide() {
   const getFirstName = (fullName) => {
     if (!fullName) return 'You';
     return fullName.split(' ')[0];
+  };
+
+  // Get context summary for header badge
+  const getContextSummary = () => {
+    if (!userContext) return null;
+    const parts = [];
+
+    if (favorites.length > 0) {
+      parts.push(`${favorites.length} favorite${favorites.length > 1 ? 's' : ''}`);
+    }
+
+    if (userContext.citizenship?.primary) {
+      const citizenship = userContext.citizenship.has_dual && userContext.citizenship.secondary
+        ? `${userContext.citizenship.primary.toUpperCase()}/${userContext.citizenship.secondary.toUpperCase()}`
+        : userContext.citizenship.primary.toUpperCase();
+      parts.push(citizenship);
+    }
+
+    if (userContext.budget?.total_monthly) {
+      parts.push(`$${userContext.budget.total_monthly.toLocaleString()}/mo`);
+    }
+
+    return parts.join(' • ');
   };
 
   // Generate customized town synopsis based on user context
@@ -198,6 +224,23 @@ What would you like to know about ${name}?`;
     scrollToBottom();
   }, [messages]);
 
+  // Close history dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (historyDropdownRef.current && !historyDropdownRef.current.contains(event.target)) {
+        setHistoryDropdownOpen(false);
+      }
+    };
+
+    if (historyDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [historyDropdownOpen]);
+
   // Load user context and favorites on component mount
   useEffect(() => {
     const loadData = async () => {
@@ -211,10 +254,24 @@ What would you like to know about ${name}?`;
           console.log('Family data:', context?.family);
           console.log('Partner citizenship:', context?.family?.partner_citizenship);
           setUserContext(context);
-          
+
           // Load favorites
           const { favorites: userFavorites } = await fetchFavorites(user.id);
           setFavorites(userFavorites || []);
+
+          // Load available towns with photos
+          const { data: townsWithPhotos, error: townsError } = await supabase
+            .from('towns')
+            .select('name, country')
+            .not('image_url_1', 'is', null)
+            .order('name');
+
+          if (townsError) {
+            console.error('Error loading towns with photos:', townsError);
+          } else if (townsWithPhotos) {
+            setAvailableTowns(townsWithPhotos);
+            console.log(`✅ Loaded ${townsWithPhotos.length} towns with photos for Scotty recommendations`);
+          }
           
           // Load recent conversations from database
           const { data: dbConversations, error: convError } = await supabase
@@ -275,6 +332,7 @@ What would you like to know about ${name}?`;
     loadData();
   }, []);
 
+
   const startNewChat = (topic = null, townContext = null) => {
     const newConversation = {
       id: `temp_${Date.now()}`, // Temporary ID until saved to database
@@ -298,6 +356,7 @@ What would you like to know about ${name}?`;
       };
       setMessages([initialMessage]);
     }
+
   };
 
   const saveConversation = async (conversation, newMessages) => {
@@ -466,6 +525,7 @@ What would you like to know about ${name}?`;
     setActiveConversation(conversation);
     setMessages(conversation.messages || []);
     setActiveTown(conversation.town || null);
+    setHistoryDropdownOpen(false); // Close dropdown after selection
   };
 
   const deleteConversation = async (conversationId) => {
@@ -520,29 +580,38 @@ What would you like to know about ${name}?`;
     // Build personalized Scotty persona with user context
     const userInfo = userContext ? formatContextForPrompt(userContext) : '';
     console.log('Sending context to Scotty:', userInfo);
-    
+
     // Add town context if discussing a specific town
     const townContext = activeTown ? `\n\nCURRENT TOPIC: The user is asking about ${activeTown.name}, ${activeTown.country}. IMPORTANT: Keep the conversation focused on ${activeTown.name} unless the user explicitly asks about a different location.` : '';
-    
+
     // Add conversation history context for continuity
     let recentContext = '';
     if (messages.length > 0) {
       const lastMessages = messages.slice(-4); // Get last 2 exchanges
-      const summary = lastMessages.map(msg => 
-        msg.type === 'user' ? `User asked: "${msg.text.substring(0, 100)}..."` : 
+      const summary = lastMessages.map(msg =>
+        msg.type === 'user' ? `User asked: "${msg.text.substring(0, 100)}..."` :
         `You responded about: ${msg.text.substring(0, 100)}...`
       ).join('\n');
-      
+
       recentContext = `\n\nCONVERSATION HISTORY:\n${summary}\n` +
         (activeTown ? `\nREMEMBER: This entire conversation is about ${activeTown.name}, ${activeTown.country}. Stay focused on this location unless the user explicitly asks about somewhere else.` : '');
     }
+
+    // Format available towns list for AI
+    const availableTownsContext = availableTowns.length > 0 ? `\n\nAVAILABLE DESTINATIONS DATABASE:
+When recommending alternative towns or suggesting destinations, you MUST ONLY recommend towns from this list (towns that have photos and complete data in our database):
+
+${availableTowns.map(t => `${t.name}, ${t.country}`).join('\n')}
+
+CRITICAL RULE: Do NOT suggest towns like San Sebastián, Split, Trieste, or any other town that is NOT in the above list. Only recommend towns that appear in this database. If a user asks about a town not in the list, acknowledge it's a great place but explain that you can only provide detailed recommendations for towns in our database with complete information and photos.` : '';
     
-    const scottyPersona = `You are Scotty, a friendly and knowledgeable retirement guide (not a professional advisor). 
+    const scottyPersona = `You are Scotty, a friendly and knowledgeable retirement guide (not a professional advisor).
     You help people explore retirement options in a conversational, approachable way.
-    
+
     ${userInfo ? `USER CONTEXT:\n${userInfo}\n\nALWAYS consider the above user information when providing advice. Make your responses highly personalized based on their citizenship, budget, preferences, and situation.\n` : ''}
     ${townContext}
     ${recentContext}
+    ${availableTownsContext}
     
     Behind the scenes, you consult with these specialists:
     - Retirement Lifestyle Consultant
@@ -621,142 +690,122 @@ What would you like to know about ${name}?`;
     return sanitized;
   };
 
+  const contextSummary = getContextSummary();
+
   return (
-    <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
-      <UnifiedHeader 
-        title="Scotty - Your AI Guide"
-        maxWidth="max-w-6xl"
-      />
-      
-      {/* Spacer for fixed header */}
-      <HeaderSpacer hasFilters={false} />
-      
-      <main className={`${uiConfig.layout.width.containerWide} px-4 py-6`}>
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Sidebar */}
-          <div className="w-full md:w-64 space-y-4">
-            {/* Scotty Chat Section */}
-            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
-              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-                <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Scotty Chat</h2>
-              </div>
-              
-              <div className="p-2">
-                {/* New Chat Button */}
-                <button
-                  onClick={() => startNewChat()}
-                  className={`w-full bg-scout-accent-300 hover:bg-scout-accent-600 text-white py-2 px-4 ${uiConfig.layout.radius.md} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition} mb-2`}
-                >
-                  <div className="flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    New Chat
-                  </div>
-                </button>
-                
-                {/* Recent Conversations */}
-                {conversations.length > 0 && (
-                  <div className="space-y-1">
-                    {conversations.map(conv => {
-                      return (
-                        <div
-                          key={conv.id}
-                          className={`flex items-center p-2 ${uiConfig.layout.radius.md} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${
+    <div className={`h-screen flex flex-col ${uiConfig.colors.page} overflow-hidden`}>
+      {/* Unified Header with custom second row */}
+      <UnifiedHeader
+        title="Scotty AI Chat"
+        customSecondRow={
+          <div className="flex items-center gap-3">
+          {/* Left: History Dropdown */}
+          <div className="relative" ref={historyDropdownRef}>
+            <button
+              onClick={() => setHistoryDropdownOpen(!historyDropdownOpen)}
+              className={`flex items-center gap-2 px-3 py-1.5 ${uiConfig.layout.radius.md} border ${uiConfig.colors.border} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className={uiConfig.font.size.sm}>History</span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {/* Dropdown Menu */}
+            {historyDropdownOpen && (
+              <div className={`absolute top-full left-0 mt-2 w-72 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.lg} border ${uiConfig.colors.border} z-50 max-h-96 overflow-y-auto`}>
+                {conversations.length > 0 ? (
+                  <div className="p-2">
+                    {conversations.map(conv => (
+                      <div key={conv.id} className="flex items-center gap-2 group">
+                        <button
+                          onClick={() => loadConversation(conv)}
+                          className={`flex-1 text-left p-2 ${uiConfig.layout.radius.md} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${
                             activeConversation?.id === conv.id ? 'bg-scout-light dark:bg-scout-sage' : ''
                           }`}
                         >
-                          <button
-                            onClick={() => loadConversation(conv)}
-                            className="flex-1 text-left min-w-0"
-                          >
-                            <div className={`${uiConfig.font.weight.medium} ${uiConfig.font.size.sm} truncate text-gray-900 dark:text-gray-100`}>
-                              {conv.title}
-                            </div>
-                            <div className={`${uiConfig.font.size.xs} text-gray-600 dark:text-gray-400`}>
-                              {new Date(conv.createdAt).toLocaleDateString()}
-                            </div>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteConversation(conv.id);
-                            }}
-                            className="ml-2 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                            title="Delete conversation"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
-                        </div>
-                      );
-                    })}
+                          <div className={`${uiConfig.font.weight.medium} ${uiConfig.font.size.sm} truncate`}>
+                            {conv.title}
+                          </div>
+                          <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.muted}`}>
+                            {new Date(conv.createdAt).toLocaleDateString()}
+                          </div>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteConversation(conv.id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all"
+                          title="Delete"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 text-center">
+                    <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.muted}`}>No conversations yet</p>
                   </div>
                 )}
               </div>
-            </div>
-            
-            {/* Town Info - Favorites */}
-            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
-              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-                <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Town Info</h2>
-              </div>
-              
-              {favorites.length === 0 ? (
-                <div className="p-4 text-center">
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">No favorite towns yet.</p>
-                  <a href="/discover" className="text-scout-accent hover:underline mt-2 inline-block text-sm">
-                    Discover towns
-                  </a>
-                </div>
-              ) : (
-                <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 28rem)' }}>
-                  {favorites.map(favorite => (
-                    <button
-                      key={favorite.town_id}
-                      onClick={() => startNewChat(`Research on ${favorite.towns.name}`, favorite.towns)}
-                      className={`w-full text-left p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
-                    >
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-scout-light dark:bg-scout-sage rounded-lg flex items-center justify-center mr-3">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-scout-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                          </svg>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className={`${uiConfig.font.weight.medium} ${uiConfig.font.size.sm} truncate text-gray-900 dark:text-gray-100`}>
-                            {favorite.towns.name}
-                          </div>
-                          <div className={`${uiConfig.font.size.xs} text-gray-600 dark:text-gray-400`}>
-                            {favorite.towns.country}
-                          </div>
-                        </div>
-                        <div className={`${uiConfig.font.size.xs} text-gray-600 dark:text-gray-400 text-right`}>
-                          ${favorite.towns.rent_cost_$}/mo
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {/* Main Chat Area */}
-          <div className={`flex-1 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden flex flex-col h-[700px]`}>
-            {/* Chat Header */}
-            {activeConversation && (
-              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-                <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
-                  {activeConversation.title}
-                </h2>
-              </div>
             )}
-            
-            {/* Messages Container */}
-            <div className="flex-1 overflow-y-auto p-6">
-              {!activeConversation ? (
+          </div>
+
+          {/* Middle: Favorite Town Pills (Horizontally Scrollable) */}
+          {favorites.length > 0 && (
+            <div className="flex-1 overflow-x-auto scrollbar-hide">
+              <div className="flex items-center gap-2">
+                {[...favorites].sort((a, b) => a.towns.name.localeCompare(b.towns.name)).map(favorite => (
+                  <button
+                    key={favorite.town_id}
+                    onClick={() => startNewChat(`Research on ${favorite.towns.name}`, favorite.towns)}
+                    className={`flex-shrink-0 px-3 py-1.5 ${uiConfig.layout.radius.full} border ${uiConfig.colors.border} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${uiConfig.font.size.sm} whitespace-nowrap`}
+                  >
+                    {favorite.towns.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Right: New Chat Button */}
+          <button
+            onClick={() => startNewChat()}
+            className={`flex-shrink-0 flex items-center gap-2 px-4 py-1.5 bg-scout-accent-300 hover:bg-scout-accent-600 text-white ${uiConfig.layout.radius.md} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span className="hidden sm:inline">New Chat</span>
+          </button>
+          </div>
+        }
+      />
+
+      <HeaderSpacer hasFilters={true} />
+
+      {/* Main Content Area - Centered Container */}
+      <main className="flex-1 overflow-hidden">
+        <div className="h-full max-w-5xl mx-auto flex flex-col">
+          {/* Chat Title (Optional) */}
+          {activeConversation && (
+            <div className={`px-6 py-3 border-b ${uiConfig.colors.borderLight}`}>
+              <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} text-lg`}>
+                {activeConversation.title}
+              </h2>
+            </div>
+          )}
+
+          {/* Messages Container */}
+          <div className="flex-1 overflow-y-auto p-6">
+            {!activeConversation ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
                     {contextLoading ? (
@@ -765,67 +814,50 @@ What would you like to know about ${name}?`;
                       </p>
                     ) : (
                       <>
-                        <div className="max-w-2xl mx-auto text-center">
-                          <div className="mb-8">
-                            <div className="w-20 h-20 bg-scout-light dark:bg-scout-sage rounded-full flex items-center justify-center mx-auto mb-4">
-                              <span className="text-3xl font-bold text-scout-accent">S</span>
-                            </div>
-                            <p className={`${uiConfig.font.size.xl} ${uiConfig.font.weight.medium} text-gray-900 dark:text-white mb-2`}>
-                              Hi{userContext?.personal?.name ? ` ${getFirstName(userContext.personal.name)}` : ''}! I'm Scotty
+                        <div className="max-w-2xl mx-auto text-center space-y-8">
+                          {/* Main Greeting */}
+                          <h1 className="text-4xl font-normal text-gray-900 dark:text-white">
+                            Hi{userContext?.personal?.name ? ` ${getFirstName(userContext.personal.name)}` : ''}, how can I help you?
+                          </h1>
+
+                          {/* Small Disclaimer */}
+                          <div className="text-sm text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
+                            <p className="mb-1">
+                              <span className="inline-flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Friendly reminder
+                              </span>
                             </p>
-                            <p className={`${uiConfig.font.size.lg} text-gray-700 dark:text-gray-300`}>
-                              Your AI retirement companion
+                            <p>
+                              I'm an AI assistant sharing general information and insights. For specific legal, tax, medical, or financial decisions, it's always best to consult with qualified professionals who can review your unique situation.
                             </p>
                           </div>
-                          
-                          <div className={`${uiConfig.font.size.md} text-gray-600 dark:text-gray-400 space-y-4`}>
-                            {userContext?.citizenship?.primary ? (
-                              <p>
-                                I see you're a {userContext.citizenship.has_dual ? 'dual ' : ''}{userContext.citizenship.primary === 'us' ? 'US' : userContext.citizenship.primary.toUpperCase()}{userContext.citizenship.has_dual && userContext.citizenship.secondary ? `/${userContext.citizenship.secondary === 'us' ? 'US' : userContext.citizenship.secondary.toUpperCase()}` : ''} citizen
-                                {userContext?.family?.situation === 'couple' ? (
-                                  userContext?.family?.partner_citizenship?.primary ? 
-                                    ` with a ${userContext.family.partner_citizenship.has_dual ? 'dual ' : ''}${userContext.family.partner_citizenship.primary === 'us' ? 'US' : userContext.family.partner_citizenship.primary.toUpperCase()}${userContext.family.partner_citizenship.has_dual && userContext.family.partner_citizenship.secondary ? `/${userContext.family.partner_citizenship.secondary === 'us' ? 'US' : userContext.family.partner_citizenship.secondary.toUpperCase()}` : ''} citizen partner` :
-                                    ' with a partner'
-                                ) : ''}
-                                {userContext?.timeline?.status === 'planning' ? ', planning for retirement' : 
-                                 userContext?.timeline?.status === 'already_retired' ? ', enjoying retirement' : 
-                                 ', preparing for retirement soon'}. I'm here to help explore your options!
-                              </p>
-                            ) : null}
-                            
-                            {userContext?.family?.situation === 'couple' && userContext?.family?.partner_citizenship && (
-                              <p className="text-base">
-                                Having {userContext.family.partner_citizenship.has_dual ? 'multiple citizenships' : 'different citizenships'} as a couple opens unique opportunities for visa-free travel and residency options. I'll consider both of your citizenship advantages when suggesting destinations!
-                              </p>
-                            )}
-                            
-                            <p className="text-base">
-                              Ask me anything about retirement destinations, visa requirements, healthcare, 
-                              costs of living, or life abroad. I'll share insights based on your preferences 
-                              and what other retirees have experienced.
-                            </p>
-                            
-                            {userContext?.favorites?.length > 0 && (
-                              <p className="italic">
-                                I noticed you've favorited some towns - click any of them in the sidebar 
-                                to dive deeper into what makes them special!
-                              </p>
-                            )}
-                            
-                            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                              <p className="text-sm text-gray-500 dark:text-gray-500">
-                                <span className="inline-flex items-center">
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                  </svg>
-                                  Friendly reminder
-                                </span>
-                              </p>
-                              <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-                                I'm an AI assistant sharing general information and insights. For specific legal, 
-                                tax, medical, or financial decisions, it's always best to consult with qualified 
-                                professionals who can review your unique situation.
-                              </p>
+
+                          {/* Input Field - Shown in Empty State */}
+                          <div className="max-w-2xl mx-auto">
+                            <div className="flex gap-3">
+                              <textarea
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                onKeyDown={handleKeyPress}
+                                placeholder="Ask Scotty about retirement..."
+                                className={`flex-1 border-2 ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} py-3 px-4 ${uiConfig.colors.input} ${uiConfig.colors.body} focus:border-scout-accent focus:ring-2 focus:ring-scout-accent/20 resize-none`}
+                                rows={1}
+                                style={{ minHeight: '48px', maxHeight: '120px' }}
+                              />
+                              <button
+                                onClick={handleSend}
+                                disabled={loading || !message.trim()}
+                                className={`px-6 py-3 ${
+                                  loading || !message.trim()
+                                    ? `bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed`
+                                    : `bg-scout-accent-300 hover:bg-scout-accent-600 text-white`
+                                } ${uiConfig.layout.radius.md} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition}`}
+                              >
+                                Send
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -881,37 +913,38 @@ What would you like to know about ${name}?`;
                 </>
               )}
             </div>
-            
-            {/* Input Area - Always show */}
-            <div className={`p-4 border-t ${uiConfig.colors.borderLight}`}>
-                <div className="flex gap-3">
-                  <textarea
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    placeholder="Ask Scotty about retirement..."
-                    className={`flex-1 ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} py-2 px-4 ${uiConfig.colors.input} ${uiConfig.colors.body} ${uiConfig.colors.focusRing} focus:border-transparent resize-none`}
-                    rows={1}
-                    style={{ minHeight: '42px', maxHeight: '120px' }}
-                  />
-                  <button 
-                    onClick={handleSend}
-                    disabled={loading || !message.trim()}
-                    className={`px-6 py-2 ${
-                      loading || !message.trim() 
-                        ? `bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed` 
-                        : `bg-scout-accent-300 hover:bg-scout-accent-600 text-white`
-                    } ${uiConfig.layout.radius.md} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition}`}
-                  >
-                    Send
-                  </button>
-                </div>
+
+            {/* Input Area - Only show when there's an active conversation */}
+            {activeConversation && (
+              <div className={`p-4 border-t ${uiConfig.colors.borderLight}`}>
+                  <div className="flex gap-3">
+                    <textarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      onKeyDown={handleKeyPress}
+                      placeholder="Ask Scotty about retirement..."
+                      className={`flex-1 border-2 ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} py-3 px-4 ${uiConfig.colors.input} ${uiConfig.colors.body} focus:border-scout-accent focus:ring-2 focus:ring-scout-accent/20 resize-none`}
+                      rows={1}
+                      style={{ minHeight: '48px', maxHeight: '120px' }}
+                    />
+                    <button
+                      onClick={handleSend}
+                      disabled={loading || !message.trim()}
+                      className={`px-6 py-3 ${
+                        loading || !message.trim()
+                          ? `bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed`
+                          : `bg-scout-accent-300 hover:bg-scout-accent-600 text-white`
+                      } ${uiConfig.layout.radius.md} ${uiConfig.font.weight.medium} ${uiConfig.animation.transition}`}
+                    >
+                      Send
+                    </button>
+                  </div>
               </div>
+            )}
           </div>
-        </div>
-      </main>
-    </div>
-  );
-}
+        </main>
+      </div>
+    );
+  }
 
 export default ScottyGuide;

@@ -1,9 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import supabase from '../src/utils/supabaseClient';
 
 // Function to send a message to Claude via secure Edge Function
 export async function askConsultant(message, consultantPersona = '', conversationHistory = null) {

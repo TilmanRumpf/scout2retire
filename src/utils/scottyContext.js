@@ -274,14 +274,7 @@ function isUSCitizen(primary, secondary) {
  */
 function formatLegacyContext(userProfile, onboardingData, favorites = []) {
   const { current_status, region, climate, culture, hobbies, administration, budget } = onboardingData;
-  
-  // Debug logging
-  console.log('Legacy context - current_status:', current_status);
-  console.log('Legacy context - family_situation:', current_status?.family_situation);
-  console.log('Legacy context - partner_citizenship:', current_status?.partner_citizenship);
-  console.log('Legacy context - family_situation.status:', current_status?.family_situation?.status);
-  console.log('Legacy context - check condition:', current_status?.family_situation?.status === 'couple', '&&', !!current_status?.partner_citizenship);
-  
+
   return {
     personal: {
       name: userProfile.full_name,
