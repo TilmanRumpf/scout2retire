@@ -1,6 +1,69 @@
-# LATEST CHECKPOINT: 2025-09-30T03-21-12
+# LATEST CHECKPOINT: 2025-10-01T01-15-12
 
-## 🧹 ALGORITHM CONSOLIDATION ANALYSIS & CLEANUP ✅
+## 🔧 ADMIN ACCESS + SCOTTY AI CONTEXT FIXES ✅
+
+### Quick Summary
+- **FIXED**: Admin gear icon not showing in QuickNav (destructuring bug)
+- **EXPANDED**: Scotty AI context from 14.5% to 100% of user preferences
+- **ADDED**: 33 missing preference fields to Scotty (water sports, tax, healthcare, housing, visa, lifestyle)
+- **FIXED**: Pet awareness (cat), dual citizenship (US+DE, partner US+CA), favorites display
+- Database snapshot: 2025-10-01T01-15-12
+- Git commit: 9576816 "CHECKPOINT: Admin Access + Scotty AI Context Fixes"
+- All features working, comprehensive testing verified
+
+### To Restore:
+```bash
+node restore-database-snapshot.js 2025-10-01T01-15-12
+git checkout 9576816
+```
+
+### What Was Done:
+1. ✅ **Admin Access Restored**
+   - QuickNav.jsx line 55: Fixed destructuring to get `profile.is_admin`
+   - Was only getting `user` object, missing `profile` object
+   - Gear icon now shows for tilman.rumpf@gmail.com
+
+2. ✅ **Scotty AI Context Massively Expanded**
+   - scottyContext.js: 12 separate fixes across 400+ lines
+   - Added geographic features (coastal preference)
+   - Added 16 water sports activities
+   - Added tax sensitivity (property + sales tax)
+   - Added healthcare budget ($650/month)
+   - Added housing preferences (rent/buy, budget ranges)
+   - Added visa/residency preferences (long-term stay, residence path)
+   - Added lifestyle preferences (urban/rural, pace)
+
+3. ✅ **Pet Information Fixed**
+   - Changed from wrong field (`pet_owner`) to correct field (`pet_types`)
+   - Enhanced prompt to show specific pet types ("cat" not just "has pet")
+
+4. ✅ **Dual Citizenship Display Fixed**
+   - User citizenship: US + DE (was only showing US)
+   - Partner citizenship: US + CA (was showing null)
+   - Fixed conditional logic that blocked secondary citizenship display
+
+5. ✅ **Favorites Display Improved**
+   - Changed from truncated (3 shown, "4 more") to full list (all 7 shown)
+
+### Key Files Changed:
+- `src/components/QuickNav.jsx` - Admin access fix (line 55)
+- `src/utils/scottyContext.js` - 12 fixes for comprehensive context
+- `CLAUDE.md` - Added data flow tracing rules
+- `supabase/migrations/20250930_fix_users_select_policy.sql` - RLS policy (not needed but safe)
+- `docs/project-history/2025-09-30_admin-scotty-fixes.md` - Full recovery documentation
+
+### Impact:
+- Admin access: Fully working
+- Scotty AI: Complete user context (100% of preferences)
+- Pet awareness: Specific types shown
+- Citizenship: Both user and partner dual citizenship working
+- Ready for normal operation
+
+---
+
+## Previous Checkpoints
+
+### 2025-09-30T03-21-12: Algorithm Consolidation Analysis & Cleanup ✅
 
 ### Quick Summary
 - **ANALYZED**: 32 algorithm files with 3 parallel agents
