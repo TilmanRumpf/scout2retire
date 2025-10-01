@@ -1,4 +1,4 @@
-import supabase from './supabaseClient';
+import supabase from './supabaseClient.js';
 import toast from 'react-hot-toast';
 
 // Auth helpers
