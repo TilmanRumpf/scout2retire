@@ -42,15 +42,7 @@ const REGION_COUNTRIES = {
 
 
 export default function TownDiscovery() {
-  const [selectedTown, setSelectedTownState] = useState(null);
-  
-  // Wrapper to also save to localStorage when town changes
-  const setSelectedTown = (townId) => {
-    setSelectedTownState(townId);
-    if (townId) {
-      localStorage.setItem('lastVisitedTown', townId);
-    }
-  };
+  const [selectedTown, setSelectedTown] = useState(null);
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [userLoading, setUserLoading] = useState(true);
@@ -141,28 +133,29 @@ export default function TownDiscovery() {
   
   // Parse URL parameters and handle town selection
   useEffect(() => {
+    if (towns.length === 0) return; // Wait for towns to load
+
     const params = new URLSearchParams(location.search);
     const townId = params.get('town');
     const regionFilter = params.get('filterRegion');
-    
+
     if (townId) {
       // User came from a specific town card - show that town
       setSelectedTown(townId);
-    } else if (!selectedTown && towns.length > 0) {
-      // No specific town requested - try to restore last visited or pick first
-      const lastVisited = localStorage.getItem('lastVisitedTown');
-      
-      if (lastVisited && towns.some(t => String(t.id) === String(lastVisited))) {
-        // Last visited town exists in current list
-        setSelectedTown(lastVisited);
+    } else {
+      // No URL param - ALWAYS pick a fresh random town with 80%+ match
+      const highMatchTowns = towns.filter(t => (t.matchScore || 0) >= 80);
+
+      if (highMatchTowns.length > 0) {
+        // Randomly select from high-match towns
+        const randomIndex = Math.floor(Math.random() * highMatchTowns.length);
+        setSelectedTown(highMatchTowns[randomIndex].id);
       } else {
-        // Default to first town in the list (best match if sorted by match score)
-        if (towns.length > 0) {
-          setSelectedTown(towns[0].id);
-        }
+        // Fallback: if no towns have 80%+, use highest match score
+        setSelectedTown(towns[0].id);
       }
     }
-    
+
     // Set region filter from URL parameter
     if (regionFilter && REGIONS.includes(regionFilter)) {
       setFilterRegion(regionFilter);
@@ -958,7 +951,7 @@ export default function TownDiscovery() {
                   </button>
                   <button
                     onClick={() => setSelectedTown(town.id)}
-                    className={`px-3 py-1.5 text-xs ${uiConfig.colors.body} border ${uiConfig.colors.border} hover:${uiConfig.colors.secondary} ${uiConfig.layout.radius.md} mx-1`}
+                    className={`px-3 py-1.5 text-xs ${uiConfig.colors.btnSecondary} ${uiConfig.layout.radius.md} mx-1`}
                   >
                     Overview
                   </button>
