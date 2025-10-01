@@ -6,6 +6,7 @@ import { mapToStandardValue } from './helpers/climateInference.js'
 import { mapCultureValue } from './helpers/cultureInference.js'
 import { calculateHobbiesScore as calculateNormalizedHobbiesScore } from './helpers/hobbiesMatching.js'
 import { CATEGORY_WEIGHTS } from './config.js'
+import { compareIgnoreCase, includesIgnoreCase, normalize, arrayIncludesIgnoreCase } from './helpers/stringUtils.js'
 
 // Weights optimized for 55+ retirees: equal emphasis on location preference, budget constraints, and healthcare/safety (60% combined), with climate and culture as secondary factors
 // CATEGORY_WEIGHTS now imported from config.js - SINGLE SOURCE OF TRUTH
@@ -13,15 +14,15 @@ import { CATEGORY_WEIGHTS } from './config.js'
 // Helper function to calculate array overlap score
 function calculateArrayOverlap(userArray, townArray, maxScore = 100) {
   if (!userArray?.length || !townArray?.length) return 0
-  
-  const userSet = new Set(userArray.map(item => item.toLowerCase()))
-  const townSet = new Set(townArray.map(item => item.toLowerCase()))
-  
+
+  const userSet = new Set(userArray.map(item => normalize(item)))
+  const townSet = new Set(townArray.map(item => normalize(item)))
+
   let matches = 0
   for (const item of userSet) {
     if (townSet.has(item)) matches++
   }
-  
+
   return (matches / userSet.size) * maxScore
 }
 
@@ -95,19 +96,19 @@ export function calculateRegionScore(preferences, town) {
     // If no country match, check for region match (75% = 30 points)
     if (!countryMatched && hasRegionPrefs) {
       // Check traditional regions array (case-insensitive)
-      const userRegionsLower = preferences.regions.map(r => r.toLowerCase())
-      
-      if (town.regions?.some(region => userRegionsLower.includes(region.toLowerCase()))) {
+      const userRegionsLower = preferences.regions.map(r => normalize(r))
+
+      if (town.regions?.some(region => arrayIncludesIgnoreCase(userRegionsLower, region))) {
         regionCountryScore = 30
         factors.push({ factor: 'Region match only', score: 30 })
       }
       // Also check geo_region for broader matches (now comma-separated)
       else if (town.geo_region) {
         // Handle comma-separated geo_region
-        const geoRegions = town.geo_region.includes(',') 
-          ? town.geo_region.split(',').map(r => r.trim().toLowerCase())
-          : [town.geo_region.toLowerCase()]
-        
+        const geoRegions = town.geo_region.includes(',')
+          ? town.geo_region.split(',').map(r => normalize(r.trim()))
+          : [normalize(town.geo_region)]
+
         if (geoRegions.some(gr => userRegionsLower.includes(gr))) {
           regionCountryScore = 30
           factors.push({ factor: `Region match only (${town.geo_region})`, score: 30 })
@@ -131,8 +132,8 @@ export function calculateRegionScore(preferences, town) {
   // Define all possible geographic features
   const ALL_GEO_FEATURES = ['coastal', 'mountain', 'island', 'lake', 'river', 'valley', 'desert', 'forest', 'plains']
   const userSelectedAllGeo = preferences.geographic_features?.length === ALL_GEO_FEATURES.length &&
-    ALL_GEO_FEATURES.every(f => preferences.geographic_features.map(gf => gf.toLowerCase()).includes(f))
-  
+    ALL_GEO_FEATURES.every(f => arrayIncludesIgnoreCase(preferences.geographic_features, f))
+
   if (!hasGeoPrefs || userSelectedAllGeo) {
     // No geographic preferences OR selected ALL = 100% = 30 points (user is open to anything)
     geoScore = 30
@@ -140,19 +141,19 @@ export function calculateRegionScore(preferences, town) {
   } else {
     // Check if ANY geographic feature matches
     let hasMatch = false
-    const userFeatures = preferences.geographic_features.map(f => f.toLowerCase())
-    
+    const userFeatures = preferences.geographic_features.map(f => normalize(f))
+
     // First try actual geographic features - CASE INSENSITIVE FIX
     if (town.geographic_features_actual?.length) {
-      const townFeatures = town.geographic_features_actual.map(f => String(f).toLowerCase())
-      hasMatch = userFeatures.some(feature => townFeatures.includes(feature.toLowerCase()))
+      const townFeatures = town.geographic_features_actual.map(f => normalize(String(f)))
+      hasMatch = userFeatures.some(feature => townFeatures.includes(feature))
     }
-    
+
     // FALLBACK: Check regions array for coastal indicators when no geographic data
-    if (!hasMatch && userFeatures.includes('coastal') && town.regions?.length) {
+    if (!hasMatch && arrayIncludesIgnoreCase(userFeatures, 'coastal') && town.regions?.length) {
       const coastalIndicators = ['gulf', 'ocean', 'coast', 'beach', 'sea', 'atlantic', 'pacific', 'mediterranean']
-      hasMatch = town.regions.some(region => 
-        coastalIndicators.some(indicator => region.toLowerCase().includes(indicator))
+      hasMatch = town.regions.some(region =>
+        coastalIndicators.some(indicator => includesIgnoreCase(region, indicator))
       )
     }
     
@@ -176,7 +177,7 @@ export function calculateRegionScore(preferences, town) {
       
       let partialMatch = false
       if (town.geographic_features_actual?.length) {
-        const townFeatures = town.geographic_features_actual.map(f => String(f).toLowerCase())
+        const townFeatures = town.geographic_features_actual.map(f => normalize(String(f)))
         for (const userFeature of userFeatures) {
           const related = relatedFeatures[userFeature] || []
           if (townFeatures.some(tf => related.includes(tf))) {
@@ -202,12 +203,12 @@ export function calculateRegionScore(preferences, town) {
   // Define all possible vegetation types
   const ALL_VEG_TYPES = ['tropical', 'subtropical', 'mediterranean', 'forest', 'grassland', 'desert']
   const userSelectedAllVeg = preferences.vegetation_types?.length === ALL_VEG_TYPES.length &&
-    ALL_VEG_TYPES.every(v => preferences.vegetation_types.map(vt => vt.toLowerCase()).includes(v))
-  
+    ALL_VEG_TYPES.every(v => arrayIncludesIgnoreCase(preferences.vegetation_types, v))
+
   // SMART INFERENCE: If user selected Mediterranean region but didn't specify vegetation,
   // they're likely OK with mediterranean vegetation (common sense)
-  const impliedMediterraneanVeg = !hasVegPrefs && hasRegionPrefs && 
-    preferences.regions?.some(r => r.toLowerCase() === 'mediterranean')
+  const impliedMediterraneanVeg = !hasVegPrefs && hasRegionPrefs &&
+    preferences.regions?.some(r => compareIgnoreCase(r, 'mediterranean'))
   
   if (!hasVegPrefs || userSelectedAllVeg) {
     // No vegetation preferences OR selected ALL = 100% = 20 points (user is open to anything)
@@ -219,10 +220,10 @@ export function calculateRegionScore(preferences, town) {
     }
   } else if (town.vegetation_type_actual?.length) {
     // Check if ANY vegetation type matches - CASE INSENSITIVE FIX
-    const userVeg = preferences.vegetation_types.map(v => v.toLowerCase())
-    const townVeg = town.vegetation_type_actual.map(v => String(v).toLowerCase())
+    const userVeg = preferences.vegetation_types.map(v => normalize(v))
+    const townVeg = town.vegetation_type_actual.map(v => normalize(String(v)))
     const hasMatch = userVeg.some(veg => townVeg.includes(veg))
-    
+
     if (hasMatch) {
       vegScore = 20
       factors.push({ factor: 'Vegetation type match', score: 20 })
@@ -236,7 +237,7 @@ export function calculateRegionScore(preferences, town) {
         'forest': ['grassland'],
         'grassland': ['forest']
       }
-      
+
       let partialMatch = false
       for (const userVegType of userVeg) {
         const related = relatedVegetation[userVegType] || []
@@ -247,7 +248,7 @@ export function calculateRegionScore(preferences, town) {
           break
         }
       }
-      
+
       if (!partialMatch) {
         factors.push({ factor: 'No vegetation match', score: 0 })
       }
@@ -461,29 +462,29 @@ export function calculateClimateScore(preferences, town) {
   } else if (town.summer_climate_actual) {
     // Fall back to string matching with array handling
     const summerPrefs = Array.isArray(preferences.summer_climate_preference)
-      ? preferences.summer_climate_preference.map(p => p?.toLowerCase())
-      : [preferences.summer_climate_preference].filter(Boolean).map(p => p?.toLowerCase())
+      ? preferences.summer_climate_preference.map(p => normalize(p))
+      : [preferences.summer_climate_preference].filter(Boolean).map(p => normalize(p))
 
-    if (summerPrefs.includes(town.summer_climate_actual?.toLowerCase())) {
+    if (arrayIncludesIgnoreCase(summerPrefs, town.summer_climate_actual)) {
       score += 25
       factors.push({ factor: 'Perfect summer climate match', score: 25 })
-    } else if (summerPrefs.includes('warm') && town.summer_climate_actual?.toLowerCase() === 'hot') {
+    } else if (summerPrefs.includes('warm') && compareIgnoreCase(town.summer_climate_actual, 'hot')) {
       // Hot is BETTER than warm for someone wanting warm!
       score += 25
       factors.push({ factor: 'Even warmer than requested', score: 25 })
-    } else if (summerPrefs.includes('warm') && town.summer_climate_actual?.toLowerCase() === 'mild') {
+    } else if (summerPrefs.includes('warm') && compareIgnoreCase(town.summer_climate_actual, 'mild')) {
       score += 15
       factors.push({ factor: 'Acceptable summer climate', score: 15 })
     }
   } else if (!town.summer_climate_actual && !town.avg_temp_summer && town.climate_description) {
     // Last fallback: parse climate description
     const climateDesc = typeof town.climate_description === 'string'
-      ? town.climate_description.toLowerCase()
+      ? normalize(town.climate_description)
       : ''
     // Handle both array and string preferences
     const summerPrefForFallback = Array.isArray(preferences.summer_climate_preference)
-      ? preferences.summer_climate_preference[0]?.toLowerCase()
-      : preferences.summer_climate_preference?.toLowerCase()
+      ? normalize(preferences.summer_climate_preference[0])
+      : normalize(preferences.summer_climate_preference)
 
     if (summerPrefForFallback === 'warm' && (climateDesc.includes('warm') || climateDesc.includes('mediterranean'))) {
       score += 13
@@ -541,7 +542,7 @@ export function calculateClimateScore(preferences, town) {
       score += 25
       factors.push({ factor: `Perfect winter climate match (${town.winter_climate_actual})`, score: 25 })
     } else if (
-      (winterPrefs.includes('mild') && (standardizedWinter === 'cool' || town.winter_climate_actual?.toLowerCase() === 'warm')) ||
+      (winterPrefs.includes('mild') && (standardizedWinter === 'cool' || compareIgnoreCase(town.winter_climate_actual, 'warm'))) ||
       (winterPrefs.includes('cool') && standardizedWinter === 'mild')
     ) {
       score += 15
@@ -550,12 +551,12 @@ export function calculateClimateScore(preferences, town) {
   } else if (!town.winter_climate_actual && !town.avg_temp_winter && town.climate_description) {
     // Last fallback: parse climate description
     const climateDesc = typeof town.climate_description === 'string'
-      ? town.climate_description.toLowerCase()
+      ? normalize(town.climate_description)
       : ''
     // Handle both array and string preferences
     const winterPrefForFallback = Array.isArray(preferences.winter_climate_preference)
-      ? preferences.winter_climate_preference[0]?.toLowerCase()
-      : preferences.winter_climate_preference?.toLowerCase()
+      ? normalize(preferences.winter_climate_preference[0])
+      : normalize(preferences.winter_climate_preference)
 
     if (winterPrefForFallback === 'mild' && (climateDesc.includes('mild') || climateDesc.includes('mediterranean'))) {
       score += 13
@@ -595,10 +596,10 @@ export function calculateClimateScore(preferences, town) {
   } else if (!town.humidity_level_actual && town.climate_description && preferences.humidity_level?.length > 0) {
     // Fallback: try to infer from climate description
     const climateDesc = typeof town.climate_description === 'string'
-      ? town.climate_description.toLowerCase()
+      ? normalize(town.climate_description)
       : ''
     let inferredHumidity = null
-    
+
     if (climateDesc.includes('arid') || climateDesc.includes('desert') || climateDesc.includes('dry')) {
       inferredHumidity = 'dry'
     } else if (climateDesc.includes('humid') || climateDesc.includes('tropical') || climateDesc.includes('moist')) {
@@ -693,10 +694,10 @@ export function calculateClimateScore(preferences, town) {
   } else if (!town.sunshine_level_actual && !town.sunshine_hours && town.climate_description && preferences.sunshine?.length > 0) {
     // Last fallback: infer from climate description
     const climateDesc = typeof town.climate_description === 'string'
-      ? town.climate_description.toLowerCase()
+      ? normalize(town.climate_description)
       : ''
     let inferredSunshine = null
-    
+
     if (climateDesc.includes('sunny') || climateDesc.includes('desert') || climateDesc.includes('arid')) {
       inferredSunshine = 'often_sunny'
     } else if (climateDesc.includes('mediterranean') || climateDesc.includes('tropical')) {
@@ -783,10 +784,10 @@ export function calculateClimateScore(preferences, town) {
   } else if (!town.precipitation_level_actual && !town.annual_rainfall && town.climate_description && preferences.precipitation?.length > 0) {
     // Last fallback: infer from climate description
     const climateDesc = typeof town.climate_description === 'string'
-      ? town.climate_description.toLowerCase()
+      ? normalize(town.climate_description)
       : ''
     let inferredPrecipitation = null
-    
+
     if (climateDesc.includes('arid') || climateDesc.includes('desert') || climateDesc.includes('dry')) {
       inferredPrecipitation = 'mostly_dry'
     } else if (climateDesc.includes('mediterranean') || climateDesc.includes('temperate')) {
@@ -830,22 +831,22 @@ export function calculateClimateScore(preferences, town) {
   // Otherwise, apply seasonal matching if we have temperature data
   else if (town.avg_temp_summer !== null && town.avg_temp_summer !== undefined &&
            town.avg_temp_winter !== null && town.avg_temp_winter !== undefined) {
-    
-    const seasonPref = preferences.seasonal_preference?.toLowerCase()
+
+    const seasonPref = normalize(preferences.seasonal_preference)
 
     if (seasonPref === 'summer_focused' || seasonPref === 'warm_seasons' || seasonPref === 'prefer_warm_seasons') {
       // User prefers warm seasons - check if Summer Climate fits = 15 Pts
       let seasonScore = 0
       let summerFits = false
-      
+
       // Check if summer climate matches preference
       if (preferences.summer_climate_preference) {
         // Handle both array and string preferences
         const summerPrefs = Array.isArray(preferences.summer_climate_preference)
-          ? preferences.summer_climate_preference.map(p => p?.toLowerCase())
-          : [preferences.summer_climate_preference].filter(Boolean).map(p => p?.toLowerCase())
+          ? preferences.summer_climate_preference.map(p => normalize(p))
+          : [preferences.summer_climate_preference].filter(Boolean).map(p => normalize(p))
 
-        const townSummer = town.summer_climate_actual?.toLowerCase()
+        const townSummer = normalize(town.summer_climate_actual)
 
         if (townSummer && summerPrefs.includes(townSummer)) {
           summerFits = true
@@ -909,15 +910,15 @@ export function calculateClimateScore(preferences, town) {
       let seasonScore = 0
       let summerFits = false
       let winterFits = false
-      
+
       // Check if summer climate matches preference
       if (preferences.summer_climate_preference) {
         // Handle both array and string preferences
         const summerPrefs = Array.isArray(preferences.summer_climate_preference)
-          ? preferences.summer_climate_preference.map(p => p?.toLowerCase())
-          : [preferences.summer_climate_preference].filter(Boolean).map(p => p?.toLowerCase())
+          ? preferences.summer_climate_preference.map(p => normalize(p))
+          : [preferences.summer_climate_preference].filter(Boolean).map(p => normalize(p))
 
-        const townSummer = town.summer_climate_actual?.toLowerCase()
+        const townSummer = normalize(town.summer_climate_actual)
 
         if (townSummer && summerPrefs.includes(townSummer)) {
           summerFits = true
@@ -1122,11 +1123,11 @@ export function calculateCultureScore(preferences, town) {
   } 
   // Check if user speaks the local language
   else if (speaksLanguages.length > 0 && town.primary_language) {
-    const speaksLocal = speaksLanguages.some(lang => 
-      town.primary_language?.toLowerCase().includes(lang.toLowerCase()) ||
-      town.languages_spoken?.some(l => l.toLowerCase().includes(lang.toLowerCase()))
+    const speaksLocal = speaksLanguages.some(lang =>
+      includesIgnoreCase(town.primary_language, lang) ||
+      town.languages_spoken?.some(l => includesIgnoreCase(l, lang))
     )
-    
+
     if (speaksLocal) {
       score += 20
       factors.push({ factor: `Speaks local language (${town.primary_language})`, score: 20 })
@@ -1139,7 +1140,7 @@ export function calculateCultureScore(preferences, town) {
   }
   // English only preference
   else if (langPref === 'english_only') {
-    if (town.primary_language?.toLowerCase() === 'english') {
+    if (compareIgnoreCase(town.primary_language, 'english')) {
       score += 20
       factors.push({ factor: 'English is primary language', score: 20 })
     } else if (town.english_proficiency_level) {

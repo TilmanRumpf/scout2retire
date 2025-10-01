@@ -245,7 +245,7 @@ import {
   signIn as authUtilsSignIn,
   signOut as authUtilsSignOut,
   getCurrentUser as authUtilsGetCurrentUser
-} from './authUtils';
+} from './authUtils.js';
 
 /**
  * @deprecated Import from authUtils.js instead
