@@ -14,11 +14,12 @@ export const useOnboarding = () => {
 
 // Onboarding Provider Component
 export const OnboardingProvider = ({ children }) => {
-  // Load persisted state from localStorage
+  // Load persisted state from sessionStorage (crash recovery only)
   const loadPersistedState = () => {
     try {
-      const saved = localStorage.getItem('onboardingProgress');
+      const saved = sessionStorage.getItem('onboardingProgress');
       if (saved) {
+        console.log('🔄 Recovered onboarding progress from session');
         return JSON.parse(saved);
       }
     } catch (err) {
@@ -28,7 +29,8 @@ export const OnboardingProvider = ({ children }) => {
       currentStep: 1,
       totalSteps: 10,
       completedSteps: [],
-      responses: {}
+      responses: {},
+      savedToDatabase: false
     };
   };
 
@@ -36,10 +38,17 @@ export const OnboardingProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Persist state to localStorage whenever it changes
+  // Persist state to sessionStorage for crash recovery ONLY
+  // Clear it once successfully saved to database
   useEffect(() => {
     try {
-      localStorage.setItem('onboardingProgress', JSON.stringify(state));
+      if (!state.savedToDatabase) {
+        // Only persist if not yet saved to database
+        sessionStorage.setItem('onboardingProgress', JSON.stringify(state));
+      } else {
+        // Clear session storage once saved to database
+        sessionStorage.removeItem('onboardingProgress');
+      }
     } catch (err) {
       console.error('Failed to save onboarding progress:', err);
     }
@@ -112,10 +121,19 @@ export const OnboardingProvider = ({ children }) => {
       currentStep: 1,
       totalSteps: 10,
       completedSteps: [],
-      responses: {}
+      responses: {},
+      savedToDatabase: false
     };
     setState(initialState);
-    localStorage.removeItem('onboardingProgress');
+    sessionStorage.removeItem('onboardingProgress');
+  }, []);
+
+  // Mark onboarding as saved to database (triggers sessionStorage cleanup)
+  const markSavedToDatabase = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      savedToDatabase: true
+    }));
   }, []);
 
   // Get all responses for final submission
@@ -137,13 +155,14 @@ export const OnboardingProvider = ({ children }) => {
     responses: state.responses,
     loading,
     error,
-    
+
     // Methods
     setCurrentStep,
     markStepCompleted,
     saveStepResponse,
     getStepResponse,
     isStepCompleted,
+    markSavedToDatabase,
     getProgressPercentage,
     goToNextStep,
     goToPreviousStep,
@@ -156,6 +175,7 @@ export const OnboardingProvider = ({ children }) => {
     error,
     setCurrentStep,
     markStepCompleted,
+    markSavedToDatabase,
     saveStepResponse,
     getStepResponse,
     isStepCompleted,

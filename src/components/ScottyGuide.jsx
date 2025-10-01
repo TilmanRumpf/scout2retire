@@ -287,12 +287,8 @@ What would you like to know about ${name}?`;
 
           if (convError) {
             console.error('Error loading conversations:', convError);
-            // Fallback to localStorage if database fails
-            const savedConversations = localStorage.getItem(`scotty_conversations_${user.id}`);
-            if (savedConversations) {
-              const parsedConversations = JSON.parse(savedConversations);
-              setConversations(parsedConversations.slice(0, 5));
-            }
+            toast.error('Unable to load chat history. Please refresh the page.');
+            setConversations([]);
           } else if (dbConversations) {
             // Transform database format to component format
             const formattedConversations = dbConversations.map(conv => ({
@@ -482,13 +478,11 @@ What would you like to know about ${name}?`;
         updatedConversation,
         ...conversations.filter(c => c.id !== conversation.id)
       ].slice(0, 5);
-      
+
       setConversations(updatedConversations);
-      
-      localStorage.setItem(
-        `scotty_conversations_${window.scottyUserId}`,
-        JSON.stringify(updatedConversations)
-      );
+
+      // Conversations are now stored in database only
+      // No localStorage fallback needed
     }
   };
 
