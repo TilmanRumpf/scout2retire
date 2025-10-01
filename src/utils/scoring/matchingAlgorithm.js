@@ -96,18 +96,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
 
     // User preferences loaded successfully
 
-    // Check cache first for performance
-    const cacheKey = `personalized_${userId}_${JSON.stringify(options)}`;
-    const cachedResult = sessionStorage.getItem(cacheKey);
-    if (cachedResult) {
-      const parsed = JSON.parse(cachedResult);
-      if (Date.now() - parsed.timestamp < 3600000) { // 1 hour cache
-        // Return cached results for performance
-        // return parsed.data;
-      }
-    }
-
-    // 2. Build query with smart pre-filtering for performance
+    // Build query with smart pre-filtering for performance
     // SELECT only needed columns for better performance (FIXED: removed non-existent scoring columns)
     const selectColumns = `
       id, name, country, population, region,

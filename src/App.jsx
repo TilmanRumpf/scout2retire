@@ -206,11 +206,6 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Initialize version check and auto-refresh
-// DISABLED - causing potential refresh loops
-// checkAppVersion();
-// setupAutoRefresh();
-
 // Create the router configuration with v7 future flags enabled
 const router = createBrowserRouter([
   {
@@ -281,10 +276,6 @@ const router = createBrowserRouter([
         path: "journal",
         element: <ProtectedRoute><AuthenticatedLayout><Journal /></AuthenticatedLayout></ProtectedRoute>
       },
-      // {
-      //   path: "test-claude",
-      //   element: <ProtectedRoute><AuthenticatedLayout><TestClaude /></AuthenticatedLayout></ProtectedRoute>
-      // },
       {
         path: "scotty",
         element: <ProtectedRoute><AuthenticatedLayout><ScottyGuide /></AuthenticatedLayout></ProtectedRoute>

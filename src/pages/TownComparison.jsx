@@ -286,7 +286,6 @@ export default function TownComparison() {
     }
   };
 
-  // getCategoryValue function removed - replaced by CategoryContent component
   // Render loading state
   if (loading) {
     return (
