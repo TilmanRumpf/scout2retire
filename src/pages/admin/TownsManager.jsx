@@ -15,9 +15,6 @@ import { getFieldOptions, isMultiSelectField } from '../../utils/townDataOptions
 import { useFieldDefinitions } from '../../hooks/useFieldDefinitions';
 import { uiConfig } from '../../styles/uiConfig';
 
-// Admin email check
-const ADMIN_EMAIL = 'tilman.rumpf@gmail.com';
-
 // Column mappings organized by category and subcategory to match onboarding structure
 const COLUMN_CATEGORIES = {
   Region: {
