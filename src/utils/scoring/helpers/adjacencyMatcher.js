@@ -12,13 +12,23 @@
  * @param {string} userPreference - User's preference value
  * @param {string} townValue - Town's actual value
  * @param {Object} adjacencyMap - Map of preference → adjacent acceptable values
+ * @param {Object} options - Optional configuration
+ * @param {number} options.adjacentStrength - Strength for adjacent matches (default: 0.7)
  * @returns {Object} { match: boolean, strength: number }
  *
  * @example
- * const result = findAdjacentMatches('warm', 'hot', { warm: ['hot', 'temperate'] });
+ * // Climate scoring (70% for adjacent)
+ * const result = findAdjacentMatches('warm', 'hot', adjacencyMap);
  * // Returns: { match: true, strength: 0.7 }
+ *
+ * @example
+ * // Culture scoring (50% for adjacent)
+ * const result = findAdjacentMatches('urban', 'suburban', adjacencyMap, { adjacentStrength: 0.5 });
+ * // Returns: { match: true, strength: 0.5 }
  */
-export function findAdjacentMatches(userPreference, townValue, adjacencyMap) {
+export function findAdjacentMatches(userPreference, townValue, adjacencyMap, options = {}) {
+  const { adjacentStrength = 0.7 } = options;
+
   // Handle null/undefined
   if (!userPreference || !townValue) {
     return { match: false, strength: 0 };
@@ -40,7 +50,7 @@ export function findAdjacentMatches(userPreference, townValue, adjacencyMap) {
     );
 
     if (isAdjacent) {
-      return { match: true, strength: 0.7 }; // Partial match
+      return { match: true, strength: adjacentStrength }; // Configurable partial match
     }
   }
 
