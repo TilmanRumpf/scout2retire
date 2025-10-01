@@ -7,6 +7,7 @@ import { mapCultureValue } from './helpers/cultureInference.js'
 import { calculateHobbiesScore as calculateNormalizedHobbiesScore } from './helpers/hobbiesMatching.js'
 import { CATEGORY_WEIGHTS } from './config.js'
 import { compareIgnoreCase, includesIgnoreCase, normalize, arrayIncludesIgnoreCase } from './helpers/stringUtils.js'
+import { parsePreferences } from './helpers/preferenceParser.js'
 
 // Weights optimized for 55+ retirees: equal emphasis on location preference, budget constraints, and healthcare/safety (60% combined), with climate and culture as secondary factors
 // CATEGORY_WEIGHTS now imported from config.js - SINGLE SOURCE OF TRUTH
@@ -37,12 +38,15 @@ function normalizeScore(value, min, max) {
 export function calculateRegionScore(preferences, town) {
   let score = 0
   let factors = []
-  
-  // Check if user has any preferences at all
-  const hasCountryPrefs = preferences.countries?.length > 0
-  const hasRegionPrefs = preferences.regions?.length > 0
-  const hasGeoPrefs = preferences.geographic_features?.length > 0
-  const hasVegPrefs = preferences.vegetation_types?.length > 0
+
+  // Parse and normalize preferences using centralized parser
+  const parsed = parsePreferences(preferences)
+
+  // Extract region preferences for easier access
+  const hasCountryPrefs = parsed.region.countries.length > 0
+  const hasRegionPrefs = parsed.region.regions.length > 0
+  const hasGeoPrefs = parsed.region.geographic_features.length > 0
+  const hasVegPrefs = parsed.region.vegetation_types.length > 0
   
   // DEBUG: Log when score is unexpectedly low
   const DEBUG = false  // Fixed: was case sensitivity issue
@@ -77,7 +81,7 @@ export function calculateRegionScore(preferences, town) {
     // Check for country match first (highest priority)
     let countryMatched = false
     if (hasCountryPrefs) {
-      for (const country of preferences.countries) {
+      for (const country of parsed.region.countries) {
         // Check if it's a US state
         if (US_STATES.has(country) && town.country === 'United States' && town.region === country) {
           regionCountryScore = 40
@@ -96,7 +100,7 @@ export function calculateRegionScore(preferences, town) {
     // If no country match, check for region match (75% = 30 points)
     if (!countryMatched && hasRegionPrefs) {
       // Check traditional regions array (case-insensitive)
-      const userRegionsLower = preferences.regions.map(r => normalize(r))
+      const userRegionsLower = parsed.region.regions.map(r => normalize(r))
 
       if (town.regions?.some(region => arrayIncludesIgnoreCase(userRegionsLower, region))) {
         regionCountryScore = 30
@@ -131,8 +135,8 @@ export function calculateRegionScore(preferences, town) {
   
   // Define all possible geographic features
   const ALL_GEO_FEATURES = ['coastal', 'mountain', 'island', 'lake', 'river', 'valley', 'desert', 'forest', 'plains']
-  const userSelectedAllGeo = preferences.geographic_features?.length === ALL_GEO_FEATURES.length &&
-    ALL_GEO_FEATURES.every(f => arrayIncludesIgnoreCase(preferences.geographic_features, f))
+  const userSelectedAllGeo = parsed.region.geographic_features.length === ALL_GEO_FEATURES.length &&
+    ALL_GEO_FEATURES.every(f => arrayIncludesIgnoreCase(parsed.region.geographic_features, f))
 
   if (!hasGeoPrefs || userSelectedAllGeo) {
     // No geographic preferences OR selected ALL = 100% = 30 points (user is open to anything)
@@ -141,7 +145,7 @@ export function calculateRegionScore(preferences, town) {
   } else {
     // Check if ANY geographic feature matches
     let hasMatch = false
-    const userFeatures = preferences.geographic_features.map(f => normalize(f))
+    const userFeatures = parsed.region.geographic_features.map(f => normalize(f))
 
     // First try actual geographic features - CASE INSENSITIVE FIX
     if (town.geographic_features_actual?.length) {
@@ -202,14 +206,14 @@ export function calculateRegionScore(preferences, town) {
   
   // Define all possible vegetation types
   const ALL_VEG_TYPES = ['tropical', 'subtropical', 'mediterranean', 'forest', 'grassland', 'desert']
-  const userSelectedAllVeg = preferences.vegetation_types?.length === ALL_VEG_TYPES.length &&
-    ALL_VEG_TYPES.every(v => arrayIncludesIgnoreCase(preferences.vegetation_types, v))
+  const userSelectedAllVeg = parsed.region.vegetation_types.length === ALL_VEG_TYPES.length &&
+    ALL_VEG_TYPES.every(v => arrayIncludesIgnoreCase(parsed.region.vegetation_types, v))
 
   // SMART INFERENCE: If user selected Mediterranean region but didn't specify vegetation,
   // they're likely OK with mediterranean vegetation (common sense)
   const impliedMediterraneanVeg = !hasVegPrefs && hasRegionPrefs &&
-    preferences.regions?.some(r => compareIgnoreCase(r, 'mediterranean'))
-  
+    parsed.region.regions.some(r => compareIgnoreCase(r, 'mediterranean'))
+
   if (!hasVegPrefs || userSelectedAllVeg) {
     // No vegetation preferences OR selected ALL = 100% = 20 points (user is open to anything)
     vegScore = 20
@@ -220,7 +224,7 @@ export function calculateRegionScore(preferences, town) {
     }
   } else if (town.vegetation_type_actual?.length) {
     // Check if ANY vegetation type matches - CASE INSENSITIVE FIX
-    const userVeg = preferences.vegetation_types.map(v => normalize(v))
+    const userVeg = parsed.region.vegetation_types.map(v => normalize(v))
     const townVeg = town.vegetation_type_actual.map(v => normalize(String(v)))
     const hasMatch = userVeg.some(veg => townVeg.includes(veg))
 
