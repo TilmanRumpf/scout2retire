@@ -1377,7 +1377,7 @@ function calculateTaxScore(preferences, town, maxPoints = 15) {
   let taxScoreTotal = 0
   
   // Income tax scoring (if user is sensitive)
-  if (preferences.income_tax_sensitive && taxData.income !== null && taxData.income !== undefined) {
+  if (parsed.cost.incomeTaxSensitive && taxData.income !== null && taxData.income !== undefined) {
     totalSensitiveTaxes++
     const incomeTaxResult = calculateGradualTaxScore(taxData.income, 'income')
     taxScoreTotal += incomeTaxResult.score
@@ -1388,7 +1388,7 @@ function calculateTaxScore(preferences, town, maxPoints = 15) {
   }
   
   // Property tax scoring (if user is sensitive)
-  if (preferences.property_tax_sensitive && taxData.property !== null && taxData.property !== undefined) {
+  if (parsed.cost.propertyTaxSensitive && taxData.property !== null && taxData.property !== undefined) {
     totalSensitiveTaxes++
     const propertyTaxResult = calculateGradualTaxScore(taxData.property, 'property')
     taxScoreTotal += propertyTaxResult.score
@@ -1399,7 +1399,7 @@ function calculateTaxScore(preferences, town, maxPoints = 15) {
   }
   
   // Sales tax scoring (if user is sensitive)
-  if (preferences.sales_tax_sensitive && taxData.sales !== null && taxData.sales !== undefined) {
+  if (parsed.cost.salesTaxSensitive && taxData.sales !== null && taxData.sales !== undefined) {
     totalSensitiveTaxes++
     const salesTaxResult = calculateGradualTaxScore(taxData.sales, 'sales')
     taxScoreTotal += salesTaxResult.score
@@ -1517,21 +1517,21 @@ function calculateGradualTaxScore(taxRate, taxType) {
 export function calculateAdminScore(preferences, town) {
   let score = 0
   let factors = []
-  
+
+  // Parse and normalize preferences using centralized parser
+  const parsed = parsePreferences(preferences)
+
   // Admin score calculation
-  
+
   // If user has NO admin preferences at all, they're flexible - give perfect score
-  if (!preferences.healthcare_quality?.length && 
-      !preferences.safety_importance?.length &&
-      !preferences.government_efficiency?.length &&
-      !preferences.visa_preference?.length) {
+  if (!parsed.admin.hasAnyPreferences) {
     score = 100
     factors.push({ factor: 'Open to any administrative situation', score: 100 })
     return { score, factors, category: 'Admin' }
   }
   
   // Healthcare quality match (30 points) - now with gradual scoring
-  const healthcareArray = preferences.healthcare_quality || []
+  const healthcareArray = parsed.admin.healthcare || []
   const healthcarePref = Array.isArray(healthcareArray) ? healthcareArray[0] : healthcareArray
   
   // Always score healthcare if town has data, even if no preference
@@ -1555,7 +1555,7 @@ export function calculateAdminScore(preferences, town) {
   }
   
   // Safety match (25 points) - now with gradual scoring
-  const safetyArray = preferences.safety_importance || []
+  const safetyArray = parsed.admin.safety || []
   const safetyPref = Array.isArray(safetyArray) ? safetyArray[0] : safetyArray
   
   // Always score safety if town has data, even if no preference
@@ -1579,7 +1579,7 @@ export function calculateAdminScore(preferences, town) {
   }
   
   // Government efficiency match (15 points)
-  const govArray = preferences.government_efficiency || []
+  const govArray = parsed.admin.governmentEfficiency || []
   const govPref = Array.isArray(govArray) ? govArray[0] : govArray
   
   if (town.government_efficiency_rating) {
@@ -1601,12 +1601,12 @@ export function calculateAdminScore(preferences, town) {
   }
   
   // Visa/residency match (10 points) - handle array format
-  const visaArray = preferences.visa_preference || []
+  const visaArray = parsed.admin.visaPreference || []
   const visaPref = Array.isArray(visaArray) ? visaArray[0] : visaArray
   
-  if ((visaPref === 'good' || visaPref === 'functional') && preferences.stay_duration) {
+  if ((visaPref === 'good' || visaPref === 'functional') && parsed.admin.stayDuration) {
     // Check visa requirements based on user citizenship
-    const citizenship = preferences.citizenship || preferences.current_status?.citizenship || 'USA'
+    const citizenship = parsed.citizenship || preferences.current_status?.citizenship || 'USA'
     if (town.visa_on_arrival_countries?.includes(citizenship) ||
         town.easy_residency_countries?.includes(citizenship)) {
       score += 10
@@ -1627,7 +1627,7 @@ export function calculateAdminScore(preferences, town) {
   }
   
   // Political stability bonus (10 points) - now with gradual scoring
-  const stabilityArray = preferences.political_stability || []
+  const stabilityArray = parsed.admin.politicalStability || []
   const stabilityPref = Array.isArray(stabilityArray) ? stabilityArray[0] : stabilityArray
   
   if (town.political_stability_rating) {
@@ -1661,13 +1661,12 @@ export function calculateAdminScore(preferences, town) {
 export function calculateCostScore(preferences, town) {
   let score = 0
   let factors = []
-  
+
+  // Parse and normalize preferences using centralized parser
+  const parsed = parsePreferences(preferences)
+
   // If user has NO budget preferences at all, they're flexible - give perfect score
-  const hasBudgetPrefs = preferences.total_monthly_budget || 
-                         preferences.max_monthly_rent ||
-                         preferences.monthly_healthcare_budget
-  
-  if (!hasBudgetPrefs) {
+  if (!parsed.cost.hasAnyPreferences) {
     score = 100
     factors.push({ factor: 'Open to any budget situation', score: 100 })
     return { score, factors, category: 'Costs' }
@@ -1678,9 +1677,9 @@ export function calculateCostScore(preferences, town) {
   const townCost = town.cost_of_living_usd || town.typical_monthly_living_cost
   
   // Extract budget value from array (use max value as upper limit)
-  const userBudget = Array.isArray(preferences.total_monthly_budget) 
-    ? Math.max(...preferences.total_monthly_budget)
-    : preferences.total_monthly_budget
+  const userBudget = Array.isArray(parsed.cost.totalMonthlyBudget) 
+    ? Math.max(...parsed.cost.totalMonthlyBudget)
+    : parsed.cost.totalMonthlyBudget
   
   if (!townCost || !userBudget) {
     // If we don't have cost data, give neutral score
@@ -1726,9 +1725,9 @@ export function calculateCostScore(preferences, town) {
   }
   
   // Rent budget match (30 points)
-  const userRentBudget = Array.isArray(preferences.max_monthly_rent)
-    ? Math.max(...preferences.max_monthly_rent)
-    : preferences.max_monthly_rent
+  const userRentBudget = Array.isArray(parsed.cost.maxMonthlyRent)
+    ? Math.max(...parsed.cost.maxMonthlyRent)
+    : parsed.cost.maxMonthlyRent
     
   if (userRentBudget && town.typical_rent_1bed) {
     if (userRentBudget >= town.typical_rent_1bed) {
@@ -1741,9 +1740,9 @@ export function calculateCostScore(preferences, town) {
   }
   
   // Healthcare budget match (20 points)
-  const userHealthcareBudget = Array.isArray(preferences.monthly_healthcare_budget)
-    ? Math.max(...preferences.monthly_healthcare_budget)
-    : preferences.monthly_healthcare_budget
+  const userHealthcareBudget = Array.isArray(parsed.cost.monthlyHealthcareBudget)
+    ? Math.max(...parsed.cost.monthlyHealthcareBudget)
+    : parsed.cost.monthlyHealthcareBudget
     
   if (userHealthcareBudget && town.healthcare_cost_monthly) {
     if (userHealthcareBudget >= town.healthcare_cost_monthly) {
@@ -1758,7 +1757,7 @@ export function calculateCostScore(preferences, town) {
   factors.push(...taxResult.factors)
   
   // Add tax data availability warning if needed
-  if (!taxResult.hasTaxData && (preferences.income_tax_sensitive || preferences.property_tax_sensitive || preferences.sales_tax_sensitive)) {
+  if (!taxResult.hasTaxData && (parsed.cost.incomeTaxSensitive || parsed.cost.propertyTaxSensitive || parsed.cost.salesTaxSensitive)) {
     factors.push({ factor: 'Limited tax data available', score: -1 })
     score -= 1
   }
