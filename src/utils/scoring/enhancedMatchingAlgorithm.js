@@ -393,14 +393,14 @@ export function calculateClimateScore(preferences, town) {
   let score = 0
   let factors = []
 
+  // Parse and normalize preferences using centralized parser
+  const parsed = parsePreferences(preferences)
+
   // DEBUG: Log what we're receiving
   if (town.name === 'Castro Urdiales' || town.name === 'Puerto de la Cruz' || town.name === 'Granada') {
     console.log(`🔍 CLIMATE DEBUG for ${town.name}:`);
     console.log('Preferences received:', preferences);
-    console.log('Preferences type:', typeof preferences);
-    console.log('Keys in preferences:', Object.keys(preferences));
-    console.log('summer_climate_preference:', preferences.summer_climate_preference);
-    console.log('Is summer an array?:', Array.isArray(preferences.summer_climate_preference));
+    console.log('Parsed climate:', parsed.climate);
     console.log('Town climate data:', {
       summer: town.summer_climate_actual,
       winter: town.winter_climate_actual,
@@ -417,11 +417,7 @@ export function calculateClimateScore(preferences, town) {
   }
 
   // If user has NO climate preferences at all, they're flexible - give perfect score
-  if (!preferences.summer_climate_preference?.length &&
-      !preferences.winter_climate_preference?.length &&
-      !preferences.humidity_level?.length &&
-      !preferences.sunshine?.length &&
-      !preferences.precipitation?.length) {
+  if (!parsed.climate.hasAnyPreferences) {
     score = 100
     factors.push({ factor: 'Open to any climate', score: 100 })
     return { score, factors, category: 'Climate' }
@@ -431,10 +427,7 @@ export function calculateClimateScore(preferences, town) {
   // Summer climate match (25 points)
   if (town.avg_temp_summer !== null && town.avg_temp_summer !== undefined) {
     // Use numeric temperature data when available
-    // Handle array preferences - use first value or check all
-    const summerPrefs = Array.isArray(preferences.summer_climate_preference) 
-      ? preferences.summer_climate_preference 
-      : [preferences.summer_climate_preference].filter(Boolean)
+    const summerPrefs = parsed.climate.summer
     
     let bestScore = 0
     let bestPref = null
@@ -465,9 +458,7 @@ export function calculateClimateScore(preferences, town) {
     }
   } else if (town.summer_climate_actual) {
     // Fall back to string matching with array handling
-    const summerPrefs = Array.isArray(preferences.summer_climate_preference)
-      ? preferences.summer_climate_preference.map(p => normalize(p))
-      : [preferences.summer_climate_preference].filter(Boolean).map(p => normalize(p))
+    const summerPrefs = parsed.climate.summer.map(p => normalize(p))
 
     if (arrayIncludesIgnoreCase(summerPrefs, town.summer_climate_actual)) {
       score += 25
@@ -486,9 +477,9 @@ export function calculateClimateScore(preferences, town) {
       ? normalize(town.climate_description)
       : ''
     // Handle both array and string preferences
-    const summerPrefForFallback = Array.isArray(preferences.summer_climate_preference)
-      ? normalize(preferences.summer_climate_preference[0])
-      : normalize(preferences.summer_climate_preference)
+    const summerPrefForFallback = parsed.climate.summer.length > 0
+      ? normalize(parsed.climate.summer[0])
+      : ''
 
     if (summerPrefForFallback === 'warm' && (climateDesc.includes('warm') || climateDesc.includes('mediterranean'))) {
       score += 13
@@ -502,10 +493,7 @@ export function calculateClimateScore(preferences, town) {
   // Winter climate match (25 points)
   if (town.avg_temp_winter !== null && town.avg_temp_winter !== undefined) {
     // Use numeric temperature data when available
-    // Handle array preferences
-    const winterPrefs = Array.isArray(preferences.winter_climate_preference) 
-      ? preferences.winter_climate_preference 
-      : [preferences.winter_climate_preference].filter(Boolean)
+    const winterPrefs = parsed.climate.winter
     
     let bestScore = 0
     let bestPref = null
@@ -536,9 +524,7 @@ export function calculateClimateScore(preferences, town) {
     }
   } else if (town.winter_climate_actual) {
     // Fall back to string matching with array handling
-    const winterPrefs = Array.isArray(preferences.winter_climate_preference) 
-      ? preferences.winter_climate_preference 
-      : [preferences.winter_climate_preference].filter(Boolean)
+    const winterPrefs = parsed.climate.winter
     
     const standardizedWinter = mapToStandardValue(town.winter_climate_actual, 'winter')
     
@@ -558,9 +544,9 @@ export function calculateClimateScore(preferences, town) {
       ? normalize(town.climate_description)
       : ''
     // Handle both array and string preferences
-    const winterPrefForFallback = Array.isArray(preferences.winter_climate_preference)
-      ? normalize(preferences.winter_climate_preference[0])
-      : normalize(preferences.winter_climate_preference)
+    const winterPrefForFallback = parsed.climate.winter.length > 0
+      ? normalize(parsed.climate.winter[0])
+      : ''
 
     if (winterPrefForFallback === 'mild' && (climateDesc.includes('mild') || climateDesc.includes('mediterranean'))) {
       score += 13
@@ -575,11 +561,11 @@ export function calculateClimateScore(preferences, town) {
     'humid': ['balanced']
   }
   
-  if (town.humidity_level_actual && preferences.humidity_level?.length > 0) {
+  if (town.humidity_level_actual && parsed.climate.humidity.length > 0) {
     // Map town value to standard category first
     const standardizedHumidity = mapToStandardValue(town.humidity_level_actual, 'humidity')
     const humidityResult = calculateGradualClimateScoreForArray(
-      preferences.humidity_level, 
+      parsed.climate.humidity, 
       standardizedHumidity, 
       20, 
       humidityAdjacency
@@ -597,7 +583,7 @@ export function calculateClimateScore(preferences, town) {
         factors.push({ factor: factorText, score: humidityResult.score })
       }
     }
-  } else if (!town.humidity_level_actual && town.climate_description && preferences.humidity_level?.length > 0) {
+  } else if (!town.humidity_level_actual && town.climate_description && parsed.climate.humidity?.length > 0) {
     // Fallback: try to infer from climate description
     const climateDesc = typeof town.climate_description === 'string'
       ? normalize(town.climate_description)
@@ -614,7 +600,7 @@ export function calculateClimateScore(preferences, town) {
     
     if (inferredHumidity) {
       const humidityResult = calculateGradualClimateScoreForArray(
-        preferences.humidity_level, 
+        parsed.climate.humidity, 
         inferredHumidity, 
         13, // Reduced points for inferred data
         humidityAdjacency
@@ -645,11 +631,11 @@ export function calculateClimateScore(preferences, town) {
     'often_cloudy': ['balanced', 'less_sunny']
   }
   
-  if (town.sunshine_level_actual && preferences.sunshine?.length > 0) {
+  if (town.sunshine_level_actual && parsed.climate.sunshine?.length > 0) {
     // Map town value to standard category first
     const standardizedSunshine = mapToStandardValue(town.sunshine_level_actual, 'sunshine')
     const sunshineResult = calculateGradualClimateScoreForArray(
-      preferences.sunshine, 
+      parsed.climate.sunshine, 
       standardizedSunshine, 
       20, 
       sunshineAdjacency
@@ -667,7 +653,7 @@ export function calculateClimateScore(preferences, town) {
         factors.push({ factor: factorText, score: sunshineResult.score })
       }
     }
-  } else if (!town.sunshine_level_actual && town.sunshine_hours && preferences.sunshine?.length > 0) {
+  } else if (!town.sunshine_level_actual && town.sunshine_hours && parsed.climate.sunshine?.length > 0) {
     // Fallback: use sunshine_hours data
     let inferredSunshine = null
     
@@ -681,7 +667,7 @@ export function calculateClimateScore(preferences, town) {
     
     if (inferredSunshine) {
       const sunshineResult = calculateGradualClimateScoreForArray(
-        preferences.sunshine, 
+        parsed.climate.sunshine, 
         inferredSunshine, 
         13, // Reduced points for inferred data
         sunshineAdjacency
@@ -695,7 +681,7 @@ export function calculateClimateScore(preferences, town) {
         })
       }
     }
-  } else if (!town.sunshine_level_actual && !town.sunshine_hours && town.climate_description && preferences.sunshine?.length > 0) {
+  } else if (!town.sunshine_level_actual && !town.sunshine_hours && town.climate_description && parsed.climate.sunshine?.length > 0) {
     // Last fallback: infer from climate description
     const climateDesc = typeof town.climate_description === 'string'
       ? normalize(town.climate_description)
@@ -712,7 +698,7 @@ export function calculateClimateScore(preferences, town) {
     
     if (inferredSunshine) {
       const sunshineResult = calculateGradualClimateScoreForArray(
-        preferences.sunshine, 
+        parsed.climate.sunshine, 
         inferredSunshine, 
         10, // Further reduced points for climate description inference
         sunshineAdjacency
@@ -737,11 +723,11 @@ export function calculateClimateScore(preferences, town) {
     'wet': ['balanced']            // Alternative spelling
   }
   
-  if (town.precipitation_level_actual && preferences.precipitation?.length > 0) {
+  if (town.precipitation_level_actual && parsed.climate.precipitation?.length > 0) {
     // Map town value to standard category first
     const standardizedPrecipitation = mapToStandardValue(town.precipitation_level_actual, 'precipitation')
     const precipitationResult = calculateGradualClimateScoreForArray(
-      preferences.precipitation, 
+      parsed.climate.precipitation, 
       standardizedPrecipitation, 
       10, 
       precipitationAdjacency
@@ -759,7 +745,7 @@ export function calculateClimateScore(preferences, town) {
         factors.push({ factor: factorText, score: precipitationResult.score })
       }
     }
-  } else if (!town.precipitation_level_actual && town.annual_rainfall && preferences.precipitation?.length > 0) {
+  } else if (!town.precipitation_level_actual && town.annual_rainfall && parsed.climate.precipitation?.length > 0) {
     // Fallback: use annual_rainfall data (in mm)
     let inferredPrecipitation = null
     
@@ -772,7 +758,7 @@ export function calculateClimateScore(preferences, town) {
     }
     
     const precipitationResult = calculateGradualClimateScoreForArray(
-      preferences.precipitation, 
+      parsed.climate.precipitation, 
       inferredPrecipitation, 
       7, // Reduced points for inferred data
       precipitationAdjacency
@@ -785,7 +771,7 @@ export function calculateClimateScore(preferences, town) {
         score: precipitationResult.score 
       })
     }
-  } else if (!town.precipitation_level_actual && !town.annual_rainfall && town.climate_description && preferences.precipitation?.length > 0) {
+  } else if (!town.precipitation_level_actual && !town.annual_rainfall && town.climate_description && parsed.climate.precipitation?.length > 0) {
     // Last fallback: infer from climate description
     const climateDesc = typeof town.climate_description === 'string'
       ? normalize(town.climate_description)
@@ -802,7 +788,7 @@ export function calculateClimateScore(preferences, town) {
     
     if (inferredPrecipitation) {
       const precipitationResult = calculateGradualClimateScoreForArray(
-        preferences.precipitation, 
+        parsed.climate.precipitation, 
         inferredPrecipitation, 
         5, // Further reduced points for climate description inference
         precipitationAdjacency
@@ -823,12 +809,12 @@ export function calculateClimateScore(preferences, town) {
   
   // First, handle cases where user has no preference (gets full points)
   // Including "Select Preference" which is the default dropdown value
-  if (!preferences.seasonal_preference || 
-      preferences.seasonal_preference === '' || 
-      preferences.seasonal_preference === 'Optional' ||
-      preferences.seasonal_preference === 'no_specific_preference' ||
-      preferences.seasonal_preference === 'Select Preference' ||
-      preferences.seasonal_preference === 'select_preference') {
+  if (!parsed.climate.seasonal || 
+      parsed.climate.seasonal === '' || 
+      parsed.climate.seasonal === 'Optional' ||
+      parsed.climate.seasonal === 'no_specific_preference' ||
+      parsed.climate.seasonal === 'Select Preference' ||
+      parsed.climate.seasonal === 'select_preference') {
     score += 15
     factors.push({ factor: 'Flexible on seasonal preferences', score: 15 })
   } 
@@ -836,7 +822,7 @@ export function calculateClimateScore(preferences, town) {
   else if (town.avg_temp_summer !== null && town.avg_temp_summer !== undefined &&
            town.avg_temp_winter !== null && town.avg_temp_winter !== undefined) {
 
-    const seasonPref = normalize(preferences.seasonal_preference)
+    const seasonPref = normalize(parsed.climate.seasonal)
 
     if (seasonPref === 'summer_focused' || seasonPref === 'warm_seasons' || seasonPref === 'prefer_warm_seasons') {
       // User prefers warm seasons - check if Summer Climate fits = 15 Pts
@@ -844,11 +830,11 @@ export function calculateClimateScore(preferences, town) {
       let summerFits = false
 
       // Check if summer climate matches preference
-      if (preferences.summer_climate_preference) {
+      if (parsed.climate.summer) {
         // Handle both array and string preferences
-        const summerPrefs = Array.isArray(preferences.summer_climate_preference)
-          ? preferences.summer_climate_preference.map(p => normalize(p))
-          : [preferences.summer_climate_preference].filter(Boolean).map(p => normalize(p))
+        const summerPrefs = Array.isArray(parsed.climate.summer)
+          ? parsed.climate.summer.map(p => normalize(p))
+          : [parsed.climate.summer].filter(Boolean).map(p => normalize(p))
 
         const townSummer = normalize(town.summer_climate_actual)
 
@@ -856,9 +842,9 @@ export function calculateClimateScore(preferences, town) {
           summerFits = true
         } else if (town.avg_temp_summer !== null) {
           // Use temperature-based check as fallback - check against first preference
-          const firstPref = Array.isArray(preferences.summer_climate_preference)
-            ? preferences.summer_climate_preference[0]
-            : preferences.summer_climate_preference
+          const firstPref = Array.isArray(parsed.climate.summer)
+            ? parsed.climate.summer[0]
+            : parsed.climate.summer
 
           if (TEMP_RANGES.summer[firstPref]) {
             const tempScore = calculateTemperatureScore(town.avg_temp_summer, TEMP_RANGES.summer[firstPref])
@@ -885,13 +871,13 @@ export function calculateClimateScore(preferences, town) {
       let winterFits = false
       
       // Check if winter climate matches preference
-      if (preferences.winter_climate_preference) {
+      if (parsed.climate.winter) {
         const standardizedWinter = mapToStandardValue(town.winter_climate_actual, 'winter')
-        if (standardizedWinter === preferences.winter_climate_preference) {
+        if (standardizedWinter === parsed.climate.winter) {
           winterFits = true
-        } else if (town.avg_temp_winter !== null && TEMP_RANGES.winter[preferences.winter_climate_preference]) {
+        } else if (town.avg_temp_winter !== null && TEMP_RANGES.winter[parsed.climate.winter]) {
           // Use temperature-based check as fallback
-          const tempScore = calculateTemperatureScore(town.avg_temp_winter, TEMP_RANGES.winter[preferences.winter_climate_preference])
+          const tempScore = calculateTemperatureScore(town.avg_temp_winter, TEMP_RANGES.winter[parsed.climate.winter])
           winterFits = tempScore >= 80 // Consider it a fit if temperature is good/perfect
         }
       } else {
@@ -916,11 +902,11 @@ export function calculateClimateScore(preferences, town) {
       let winterFits = false
 
       // Check if summer climate matches preference
-      if (preferences.summer_climate_preference) {
+      if (parsed.climate.summer) {
         // Handle both array and string preferences
-        const summerPrefs = Array.isArray(preferences.summer_climate_preference)
-          ? preferences.summer_climate_preference.map(p => normalize(p))
-          : [preferences.summer_climate_preference].filter(Boolean).map(p => normalize(p))
+        const summerPrefs = Array.isArray(parsed.climate.summer)
+          ? parsed.climate.summer.map(p => normalize(p))
+          : [parsed.climate.summer].filter(Boolean).map(p => normalize(p))
 
         const townSummer = normalize(town.summer_climate_actual)
 
@@ -928,9 +914,9 @@ export function calculateClimateScore(preferences, town) {
           summerFits = true
         } else if (town.avg_temp_summer !== null) {
           // Use temperature-based check as fallback - check against first preference
-          const firstPref = Array.isArray(preferences.summer_climate_preference)
-            ? preferences.summer_climate_preference[0]
-            : preferences.summer_climate_preference
+          const firstPref = Array.isArray(parsed.climate.summer)
+            ? parsed.climate.summer[0]
+            : parsed.climate.summer
 
           if (TEMP_RANGES.summer[firstPref]) {
             const tempScore = calculateTemperatureScore(town.avg_temp_summer, TEMP_RANGES.summer[firstPref])
@@ -942,13 +928,13 @@ export function calculateClimateScore(preferences, town) {
       }
       
       // Check if winter climate matches preference
-      if (preferences.winter_climate_preference) {
+      if (parsed.climate.winter) {
         const standardizedWinter = mapToStandardValue(town.winter_climate_actual, 'winter')
-        if (standardizedWinter === preferences.winter_climate_preference) {
+        if (standardizedWinter === parsed.climate.winter) {
           winterFits = true
-        } else if (town.avg_temp_winter !== null && TEMP_RANGES.winter[preferences.winter_climate_preference]) {
+        } else if (town.avg_temp_winter !== null && TEMP_RANGES.winter[parsed.climate.winter]) {
           // Use temperature-based check as fallback
-          const tempScore = calculateTemperatureScore(town.avg_temp_winter, TEMP_RANGES.winter[preferences.winter_climate_preference])
+          const tempScore = calculateTemperatureScore(town.avg_temp_winter, TEMP_RANGES.winter[parsed.climate.winter])
           winterFits = tempScore >= 80 // Consider it a fit if temperature is good/perfect
         }
       } else {
