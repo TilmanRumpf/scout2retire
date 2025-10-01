@@ -370,7 +370,7 @@ export default function OnboardingReview() {
   ];
 
   return (
-      <main className="max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+      <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         <div className="py-6">
           {/* Header */}
           <div className="mb-4">

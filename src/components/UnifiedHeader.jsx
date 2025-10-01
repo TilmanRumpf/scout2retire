@@ -183,7 +183,7 @@ export default function UnifiedHeader({
         <div className={`${maxWidth} mx-auto px-4`}>
           <div className="ios-header-content">
               {/* Logo with company name - hidden on mobile phones */}
-              <div className="hidden md:flex items-center gap-2 mr-4">
+              <div className="hidden md:flex items-center gap-2 mr-4 mt-1">
                 <Logo
                   variant="symbol"
                   className="h-7 lg:h-10"
@@ -247,7 +247,7 @@ export default function UnifiedHeader({
             
             {/* Steps Row - For Onboarding (Priority 1) */}
             {secondRowType === 'steps' && (
-              <div className="filter-row pb-2 pt-2">
+              <div className="filter-row pb-3 pt-2">
                 <div className="relative">
                   {/* Gradient masks for horizontal scroll - match filter-row background */}
                   <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[rgba(255,255,255,0.95)] dark:from-[rgba(31,41,55,0.9)] to-transparent z-10 pointer-events-none" />
@@ -314,7 +314,7 @@ export default function UnifiedHeader({
             
             {/* Tabs Row - For Compare, Journal (Priority 2) */}
             {secondRowType === 'tabs' && (
-              <div className="filter-row pb-2 pt-2">
+              <div className="filter-row pb-3 pt-2">
                 <div className="relative">
                   {/* Gradient masks for horizontal scroll on mobile - match filter-row background */}
                   <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[rgba(255,255,255,0.95)] dark:from-[rgba(31,41,55,0.9)] to-transparent z-10 pointer-events-none sm:hidden" />
@@ -371,7 +371,7 @@ export default function UnifiedHeader({
             
             {/* Comparison Controls - For Compare page (Priority 3) */}
             {secondRowType === 'comparison' && comparisonProps.towns && (
-              <div className="filter-row pb-2 pt-2">
+              <div className="filter-row pb-3 pt-2">
                 <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
                   {/* Town count */}
                   <span className={`text-sm ${uiConfig.colors.subtitle} flex-shrink-0`}>
@@ -418,14 +418,14 @@ export default function UnifiedHeader({
             
             {/* Desktop Filters - For Discover, Favorites (Priority 4) */}
             {secondRowType === 'filters' && (
-              <div className="filter-row hidden lg:block pb-2 pt-2">
+              <div className="filter-row hidden lg:block pb-3 pt-2">
                 <FilterBarV3 {...filterProps} />
               </div>
             )}
 
             {/* Custom Second Row - For special pages like Scotty (Priority 5) */}
             {secondRowType === 'custom' && customSecondRow && (
-              <div className="filter-row pb-2 pt-2">
+              <div className="filter-row pb-3 pt-2">
                 {customSecondRow}
               </div>
             )}

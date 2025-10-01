@@ -13,10 +13,11 @@ import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 import supabase from '../utils/supabaseClient';
 import { filterTownsWithImagesDebug } from '../utils/imageValidation';
-import { 
-  MapPin, TrendingUp, DollarSign, Cloud, Users, 
+import { getPersonalizedTowns } from '../utils/scoring';
+import {
+  MapPin, TrendingUp, DollarSign, Cloud, Users,
   Heart, Compass, Book, MessageSquare, Calendar,
-  ArrowRight, RefreshCw, Bell, Sparkles
+  ArrowRight, RefreshCw, Bell, Sparkles, Trophy
 } from 'lucide-react';
 
 export default function DailyRedesignV2() {
@@ -24,7 +25,7 @@ export default function DailyRedesignV2() {
   const [profile, setProfile] = useState(null);
   const [userLoading, setUserLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
-  
+
   const userId = authUser?.id;
   const user = profile;
   const [dataLoading, setDataLoading] = useState(true);
@@ -36,7 +37,17 @@ export default function DailyRedesignV2() {
   const [todaysInspiration, setTodaysInspiration] = useState(null);
   const [inspirationTowns, setInspirationTowns] = useState([]);
   const [dailyTip, setDailyTip] = useState(null);
+  const [topMatches, setTopMatches] = useState([]);
+  const [pageVisible, setPageVisible] = useState(false);
   const navigate = useNavigate();
+
+  // Smooth page fade-in
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPageVisible(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
   
   // Load user data on mount
   useEffect(() => {
@@ -59,6 +70,25 @@ export default function DailyRedesignV2() {
         }
       };
       loadFavorites();
+    }
+  }, [authUser]);
+
+  // Load top matches when user is loaded
+  useEffect(() => {
+    if (authUser?.id) {
+      const loadTopMatches = async () => {
+        try {
+          const result = await getPersonalizedTowns(authUser.id, { limit: 10 });
+          if (result.success && result.towns) {
+            // Sort by match score descending and take top 10
+            const sorted = [...result.towns].sort((a, b) => b.matchScore - a.matchScore).slice(0, 10);
+            setTopMatches(sorted);
+          }
+        } catch (error) {
+          console.error('Error loading top matches:', error);
+        }
+      };
+      loadTopMatches();
     }
   }, [authUser]);
   
@@ -414,7 +444,9 @@ export default function DailyRedesignV2() {
   }
 
   return (
-    <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
+    <div
+      className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4 transition-opacity duration-700 ${pageVisible ? 'opacity-100' : 'opacity-0'}`}
+    >
       {(() => {
         try {
           return (
@@ -436,8 +468,67 @@ export default function DailyRedesignV2() {
       >
         {/* Spacer for fixed header */}
         <HeaderSpacer hasFilters={false} />
-        
+
         <main className="max-w-7xl mx-auto px-4 py-6 space-y-8">
+          {/* Your Top Matches - 2 rows of 5 towns */}
+          {topMatches.length > 0 && (
+            <section className="transition-opacity duration-500 opacity-100">
+              <div className="mb-4">
+                <h2 className={`text-xl font-semibold ${uiConfig.colors.heading}`}>
+                  Your Top Matches
+                </h2>
+              </div>
+
+              <div className="space-y-3">
+                {/* First row - towns 0-4 */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                  {topMatches.slice(0, 5).map((town) => (
+                    <button
+                      key={town.id}
+                      onClick={() => navigate(`/town/${town.id}`)}
+                      className={`p-3 ${uiConfig.colors.card} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.states.hover} ${uiConfig.animation.transition} transform hover:scale-105 text-left`}
+                    >
+                      <div className="mb-2">
+                        <span className={`font-medium ${uiConfig.colors.heading} text-sm block`}>
+                          {town.name}, {town.country}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs px-2 py-1 ${uiConfig.layout.radius.full} font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300`}>
+                          {town.matchScore}% match
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Second row - towns 5-9 */}
+                {topMatches.length > 5 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                    {topMatches.slice(5, 10).map((town) => (
+                      <button
+                        key={town.id}
+                        onClick={() => navigate(`/town/${town.id}`)}
+                        className={`p-3 ${uiConfig.colors.card} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.states.hover} ${uiConfig.animation.transition} transform hover:scale-105 text-left`}
+                      >
+                        <div className="mb-2">
+                          <span className={`font-medium ${uiConfig.colors.heading} text-sm block`}>
+                            {town.name}, {town.country}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs px-2 py-1 ${uiConfig.layout.radius.full} font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300`}>
+                            {town.matchScore}% match
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
           {/* Split Section: Featured Town and Today's Inspiration */}
           <section className="grid lg:grid-cols-2 gap-6">
             {/* Left: Featured Town */}

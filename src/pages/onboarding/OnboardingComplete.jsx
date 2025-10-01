@@ -14,12 +14,47 @@ export default function OnboardingComplete() {
   const [userPreferences, setUserPreferences] = useState(null);
   const [selectedMatch, setSelectedMatch] = useState(0);
   const [userId, setUserId] = useState(null);
+  const [showCelebration, setShowCelebration] = useState(true);
+  const [celebrationOpacity, setCelebrationOpacity] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
     loadTopMatches();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Dependencies intentionally omitted - loadTopMatches should only run once on mount
+
+  // Celebration animation sequence
+  useEffect(() => {
+    // Fade in
+    const fadeInTimer = setTimeout(() => {
+      setCelebrationOpacity(1);
+    }, 100);
+
+    // Hold for 5 seconds, then fade out and navigate
+    const fadeOutTimer = setTimeout(() => {
+      setCelebrationOpacity(0);
+    }, 5600); // 100ms delay + 500ms fade in + 5000ms hold
+
+    const navigateTimer = setTimeout(() => {
+      setShowCelebration(false);
+      navigate('/daily');
+    }, 6100); // 100ms + 500ms + 5000ms + 500ms fade out
+
+    return () => {
+      clearTimeout(fadeInTimer);
+      clearTimeout(fadeOutTimer);
+      clearTimeout(navigateTimer);
+    };
+  }, [navigate]);
+
+  // Function to skip celebration and go directly to /daily
+  const handleSkipCelebration = () => {
+    setCelebrationOpacity(0);
+    setTimeout(() => {
+      setShowCelebration(false);
+      navigate('/daily');
+    }, 500); // Wait for fade out
+  };
 
   const loadTopMatches = async () => {
     try {
@@ -30,38 +65,32 @@ export default function OnboardingComplete() {
       }
       setUserId(user.id);
 
-      // Get personalized recommendations
+      // Get personalized recommendations (this preloads for /daily too)
       const result = await getPersonalizedTowns(user.id, { limit: 20 });
-      
+
       if (result.success && result.towns) {
-        
+
         // Lower thresholds temporarily to see matches
         const excellentMatches = result.towns.filter(town => town.matchScore >= 60);
         const goodMatches = result.towns.filter(town => town.matchScore >= 40 && town.matchScore < 60);
         const fairMatches = result.towns.filter(town => town.matchScore >= 20 && town.matchScore < 40);
-        
+
         // Take top 10 matches regardless of score
         const topTowns = [...excellentMatches, ...goodMatches, ...fairMatches].slice(0, 10);
-        
-        
+
+
         setTopMatches(topTowns);
         setUserPreferences(result.userPreferences);
-        
-        // Show realistic message
-        const totalMatches = excellentMatches.length + goodMatches.length + fairMatches.length;
-        if (totalMatches > 0) {
-          toast.success(`We found ${totalMatches} matches for you!`, {
-            duration: 5000
-          });
-        } else {
-          toast.warning('No matches found with current criteria. Try adjusting your preferences.', {
-            duration: 5000
-          });
-        }
+
+        // Don't show toast during celebration animation - it's distracting
+        // The celebration screen itself communicates success
       }
     } catch (error) {
       console.error('Error loading matches:', error);
-      toast.error('Failed to load your matches');
+      // Only show error toast, not during celebration
+      if (!showCelebration) {
+        toast.error('Failed to load your matches');
+      }
     } finally {
       setLoading(false);
     }
@@ -133,6 +162,55 @@ export default function OnboardingComplete() {
 
   const currentMatch = topMatches[selectedMatch];
 
+  // Show celebration overlay
+  if (showCelebration) {
+    return (
+      <div
+        className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-900 dark:to-gray-800 z-50"
+        style={{
+          opacity: celebrationOpacity,
+          transition: 'opacity 500ms ease-in-out'
+        }}
+      >
+        <div className="max-w-4xl mx-auto px-4 text-center relative">
+          <Trophy className="w-20 h-20 mx-auto mb-6 text-yellow-500 animate-bounce" />
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+            Congratulations! Your Journey Begins
+          </h1>
+          <p className="text-xl text-gray-700 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+            Based on your preferences, we've analyzed hundreds of retirement destinations
+            and found your perfect matches. Your personalized retirement adventure starts here!
+          </p>
+
+          {/* Preference Summary */}
+          {userPreferences && (
+            <div className="flex flex-wrap justify-center gap-4 mb-8">
+              {getPreferenceSummary().map((pref, index) => (
+                <div key={index} className={`flex items-center gap-2 px-4 py-2 ${uiConfig.colors.statusSuccess} ${uiConfig.layout.radius.full}`}>
+                  <pref.icon className="w-4 h-4" />
+                  <span className="text-sm font-medium">{pref.label}: {pref.value}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Skip Button */}
+          <button
+            onClick={handleSkipCelebration}
+            className={`px-6 py-3 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md} text-lg font-medium ${uiConfig.animation.transition} hover:scale-105`}
+          >
+            Continue to Your Matches
+          </button>
+
+          {/* Auto-continue hint */}
+          <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+            Automatically continuing in a few seconds...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
       <div className={`min-h-screen ${uiConfig.colors.page}`}>
       {/* Hero Section */}
@@ -143,10 +221,10 @@ export default function OnboardingComplete() {
             Congratulations! Your Journey Begins
           </h1>
           <p className={`text-lg ${uiConfig.colors.body} mb-8 max-w-2xl mx-auto`}>
-            Based on your preferences, we've analyzed thousands of retirement destinations 
+            Based on your preferences, we've analyzed hundreds of retirement destinations
             and found your perfect matches. Your personalized retirement adventure starts here!
           </p>
-          
+
           {/* Preference Summary */}
           <div className="flex flex-wrap justify-center gap-4 mb-8">
             {getPreferenceSummary().map((pref, index) => (
