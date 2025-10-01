@@ -999,26 +999,19 @@ const CULTURE_ADJACENCY = {
 export function calculateCultureScore(preferences, town) {
   let score = 0
   let factors = []
-  
+
+  // Parse and normalize preferences using centralized parser
+  const parsed = parsePreferences(preferences)
+
   // Check if user has any culture preferences at all
-  const hasAnyPreferences = 
-    preferences.lifestyle_preferences?.urban_rural_preference?.length ||
-    preferences.lifestyle_preferences?.pace_of_life_preference?.length ||
-    preferences.expat_community_preference?.length ||
-    preferences.language_comfort?.preferences?.length ||
-    preferences.language_comfort?.already_speak?.length ||
-    (preferences.cultural_importance?.dining_nightlife > 1) ||
-    (preferences.cultural_importance?.cultural_events > 1) ||
-    (preferences.cultural_importance?.museums > 1)
-  
-  if (!hasAnyPreferences) {
+  if (!parsed.culture.hasAnyPreferences) {
     score = 100
     factors.push({ factor: 'Open to any culture', score: 100 })
     return { score, factors, category: 'Culture' }
   }
   
   // 1. LIVING ENVIRONMENT (20 points)
-  const livingEnvPref = preferences.lifestyle_preferences?.urban_rural_preference
+  const livingEnvPref = parsed.culture.urbanRural
   if (!livingEnvPref || livingEnvPref.length === 0) {
     // User doesn't care - full points
     score += 20
@@ -1059,7 +1052,7 @@ export function calculateCultureScore(preferences, town) {
   }
   
   // 2. PACE OF LIFE (20 points)
-  const pacePref = preferences.lifestyle_preferences?.pace_of_life_preference
+  const pacePref = parsed.culture.paceOfLife
   const townPaceRaw = town.pace_of_life_actual // Use actual field
 
   if (!pacePref || pacePref.length === 0) {
@@ -1102,9 +1095,9 @@ export function calculateCultureScore(preferences, town) {
   }
   
   // 3. LANGUAGE PREFERENCE (20 points)
-  const languagePrefs = preferences.language_comfort?.preferences
+  const languagePrefs = parsed.culture.languagePreferences
   const langPref = Array.isArray(languagePrefs) ? languagePrefs[0] : languagePrefs
-  const speaksLanguages = preferences.language_comfort?.already_speak || []
+  const speaksLanguages = parsed.culture.languagesSpoken || []
   
   // No language preference at all - full points
   if (!langPref && speaksLanguages.length === 0) {
@@ -1160,7 +1153,7 @@ export function calculateCultureScore(preferences, town) {
   }
   
   // 4. EXPAT COMMUNITY (10 points)
-  const expatPref = preferences.expat_community_preference
+  const expatPref = parsed.culture.expatCommunity
 
   if (!expatPref || (Array.isArray(expatPref) && expatPref.length === 0)) {
     // User doesn't care - full points
@@ -1204,7 +1197,7 @@ export function calculateCultureScore(preferences, town) {
   }
   
   // 5. DINING & NIGHTLIFE (10 points)
-  const diningImportance = preferences.cultural_importance?.dining_nightlife || 1
+  const diningImportance = parsed.culture.diningImportance || 1
   
   if (diningImportance === 1) {
     // User doesn't care - full points
@@ -1237,7 +1230,7 @@ export function calculateCultureScore(preferences, town) {
   }
   
   // 6. EVENTS & CONCERTS (10 points)
-  const eventsImportance = preferences.cultural_importance?.cultural_events || 1
+  const eventsImportance = parsed.culture.culturalEventsImportance || 1
   
   if (eventsImportance === 1) {
     // User doesn't care - full points
@@ -1268,7 +1261,7 @@ export function calculateCultureScore(preferences, town) {
   }
   
   // 7. MUSEUMS & ARTS (10 points)
-  const museumsImportance = preferences.cultural_importance?.museums || 1
+  const museumsImportance = parsed.culture.museumsImportance || 1
   
   if (museumsImportance === 1) {
     // User doesn't care - full points
