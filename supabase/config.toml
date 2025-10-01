@@ -1,3 +1,8 @@
+# ⚠️ REMOTE-ONLY CONFIGURATION
+# This project does NOT use local Supabase (no Docker containers)
+# All database work is done directly on remote: axlruvvsjepsulcbqlho.supabase.co
+# This config file is only for migration management via `npx supabase db push`
+#
 # For detailed configuration reference documentation, visit:
 # https://supabase.com/docs/guides/local-development/cli/config
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
