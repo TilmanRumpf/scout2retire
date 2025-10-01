@@ -13,7 +13,7 @@ import { UsernameSelector } from '../components/UsernameSelector';
 import AvatarUpload from '../components/AvatarUpload';
 
 // Reusable toggle switch component
-const ToggleSwitch = ({ id, checked, onChange, label, description }) => (
+const ToggleSwitch = ({ id, checked, onChange, label, description, saveState }) => (
   <div className="flex items-center justify-between">
     <div className="flex-1">
       <label htmlFor={id} className={`text-sm font-medium ${uiConfig.colors.body} cursor-pointer`}>
@@ -25,26 +25,34 @@ const ToggleSwitch = ({ id, checked, onChange, label, description }) => (
         </p>
       )}
     </div>
-    <div className="relative inline-block w-11 h-6 ml-4">
-      <input
-        type="checkbox"
-        id={id}
-        className="opacity-0 w-0 h-0"
-        checked={checked}
-        onChange={() => onChange(id)}
-      />
-      <label
-        htmlFor={id}
-        className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-colors ${
-          checked ? uiConfig.colors.toggleOn : uiConfig.colors.toggleOff
-        }`}
-      >
-        <span 
-          className={`absolute left-1 bottom-1 ${uiConfig.colors.toggleKnob} w-4 h-4 rounded-full transition-transform ${
-            checked ? 'transform translate-x-5' : ''
-          }`}
+    <div className="flex items-center gap-2">
+      {saveState === 'saving' && (
+        <span className="text-xs text-gray-400 animate-pulse">Saving...</span>
+      )}
+      {saveState === 'saved' && (
+        <span className="text-xs text-green-600 dark:text-green-400">Saved ✓</span>
+      )}
+      <div className="relative inline-block w-11 h-6">
+        <input
+          type="checkbox"
+          id={id}
+          className="opacity-0 w-0 h-0"
+          checked={checked}
+          onChange={() => onChange(id)}
         />
-      </label>
+        <label
+          htmlFor={id}
+          className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-colors ${
+            checked ? uiConfig.colors.toggleOn : uiConfig.colors.toggleOff
+          }`}
+        >
+          <span
+            className={`absolute left-1 bottom-1 ${uiConfig.colors.toggleKnob} w-4 h-4 rounded-full transition-transform ${
+              checked ? 'transform translate-x-5' : ''
+            }`}
+          />
+        </label>
+      </div>
     </div>
   </div>
 );
@@ -80,7 +88,10 @@ export default function ProfileUnified() {
     show_email: false,
     show_location: true
   });
-  
+
+  // Track saving states for visual feedback
+  const [savingStates, setSavingStates] = useState({});
+
   const [changePasswordData, setChangePasswordData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -104,13 +115,29 @@ export default function ProfileUnified() {
 
         setUser(result.user);
         setProfile(result.profile);
-        
+
         // Initialize edit form data
         setEditFormData({
           full_name: result.profile?.full_name || result.user.user_metadata?.full_name || '',
           hometown: result.profile?.hometown || ''
         });
-        
+
+        // Load notification and privacy settings from user_preferences
+        const { data: prefs, error: prefsError } = await supabase
+          .from('user_preferences')
+          .select('notifications, privacy')
+          .eq('user_id', result.user.id)
+          .single();
+
+        if (!prefsError && prefs) {
+          if (prefs.notifications) {
+            setNotifications(prefs.notifications);
+          }
+          if (prefs.privacy) {
+            setPrivacy(prefs.privacy);
+          }
+        }
+
         // Load favorites count
         const { count } = await supabase
           .from('favorites')
@@ -319,11 +346,108 @@ export default function ProfileUnified() {
     }
   };
 
-  const handleToggleNotification = (key) => {
-    setNotifications(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+  const handleToggleNotification = async (key) => {
+    const newValue = !notifications[key];
+    const newNotifications = { ...notifications, [key]: newValue };
+
+    // Update local state immediately for responsiveness
+    setNotifications(newNotifications);
+
+    // Show saving indicator
+    setSavingStates(prev => ({ ...prev, [`notification_${key}`]: 'saving' }));
+
+    // Save to database
+    try {
+      const { error } = await supabase
+        .from('user_preferences')
+        .update({ notifications: newNotifications })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Show saved indicator
+      setSavingStates(prev => ({ ...prev, [`notification_${key}`]: 'saved' }));
+
+      // Clear saved indicator after 2 seconds
+      setTimeout(() => {
+        setSavingStates(prev => ({ ...prev, [`notification_${key}`]: null }));
+      }, 2000);
+    } catch (error) {
+      console.error('Error updating notification:', error);
+      toast.error('Failed to update notification setting');
+      // Revert on error
+      setNotifications(prev => ({ ...prev, [key]: !newValue }));
+      setSavingStates(prev => ({ ...prev, [`notification_${key}`]: null }));
+    }
+  };
+
+  const handleTogglePrivacy = async (key) => {
+    const newValue = !privacy[key];
+    const newPrivacy = { ...privacy, [key]: newValue };
+
+    // Update local state immediately
+    setPrivacy(newPrivacy);
+
+    // Show saving indicator
+    setSavingStates(prev => ({ ...prev, [`privacy_${key}`]: 'saving' }));
+
+    // Save to database
+    try {
+      const { error } = await supabase
+        .from('user_preferences')
+        .update({ privacy: newPrivacy })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Show saved indicator
+      setSavingStates(prev => ({ ...prev, [`privacy_${key}`]: 'saved' }));
+
+      // Clear saved indicator after 2 seconds
+      setTimeout(() => {
+        setSavingStates(prev => ({ ...prev, [`privacy_${key}`]: null }));
+      }, 2000);
+    } catch (error) {
+      console.error('Error updating privacy:', error);
+      toast.error('Failed to update privacy setting');
+      // Revert on error
+      setPrivacy(prev => ({ ...prev, [key]: !newValue }));
+      setSavingStates(prev => ({ ...prev, [`privacy_${key}`]: null }));
+    }
+  };
+
+  const handlePrivacyVisibilityChange = async (newValue) => {
+    const newPrivacy = { ...privacy, profile_visibility: newValue };
+
+    // Update local state
+    setPrivacy(newPrivacy);
+
+    // Show saving indicator
+    setSavingStates(prev => ({ ...prev, 'privacy_visibility': 'saving' }));
+
+    // Save to database
+    try {
+      const { error } = await supabase
+        .from('user_preferences')
+        .update({ privacy: newPrivacy })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Show saved indicator
+      setSavingStates(prev => ({ ...prev, 'privacy_visibility': 'saved' }));
+
+      // Clear saved indicator after 2 seconds
+      setTimeout(() => {
+        setSavingStates(prev => ({ ...prev, 'privacy_visibility': null }));
+      }, 2000);
+    } catch (error) {
+      console.error('Error updating privacy:', error);
+      toast.error('Failed to update privacy setting');
+      // Revert on error
+      setPrivacy(prev => ({ ...prev, profile_visibility: privacy.profile_visibility }));
+      setSavingStates(prev => ({ ...prev, 'privacy_visibility': null }));
+    }
   };
 
   const handleSignOut = async () => {
@@ -557,6 +681,7 @@ export default function ProfileUnified() {
                   onChange={handleToggleNotification}
                   label="Email Notifications"
                   description="Receive updates via email"
+                  saveState={savingStates['notification_email_notifications']}
                 />
                 <ToggleSwitch
                   id="push_notifications"
@@ -564,6 +689,7 @@ export default function ProfileUnified() {
                   onChange={handleToggleNotification}
                   label="Push Notifications"
                   description="Get instant alerts on your device"
+                  saveState={savingStates['notification_push_notifications']}
                 />
                 <ToggleSwitch
                   id="weekly_digest"
@@ -571,6 +697,7 @@ export default function ProfileUnified() {
                   onChange={handleToggleNotification}
                   label="Weekly Digest"
                   description="Summary of new retirement destinations"
+                  saveState={savingStates['notification_weekly_digest']}
                 />
                 <ToggleSwitch
                   id="friend_requests"
@@ -578,6 +705,7 @@ export default function ProfileUnified() {
                   onChange={handleToggleNotification}
                   label="Friend Requests"
                   description="Alerts for new connection requests"
+                  saveState={savingStates['notification_friend_requests']}
                 />
               </div>
             </div>
@@ -593,29 +721,39 @@ export default function ProfileUnified() {
                   <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} block mb-2`}>
                     Profile Visibility
                   </label>
-                  <select 
-                    value={privacy.profile_visibility}
-                    onChange={(e) => setPrivacy(prev => ({ ...prev, profile_visibility: e.target.value }))}
-                    className={uiConfig.components.select}
-                  >
-                    <option value="public">Public</option>
-                    <option value="friends">Friends Only</option>
-                    <option value="private">Private</option>
-                  </select>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={privacy.profile_visibility}
+                      onChange={(e) => handlePrivacyVisibilityChange(e.target.value)}
+                      className={uiConfig.components.select}
+                    >
+                      <option value="public">Public</option>
+                      <option value="friends">Friends Only</option>
+                      <option value="private">Private</option>
+                    </select>
+                    {savingStates['privacy_visibility'] === 'saving' && (
+                      <span className="text-xs text-gray-400 animate-pulse">Saving...</span>
+                    )}
+                    {savingStates['privacy_visibility'] === 'saved' && (
+                      <span className="text-xs text-green-600 dark:text-green-400">Saved ✓</span>
+                    )}
+                  </div>
                 </div>
                 <ToggleSwitch
                   id="show_email"
                   checked={privacy.show_email}
-                  onChange={(id) => setPrivacy(prev => ({ ...prev, [id]: !prev[id] }))}
+                  onChange={handleTogglePrivacy}
                   label="Show Email"
                   description="Display email on your profile"
+                  saveState={savingStates['privacy_show_email']}
                 />
                 <ToggleSwitch
                   id="show_location"
                   checked={privacy.show_location}
-                  onChange={(id) => setPrivacy(prev => ({ ...prev, [id]: !prev[id] }))}
+                  onChange={handleTogglePrivacy}
                   label="Show Location"
                   description="Display your current location"
+                  saveState={savingStates['privacy_show_location']}
                 />
               </div>
             </div>

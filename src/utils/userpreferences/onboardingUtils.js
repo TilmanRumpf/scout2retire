@@ -249,7 +249,7 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
           flexibility: data.timeline_flexibility
         },
         family_situation: typeof data.family_status === 'object'
-          ? (data.family_status?.value || data.family_status?.status || 'solo')
+          ? (data.family_status?.situation || data.family_status?.value || data.family_status?.status || 'solo')
           : (data.family_status || 'solo'),
         citizenship: {
           primary_citizenship: data.primary_citizenship,

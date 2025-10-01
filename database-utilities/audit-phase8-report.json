@@ -1,0 +1,46 @@
+{
+  "phase": 8,
+  "phase_name": "Boolean/Categorical Fields",
+  "columns_checked": [
+    "tax_treaty_us",
+    "tax_haven_status",
+    "foreign_income_taxed",
+    "digital_nomad_visa",
+    "retirement_visa_available",
+    "needs_update",
+    "image_is_fallback",
+    "pace_of_life_actual",
+    "urban_rural_character",
+    "social_atmosphere",
+    "traditional_progressive_lean",
+    "primary_language",
+    "english_proficiency_level",
+    "languages_spoken",
+    "secondary_languages",
+    "pet_friendliness",
+    "solo_living_support",
+    "family_friendliness_rating",
+    "senior_friendly_rating",
+    "lgbtq_friendly_rating",
+    "startup_ecosystem_rating",
+    "tourist_season_impact",
+    "property_appreciation_rate_pct",
+    "pollen_levels",
+    "swimming_facilities"
+  ],
+  "towns_analyzed": 341,
+  "timestamp": "2025-10-01T01:15:27.310Z",
+  "issues": {
+    "critical": [],
+    "high": [],
+    "medium": [],
+    "low": []
+  },
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "total": 0
+  }
+}

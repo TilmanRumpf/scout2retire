@@ -1,0 +1,85 @@
+{
+  "phase": 3,
+  "phase_name": "Cost/Financial Data",
+  "columns_checked": [
+    "cost_index",
+    "rent_1bed",
+    "meal_cost",
+    "groceries_cost",
+    "utilities_cost",
+    "typical_monthly_living_cost",
+    "typical_rent_1bed",
+    "typical_home_price",
+    "healthcare_cost",
+    "healthcare_cost_monthly",
+    "rent_2bed_usd",
+    "rent_house_usd",
+    "purchase_apartment_sqm_usd",
+    "purchase_house_avg_usd",
+    "income_tax_rate_pct",
+    "sales_tax_rate_pct",
+    "property_tax_rate_pct"
+  ],
+  "towns_analyzed": 341,
+  "timestamp": "2025-10-01T00:00:56.404Z",
+  "issues": {
+    "critical": [],
+    "high": [],
+    "medium": [
+      {
+        "town_id": "87c5eae0-a082-4be2-8c68-fe9c12ebf4a9",
+        "town_name": "Da Nang",
+        "country": "Vietnam",
+        "field": "groceries_cost",
+        "issue": "Unusually low monthly groceries cost (<$50)",
+        "severity": "MEDIUM",
+        "current_value": 40
+      },
+      {
+        "town_id": "ded71538-e2ec-4dcb-923b-7bbeb1cde1a6",
+        "town_name": "George Town",
+        "country": "Malaysia",
+        "field": "groceries_cost",
+        "issue": "Unusually low monthly groceries cost (<$50)",
+        "severity": "MEDIUM",
+        "current_value": 40
+      }
+    ],
+    "low": [
+      {
+        "town_id": "ea2581c5-8743-4960-a236-1fcab4895069",
+        "town_name": "Cairo",
+        "country": "Egypt",
+        "field": "property_tax_rate_pct",
+        "issue": "High property tax rate (>5%) - verify accuracy",
+        "severity": "LOW",
+        "current_value": 10
+      },
+      {
+        "town_id": "c7a8c508-0cce-4ba7-b3b7-230930ea20dc",
+        "town_name": "Hurghada",
+        "country": "Egypt",
+        "field": "property_tax_rate_pct",
+        "issue": "High property tax rate (>5%) - verify accuracy",
+        "severity": "LOW",
+        "current_value": 10
+      },
+      {
+        "town_id": "a2e7ed50-f314-4f0b-bd0e-f8cba7de296a",
+        "town_name": "Sharm El Sheikh",
+        "country": "Egypt",
+        "field": "property_tax_rate_pct",
+        "issue": "High property tax rate (>5%) - verify accuracy",
+        "severity": "LOW",
+        "current_value": 10
+      }
+    ]
+  },
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 3,
+    "total": 5
+  }
+}

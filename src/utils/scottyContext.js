@@ -24,10 +24,40 @@ export async function getUserContext(userId) {
       .from('favorites')
       .select('*')
       .eq('user_id', userId);
-    
+
     if (favError) {
       console.log('Error fetching favorites:', favError);
       // Continue without favorites rather than failing completely
+    }
+
+    // ALWAYS try to fetch from user_preferences first (current system)
+    const { data: preferencesData } = await supabase
+      .from('user_preferences')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (preferencesData) {
+      console.log('✅ Found user preferences data, using it for context');
+      // Transform user_preferences to onboarding format
+      const onboardingData = {
+        current_status: {
+          family_situation: preferencesData.family_status,
+          citizenship: {
+            primary_citizenship: preferencesData.primary_citizenship,
+            dual_citizenship: preferencesData.dual_citizenship,
+            secondary_citizenship: preferencesData.secondary_citizenship
+          },
+          partner_citizenship: preferencesData.partner_primary_citizenship ? {
+            primary_citizenship: preferencesData.partner_primary_citizenship,
+            dual_citizenship: preferencesData.partner_dual_citizenship,
+            secondary_citizenship: preferencesData.partner_secondary_citizenship
+          } : null,
+          pet_owner: preferencesData.pet_types,
+          has_pets: preferencesData.bringing_pets || (preferencesData.pet_types?.length > 0)
+        }
+      };
+      return formatLegacyContext(userProfile, onboardingData, favorites);
     }
 
     // Check if data has been migrated to new format
@@ -42,10 +72,9 @@ export async function getUserContext(userId) {
         .select('*')
         .eq('user_id', userId)
         .single();
-      
+
       if (onboardingData) {
         console.log('Found legacy onboarding data');
-        // Merge JSON data into userProfile for backward compatibility
         return formatLegacyContext(userProfile, onboardingData, favorites);
       }
     }
@@ -250,6 +279,8 @@ function formatLegacyContext(userProfile, onboardingData, favorites = []) {
   console.log('Legacy context - current_status:', current_status);
   console.log('Legacy context - family_situation:', current_status?.family_situation);
   console.log('Legacy context - partner_citizenship:', current_status?.partner_citizenship);
+  console.log('Legacy context - family_situation.status:', current_status?.family_situation?.status);
+  console.log('Legacy context - check condition:', current_status?.family_situation?.status === 'couple', '&&', !!current_status?.partner_citizenship);
   
   return {
     personal: {
@@ -276,7 +307,11 @@ function formatLegacyContext(userProfile, onboardingData, favorites = []) {
     family: {
       situation: current_status?.family_situation?.status || (typeof current_status?.family_situation === 'string' ? current_status.family_situation : 'single'),
       has_pets: current_status?.pet_owner?.length > 0 || current_status?.has_pets || false,
-      partner_citizenship: current_status?.family_situation?.status === 'couple' && current_status?.partner_citizenship ? {
+      pet_owner: current_status?.pet_owner || [],
+      partner_citizenship: (
+        current_status?.family_situation?.status === 'couple' ||
+        current_status?.family_situation === 'couple'
+      ) && current_status?.partner_citizenship ? {
         primary: current_status.partner_citizenship.primary_citizenship,
         has_dual: current_status.partner_citizenship.dual_citizenship || false,
         secondary: current_status.partner_citizenship.secondary_citizenship,
@@ -310,7 +345,7 @@ function formatLegacyContext(userProfile, onboardingData, favorites = []) {
     },
 
     culture: {
-      urban_rural_preference: culture?.lifestyle?.urban_rural_preference,
+      urban_rural: culture?.lifestyle?.urban_rural_preference,
       pace: culture?.lifestyle?.pace,
       social_atmosphere: culture?.lifestyle?.social_atmosphere,
       political_lean: culture?.lifestyle?.political_lean,
@@ -325,34 +360,15 @@ function formatLegacyContext(userProfile, onboardingData, favorites = []) {
       shopping: culture?.cultural_importance?.shopping,
     },
 
-    activities: {
-      sports: hobbies?.activities?.includes('sports'),
-      cultural: hobbies?.activities?.includes('cultural'),
-      nature: hobbies?.activities?.includes('nature'),
-      food: hobbies?.activities?.includes('food'),
-      shopping: hobbies?.activities?.includes('shopping'),
-      creative: hobbies?.activities?.includes('creative'),
-      wellness: hobbies?.activities?.includes('wellness'),
-      social: hobbies?.activities?.includes('social'),
-      volunteer: hobbies?.activities?.includes('volunteer'),
-    },
-
-    interests: {
-      local_cuisine: hobbies?.interests?.includes('local_cuisine'),
-      history: hobbies?.interests?.includes('history'),
-      beaches: hobbies?.interests?.includes('beaches'),
-      mountains: hobbies?.interests?.includes('mountains'),
-      city_life: hobbies?.interests?.includes('city_life'),
-      rural_life: hobbies?.interests?.includes('rural_life'),
-      arts: hobbies?.interests?.includes('arts'),
-      music: hobbies?.interests?.includes('music'),
-      gardening: hobbies?.interests?.includes('gardening'),
+    hobbies: {
+      activities: hobbies?.activities || [],
+      interests: hobbies?.interests || [],
     },
 
     administration: {
       healthcare_importance: administration?.healthcare_quality?.[0],
       insurance_importance: administration?.insurance_importance?.[0],
-      healthcare_concerns: administration?.health_considerations ? 
+      healthcare_concerns: administration?.health_considerations ?
         Object.values(administration.health_considerations).filter(v => v) : [],
       safety_importance: administration?.safety_importance?.[0],
       infrastructure_importance: administration?.infrastructure?.[0],
@@ -361,14 +377,18 @@ function formatLegacyContext(userProfile, onboardingData, favorites = []) {
       stay_duration: administration?.stay_duration?.[0],
       residency_path: administration?.residency_path?.[0],
       tax_concern: administration?.tax_preference?.[0],
+      property_tax_sensitive: administration?.property_tax_sensitive || false,
+      sales_tax_sensitive: administration?.sales_tax_sensitive || false,
+      income_tax_sensitive: administration?.income_tax_sensitive || false,
       government_efficiency: administration?.government_efficiency?.[0],
     },
 
     budget: {
       total_monthly: budget?.total_budget,
       max_rent: budget?.rent_budget,
-      max_home_price: budget?.home_price,
-      healthcare_budget: budget?.healthcare_budget,
+      max_purchase: budget?.home_price,
+      healthcare: budget?.healthcare_budget,
+      housing_type: budget?.housing_type,
       priorities: budget?.financial_priorities || [],
     },
 
@@ -413,7 +433,10 @@ export function formatContextForPrompt(context) {
   parts.push(`User: ${context.personal.name || 'User'}`);
   
   // Citizenship
-  if (context.citizenship.has_dual) {
+  if (context.citizenship.has_dual && context.citizenship.secondary) {
+    parts.push(`Citizenship: ${context.citizenship.primary} and ${context.citizenship.secondary}`);
+  } else if (context.citizenship.secondary) {
+    // Has secondary citizenship even if has_dual flag is not set
     parts.push(`Citizenship: ${context.citizenship.primary} and ${context.citizenship.secondary}`);
   } else {
     parts.push(`Citizenship: ${context.citizenship.primary}`);
@@ -422,11 +445,17 @@ export function formatContextForPrompt(context) {
   // Family situation
   if (context.family.situation === 'couple') {
     parts.push(`Family: Couple`);
+    console.log('👫 Partner citizenship debug:', context.family.partner_citizenship);
     if (context.family.partner_citizenship) {
-      if (context.family.partner_citizenship.has_dual) {
-        parts.push(`Partner citizenship: ${context.family.partner_citizenship.primary} and ${context.family.partner_citizenship.secondary}`);
+      const { primary, has_dual, secondary } = context.family.partner_citizenship;
+      console.log('👫 Primary:', primary, 'Has dual:', has_dual, 'Secondary:', secondary);
+      if (has_dual && secondary) {
+        parts.push(`Partner citizenship: ${primary} and ${secondary}`);
+      } else if (secondary) {
+        // Has secondary citizenship even if has_dual flag is not set
+        parts.push(`Partner citizenship: ${primary} and ${secondary}`);
       } else {
-        parts.push(`Partner citizenship: ${context.family.partner_citizenship.primary}`);
+        parts.push(`Partner citizenship: ${primary}`);
       }
     }
   } else {
@@ -434,7 +463,15 @@ export function formatContextForPrompt(context) {
   }
 
   if (context.family.has_pets) {
-    parts.push(`Has pets: Yes`);
+    const petTypes = context.family.pet_owner || [];
+    console.log('🐾 Pet debug - has_pets:', context.family.has_pets);
+    console.log('🐾 Pet debug - pet_owner:', context.family.pet_owner);
+    console.log('🐾 Pet debug - petTypes:', petTypes);
+    if (petTypes.length > 0) {
+      parts.push(`Has pets: Yes (${petTypes.join(', ')})`);
+    } else {
+      parts.push(`Has pets: Yes`);
+    }
   }
 
   // Timeline
@@ -470,8 +507,70 @@ export function formatContextForPrompt(context) {
 
   // Favorite towns
   if (context.favorites && context.favorites.length > 0) {
-    const favoriteTowns = context.favorites.slice(0, 3).map(f => `${f.town_name}, ${f.country}`).join('; ');
-    parts.push(`Favorite towns: ${favoriteTowns}${context.favorites.length > 3 ? ` and ${context.favorites.length - 3} more` : ''}`);
+    if (context.favorites.length <= 3) {
+      const favoriteTowns = context.favorites.map(f => `${f.town_name}, ${f.country}`).join('; ');
+      parts.push(`Favorite towns (${context.favorites.length} total): ${favoriteTowns}`);
+    } else {
+      const topThree = context.favorites.slice(0, 3).map(f => `${f.town_name}, ${f.country}`).join('; ');
+      const remaining = context.favorites.slice(3).map(f => `${f.town_name}, ${f.country}`).join('; ');
+      parts.push(`Favorite towns (${context.favorites.length} total): ${topThree}; ${remaining}`);
+    }
+  }
+
+  // Geographic features
+  if (context.geography.features && context.geography.features.length > 0) {
+    parts.push(`Geographic preference: ${context.geography.features.join(', ')}`);
+  }
+
+  // Activities & Interests
+  if (context.hobbies.activities && context.hobbies.activities.length > 0) {
+    parts.push(`Activities: ${context.hobbies.activities.join(', ')}`);
+  }
+  if (context.hobbies.interests && context.hobbies.interests.length > 0) {
+    parts.push(`Interests: ${context.hobbies.interests.join(', ')}`);
+  }
+
+  // Lifestyle preferences
+  if (context.culture.urban_rural) {
+    parts.push(`Lifestyle: ${context.culture.urban_rural} setting, ${context.culture.pace} pace`);
+  }
+
+  // Visa & Residency (CRITICAL for Spain question)
+  if (context.administration.stay_duration) {
+    parts.push(`Stay duration: ${context.administration.stay_duration}`);
+  }
+  if (context.administration.residency_path) {
+    parts.push(`Residency preference: ${context.administration.residency_path}`);
+  }
+
+  // Tax sensitivity (CRITICAL)
+  const taxConcerns = [];
+  if (context.administration.property_tax_sensitive) taxConcerns.push('property tax');
+  if (context.administration.sales_tax_sensitive) taxConcerns.push('sales tax');
+  if (taxConcerns.length > 0) {
+    parts.push(`Tax sensitive to: ${taxConcerns.join(', ')}`);
+  }
+
+  // Healthcare budget
+  if (context.budget.healthcare) {
+    parts.push(`Healthcare budget: $${context.budget.healthcare}/month`);
+  }
+
+  // Housing preferences
+  if (context.budget.housing_type) {
+    parts.push(`Housing: ${context.budget.housing_type}`);
+  }
+  if (context.budget.max_rent) {
+    const rentRange = Array.isArray(context.budget.max_rent) ?
+      `$${context.budget.max_rent[0]}-$${context.budget.max_rent[context.budget.max_rent.length - 1]}` :
+      `$${context.budget.max_rent}`;
+    parts.push(`Max rent: ${rentRange}`);
+  }
+  if (context.budget.max_purchase) {
+    const purchaseRange = Array.isArray(context.budget.max_purchase) ?
+      `$${context.budget.max_purchase[0].toLocaleString()}-$${context.budget.max_purchase[context.budget.max_purchase.length - 1].toLocaleString()}` :
+      `$${context.budget.max_purchase.toLocaleString()}`;
+    parts.push(`Max purchase price: ${purchaseRange}`);
   }
 
   return parts.join('\\n');

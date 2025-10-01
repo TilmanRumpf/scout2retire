@@ -1,0 +1,52 @@
+{
+  "phase": 7,
+  "phase_name": "Lifestyle/Amenities Data",
+  "columns_checked": [
+    "outdoor_activities_rating",
+    "cultural_events_rating",
+    "shopping_rating",
+    "wellness_rating",
+    "golf_courses_count",
+    "tennis_courts_count",
+    "hiking_trails_km",
+    "ski_resorts_within_100km",
+    "marinas_count",
+    "farmers_markets",
+    "veterinary_clinics_count",
+    "dog_parks_count",
+    "international_schools_count",
+    "coworking_spaces_count",
+    "beaches_nearby",
+    "international_schools_available",
+    "childcare_available",
+    "activities_available",
+    "interests_supported",
+    "top_hobbies",
+    "expat_community_size",
+    "retirement_community_presence",
+    "nightlife_rating",
+    "museums_rating",
+    "cultural_rating",
+    "outdoor_rating",
+    "restaurants_rating",
+    "swimming_facilities",
+    "pet_friendly_rating",
+    "cultural_events_frequency",
+    "expat_groups"
+  ],
+  "towns_analyzed": 341,
+  "timestamp": "2025-10-01T01:15:26.949Z",
+  "issues": {
+    "critical": [],
+    "high": [],
+    "medium": [],
+    "low": []
+  },
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "total": 0
+  }
+}

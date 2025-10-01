@@ -1,0 +1,1079 @@
+{
+  "phase": 5,
+  "phase_name": "Infrastructure/Transport Data",
+  "columns_checked": [
+    "internet_speed",
+    "public_transport_quality",
+    "nearest_airport",
+    "airport_distance",
+    "walkability",
+    "has_uber",
+    "has_public_transit",
+    "requires_car",
+    "train_station",
+    "international_flights_direct",
+    "local_mobility_options",
+    "regional_connectivity",
+    "international_access",
+    "travel_connectivity_rating",
+    "distance_to_urban_center"
+  ],
+  "towns_analyzed": 341,
+  "timestamp": "2025-10-01T00:03:53.960Z",
+  "issues": {
+    "critical": [],
+    "high": [],
+    "medium": [],
+    "low": [
+      {
+        "town_id": "83c05a45-8251-4cbd-b7ad-e5c44b2dd9e4",
+        "town_name": "Apia",
+        "country": "Samoa",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 2484
+      },
+      {
+        "town_id": "848d56b8-eb29-4d91-9889-5b3782ec5082",
+        "town_name": "Atenas",
+        "country": "Costa Rica",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 545
+      },
+      {
+        "town_id": "5058d0e5-d2bf-4f9c-a634-c3a05e7f5e82",
+        "town_name": "Escazú",
+        "country": "Costa Rica",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 516
+      },
+      {
+        "town_id": "58d157e8-1ac0-485b-806a-6a543123f3d0",
+        "town_name": "Grecia",
+        "country": "Costa Rica",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 537
+      },
+      {
+        "town_id": "6e58757f-dd49-4301-8640-e301d0fda4ec",
+        "town_name": "Honiara",
+        "country": "Solomon Islands",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 1587
+      },
+      {
+        "town_id": "82651cdd-a68b-4f2d-8db1-52da66f377b3",
+        "town_name": "Koror",
+        "country": "Palau",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 1175
+      },
+      {
+        "town_id": "7445e8d1-5af1-432b-8499-4c9f72978b89",
+        "town_name": "Lake Atitlán (Panajachel)",
+        "country": "Guatemala",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 530
+      },
+      {
+        "town_id": "8ba2813f-d0fd-46bf-98e0-ee541e46809b",
+        "town_name": "Majuro",
+        "country": "Marshall Islands",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 3309
+      },
+      {
+        "town_id": "5de8eacb-2c19-4842-a244-a1f11f1797f6",
+        "town_name": "Nadi",
+        "country": "Fiji",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 1249
+      },
+      {
+        "town_id": "e7f459cc-75d0-41d8-bea1-7da36c122553",
+        "town_name": "Neiafu",
+        "country": "Tonga",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 2077
+      },
+      {
+        "town_id": "e9f10519-f5b4-4eef-8fa1-c14dd94697c7",
+        "town_name": "Pago Pago",
+        "country": "American Samoa",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 2568
+      },
+      {
+        "town_id": "105b09af-13a7-44e6-9dd3-7930885b99c5",
+        "town_name": "Papeete",
+        "country": "French Polynesia",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 4016
+      },
+      {
+        "town_id": "effef53d-2685-4e57-950b-916ad37cc211",
+        "town_name": "Pohnpei (Kolonia)",
+        "country": "Micronesia",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 3372
+      },
+      {
+        "town_id": "6a88ad6a-f1d7-45aa-9f3c-483bf33c4ff3",
+        "town_name": "Port Vila",
+        "country": "Vanuatu",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 541
+      },
+      {
+        "town_id": "0a46f93c-86af-4ea8-b0a1-62477960ce40",
+        "town_name": "Rarotonga (Avarua)",
+        "country": "Cook Islands",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 2946
+      },
+      {
+        "town_id": "4a15e862-4544-49d4-a0dd-5ccde64bf915",
+        "town_name": "Savusavu",
+        "country": "Fiji",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 1482
+      },
+      {
+        "town_id": "d37298d1-4df0-46bd-8b11-c39fdc3eb3c7",
+        "town_name": "Suva",
+        "country": "Fiji",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 1333
+      },
+      {
+        "town_id": "95231a44-23fe-4789-8037-97eeef0ff0b5",
+        "town_name": "Tamarindo",
+        "country": "Costa Rica",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 677
+      },
+      {
+        "town_id": "dc6792cc-2d15-4c57-a388-909718dbcc68",
+        "town_name": "Victoria (Mahé)",
+        "country": "Seychelles",
+        "field": "distance_to_urban_center",
+        "issue": "Very distant from urban center (>500km) - verify for remote locations",
+        "severity": "LOW",
+        "current_value": 1743
+      },
+      {
+        "town_id": "4e6be5a8-c5cc-4208-878f-2b6a48586c87",
+        "town_name": "Abu Dhabi",
+        "country": "United Arab Emirates",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 4,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "83c05a45-8251-4cbd-b7ad-e5c44b2dd9e4",
+        "town_name": "Apia",
+        "country": "Samoa",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "8ec14e4e-f663-4da7-a52a-08598bcbad2b",
+        "town_name": "Basseterre",
+        "country": "Saint Kitts and Nevis",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "c59bb9f2-fe10-4406-b796-d404dc4f3206",
+        "town_name": "Bocas Town (Bocas del Toro)",
+        "country": "Panama",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "a16bd8f1-30ed-4d93-98e6-80da9d52fc8b",
+        "town_name": "Boise",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "ea2581c5-8743-4960-a236-1fcab4895069",
+        "town_name": "Cairo",
+        "country": "Egypt",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 4,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "3c5d2c15-99dc-4b3e-b134-e4e994d88c48",
+        "town_name": "Castries",
+        "country": "Saint Lucia",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "543d948e-39cc-4732-b25d-b695ddd71740",
+        "town_name": "Charlotte",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 4,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "4caaeed3-ddd4-4410-a2fe-c220096ad68d",
+        "town_name": "Charlotte Amalie",
+        "country": "U.S. Virgin Islands",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "6e01b895-ad19-450a-b0ee-6def39a6346a",
+        "town_name": "Chattanooga",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "68b0cbfe-14e3-4de7-aebb-f4f04ab6fc5d",
+        "town_name": "Chiang Rai",
+        "country": "Thailand",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "8bde474c-0a61-4f13-92f2-d526a594bf05",
+        "town_name": "Christiansted",
+        "country": "U.S. Virgin Islands",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "5f732820-25aa-468c-a97d-335562128fe0",
+        "town_name": "Clearwater",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "1e5a6eae-60ac-4c98-a976-cef928af6751",
+        "town_name": "Coronado",
+        "country": "Panama",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "234c8047-2cf0-4992-9308-78998bd55125",
+        "town_name": "Dakar",
+        "country": "Senegal",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "4c2441ed-c008-414f-ae4b-3df9b672ccc3",
+        "town_name": "Dubai",
+        "country": "United Arab Emirates",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 4,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "70fde94a-5ce5-40c8-b7dd-7c18841c3e9c",
+        "town_name": "Fethiye",
+        "country": "Turkey",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "024dcc39-087c-458d-ac28-835549fb8536",
+        "town_name": "Fort Myers",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "9cd8af51-0c72-4be4-b50e-b4a52bacb28a",
+        "town_name": "Gaborone",
+        "country": "Botswana",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 4,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "498c7055-7455-48bd-887b-ded61283d18f",
+        "town_name": "Galveston",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "4c308833-3a37-4c9e-a972-b1f44afb3fce",
+        "town_name": "Hermanus",
+        "country": "South Africa",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "415d3929-62b9-46d1-bead-3f50c3c7c583",
+        "town_name": "Hervey Bay",
+        "country": "Australia",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 4,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "04536dac-79c8-408f-a515-a38e1c8cd756",
+        "town_name": "Hilton Head Island",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "129e195b-5c1b-40f5-978b-32adb6539f31",
+        "town_name": "Hobart",
+        "country": "Australia",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 4,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "6e58757f-dd49-4301-8640-e301d0fda4ec",
+        "town_name": "Honiara",
+        "country": "Solomon Islands",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "63207c2b-ad35-467e-a995-7f2e4e6cef27",
+        "town_name": "Hua Hin",
+        "country": "Thailand",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "c9b4354f-55a3-4f2c-ae02-ae66b6942d70",
+        "town_name": "Huntsville",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "1308b5d9-1bce-4e52-9d2f-ee64c0818ff4",
+        "town_name": "Jacksonville",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "050e40ce-4c37-440b-b2cb-a974f5703d78",
+        "town_name": "Kaohsiung",
+        "country": "Taiwan",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "d0680606-a8d2-46e4-b064-86a75d002bc8",
+        "town_name": "Kathmandu",
+        "country": "Nepal",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 4,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "7b24e554-38e9-44c7-abbe-9ea80245df20",
+        "town_name": "Kigali",
+        "country": "Rwanda",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "02fe3fa3-0cee-417a-9dc7-e383fbb88bc7",
+        "town_name": "Kingstown",
+        "country": "Saint Vincent and Grenadines",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "33bc5fda-8a08-4e62-8b60-21eb6ddf61e2",
+        "town_name": "Knysna",
+        "country": "South Africa",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "821f5e43-48c5-42a7-baf6-2a5d2824f57d",
+        "town_name": "Koh Samui",
+        "country": "Thailand",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 4,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "82651cdd-a68b-4f2d-8db1-52da66f377b3",
+        "town_name": "Koror",
+        "country": "Palau",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "ccdf2a22-584f-4362-b2f9-284831a48309",
+        "town_name": "Lancaster",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "a82bab9c-d454-4335-a7f6-1059e35dd556",
+        "town_name": "Marigot",
+        "country": "Saint Martin",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "cb936811-39a8-4609-a482-cc2e43721c27",
+        "town_name": "Myrtle Beach",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "f63d4f65-17dc-41e8-b35b-129608a6784d",
+        "town_name": "Naples",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "e7f459cc-75d0-41d8-bea1-7da36c122553",
+        "town_name": "Neiafu",
+        "country": "Tonga",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "e57a3502-8875-4ac4-8c6a-1cb769d039bd",
+        "town_name": "Newcastle",
+        "country": "Australia",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 4,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "2671a75f-aabd-489c-a97b-c6fadd29f889",
+        "town_name": "New Port Richey",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 4,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "7d44d699-cf31-49cb-a4f7-0600131c387e",
+        "town_name": "Orlando",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "0881d35c-62bd-4e0c-a411-526ae1b95d8e",
+        "town_name": "Palm Beach",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "8945c1fc-2194-451c-91e9-97d5e038e1ea",
+        "town_name": "Palm Springs",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "1d5cfedb-56a4-4bc9-885e-04883751231b",
+        "town_name": "Pedasí",
+        "country": "Panama",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "e9a2e95c-1cac-41cf-86a0-d129ddaf46b6",
+        "town_name": "Philipsburg",
+        "country": "Sint Maarten",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "610470b2-c155-4cb0-b651-e7137314c27b",
+        "town_name": "Phoenix",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "f2ae0d5d-b4d2-4428-811a-1403e152512e",
+        "town_name": "Phuket",
+        "country": "Thailand",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 4,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "d07c338b-6a9e-4fb8-afef-ed4814430262",
+        "town_name": "Plettenberg Bay",
+        "country": "South Africa",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "6a88ad6a-f1d7-45aa-9f3c-483bf33c4ff3",
+        "town_name": "Port Vila",
+        "country": "Vanuatu",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "b0b732fe-9db7-4dc9-91c5-9dd25ccb9287",
+        "town_name": "Providenciales",
+        "country": "Turks and Caicos",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "20304a9e-d10d-4a42-8b88-8b01bbdd51f9",
+        "town_name": "Punta del Este",
+        "country": "Uruguay",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "8244c5e8-c69b-4c46-bda4-da4e7ee87efd",
+        "town_name": "Raleigh",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 4,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "b809692f-7c3f-43b6-ac6b-4c59d27a0381",
+        "town_name": "Rincón",
+        "country": "Puerto Rico",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "06f69225-c5e5-4730-ab2a-7916c13bf273",
+        "town_name": "San Antonio",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "e545f63b-6481-49e8-bc24-7bc1537be755",
+        "town_name": "Scottsdale",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "486d5f23-8c2c-4d22-82f1-331fde056313",
+        "town_name": "St. George",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "0ea2f910-ccb2-4fc2-9cee-7dc02bd94564",
+        "town_name": "Subic Bay (Olongapo)",
+        "country": "Philippines",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "d321fcf2-1ce6-4652-a45b-7f45e7a79c79",
+        "town_name": "Sunshine Coast",
+        "country": "Australia",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 4,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "c594631e-e2c5-46e7-b935-e1fc183f3828",
+        "town_name": "Tauranga",
+        "country": "New Zealand",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 4,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "f4d48b9c-5977-4693-bc7f-a3be03ae093c",
+        "town_name": "The Villages",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "38624b51-b068-47a3-80e0-e84b0080cb78",
+        "town_name": "Tucson",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "3be63465-5383-412b-bdb8-5e7ef39e8f0e",
+        "town_name": "Udon Thani",
+        "country": "Thailand",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "2b5ca36b-6d78-47d9-a6f9-29cdc603c980",
+        "town_name": "Venice (FL)",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "dc6792cc-2d15-4c57-a388-909718dbcc68",
+        "town_name": "Victoria (Mahé)",
+        "country": "Seychelles",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 3,
+          "has_transit": false
+        }
+      },
+      {
+        "town_id": "975db14b-3a47-4503-b98f-c487f5bbd580",
+        "town_name": "Virginia Beach",
+        "country": "United States",
+        "field": "requires_car",
+        "issue": "Marked as not requiring car but has low walkability and no public transit",
+        "severity": "LOW",
+        "current_value": {
+          "requires_car": false,
+          "walkability": 2,
+          "has_transit": false
+        }
+      }
+    ]
+  },
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 86,
+    "total": 86
+  }
+}

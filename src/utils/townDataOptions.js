@@ -55,20 +55,20 @@ export const TOWN_DATA_OPTIONS = {
     'Oceanic', 'Savanna', 'Semi-arid', 'Subtropical', 'Temperate', 'Tropical'
   ],
 
-  // Summer climate (matches database values)
-  summer_climate: ['cool', 'mild', 'warm', 'hot', 'very hot'],
-  
-  // Winter climate (matches database values)
-  winter_climate: ['very cold', 'cold', 'cool', 'mild', 'warm'],
-  
-  // Humidity levels (matches database values)
-  humidity_levels: ['very low', 'low', 'balanced', 'moderate', 'high', 'humid', 'very high', 'dry'],
-  
-  // Sunshine levels
-  sunshine_levels: ['Limited', 'Moderate', 'Abundant', 'Very Abundant'],
-  
-  // Precipitation levels
-  precipitation_levels: ['Very Low', 'Low', 'Moderate', 'High', 'Very High'],
+  // Summer climate - MUST MATCH OnboardingClimate.jsx exactly (lines 195-199)
+  summer_climate: ['mild', 'warm', 'hot'],
+
+  // Winter climate - MUST MATCH OnboardingClimate.jsx exactly (lines 201-205)
+  winter_climate: ['cold', 'cool', 'mild'],
+
+  // Humidity levels - MUST MATCH OnboardingClimate.jsx exactly (lines 207-211)
+  humidity_levels: ['dry', 'balanced', 'humid'],
+
+  // Sunshine levels - MUST MATCH OnboardingClimate.jsx exactly (lines 213-217)
+  sunshine_levels: ['often_sunny', 'balanced', 'less_sunny'],
+
+  // Precipitation levels - MUST MATCH OnboardingClimate.jsx exactly (lines 219-223)
+  precipitation_levels: ['mostly_dry', 'balanced', 'less_dry'],
   
   // Geographic features - standardized to lowercase for consistency
   geographic_features: [
@@ -104,14 +104,14 @@ export const TOWN_DATA_OPTIONS = {
     'Thai', 'Turkish', 'Vietnamese'
   ],
   
-  // Pace of life (matches database values)
-  pace_of_life: ['very slow', 'slow', 'moderate', 'fast', 'very fast'],
-  
-  // Urban/Rural character (matches database values)
-  urban_rural: ['rural', 'suburban', 'small town', 'small city', 'urban', 'medium city', 'large city', 'metropolis'],
-  
-  // Expat community size
-  expat_community: ['None', 'Small', 'Moderate', 'Large', 'Very Large'],
+  // Pace of life - MUST MATCH OnboardingCulture.jsx exactly (lines 440-444)
+  pace_of_life: ['relaxed', 'moderate', 'fast'],
+
+  // Urban/Rural character - MUST MATCH OnboardingCulture.jsx exactly (lines 454-458)
+  urban_rural: ['rural', 'suburban', 'urban'],
+
+  // Expat community size - MUST MATCH OnboardingCulture.jsx exactly (lines 433-437)
+  expat_community: ['small', 'moderate', 'large'],
   
   // Safety score (0-10)
   scores: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],

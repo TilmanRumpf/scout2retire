@@ -52,10 +52,10 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
 
   const loadUserAndInvites = async () => {
     try {
-      const { user: currentUser } = await getCurrentUser();
-      if (currentUser) {
-        // Check if user is admin from database
-        setIsAdmin(currentUser.is_admin === true);
+      const { user: currentUser, profile } = await getCurrentUser();
+      if (currentUser && profile) {
+        // Check if user is admin from database profile
+        setIsAdmin(profile.is_admin === true);
         
         // Check for pending invitations
         const { data, error } = await supabase

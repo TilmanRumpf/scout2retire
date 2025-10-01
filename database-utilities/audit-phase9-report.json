@@ -1,0 +1,2333 @@
+{
+  "phase": 9,
+  "phase_name": "Cross-Validation Checks",
+  "checks_performed": [
+    "Beach proximity vs distance to ocean",
+    "Ski resorts vs climate/latitude",
+    "Cost of living vs rent consistency",
+    "Population vs amenities consistency",
+    "Climate vs geography consistency",
+    "Healthcare score vs facilities consistency"
+  ],
+  "towns_analyzed": 341,
+  "timestamp": "2025-10-01T00:18:11.735Z",
+  "issues": {
+    "critical": [],
+    "high": [],
+    "medium": [
+      {
+        "town_id": "5a415bf0-43fb-43ff-9db0-45e2671d1a3b",
+        "town_name": "La Paz",
+        "country": "Mexico",
+        "check": "beaches_vs_ocean_distance",
+        "issue": "Marked as having beaches but >100km from ocean",
+        "severity": "MEDIUM",
+        "current_value": {
+          "beaches_nearby": true,
+          "ocean_distance_km": 400
+        }
+      },
+      {
+        "town_id": "498c7055-7455-48bd-887b-ded61283d18f",
+        "town_name": "Galveston",
+        "country": "United States",
+        "check": "climate_vs_temperature",
+        "issue": "Tropical climate but cold winter (<10°C)",
+        "severity": "MEDIUM",
+        "current_value": {
+          "climate": "subtropical",
+          "winter_temp": 9
+        }
+      },
+      {
+        "town_id": "04536dac-79c8-408f-a515-a38e1c8cd756",
+        "town_name": "Hilton Head Island",
+        "country": "United States",
+        "check": "climate_vs_temperature",
+        "issue": "Tropical climate but cold winter (<10°C)",
+        "severity": "MEDIUM",
+        "current_value": {
+          "climate": "subtropical",
+          "winter_temp": 8
+        }
+      },
+      {
+        "town_id": "9c44ff84-6623-45b8-a202-16724a2597b5",
+        "town_name": "Honolulu",
+        "country": "United States",
+        "check": "climate_vs_temperature",
+        "issue": "Tropical climate but cold winter (<10°C)",
+        "severity": "MEDIUM",
+        "current_value": {
+          "climate": "tropical",
+          "winter_temp": 8
+        }
+      },
+      {
+        "town_id": "02fe3fa3-0cee-417a-9dc7-e383fbb88bc7",
+        "town_name": "Kingstown",
+        "country": "Saint Vincent and Grenadines",
+        "check": "climate_vs_temperature",
+        "issue": "Tropical climate but cold winter (<10°C)",
+        "severity": "MEDIUM",
+        "current_value": {
+          "climate": "tropical",
+          "winter_temp": 9
+        }
+      },
+      {
+        "town_id": "73906e79-3340-462a-9b34-976ff8e54cf1",
+        "town_name": "Las Vegas",
+        "country": "United States",
+        "check": "climate_vs_rainfall",
+        "issue": "Desert climate but high rainfall (>500mm)",
+        "severity": "MEDIUM",
+        "current_value": {
+          "climate": "desert",
+          "rainfall_mm": 800
+        }
+      },
+      {
+        "town_id": "a82bab9c-d454-4335-a7f6-1059e35dd556",
+        "town_name": "Marigot",
+        "country": "Saint Martin",
+        "check": "climate_vs_temperature",
+        "issue": "Tropical climate but cold winter (<10°C)",
+        "severity": "MEDIUM",
+        "current_value": {
+          "climate": "tropical",
+          "winter_temp": 9
+        }
+      },
+      {
+        "town_id": "0b2b6ef1-9ab5-4c8f-aa1f-7e6e37822500",
+        "town_name": "Noumea",
+        "country": "New Caledonia",
+        "check": "climate_vs_temperature",
+        "issue": "Tropical climate but cold winter (<10°C)",
+        "severity": "MEDIUM",
+        "current_value": {
+          "climate": "subtropical",
+          "winter_temp": 9
+        }
+      },
+      {
+        "town_id": "8945c1fc-2194-451c-91e9-97d5e038e1ea",
+        "town_name": "Palm Springs",
+        "country": "United States",
+        "check": "climate_vs_rainfall",
+        "issue": "Desert climate but high rainfall (>500mm)",
+        "severity": "MEDIUM",
+        "current_value": {
+          "climate": "desert",
+          "rainfall_mm": 980
+        }
+      },
+      {
+        "town_id": "610470b2-c155-4cb0-b651-e7137314c27b",
+        "town_name": "Phoenix",
+        "country": "United States",
+        "check": "climate_vs_rainfall",
+        "issue": "Desert climate but high rainfall (>500mm)",
+        "severity": "MEDIUM",
+        "current_value": {
+          "climate": "desert",
+          "rainfall_mm": 860
+        }
+      },
+      {
+        "town_id": "6a88ad6a-f1d7-45aa-9f3c-483bf33c4ff3",
+        "town_name": "Port Vila",
+        "country": "Vanuatu",
+        "check": "climate_vs_temperature",
+        "issue": "Tropical climate but cold winter (<10°C)",
+        "severity": "MEDIUM",
+        "current_value": {
+          "climate": "tropical",
+          "winter_temp": 8
+        }
+      },
+      {
+        "town_id": "06f69225-c5e5-4730-ab2a-7916c13bf273",
+        "town_name": "San Antonio",
+        "country": "United States",
+        "check": "climate_vs_temperature",
+        "issue": "Tropical climate but cold winter (<10°C)",
+        "severity": "MEDIUM",
+        "current_value": {
+          "climate": "subtropical",
+          "winter_temp": 9
+        }
+      },
+      {
+        "town_id": "fdb2747d-feef-4f2f-86b3-1ee00c957025",
+        "town_name": "Savannah",
+        "country": "United States",
+        "check": "climate_vs_temperature",
+        "issue": "Tropical climate but cold winter (<10°C)",
+        "severity": "MEDIUM",
+        "current_value": {
+          "climate": "subtropical",
+          "winter_temp": 9
+        }
+      },
+      {
+        "town_id": "e545f63b-6481-49e8-bc24-7bc1537be755",
+        "town_name": "Scottsdale",
+        "country": "United States",
+        "check": "climate_vs_rainfall",
+        "issue": "Desert climate but high rainfall (>500mm)",
+        "severity": "MEDIUM",
+        "current_value": {
+          "climate": "desert",
+          "rainfall_mm": 980
+        }
+      },
+      {
+        "town_id": "486d5f23-8c2c-4d22-82f1-331fde056313",
+        "town_name": "St. George",
+        "country": "United States",
+        "check": "climate_vs_rainfall",
+        "issue": "Desert climate but high rainfall (>500mm)",
+        "severity": "MEDIUM",
+        "current_value": {
+          "climate": "desert",
+          "rainfall_mm": 890
+        }
+      },
+      {
+        "town_id": "c594631e-e2c5-46e7-b935-e1fc183f3828",
+        "town_name": "Tauranga",
+        "country": "New Zealand",
+        "check": "climate_vs_temperature",
+        "issue": "Tropical climate but cold winter (<10°C)",
+        "severity": "MEDIUM",
+        "current_value": {
+          "climate": "subtropical",
+          "winter_temp": 9
+        }
+      },
+      {
+        "town_id": "38624b51-b068-47a3-80e0-e84b0080cb78",
+        "town_name": "Tucson",
+        "country": "United States",
+        "check": "climate_vs_rainfall",
+        "issue": "Desert climate but high rainfall (>500mm)",
+        "severity": "MEDIUM",
+        "current_value": {
+          "climate": "desert",
+          "rainfall_mm": 850
+        }
+      },
+      {
+        "town_id": "72d63a89-decd-4ea2-9d93-3fc17355dd44",
+        "town_name": "Aix-en-Provence",
+        "country": "France",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "d2e29c28-bda5-4178-8be1-f0056713f59a",
+        "town_name": "Albufeira",
+        "country": "Portugal",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "2d5b5b75-a872-4157-9d59-ccc1a2357ac4",
+        "town_name": "Algarve (Lagos)",
+        "country": "Portugal",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "104f60bd-12a3-44ca-8a8d-ddbdae8fea6a",
+        "town_name": "Alicante",
+        "country": "Spain",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "d763328d-62a5-4369-9920-82ae2fe7a910",
+        "town_name": "Annecy",
+        "country": "France",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "91cbeec7-f419-474a-bb4e-34f039286499",
+        "town_name": "Antibes",
+        "country": "France",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "848d56b8-eb29-4d91-9889-5b3782ec5082",
+        "town_name": "Atenas",
+        "country": "Costa Rica",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "1e72beaa-4acd-4d19-897d-618178f09c01",
+        "town_name": "Avignon",
+        "country": "France",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "b1803f6c-c123-4ede-bcf2-6c493268ccc8",
+        "town_name": "Baguio",
+        "country": "Philippines",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "338993f9-bd57-4187-81ee-20776925fdd9",
+        "town_name": "Baiona",
+        "country": "Spain",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "c5d087ca-532a-44ec-a5f9-5b968a99548c",
+        "town_name": "Bend",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "26b2df46-1fb7-4515-93df-edb4bcbf8cb5",
+        "town_name": "Bergen (NH)",
+        "country": "Netherlands",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "3142cf3d-fa16-4f7a-8f21-948bf3ef1b93",
+        "town_name": "Bodrum",
+        "country": "Turkey",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "a16bd8f1-30ed-4d93-98e6-80da9d52fc8b",
+        "town_name": "Boise",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "8f0739b5-20ad-4813-a9bb-f36c26d4195f",
+        "town_name": "Boquete",
+        "country": "Panama",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "6165bf5b-abb7-4db5-a7f5-0b8e02b75a52",
+        "town_name": "Braga",
+        "country": "Portugal",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "798c8a0c-167a-4c19-99d4-9f29d1adcb85",
+        "town_name": "Budva",
+        "country": "Montenegro",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "4ae9ee67-aab9-49eb-beae-bf8f6588eb13",
+        "town_name": "Cannes",
+        "country": "France",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "8ba49261-e672-4fdf-81af-a2d1664ed199",
+        "town_name": "Carvoeiro",
+        "country": "Portugal",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "874e868b-21b2-4116-8a2d-7b0b9c77ef87",
+        "town_name": "Cassis",
+        "country": "France",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "c87dc388-4823-449e-8352-e4325ccac92a",
+        "town_name": "Castro Urdiales",
+        "country": "Spain",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "8595d472-a1d9-4480-9f67-dc107c0ac0ec",
+        "town_name": "Cavalaire-sur-Mer",
+        "country": "France",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "6ad9757d-39f9-4b9d-8860-4630e0af653b",
+        "town_name": "Chania",
+        "country": "Greece",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "b679b69c-1eea-479c-a32d-241aacc01971",
+        "town_name": "Charleston",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "334739b3-016c-4cda-af2b-1b90116aee3f",
+        "town_name": "Chiang Mai",
+        "country": "Thailand",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "37e01d35-adb9-4adc-8ee2-125eceb7fa63",
+        "town_name": "Christchurch",
+        "country": "New Zealand",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "8bde474c-0a61-4f13-92f2-d526a594bf05",
+        "town_name": "Christiansted",
+        "country": "U.S. Virgin Islands",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "4cd58a28-d6ce-4b14-a10d-772089614fe3",
+        "town_name": "Coffs Harbour",
+        "country": "Australia",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "826d1962-646f-451d-9197-3265eef4097a",
+        "town_name": "Colonia del Sacramento",
+        "country": "Uruguay",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "6e333880-db74-49e3-a894-593a05e24228",
+        "town_name": "Comillas",
+        "country": "Spain",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "28a4b3b9-4052-4b46-bc4f-7bfdef2ccf02",
+        "town_name": "Corfu (Kerkyra)",
+        "country": "Greece",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "1e5a6eae-60ac-4c98-a976-cef928af6751",
+        "town_name": "Coronado",
+        "country": "Panama",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "31250ef6-eb66-4544-b789-7f7fe1fb8d86",
+        "town_name": "Cusco",
+        "country": "Peru",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "a05b52cc-62aa-49c4-99df-21574d7e8cfa",
+        "town_name": "Dinant",
+        "country": "Belgium",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "51777725-e9b4-47bc-9ab8-b0552ff00fcd",
+        "town_name": "Eckernförde",
+        "country": "Germany",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "012e2095-acef-40b7-b211-87d6acd1ce80",
+        "town_name": "El Gouna",
+        "country": "Egypt",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "5058d0e5-d2bf-4f9c-a634-c3a05e7f5e82",
+        "town_name": "Escazú",
+        "country": "Costa Rica",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "5e47fdf0-01c4-438f-9cbb-b17ff70164c7",
+        "town_name": "Evora",
+        "country": "Portugal",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "70fde94a-5ce5-40c8-b7dd-7c18841c3e9c",
+        "town_name": "Fethiye",
+        "country": "Turkey",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "498c7055-7455-48bd-887b-ded61283d18f",
+        "town_name": "Galveston",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "2ec30c2b-5c0f-4891-887d-f3c97c67dfa9",
+        "town_name": "George Town (Exuma)",
+        "country": "Bahamas",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "68e0b7f2-f360-41b5-a8e6-849bf507911f",
+        "town_name": "Ghent",
+        "country": "Belgium",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "67c3c8cb-fccd-4aa1-b098-eda01899e04f",
+        "town_name": "Grand Baie",
+        "country": "Mauritius",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "58d157e8-1ac0-485b-806a-6a543123f3d0",
+        "town_name": "Grecia",
+        "country": "Costa Rica",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "d99c99a4-6ba6-462a-b439-9c64be879511",
+        "town_name": "Hammamet",
+        "country": "Tunisia",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "569a2538-1c5f-4dbe-b390-dc51d4723b71",
+        "town_name": "Heidelberg",
+        "country": "Germany",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "d0a5d0d6-b15c-4195-9927-01bad9d1ef32",
+        "town_name": "Herceg Novi",
+        "country": "Montenegro",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "4c308833-3a37-4c9e-a972-b1f44afb3fce",
+        "town_name": "Hermanus",
+        "country": "South Africa",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "415d3929-62b9-46d1-bead-3f50c3c7c583",
+        "town_name": "Hervey Bay",
+        "country": "Australia",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "04536dac-79c8-408f-a515-a38e1c8cd756",
+        "town_name": "Hilton Head Island",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "63207c2b-ad35-467e-a995-7f2e4e6cef27",
+        "town_name": "Hua Hin",
+        "country": "Thailand",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "b584b761-ae57-4dd3-9815-a1ab662bfb1d",
+        "town_name": "Huatulco",
+        "country": "Mexico",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "c9b4354f-55a3-4f2c-ae02-ae66b6942d70",
+        "town_name": "Huntsville",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "26a39313-7419-4618-b928-a3dc285ed9ec",
+        "town_name": "Jurmala",
+        "country": "Latvia",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "3f683f19-50ef-4dda-ac05-6b8a43407b41",
+        "town_name": "Kalamata",
+        "country": "Greece",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "a1969eb4-1229-4dff-9e63-f4832454699f",
+        "town_name": "Kelowna",
+        "country": "Canada",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "33bc5fda-8a08-4e62-8b60-21eb6ddf61e2",
+        "town_name": "Knysna",
+        "country": "South Africa",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "821f5e43-48c5-42a7-baf6-2a5d2824f57d",
+        "town_name": "Koh Samui",
+        "country": "Thailand",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "cb005ba1-d28a-4bee-b7b8-c9eb14c6643d",
+        "town_name": "Kotor",
+        "country": "Montenegro",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "25c6f8d8-326b-414f-b50f-5944b239e430",
+        "town_name": "Lake Chapala",
+        "country": "Mexico",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "4bf1c4b1-8122-4449-a9c6-5a979ca15e9b",
+        "town_name": "Lake Chapala (Ajijic)",
+        "country": "Mexico",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "ccdf2a22-584f-4362-b2f9-284831a48309",
+        "town_name": "Lancaster",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "f75ce5cd-9598-4c5c-b317-e5bd683b4c3a",
+        "town_name": "Langkawi",
+        "country": "Malaysia",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "5a415bf0-43fb-43ff-9db0-45e2671d1a3b",
+        "town_name": "La Paz",
+        "country": "Mexico",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "7d32ea6b-e102-4a6c-b71c-17867392c7a7",
+        "town_name": "La Serena",
+        "country": "Chile",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "ad8f1d09-f450-468f-b8fa-0580097b5233",
+        "town_name": "Las Terrenas",
+        "country": "Dominican Republic",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "21abbf94-053f-41b6-8155-cc9080a2a6e9",
+        "town_name": "Lecce",
+        "country": "Italy",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "d34ae5ff-a212-42fb-9856-90739166c638",
+        "town_name": "Leiden",
+        "country": "Netherlands",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "b96659bf-b9a1-4036-bca3-d4f0813a24a0",
+        "town_name": "Le Lavandou",
+        "country": "France",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "cafb119e-76da-4768-bfb4-9f558c79ffcc",
+        "town_name": "Lemmer",
+        "country": "Netherlands",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "44d32b89-d7c4-406d-9a62-d11e6a73a4c4",
+        "town_name": "Leuven",
+        "country": "Belgium",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "118d65c6-193f-4234-8227-8646a1bcb077",
+        "town_name": "Limassol",
+        "country": "Cyprus",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "f2a02453-8b67-47f7-87f2-7e484dbb8d72",
+        "town_name": "Lindau",
+        "country": "Germany",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "338bbb1b-f3d3-4d4e-b429-a4641435a6d7",
+        "town_name": "Loreto",
+        "country": "Mexico",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "ce95f741-82ba-4b9b-800b-0371125b3d6f",
+        "town_name": "Lucca",
+        "country": "Italy",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "db909d84-255e-450d-8af7-a08fa2eea33c",
+        "town_name": "Lugano",
+        "country": "Switzerland",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "bad8288d-fdf3-459a-9600-01623b47f1aa",
+        "town_name": "Marbella",
+        "country": "Spain",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "ea878043-6efc-4e2b-9524-6912ec2b0790",
+        "town_name": "Mendoza",
+        "country": "Argentina",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "8b3bbf95-ccc3-481e-8d74-7d9e7a8caa50",
+        "town_name": "Menton",
+        "country": "France",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "cb936811-39a8-4609-a482-cc2e43721c27",
+        "town_name": "Myrtle Beach",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "5de8eacb-2c19-4842-a244-a1f11f1797f6",
+        "town_name": "Nadi",
+        "country": "Fiji",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "22c738c9-940f-42a0-b294-771e691a5086",
+        "town_name": "Nafplio",
+        "country": "Greece",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "272bf1fa-8ec1-4233-bc65-4c2179aae9e2",
+        "town_name": "Napier",
+        "country": "New Zealand",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "3b8740c9-6921-4a55-a89d-4c338e441e2c",
+        "town_name": "Nazaré",
+        "country": "Portugal",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "c2921d0e-b7fe-41fd-9758-ca1a2ce41a22",
+        "town_name": "Nelson",
+        "country": "New Zealand",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "2671a75f-aabd-489c-a97b-c6fadd29f889",
+        "town_name": "New Port Richey",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "a291ae6d-a9a6-4849-8a5b-903da5b6e778",
+        "town_name": "Olhão",
+        "country": "Portugal",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "cfb3f427-f414-4c2e-9afd-68b39fcf2e1f",
+        "town_name": "Orvieto",
+        "country": "Italy",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "0881d35c-62bd-4e0c-a411-526ae1b95d8e",
+        "town_name": "Palm Beach",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "8945c1fc-2194-451c-91e9-97d5e038e1ea",
+        "town_name": "Palm Springs",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "acea79da-3455-4e8c-867d-551683fb9385",
+        "town_name": "Paphos",
+        "country": "Northern Cyprus",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "927f7428-cf59-406a-aa05-81646921c51d",
+        "town_name": "Pau",
+        "country": "France",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "f2ae0d5d-b4d2-4428-811a-1403e152512e",
+        "town_name": "Phuket",
+        "country": "Thailand",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "c8b7081f-3704-455c-8648-6df04891db44",
+        "town_name": "Placencia",
+        "country": "Belize",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "97a24524-e7fc-4076-8632-3d9e26520956",
+        "town_name": "Playa del Carmen",
+        "country": "Mexico",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "d07c338b-6a9e-4fb8-afef-ed4814430262",
+        "town_name": "Plettenberg Bay",
+        "country": "South Africa",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "87431028-56cf-4a1b-8de8-4faa143181af",
+        "town_name": "Portimão",
+        "country": "Portugal",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "31298a87-a7d4-441a-9fad-4b77986b0084",
+        "town_name": "Port Macquarie",
+        "country": "Australia",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "d2085a2d-03db-4248-8aa8-5f73fab0ecc6",
+        "town_name": "Porto",
+        "country": "Portugal",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "b0b732fe-9db7-4dc9-91c5-9dd25ccb9287",
+        "town_name": "Providenciales",
+        "country": "Turks and Caicos",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "c78e07d0-71f0-4f2e-80ea-c318e5868636",
+        "town_name": "Puerto de la Cruz",
+        "country": "Spain",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "0dddb9bf-a80b-493c-a39f-c83d35f7f68a",
+        "town_name": "Puerto Vallarta",
+        "country": "Mexico",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "128b1150-2609-413b-9ab6-05d124a49cfb",
+        "town_name": "Pula",
+        "country": "Croatia",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "6a13dea2-30c2-4e85-bbdc-0705356abf93",
+        "town_name": "Punta Cana",
+        "country": "Dominican Republic",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "20304a9e-d10d-4a42-8b88-8b01bbdd51f9",
+        "town_name": "Punta del Este",
+        "country": "Uruguay",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "ebbd22f6-aaa5-4328-b1c8-611200682f1c",
+        "town_name": "Queenstown",
+        "country": "New Zealand",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "8244c5e8-c69b-4c46-bda4-da4e7ee87efd",
+        "town_name": "Raleigh",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "0a46f93c-86af-4ea8-b0a1-62477960ce40",
+        "town_name": "Rarotonga (Avarua)",
+        "country": "Cook Islands",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "86d4aae0-4eaf-435f-ae94-d9ae7bf42adf",
+        "town_name": "Rethymno",
+        "country": "Greece",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "b809692f-7c3f-43b6-ac6b-4c59d27a0381",
+        "town_name": "Rincón",
+        "country": "Puerto Rico",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "20b187a3-f337-42a4-9aff-f6c8005f5f55",
+        "town_name": "Rovinj",
+        "country": "Croatia",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "fa348d85-3a5b-4973-91be-363182d7549a",
+        "town_name": "Sainte-Maxime",
+        "country": "France",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "5178b573-833f-4ad8-a500-0808d96b7a18",
+        "town_name": "Saint-Tropez",
+        "country": "France",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "ff8fe810-1416-4e8e-905d-7b07636c59f2",
+        "town_name": "Salerno",
+        "country": "Italy",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "166f5811-14bd-4ca2-afb7-ee03ded1610f",
+        "town_name": "Sanlúcar de Barrameda",
+        "country": "Spain",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "f34aa383-9d64-4957-8c34-e4dc9e3e2f73",
+        "town_name": "San Miguel de Allende",
+        "country": "Mexico",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "cf92ac46-33de-42ab-8c73-1a7fcfeec987",
+        "town_name": "San Pedro (Ambergris Caye)",
+        "country": "Belize",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "2f6c604b-45b1-41d4-a2a7-c5aef6795513",
+        "town_name": "Santa Fe",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "889fb647-5f9f-4c23-a29c-3a4a9c2b7d90",
+        "town_name": "Sarlat-la-Canéda",
+        "country": "France",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "fdb2747d-feef-4f2f-86b3-1ee00c957025",
+        "town_name": "Savannah",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "e545f63b-6481-49e8-bc24-7bc1537be755",
+        "town_name": "Scottsdale",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "a2e7ed50-f314-4f0b-bd0e-f8cba7de296a",
+        "town_name": "Sharm El Sheikh",
+        "country": "Egypt",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "362f32de-06e3-4ef5-94c4-eb1b26daa1a7",
+        "town_name": "Sibenik",
+        "country": "Croatia",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "6efd6f68-84db-4298-91c6-1dcc0b2a1acf",
+        "town_name": "Sliema",
+        "country": "Malta",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "486d5f23-8c2c-4d22-82f1-331fde056313",
+        "town_name": "St. George",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "ccd50d09-8869-42c1-96b9-4d4a1825c407",
+        "town_name": "Swakopmund",
+        "country": "Namibia",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "40f6bbe7-04e0-4179-ae67-347cbabd41fa",
+        "town_name": "Tagaytay",
+        "country": "Philippines",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "95231a44-23fe-4789-8037-97eeef0ff0b5",
+        "town_name": "Tamarindo",
+        "country": "Costa Rica",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "43031e99-3ccf-4b97-bece-73bf612f6cd9",
+        "town_name": "Taormina",
+        "country": "Italy",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "2e00a26c-874f-4a40-8f29-241d1c970674",
+        "town_name": "Tavira",
+        "country": "Portugal",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "ef894dd0-b4f8-4dfd-999e-996e439190e9",
+        "town_name": "Tervuren",
+        "country": "Belgium",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "5ecb738d-2755-4712-aa51-9d5dcd833af5",
+        "town_name": "Thessaloniki",
+        "country": "Greece",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "77a17097-375a-4393-abcf-ea15659e4cc6",
+        "town_name": "Trier",
+        "country": "Germany",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "dcde989d-0ef8-4645-ac32-b6f37ce595a2",
+        "town_name": "Trieste",
+        "country": "Italy",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "514e41f7-29df-4887-9b50-0995b4d65ba3",
+        "town_name": "Trogir",
+        "country": "Croatia",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "91701403-3fc5-41e8-b850-a8d9a12876be",
+        "town_name": "Truro (Cornwall)",
+        "country": "United Kingdom",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "1710415f-74e3-4f7b-8cd9-90425462610d",
+        "town_name": "Valparaíso",
+        "country": "Chile",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "2b5ca36b-6d78-47d9-a6f9-29cdc603c980",
+        "town_name": "Venice (FL)",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "afced2dc-d1f1-473f-a398-ba7f071bafc7",
+        "town_name": "Victor Harbor",
+        "country": "Australia",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "0544ad3a-c5f9-481c-89f1-d209472fbbcf",
+        "town_name": "Victoria",
+        "country": "Canada",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "693dabc2-1d81-4398-b33a-4734c08ebf8e",
+        "town_name": "Vila Real de Santo António",
+        "country": "Portugal",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "42eec709-9c29-434f-804e-42541894ab9d",
+        "town_name": "Vilcabamba",
+        "country": "Ecuador",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "8fcb690b-fb6a-4cb4-b1f7-b5250ed1444e",
+        "town_name": "Villa de Leyva",
+        "country": "Colombia",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "975db14b-3a47-4503-b98f-c487f5bbd580",
+        "town_name": "Virginia Beach",
+        "country": "United States",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "c7a9a50f-131e-45af-9dbc-46a8be7db12f",
+        "town_name": "Viseu",
+        "country": "Portugal",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "8d2b23f9-d927-4cb2-b257-534afcd3ee1e",
+        "town_name": "Wanaka",
+        "country": "New Zealand",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "caee11be-7773-4ade-ab47-939ba8146a53",
+        "town_name": "Wismar",
+        "country": "Germany",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "5b6922e4-fed4-4ea5-a9f5-9bc773286535",
+        "town_name": "Zadar",
+        "country": "Croatia",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 8,
+          "hospitals": 0
+        }
+      },
+      {
+        "town_id": "eea34f65-2faa-4cef-b9c4-ca3fd91f4ed9",
+        "town_name": "Zutphen",
+        "country": "Netherlands",
+        "check": "healthcare_score_vs_facilities",
+        "issue": "High healthcare score (≥8) but no hospitals listed",
+        "severity": "MEDIUM",
+        "current_value": {
+          "healthcare_score": 9,
+          "hospitals": 0
+        }
+      }
+    ],
+    "low": [
+      {
+        "town_id": "525f038a-f205-4c11-96d5-c0ac447d8ee8",
+        "town_name": "Buenos Aires",
+        "country": "Argentina",
+        "check": "beaches_vs_ocean_distance",
+        "issue": "Marked as no beaches but <5km from ocean",
+        "severity": "LOW",
+        "current_value": {
+          "beaches_nearby": false,
+          "ocean_distance_km": 0
+        }
+      },
+      {
+        "town_id": "21b70a44-6259-4d0d-a8a9-b4b489a30075",
+        "town_name": "Charlottetown",
+        "country": "Canada",
+        "check": "beaches_vs_ocean_distance",
+        "issue": "Marked as no beaches but <5km from ocean",
+        "severity": "LOW",
+        "current_value": {
+          "beaches_nearby": false,
+          "ocean_distance_km": 0
+        }
+      },
+      {
+        "town_id": "826d1962-646f-451d-9197-3265eef4097a",
+        "town_name": "Colonia del Sacramento",
+        "country": "Uruguay",
+        "check": "beaches_vs_ocean_distance",
+        "issue": "Marked as no beaches but <5km from ocean",
+        "severity": "LOW",
+        "current_value": {
+          "beaches_nearby": false,
+          "ocean_distance_km": 0
+        }
+      },
+      {
+        "town_id": "eabd203e-195e-4529-ae31-9094693ac926",
+        "town_name": "Johor Bahru",
+        "country": "Malaysia",
+        "check": "beaches_vs_ocean_distance",
+        "issue": "Marked as no beaches but <5km from ocean",
+        "severity": "LOW",
+        "current_value": {
+          "beaches_nearby": false,
+          "ocean_distance_km": 0
+        }
+      },
+      {
+        "town_id": "050e40ce-4c37-440b-b2cb-a974f5703d78",
+        "town_name": "Kaohsiung",
+        "country": "Taiwan",
+        "check": "beaches_vs_ocean_distance",
+        "issue": "Marked as no beaches but <5km from ocean",
+        "severity": "LOW",
+        "current_value": {
+          "beaches_nearby": false,
+          "ocean_distance_km": 0
+        }
+      },
+      {
+        "town_id": "154cff46-414a-4ce0-bf3b-ea2f2168c806",
+        "town_name": "Malacca",
+        "country": "Malaysia",
+        "check": "beaches_vs_ocean_distance",
+        "issue": "Marked as no beaches but <5km from ocean",
+        "severity": "LOW",
+        "current_value": {
+          "beaches_nearby": false,
+          "ocean_distance_km": 0
+        }
+      },
+      {
+        "town_id": "4e6be5a8-c5cc-4208-878f-2b6a48586c87",
+        "town_name": "Abu Dhabi",
+        "country": "United Arab Emirates",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 1450000,
+          "transit_quality": 1
+        }
+      },
+      {
+        "town_id": "e0b940cf-5ced-4813-92c6-9f1dac0725b0",
+        "town_name": "Antalya",
+        "country": "Turkey",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 2600000,
+          "transit_quality": 1
+        }
+      },
+      {
+        "town_id": "7e2dd9b4-b85f-4344-991b-6af16740a386",
+        "town_name": "Austin",
+        "country": "United States",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 1028200,
+          "transit_quality": 2
+        }
+      },
+      {
+        "town_id": "93776e5a-55b4-4d66-818a-e523e9bf668d",
+        "town_name": "Cape Town",
+        "country": "South Africa",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 4600000,
+          "transit_quality": 1
+        }
+      },
+      {
+        "town_id": "1927c482-d454-425a-846a-79b9dc202a22",
+        "town_name": "Casablanca",
+        "country": "Morocco",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 3400000,
+          "transit_quality": 2
+        }
+      },
+      {
+        "town_id": "234c8047-2cf0-4992-9308-78998bd55125",
+        "town_name": "Dakar",
+        "country": "Senegal",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 1150000,
+          "transit_quality": 1
+        }
+      },
+      {
+        "town_id": "4c2441ed-c008-414f-ae4b-3df9b672ccc3",
+        "town_name": "Dubai",
+        "country": "United Arab Emirates",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 3400000,
+          "transit_quality": 1
+        }
+      },
+      {
+        "town_id": "1bb54c7c-7d5d-40b3-bbdf-062180bf3b58",
+        "town_name": "Goa",
+        "country": "India",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 1500000,
+          "transit_quality": 2
+        }
+      },
+      {
+        "town_id": "51bce5ae-a496-4519-8d77-802f587d9c82",
+        "town_name": "Ho Chi Minh City",
+        "country": "Vietnam",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 9000000,
+          "transit_quality": 1
+        }
+      },
+      {
+        "town_id": "eabd203e-195e-4529-ae31-9094693ac926",
+        "town_name": "Johor Bahru",
+        "country": "Malaysia",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 1800000,
+          "transit_quality": 2
+        }
+      },
+      {
+        "town_id": "050e40ce-4c37-440b-b2cb-a974f5703d78",
+        "town_name": "Kaohsiung",
+        "country": "Taiwan",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 2770000,
+          "transit_quality": 1
+        }
+      },
+      {
+        "town_id": "7b24e554-38e9-44c7-abbe-9ea80245df20",
+        "town_name": "Kigali",
+        "country": "Rwanda",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 1200000,
+          "transit_quality": 1
+        }
+      },
+      {
+        "town_id": "1d7598db-0186-464a-9a08-d2f7b782df93",
+        "town_name": "Mérida",
+        "country": "Mexico",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 1050000,
+          "transit_quality": 2
+        }
+      },
+      {
+        "town_id": "a2bd9c98-0705-48c8-bae2-66baa17781da",
+        "town_name": "Montevideo",
+        "country": "Uruguay",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 1380000,
+          "transit_quality": 1
+        }
+      },
+      {
+        "town_id": "17259604-4b42-4b54-8412-bec2046a8f2c",
+        "town_name": "Ottawa",
+        "country": "Canada",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 1017400,
+          "transit_quality": 2
+        }
+      },
+      {
+        "town_id": "72863b1f-bd3f-4540-a163-6d7688675341",
+        "town_name": "Perth",
+        "country": "Australia",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 2059500,
+          "transit_quality": 2
+        }
+      },
+      {
+        "town_id": "610470b2-c155-4cb0-b651-e7137314c27b",
+        "town_name": "Phoenix",
+        "country": "United States",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 1625000,
+          "transit_quality": 1
+        }
+      },
+      {
+        "town_id": "c77ba7a2-9ebf-4595-84d0-8f384249998c",
+        "town_name": "Puebla",
+        "country": "Mexico",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 1700000,
+          "transit_quality": 2
+        }
+      },
+      {
+        "town_id": "06f69225-c5e5-4730-ab2a-7916c13bf273",
+        "town_name": "San Antonio",
+        "country": "United States",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 1550000,
+          "transit_quality": 1
+        }
+      },
+      {
+        "town_id": "88edabc1-d4ed-4aff-9308-7a4fed3e68ec",
+        "town_name": "San Diego",
+        "country": "United States",
+        "check": "population_vs_transit",
+        "issue": "Large city (>1M) but low public transport quality (<5)",
+        "severity": "LOW",
+        "current_value": {
+          "population": 1425000,
+          "transit_quality": 1
+        }
+      }
+    ]
+  },
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 166,
+    "low": 26,
+    "total": 192
+  }
+}

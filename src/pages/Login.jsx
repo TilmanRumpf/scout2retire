@@ -121,27 +121,38 @@ export default function Login() {
         }
         
         // Fetch user profile to check onboarding status and username
+        // Check onboarding status from user_preferences (correct table)
+        const { data: prefsData, error: prefsError } = await supabase
+          .from('user_preferences')
+          .select('onboarding_completed')
+          .eq('user_id', user.id)
+          .single();
+
+        // Also get username from users table
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('onboarding_completed, username')
+          .select('username, onboarding_completed')
           .eq('id', user.id)
           .single();
-        
+
         if (userError) {
           console.error("Error fetching user data:", userError);
           // Fixed 10JUN25: Changed from /onboarding/status to /onboarding/progress
           navigate('/onboarding/progress'); // Default to onboarding if profile can't be fetched
           return;
         }
+
+        // Use preferences table for onboarding_completed, fall back to users table
+        const onboardingCompleted = prefsData?.onboarding_completed ?? userData.onboarding_completed;
         
         // Check if user needs to select a username
-        if (!userData.username && userData.onboarding_completed) {
+        if (!userData.username && onboardingCompleted) {
           navigate('/profile?tab=account&selectUsername=true');
           return;
         }
         
         // Redirect based on onboarding status
-        if (userData.onboarding_completed) {
+        if (onboardingCompleted) {
           navigate('/daily');
         } else {
           // Fixed 10JUN25: Changed from /onboarding/status to /onboarding/progress

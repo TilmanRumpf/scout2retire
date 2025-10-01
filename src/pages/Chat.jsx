@@ -1138,7 +1138,7 @@ export default function Chat() {
                   </a>
                 </div>
               ) : (
-                <div className="max-h-64 overflow-y-auto">
+                <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 28rem)' }}>
                   {favorites.map(favorite => (
                     <button
                       key={favorite.town_id}
@@ -1176,8 +1176,8 @@ export default function Chat() {
             </div>
           </div>
           
-          {/* Chat area */}
-          <div className={`flex-1 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden flex flex-col h-[600px]`}>
+          {/* Chat area - Full height on all screens */}
+          <div className={`flex-1 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden flex flex-col`} style={{ height: 'calc(100vh - 10rem)' }}>
             {/* Chat messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.length === 0 ? (

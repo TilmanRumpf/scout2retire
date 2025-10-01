@@ -24,6 +24,8 @@
 4. You have MCP access - fucking use it
 5. Create checkpoint EVERY time something works
 6. **THIS IS A DYNAMIC CODEBASE** - Code changes CONSTANTLY, NEVER assume static
+7. **TRACE DATA FLOW FIRST** - Deploy subagent to analyze actual data flow before debugging
+8. **September 30, 2025 Disaster**: Spent hours on RLS/database when bug was simple destructuring error in QuickNav - ALWAYS trace data flow from source to destination FIRST
 
 # 🔴 CRITICAL: DYNAMIC CODEBASE - NEVER ASSUME ANYTHING IS STATIC!
 
@@ -53,8 +55,16 @@
 ## BEFORE EVERY FIX:
 1. **READ CURRENT FILE** - Not from memory
 2. **VERIFY ALL IMPORTS** - Check they exist NOW
-3. **TRACE ACTUAL PATH** - Follow data flow TODAY
+3. **TRACE ACTUAL DATA FLOW** - Deploy subagent to follow data from source to destination
 4. **ASK BEFORE ALGORITHM CHANGES** - "Can I modify the scoring algorithm?"
+
+## 🔴 MANDATORY: TRACE DATA FLOW WITH SUBAGENT
+When debugging "field is undefined" or "value not showing":
+1. **Deploy subagent** to trace data flow end-to-end
+2. **Read the function** that fetches the data - what does it return?
+3. **Read the component** that uses the data - what does it destructure?
+4. **Check the connection** between them - are field names matching?
+5. **NEVER assume** it's database/RLS until data flow is traced
 
 ## 🚨 DUPLICATE DEFINITIONS = DEATH
 - **CHECK FOR DUPLICATES** - `grep -n "const sameName"` - if >1 result = DISASTER
@@ -70,6 +80,34 @@
 □ Never create files in root (except configs)
 □ If stuck 2+ hours, you're solving wrong problem
 □ Check for duplicate definitions: `grep -n "const sameName"`
+
+# 📊 DATABASE CATEGORICAL VALUES - UPDATED SEPTEMBER 30, 2025
+**CRITICAL**: Database uses rich descriptive values - don't force regression to generic terms!
+
+## Valid Categorical Values (src/utils/validation/categoricalValues.js)
+
+### Climate Descriptors
+- **sunshine_level_actual**: low, less_sunny, balanced, high, often_sunny
+- **precipitation_level_actual**: low, mostly_dry, balanced, high, less_dry
+- **seasonal_variation_actual**: low, minimal, moderate, distinct_seasons, high, extreme
+
+### Lifestyle/Community
+- **retirement_community_presence**: none, minimal, limited, moderate, strong, extensive, very_strong
+- **cultural_events_frequency**: rare, occasional, monthly, frequent, weekly, constant, daily
+- **expat_community_size**: small, moderate, large
+
+### Social/Pace
+- **pace_of_life_actual**: slow, relaxed, moderate, fast (⭐ 48% use "relaxed")
+- **social_atmosphere**: reserved, quiet, moderate, friendly, vibrant, very friendly
+- **traditional_progressive_lean**: traditional, moderate, balanced, progressive
+
+**Why this matters:**
+- "relaxed" is better than forcing "slow" or "moderate"
+- "extensive" retirement communities more descriptive than generic "high"
+- Data evolved to improve UX - this is GOOD, not an error
+- Update validation schemas quarterly, don't regress data quality
+
+**September 30, 2025 Audit:** Found 1,348 "issues" - 77% were validation being too strict, only 0.005% actual errors (2 fixed)
 
 🛑 ABSOLUTE PROHIBITION: NO BAND-AID FIXES! NO ISLAND SOLUTIONS!
 📖 MANDATORY: I MUST READ THIS ENTIRE CLAUDE.MD FILE BEFORE EVERY RESPONSE

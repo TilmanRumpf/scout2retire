@@ -1,0 +1,225 @@
+{
+  "phase": 6,
+  "phase_name": "Geography/Environment Data",
+  "columns_checked": [
+    "region",
+    "regions",
+    "water_bodies",
+    "geographic_features_actual",
+    "vegetation_type_actual",
+    "air_quality_index",
+    "geographic_features",
+    "elevation_meters",
+    "distance_to_ocean_km",
+    "humidity_average",
+    "natural_disaster_risk",
+    "natural_disaster_risk_score",
+    "environmental_factors",
+    "geo_region"
+  ],
+  "towns_analyzed": 341,
+  "timestamp": "2025-10-01T00:11:16.820Z",
+  "issues": {
+    "critical": [],
+    "high": [],
+    "medium": [],
+    "low": [
+      {
+        "town_id": "848d56b8-eb29-4d91-9889-5b3782ec5082",
+        "town_name": "Atenas",
+        "country": "Costa Rica",
+        "field": "water_bodies",
+        "issue": "water_bodies is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "5058d0e5-d2bf-4f9c-a634-c3a05e7f5e82",
+        "town_name": "Escazú",
+        "country": "Costa Rica",
+        "field": "water_bodies",
+        "issue": "water_bodies is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "5e47fdf0-01c4-438f-9cbb-b17ff70164c7",
+        "town_name": "Evora",
+        "country": "Portugal",
+        "field": "water_bodies",
+        "issue": "water_bodies is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "5e47fdf0-01c4-438f-9cbb-b17ff70164c7",
+        "town_name": "Evora",
+        "country": "Portugal",
+        "field": "geographic_features_actual",
+        "issue": "geographic_features_actual is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "58d157e8-1ac0-485b-806a-6a543123f3d0",
+        "town_name": "Grecia",
+        "country": "Costa Rica",
+        "field": "water_bodies",
+        "issue": "water_bodies is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "7b24e554-38e9-44c7-abbe-9ea80245df20",
+        "town_name": "Kigali",
+        "country": "Rwanda",
+        "field": "water_bodies",
+        "issue": "water_bodies is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "1cef255d-7bf3-4f4b-9f62-b520a612e427",
+        "town_name": "Marrakesh",
+        "country": "Morocco",
+        "field": "water_bodies",
+        "issue": "water_bodies is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "1cef255d-7bf3-4f4b-9f62-b520a612e427",
+        "town_name": "Marrakesh",
+        "country": "Morocco",
+        "field": "geographic_features_actual",
+        "issue": "geographic_features_actual is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "a718f196-6f83-4a49-9554-94ae4e33fb22",
+        "town_name": "Merida",
+        "country": "Mexico",
+        "field": "water_bodies",
+        "issue": "water_bodies is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "1d7598db-0186-464a-9a08-d2f7b782df93",
+        "town_name": "Mérida",
+        "country": "Mexico",
+        "field": "water_bodies",
+        "issue": "water_bodies is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "cfb3f427-f414-4c2e-9afd-68b39fcf2e1f",
+        "town_name": "Orvieto",
+        "country": "Italy",
+        "field": "water_bodies",
+        "issue": "water_bodies is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "cfb3f427-f414-4c2e-9afd-68b39fcf2e1f",
+        "town_name": "Orvieto",
+        "country": "Italy",
+        "field": "geographic_features_actual",
+        "issue": "geographic_features_actual is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "8945c1fc-2194-451c-91e9-97d5e038e1ea",
+        "town_name": "Palm Springs",
+        "country": "United States",
+        "field": "water_bodies",
+        "issue": "water_bodies is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "889fb647-5f9f-4c23-a29c-3a4a9c2b7d90",
+        "town_name": "Sarlat-la-Canéda",
+        "country": "France",
+        "field": "water_bodies",
+        "issue": "water_bodies is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "889fb647-5f9f-4c23-a29c-3a4a9c2b7d90",
+        "town_name": "Sarlat-la-Canéda",
+        "country": "France",
+        "field": "geographic_features_actual",
+        "issue": "geographic_features_actual is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "288aaf3b-2fd3-40bc-9954-30ee613a34d4",
+        "town_name": "Spoleto",
+        "country": "Italy",
+        "field": "water_bodies",
+        "issue": "water_bodies is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "288aaf3b-2fd3-40bc-9954-30ee613a34d4",
+        "town_name": "Spoleto",
+        "country": "Italy",
+        "field": "geographic_features_actual",
+        "issue": "geographic_features_actual is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "ef894dd0-b4f8-4dfd-999e-996e439190e9",
+        "town_name": "Tervuren",
+        "country": "Belgium",
+        "field": "water_bodies",
+        "issue": "water_bodies is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "f4d48b9c-5977-4693-bc7f-a3be03ae093c",
+        "town_name": "The Villages",
+        "country": "United States",
+        "field": "water_bodies",
+        "issue": "water_bodies is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "8fcb690b-fb6a-4cb4-b1f7-b5250ed1444e",
+        "town_name": "Villa de Leyva",
+        "country": "Colombia",
+        "field": "water_bodies",
+        "issue": "water_bodies is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      },
+      {
+        "town_id": "06fefce5-fdc7-444c-bfb6-30668ab83d59",
+        "town_name": "Windhoek",
+        "country": "Namibia",
+        "field": "water_bodies",
+        "issue": "water_bodies is an empty array",
+        "severity": "LOW",
+        "current_value": "empty array"
+      }
+    ]
+  },
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 21,
+    "total": 21
+  }
+}

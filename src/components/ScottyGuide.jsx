@@ -499,14 +499,19 @@ What would you like to know about ${name}?`;
 
   const handleSend = async () => {
     if (!message.trim()) return;
-    
+
+    // Auto-create conversation if none exists
+    if (!activeConversation) {
+      startNewChat();
+    }
+
     // Add user message
     const userMessage = {
       id: Date.now().toString(),
       type: 'user',
       text: message
     };
-    
+
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setMessage('');
@@ -706,7 +711,7 @@ What would you like to know about ${name}?`;
                   </a>
                 </div>
               ) : (
-                <div className="max-h-64 overflow-y-auto">
+                <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 28rem)' }}>
                   {favorites.map(favorite => (
                     <button
                       key={favorite.town_id}
@@ -739,7 +744,7 @@ What would you like to know about ${name}?`;
           </div>
           
           {/* Main Chat Area */}
-          <div className={`flex-1 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden flex flex-col`}>
+          <div className={`flex-1 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden flex flex-col h-[700px]`}>
             {/* Chat Header */}
             {activeConversation && (
               <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
@@ -751,7 +756,7 @@ What would you like to know about ${name}?`;
             
             {/* Messages Container */}
             <div className="flex-1 overflow-y-auto p-6">
-              {!activeConversation || (activeConversation && messages.length === 0) ? (
+              {!activeConversation ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
                     {contextLoading ? (
@@ -877,9 +882,8 @@ What would you like to know about ${name}?`;
               )}
             </div>
             
-            {/* Input Area */}
-            {activeConversation && (
-              <div className={`p-4 border-t ${uiConfig.colors.borderLight}`}>
+            {/* Input Area - Always show */}
+            <div className={`p-4 border-t ${uiConfig.colors.borderLight}`}>
                 <div className="flex gap-3">
                   <textarea
                     value={message}
@@ -903,7 +907,6 @@ What would you like to know about ${name}?`;
                   </button>
                 </div>
               </div>
-            )}
           </div>
         </div>
       </main>

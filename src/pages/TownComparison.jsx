@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
 import { getCurrentUser } from '../utils/authUtils';
+import supabase from '../utils/supabaseClient';
 import TownRadarChart from '../components/TownRadarChart';
 import LikeButton from '../components/LikeButton';
 import TownImageOverlay from '../components/TownImageOverlay';
@@ -65,20 +66,43 @@ export default function TownComparison() {
         const params = new URLSearchParams(location.search);
         const townIdsParam = params.get('towns');
         const urlTownIds = townIdsParam
-          ? townIdsParam.split(',').filter(id => id && id.length > 0) // Filter out empty strings
+          ? townIdsParam.split(',')
+            .filter(id => id && id.length > 0) // Filter out empty strings
+            .map(id => {
+              // FIX: Correct known truncated Alicante ID
+              if (id === '104f60bd-12a3-44ca-8a8d-dbdae8fea6a') {
+                console.warn('[TownComparison] Correcting truncated Alicante ID');
+                return '104f60bd-12a3-44ca-8a8d-ddbdae8fea6a';
+              }
+              return id;
+            })
           : [];
 
         console.log('[TownComparison] URL town IDs:', urlTownIds);
 
+        // Priority order: URL params → saved comparison → first 3 favorites
         if (urlTownIds.length > 0) {
-          // Set selected town IDs from URL
+          // 1. URL params (for shared links) - highest priority
           setSelectedTownIds(urlTownIds.slice(0, 3)); // Max 3 towns
-        } else if (userFavorites.length > 0) {
-          // Use top favorites (up to 3) as default selection
-          const defaultSelection = userFavorites
-            .slice(0, 3)
-            .map(fav => fav.town_id);
-          setSelectedTownIds(defaultSelection);
+        } else {
+          // 2. Try to load saved comparison from user_preferences
+          const { data: prefsData, error: prefsError } = await supabase
+            .from('user_preferences')
+            .select('comparison_towns')
+            .eq('user_id', user.id)
+            .single();
+
+          if (!prefsError && prefsData?.comparison_towns && Array.isArray(prefsData.comparison_towns) && prefsData.comparison_towns.length > 0) {
+            console.log('[TownComparison] Loading saved comparison:', prefsData.comparison_towns);
+            setSelectedTownIds(prefsData.comparison_towns.slice(0, 3));
+          } else if (userFavorites.length > 0) {
+            // 3. Fallback to first 3 favorites
+            console.log('[TownComparison] No saved comparison, using first 3 favorites');
+            const defaultSelection = userFavorites
+              .slice(0, 3)
+              .map(fav => fav.town_id);
+            setSelectedTownIds(defaultSelection);
+          }
         }
 
       } catch (err) {
@@ -126,7 +150,10 @@ export default function TownComparison() {
   // Update URL when selection changes (separate effect to avoid loops)
   useEffect(() => {
     if (selectedTownIds.length > 0) {
+      console.log('[TownComparison] Building URL with IDs:', selectedTownIds);
+      console.log('[TownComparison] ID lengths:', selectedTownIds.map(id => id.length));
       const newUrl = `/compare?towns=${selectedTownIds.join(',')}`;
+      console.log('[TownComparison] New URL:', newUrl);
       // Only update if different from current URL
       if (window.location.pathname + window.location.search !== newUrl) {
         navigate(newUrl, { replace: true });
@@ -138,6 +165,33 @@ export default function TownComparison() {
       }
     }
   }, [selectedTownIds, navigate]);
+
+  // Save comparison selection to database (debounced)
+  useEffect(() => {
+    if (!userId || selectedTownIds.length === 0) return;
+
+    // Debounce: wait 1 second after last change before saving
+    const timeoutId = setTimeout(async () => {
+      try {
+        console.log('[TownComparison] Saving comparison to database:', selectedTownIds);
+        const { error } = await supabase
+          .from('user_preferences')
+          .update({ comparison_towns: selectedTownIds })
+          .eq('user_id', userId);
+
+        if (error) {
+          console.error('[TownComparison] Error saving comparison:', error);
+        } else {
+          console.log('[TownComparison] ✅ Comparison saved successfully');
+        }
+      } catch (err) {
+        console.error('[TownComparison] Unexpected error saving comparison:', err);
+      }
+    }, 1000); // 1 second debounce
+
+    // Cleanup: cancel save if selectedTownIds changes again
+    return () => clearTimeout(timeoutId);
+  }, [selectedTownIds, userId]);
 
   // Handle town selection toggle
   const handleTownSelection = (townId) => {

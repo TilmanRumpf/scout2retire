@@ -1,0 +1,31 @@
+{
+  "phase": 1,
+  "phase_name": "Critical Core Data",
+  "columns_checked": [
+    "id",
+    "name",
+    "country",
+    "population",
+    "latitude",
+    "longitude",
+    "cost_of_living_usd",
+    "healthcare_score",
+    "safety_score",
+    "quality_of_life"
+  ],
+  "towns_analyzed": 341,
+  "timestamp": "2025-09-30T23:55:42.608Z",
+  "issues": {
+    "critical": [],
+    "high": [],
+    "medium": [],
+    "low": []
+  },
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "total": 0
+  }
+}

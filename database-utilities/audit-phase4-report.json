@@ -1,0 +1,50 @@
+{
+  "phase": 4,
+  "phase_name": "Healthcare Data",
+  "columns_checked": [
+    "hospital_count",
+    "english_speaking_doctors",
+    "healthcare_specialties_available",
+    "medical_specialties_rating",
+    "environmental_health_rating",
+    "insurance_availability_rating",
+    "medical_specialties_available",
+    "nearest_major_hospital_km",
+    "health_insurance_required",
+    "private_healthcare_cost_index"
+  ],
+  "towns_analyzed": 341,
+  "timestamp": "2025-10-01T00:02:44.222Z",
+  "issues": {
+    "critical": [],
+    "high": [],
+    "medium": [],
+    "low": [
+      {
+        "town_id": "6a48171b-a87d-450e-8a39-9b1bdb3f3928",
+        "town_name": "Bangkok",
+        "country": "Thailand",
+        "field": "hospital_count",
+        "issue": "Very high hospital count (>50) - verify for major cities",
+        "severity": "LOW",
+        "current_value": 52
+      },
+      {
+        "town_id": "ea2581c5-8743-4960-a236-1fcab4895069",
+        "town_name": "Cairo",
+        "country": "Egypt",
+        "field": "hospital_count",
+        "issue": "Very high hospital count (>50) - verify for major cities",
+        "severity": "LOW",
+        "current_value": 104
+      }
+    ]
+  },
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 2,
+    "total": 2
+  }
+}

@@ -3,6 +3,7 @@
 
 import supabase from '../supabaseClient.js'
 import { mapToStandardValue } from './helpers/climateInference.js'
+import { mapCultureValue } from './helpers/cultureInference.js'
 import { calculateHobbiesScore as calculateNormalizedHobbiesScore } from './helpers/hobbiesMatching.js'
 import { CATEGORY_WEIGHTS } from './config.js'
 
@@ -1032,24 +1033,32 @@ export function calculateCultureScore(preferences, town) {
     score += 20
     factors.push({ factor: 'Flexible on living environment', score: 20 })
   } else if (town.urban_rural_character) {
+    // Map town value to golden onboarding values
+    const standardizedUrbanRural = mapCultureValue(town.urban_rural_character, 'urban_rural')
+
     // Check for exact match
-    if (livingEnvPref.includes(town.urban_rural_character)) {
+    if (livingEnvPref.includes(standardizedUrbanRural)) {
       score += 20
-      factors.push({ factor: `Living environment matched (${town.urban_rural_character})`, score: 20 })
+      // Show mapping in debug if value was transformed
+      if (town.urban_rural_character !== standardizedUrbanRural) {
+        factors.push({ factor: `Living environment matched [${town.urban_rural_character} → ${standardizedUrbanRural}]`, score: 20 })
+      } else {
+        factors.push({ factor: `Living environment matched (${standardizedUrbanRural})`, score: 20 })
+      }
     } else {
       // Check for adjacent match
       let isAdjacent = false
       for (const pref of livingEnvPref) {
-        if (CULTURE_ADJACENCY.urban_rural_preference[pref]?.includes(town.urban_rural_character)) {
+        if (CULTURE_ADJACENCY.urban_rural_preference[pref]?.includes(standardizedUrbanRural)) {
           isAdjacent = true
           break
         }
       }
       if (isAdjacent) {
         score += 10
-        factors.push({ factor: `Living environment close match (${town.urban_rural_character})`, score: 10 })
+        factors.push({ factor: `Living environment close match (${standardizedUrbanRural})`, score: 10 })
       } else {
-        factors.push({ factor: `Living environment mismatch (${town.urban_rural_character})`, score: 0 })
+        factors.push({ factor: `Living environment mismatch (${standardizedUrbanRural})`, score: 0 })
       }
     }
   } else {
@@ -1060,17 +1069,25 @@ export function calculateCultureScore(preferences, town) {
   
   // 2. PACE OF LIFE (20 points)
   const pacePref = preferences.lifestyle_preferences?.pace_of_life_preference
-  const townPace = town.pace_of_life_actual // Use actual field
-  
+  const townPaceRaw = town.pace_of_life_actual // Use actual field
+
   if (!pacePref || pacePref.length === 0) {
     // User doesn't care - full points
     score += 20
     factors.push({ factor: 'Flexible on pace of life', score: 20 })
-  } else if (townPace) {
+  } else if (townPaceRaw) {
+    // Map town value to golden onboarding values
+    const townPace = mapCultureValue(townPaceRaw, 'pace')
+
     // Check for exact match
     if (pacePref.includes(townPace)) {
       score += 20
-      factors.push({ factor: `Pace of life matched (${townPace})`, score: 20 })
+      // Show mapping in debug if value was transformed
+      if (townPaceRaw !== townPace) {
+        factors.push({ factor: `Pace of life matched [${townPaceRaw} → ${townPace}]`, score: 20 })
+      } else {
+        factors.push({ factor: `Pace of life matched (${townPace})`, score: 20 })
+      }
     } else {
       // Check for adjacent match
       let isAdjacent = false
@@ -1153,23 +1170,31 @@ export function calculateCultureScore(preferences, town) {
   
   // 4. EXPAT COMMUNITY (10 points)
   const expatPref = preferences.expat_community_preference
-  
+
   if (!expatPref || (Array.isArray(expatPref) && expatPref.length === 0)) {
     // User doesn't care - full points
     score += 10
     factors.push({ factor: 'Flexible on expat community', score: 10 })
   } else if (town.expat_community_size) {
     const expatPrefs = Array.isArray(expatPref) ? expatPref : [expatPref]
-    
+
+    // Map town value to golden onboarding values
+    const standardizedExpat = mapCultureValue(town.expat_community_size, 'expat')
+
     // Check for exact match
-    if (expatPrefs.includes(town.expat_community_size)) {
+    if (expatPrefs.includes(standardizedExpat)) {
       score += 10
-      factors.push({ factor: `Expat community matched (${town.expat_community_size})`, score: 10 })
+      // Show mapping in debug if value was transformed
+      if (town.expat_community_size !== standardizedExpat) {
+        factors.push({ factor: `Expat community matched [${town.expat_community_size} → ${standardizedExpat}]`, score: 10 })
+      } else {
+        factors.push({ factor: `Expat community matched (${standardizedExpat})`, score: 10 })
+      }
     } else {
       // Check for adjacent match
       let isAdjacent = false
       for (const pref of expatPrefs) {
-        if (CULTURE_ADJACENCY.expat_community[pref]?.includes(town.expat_community_size)) {
+        if (CULTURE_ADJACENCY.expat_community[pref]?.includes(standardizedExpat)) {
           isAdjacent = true
           break
         }

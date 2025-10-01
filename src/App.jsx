@@ -138,20 +138,33 @@ const ProtectedRoute = ({ children }) => {
         setUser(session.user);
         // Get user profile to check onboarding status
         if (session.user) {
-          const { data: userData, error } = await supabase
-            .from('users')
+          // Check onboarding status from user_preferences (correct table)
+          const { data: prefsData, error: prefsError } = await supabase
+            .from('user_preferences')
             .select('onboarding_completed')
-            .eq('id', session.user.id)
+            .eq('user_id', session.user.id)
             .single();
-          if (error) {
-            console.error("Error fetching user data:", error);
-            // CRITICAL FIX: If user has auth but no profile, redirect to signup
-            // This prevents the Tobias bug where users can access the app without a profile
-            toast.error('Profile not found. Please complete your registration.');
-            navigate('/signup');
-            return;
+
+          if (prefsError) {
+            // If no preferences record, check users table as fallback
+            const { data: userData, error } = await supabase
+              .from('users')
+              .select('onboarding_completed')
+              .eq('id', session.user.id)
+              .single();
+
+            if (error) {
+              console.error("Error fetching user data:", error);
+              // CRITICAL FIX: If user has auth but no profile, redirect to signup
+              // This prevents the Tobias bug where users can access the app without a profile
+              toast.error('Profile not found. Please complete your registration.');
+              navigate('/signup');
+              return;
+            } else {
+              setOnboardingCompleted(userData.onboarding_completed);
+            }
           } else {
-            setOnboardingCompleted(userData.onboarding_completed);
+            setOnboardingCompleted(prefsData.onboarding_completed);
           }
         }
       } catch (error) {
