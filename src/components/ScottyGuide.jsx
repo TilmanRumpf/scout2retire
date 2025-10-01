@@ -246,13 +246,9 @@ What would you like to know about ${name}?`;
     const loadData = async () => {
       try {
         const { user } = await getCurrentUser();
-        console.log('Current user:', user);
         if (user?.id) {
           // Load user context
           const context = await getUserContext(user.id);
-          console.log('User context loaded:', context);
-          console.log('Family data:', context?.family);
-          console.log('Partner citizenship:', context?.family?.partner_citizenship);
           setUserContext(context);
 
           // Load favorites
@@ -270,7 +266,6 @@ What would you like to know about ${name}?`;
             console.error('Error loading towns with photos:', townsError);
           } else if (townsWithPhotos) {
             setAvailableTowns(townsWithPhotos);
-            console.log(`✅ Loaded ${townsWithPhotos.length} towns with photos for Scotty recommendations`);
           }
           
           // Load recent conversations from database
@@ -309,13 +304,6 @@ What would you like to know about ${name}?`;
           
           // Store user ID for later use
           window.scottyUserId = user.id;
-          
-          // Show success if we have context
-          if (context) {
-            console.log('Context includes favorites:', context.favorites);
-          }
-        } else {
-          console.log('No user ID found');
         }
       } catch (error) {
         console.error('Error loading data:', error);

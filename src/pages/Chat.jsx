@@ -306,18 +306,12 @@ export default function Chat() {
   // Load suggested companions (showing all users for now)
   const loadSuggestedCompanions = async (userId) => {
     try {
-      console.log("=== loadSuggestedCompanions called ===");
-      console.log("Loading companions for user:", userId);
-      
       // Get all other users (removing similarity filtering until we have more users)
-      console.log("About to query users table...");
       const { data: allUsers, error } = await supabase
         .from('users')
         .select('id, email, full_name, created_at')
         .neq('id', userId)
         .limit(20); // Show up to 20 users
-        
-      console.log("Query completed. Error:", error, "Data:", allUsers);
         
       if (error) {
         console.error("Error loading users:", error);
@@ -337,9 +331,7 @@ export default function Chat() {
       if (connError) {
         console.error("Error loading connections:", connError);
       }
-      
-      console.log("Existing connections:", connections);
-      
+
       // Create a set of connected user IDs (only for pending and accepted)
       const connectedUserIds = new Set();
       connections?.forEach(conn => {
@@ -351,24 +343,17 @@ export default function Chat() {
           }
         }
       });
-      
-      console.log("Connected user IDs:", Array.from(connectedUserIds));
-      
+
       // Filter out already connected users
       const availableUsers = allUsers?.filter(user => !connectedUserIds.has(user.id)) || [];
-      
-      console.log("Available users after filtering:", availableUsers.length, availableUsers);
-      
+
       // For now, just show all available users without similarity filtering
       const companions = availableUsers.map(user => ({
         ...user,
         similarity_score: Math.floor(Math.random() * 30) + 70 // Random score 70-100 for display
       }));
-      
-      console.log("Setting companions state with:", companions.length, "users");
-      console.log("Companions data:", companions);
+
       setCompanions(companions);
-      console.log("=== loadSuggestedCompanions completed ===");
     } catch (err) {
       console.error("Error loading companions:", err);
       console.error("Stack trace:", err.stack);

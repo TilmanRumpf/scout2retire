@@ -215,9 +215,6 @@ const TownsManager = () => {
         navigate('/welcome');
         return;
       }
-      
-      console.log('✅ User authenticated:', user.email);
-      console.log('User metadata:', user.user_metadata);
 
       // Check if user is admin using database is_admin column
       const { data: userData, error: userError } = await supabase
@@ -233,8 +230,6 @@ const TownsManager = () => {
         return;
       }
 
-      console.log('✅ Admin access confirmed via database');
-      
       // Try to get avatar from different sources
       let avatarUrl = null;
       
@@ -269,9 +264,7 @@ const TownsManager = () => {
           };
         }
       }
-      
-      console.log('✅ Admin access granted');
-      console.log('Avatar URL:', avatarUrl);
+
       setCurrentUser(user); // Store the current user with updated metadata
       setIsLoading(false);
     };
@@ -295,11 +288,9 @@ const TownsManager = () => {
       const townsWithMetrics = data.map(town => {
         const errors = detectErrors(town);
         const completion = calculateCompletion(town);
-        console.log(`Town ${town.name}: completion=${completion}, errors=${errors.length}`);
         return { ...town, _errors: errors, _completion: completion };
       });
-      
-      console.log('First town with metrics:', townsWithMetrics[0]);
+
       setTowns(townsWithMetrics);
       
       // Load audit data from towns

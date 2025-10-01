@@ -78,8 +78,6 @@ export default function TownComparison() {
             })
           : [];
 
-        console.log('[TownComparison] URL town IDs:', urlTownIds);
-
         // Priority order: URL params → saved comparison → first 3 favorites
         if (urlTownIds.length > 0) {
           // 1. URL params (for shared links) - highest priority
@@ -93,11 +91,9 @@ export default function TownComparison() {
             .single();
 
           if (!prefsError && prefsData?.comparison_towns && Array.isArray(prefsData.comparison_towns) && prefsData.comparison_towns.length > 0) {
-            console.log('[TownComparison] Loading saved comparison:', prefsData.comparison_towns);
             setSelectedTownIds(prefsData.comparison_towns.slice(0, 3));
           } else if (userFavorites.length > 0) {
             // 3. Fallback to first 3 favorites
-            console.log('[TownComparison] No saved comparison, using first 3 favorites');
             const defaultSelection = userFavorites
               .slice(0, 3)
               .map(fav => fav.town_id);
@@ -150,10 +146,7 @@ export default function TownComparison() {
   // Update URL when selection changes (separate effect to avoid loops)
   useEffect(() => {
     if (selectedTownIds.length > 0) {
-      console.log('[TownComparison] Building URL with IDs:', selectedTownIds);
-      console.log('[TownComparison] ID lengths:', selectedTownIds.map(id => id.length));
       const newUrl = `/compare?towns=${selectedTownIds.join(',')}`;
-      console.log('[TownComparison] New URL:', newUrl);
       // Only update if different from current URL
       if (window.location.pathname + window.location.search !== newUrl) {
         navigate(newUrl, { replace: true });
@@ -173,7 +166,6 @@ export default function TownComparison() {
     // Debounce: wait 1 second after last change before saving
     const timeoutId = setTimeout(async () => {
       try {
-        console.log('[TownComparison] Saving comparison to database:', selectedTownIds);
         const { error } = await supabase
           .from('user_preferences')
           .update({ comparison_towns: selectedTownIds })
@@ -181,8 +173,6 @@ export default function TownComparison() {
 
         if (error) {
           console.error('[TownComparison] Error saving comparison:', error);
-        } else {
-          console.log('[TownComparison] ✅ Comparison saved successfully');
         }
       } catch (err) {
         console.error('[TownComparison] Unexpected error saving comparison:', err);

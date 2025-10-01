@@ -228,49 +228,6 @@ supabase.auth.onAuthStateChange((event, session) => {
 
 // Utility functions for common operations
 
-// ============================================================================
-// DEPRECATION NOTICE: Auth functions moved to authUtils.js
-// ============================================================================
-// The following functions are deprecated in this file.
-// Please import from '../utils/authUtils' instead:
-//
-// import { signUp, signIn, signOut, getCurrentUser } from '../utils/authUtils';
-//
-// These re-exports are provided for backwards compatibility only
-// and will be removed in a future version.
-// ============================================================================
-
-import {
-  signUp as authUtilsSignUp,
-  signIn as authUtilsSignIn,
-  signOut as authUtilsSignOut,
-  getCurrentUser as authUtilsGetCurrentUser
-} from './authUtils.js';
-
-/**
- * @deprecated Import from authUtils.js instead
- */
-export const signUp = authUtilsSignUp;
-
-/**
- * @deprecated Import from authUtils.js instead
- */
-export const signIn = authUtilsSignIn;
-
-/**
- * @deprecated Import from authUtils.js instead
- */
-export const signOut = authUtilsSignOut;
-
-/**
- * @deprecated Import from authUtils.js instead
- */
-export const getCurrentUser = authUtilsGetCurrentUser;
-
-// ============================================================================
-// END DEPRECATED SECTION
-// ============================================================================
-
 // Database query helper
 export const queryTable = async (tableName, options = {}) => {
   try {

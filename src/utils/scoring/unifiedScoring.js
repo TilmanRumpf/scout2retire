@@ -247,15 +247,6 @@ export const scoreTown = async (town, userPreferences) => {
     // Calculate match using enhanced algorithm
     const enhancedResult = await calculateEnhancedMatch(convertedPreferences, town);
 
-    // DEBUG: Fixed - was case sensitivity issue
-    // if (town.country === 'Spain') {
-    //   console.log(`🎯 DEBUG: Scoring for ${town.name}, Spain:`, {
-    //     totalScore: enhancedResult.match_score,
-    //     categoryScores: enhancedResult.category_scores,
-    //     topFactors: enhancedResult.top_factors?.slice(0, 3)
-    //   });
-    // }
-
     // Generate additional insights
     const insights = generateEnhancedInsights(town, convertedPreferences, enhancedResult.category_scores);
     const warnings = generateEnhancedWarnings(town, convertedPreferences);

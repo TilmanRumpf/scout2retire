@@ -169,7 +169,6 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       } else if (finalUserPreferences.administration?.healthcare_importance === 'good' ||
                  finalUserPreferences.administration?.healthcare_quality?.includes('functional')) {
         query = query.gte('healthcare_score', 5);
-        // console.log('Pre-filtering for decent healthcare (score >= 5)');
       }
       
       // Pre-filter by safety for users with safety concerns
