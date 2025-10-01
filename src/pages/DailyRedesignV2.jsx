@@ -650,20 +650,102 @@ export default function DailyRedesignV2() {
                     
                     {/* Action buttons matching DailyTownCard */}
                     <div className="flex justify-between items-center">
-                      <Link 
+                      <Link
                         to={todaysInspiration.link}
                         className={`px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.md}`}
                       >
                         Explore Region
                       </Link>
-                      <a
-                        href={`https://www.google.com/maps/search/${encodeURIComponent(todaysInspiration.region + ', Europe')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`${uiConfig.colors.success} text-sm hover:underline`}
+                      <button
+                        onClick={() => {
+                          // Build HTML for a standalone map page with markers using Leaflet.js + OpenStreetMap (FREE, no API key)
+                          const townsWithCoords = inspirationTowns.filter(t => {
+                            const hasLat = t.latitude !== null && t.latitude !== undefined && t.latitude !== '';
+                            const hasLng = t.longitude !== null && t.longitude !== undefined && t.longitude !== '';
+                            const validLat = hasLat && !isNaN(parseFloat(t.latitude));
+                            const validLng = hasLng && !isNaN(parseFloat(t.longitude));
+                            return validLat && validLng;
+                          });
+
+                          if (townsWithCoords.length === 0) {
+                            alert(`No towns in ${todaysInspiration.region} have valid coordinates in the database.`);
+                            window.open(`https://www.google.com/maps/search/${encodeURIComponent(todaysInspiration.region)}`, '_blank');
+                            return;
+                          }
+
+                          // Calculate center
+                          const avgLat = townsWithCoords.reduce((sum, t) => sum + parseFloat(t.latitude), 0) / townsWithCoords.length;
+                          const avgLng = townsWithCoords.reduce((sum, t) => sum + parseFloat(t.longitude), 0) / townsWithCoords.length;
+
+                          // Create markers data
+                          const markersData = townsWithCoords.map(town => ({
+                            lat: parseFloat(town.latitude),
+                            lng: parseFloat(town.longitude),
+                            name: town.name
+                          }));
+
+                          // Open a new window with Leaflet.js + OpenStreetMap (100% FREE)
+                          const mapWindow = window.open('', '_blank');
+                          mapWindow.document.write(`
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                              <title>Towns in ${todaysInspiration.region}</title>
+                              <meta charset="utf-8" />
+                              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                              <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                              <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                              <style>
+                                body, html { margin: 0; padding: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
+                                #map { height: 100%; width: 100%; }
+                              </style>
+                            </head>
+                            <body>
+                              <div id="map"></div>
+                              <script>
+                                // Initialize map without setting view yet
+                                const map = L.map('map');
+
+                                // Add OpenStreetMap tiles (FREE, no API key needed)
+                                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                                  maxZoom: 19
+                                }).addTo(map);
+
+                                // Add markers for each town
+                                const markers = ${JSON.stringify(markersData)};
+                                const markerObjects = [];
+
+                                markers.forEach(markerData => {
+                                  const marker = L.marker([markerData.lat, markerData.lng])
+                                    .addTo(map)
+                                    .bindPopup('<div style="padding: 8px; font-size: 14px;"><strong>' + markerData.name + '</strong></div>');
+                                  markerObjects.push(marker);
+                                });
+
+                                // Fit map to show all markers automatically (works for any country size)
+                                if (markerObjects.length > 0) {
+                                  const group = new L.featureGroup(markerObjects);
+
+                                  // Fit bounds with padding and max zoom constraint
+                                  // maxZoom prevents extreme close-up when only 1-2 markers
+                                  map.fitBounds(group.getBounds().pad(0.5), {
+                                    maxZoom: 7,  // Country/regional level view - prevents zooming too close
+                                    padding: [50, 50]  // Additional pixel padding
+                                  });
+                                } else {
+                                  // Fallback center if no markers
+                                  map.setView([${avgLat}, ${avgLng}], 7);
+                                }
+                              </script>
+                            </body>
+                            </html>
+                          `);
+                        }}
+                        className={`${uiConfig.colors.success} text-sm hover:underline cursor-pointer`}
                       >
                         View on Map
-                      </a>
+                      </button>
                     </div>
                   </div>
                 </div>

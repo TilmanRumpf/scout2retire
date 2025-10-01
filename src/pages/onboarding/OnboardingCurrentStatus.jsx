@@ -347,12 +347,12 @@ export default function OnboardingCurrentStatus() {
     }));
   };
 
-  const handleSkip = async () => {
+  const handleSaveAndExit = async () => {
     setLoading(true);
     await autoSave();
     setHasUnsavedChanges(false);
     setLoading(false);
-    navigate('/onboarding/region');
+    navigate('/onboarding/complete');
   };
 
   const handleSubmit = async (e) => {
@@ -1009,10 +1009,10 @@ export default function OnboardingCurrentStatus() {
               <div className="flex-1 flex justify-center">
                 <button
                   type="button"
-                  onClick={handleSkip}
+                  onClick={handleSaveAndExit}
                   className={uiConfig.components.buttonSecondary}
                 >
-                  Skip
+                  Save & Exit
                 </button>
               </div>
               <div className="relative">
@@ -1025,7 +1025,7 @@ export default function OnboardingCurrentStatus() {
                   onClick={handleSubmit}
                   className={uiConfig.components.buttonPrimary}
                 >
-                  {loading ? 'Saving...' : hasUnsavedChanges ? 'Save & Next →' : 'Next →'}
+                  {loading ? 'Saving...' : 'Save & Proceed →'}
                 </button>
               </div>
             </div>
