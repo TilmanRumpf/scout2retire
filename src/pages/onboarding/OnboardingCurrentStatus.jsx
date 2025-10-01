@@ -667,8 +667,8 @@ export default function OnboardingCurrentStatus() {
                         checked={formData.citizenship.dual_citizenship}
                         onChange={handleInputChange}
                         className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
-                        style={{ 
-                          accentColor: '#8fbc8f',
+                        style={{
+                          accentColor: '#8fbc8f', // scout-accent-300
                           WebkitAppearance: 'none',
                           appearance: 'none',
                           backgroundColor: formData.citizenship.dual_citizenship ? '#8fbc8f' : 'transparent',
@@ -771,8 +771,8 @@ export default function OnboardingCurrentStatus() {
                           checked={formData.partner_citizenship.dual_citizenship}
                           onChange={handleInputChange}
                           className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
-                          style={{ 
-                            accentColor: '#8fbc8f',
+                          style={{
+                            accentColor: '#8fbc8f', // scout-accent-300
                             WebkitAppearance: 'none',
                             appearance: 'none',
                             backgroundColor: formData.partner_citizenship.dual_citizenship ? '#8fbc8f' : 'transparent',
@@ -876,8 +876,8 @@ export default function OnboardingCurrentStatus() {
                           checked={formData.children_citizenship.dual_citizenship}
                           onChange={handleInputChange}
                           className="h-4 w-4 rounded border-gray-300 text-scout-accent-300 focus:ring-0 cursor-pointer"
-                          style={{ 
-                            accentColor: '#8fbc8f',
+                          style={{
+                            accentColor: '#8fbc8f', // scout-accent-300
                             WebkitAppearance: 'none',
                             appearance: 'none',
                             backgroundColor: formData.children_citizenship.dual_citizenship ? '#8fbc8f' : 'transparent',

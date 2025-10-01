@@ -37,6 +37,20 @@ module.exports = {
           950: '#101e13',  // Nearly black with sage undertone
           DEFAULT: '#8fbc8f', // Makes bg-scout-accent work perfectly
         },
+        // Scout2Retire brand orange - used for the "2" in logo
+        'scout-orange': {
+          50: '#fef5f0',   // Lightest orange tint
+          100: '#fde8db',  // Very light orange
+          200: '#fcceb7',  // Light orange
+          300: '#faad8d',  // Medium-light orange
+          400: '#f88864',  // Medium orange
+          500: '#f66527',  // Scout2Retire brand orange - the "2"
+          600: '#e04d0f',  // Darker orange
+          700: '#bc3d08',  // Deep orange
+          800: '#993208',  // Very dark orange
+          900: '#7a2909',  // Darkest orange
+          DEFAULT: '#f66527', // Makes text-scout-orange work
+        },
         // Progress/In-Progress colors - warm peach/coral based on #FBB982
         'scout-progress': {
           50:  '#FEF5ED',  // Lightest - almost white with hint of peach

@@ -17,6 +17,7 @@ export const colors = {
   hint: 'text-gray-600 dark:text-gray-300',
   muted: 'text-gray-500 dark:text-gray-400',
   accent: 'text-scout-accent-600 dark:text-scout-accent-300',
+  brandOrange: 'text-scout-orange-500 dark:text-scout-orange-400',
   error: 'text-red-600 dark:text-red-400',
   success: 'text-scout-accent-600 dark:text-scout-accent-300',
 

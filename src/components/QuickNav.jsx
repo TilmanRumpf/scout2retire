@@ -232,7 +232,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
         <div className="px-3 sm:px-4 border-b border-gray-200 dark:border-gray-700" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
           <div className="h-12 sm:h-14 flex items-center justify-between">
             <h2 className={`text-lg sm:text-xl font-bold ${uiConfig.colors.heading} s2r-logo`}>
-              Scout<span style={{ color: '#f66527' }}>2</span>Retire
+              Scout<span className={uiConfig.colors.brandOrange}>2</span>Retire
             </h2>
             {/* Gear icon for admin panel - only visible for admins */}
             {isAdmin && (
@@ -241,7 +241,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
                 className={`p-1.5 -mr-1 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${uiConfig.colors.hoverBg}`}
                 aria-label="Toggle admin menu"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${adminExpanded ? 'text-[#f66527]' : uiConfig.colors.muted}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${adminExpanded ? 'text-scout-orange-500' : uiConfig.colors.muted}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -269,7 +269,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
                     }}
                     className={`w-full flex items-center justify-between p-2 sm:p-3 text-sm sm:text-base ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${uiConfig.colors.hoverBg} text-left`}
                   >
-                    <span className={`font-medium ${item.special ? 'text-[#f66527]' : ''}`}>{item.label}</span>
+                    <span className={`font-medium ${item.special ? 'text-scout-orange-500' : ''}`}>{item.label}</span>
                   </button>
                 );
               }
@@ -287,7 +287,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
                   }`}
                 >
                   {/* FIXED 09JUN25: REMOVED span with mr-3 and item.icon - NO MORE ICONS! */}
-                  <span className={`font-medium ${item.special ? 'text-[#f66527]' : ''}`}>{item.label}</span>
+                  <span className={`font-medium ${item.special ? 'text-scout-orange-500' : ''}`}>{item.label}</span>
                   {/* Show badge for pending invitations on Chat */}
                   {item.path === '/chat' && pendingInvitesCount > 0 && (
                     <span className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold ${uiConfig.colors.btnDanger} rounded-full`}>
@@ -303,7 +303,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
               <>
                 <div className={`border-t ${uiConfig.colors.border} my-2 sm:my-4`}></div>
                 <div className={`px-2 sm:px-3 py-1 sm:py-2 text-base sm:text-xl font-bold s2r-logo`}>
-                  S<span style={{ color: '#f66527' }}>2</span>R Admin
+                  S<span className={uiConfig.colors.brandOrange}>2</span>R Admin
                 </div>
                 <Link
                   to="/admin/towns-manager"
@@ -313,7 +313,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
                       : `${uiConfig.colors.hoverBg}`
                   }`}
                 >
-                  <span className="font-medium text-[#f66527]">Towns-Manager</span>
+                  <span className="font-medium text-scout-orange-500">Towns-Manager</span>
                 </Link>
               </>
             )}
