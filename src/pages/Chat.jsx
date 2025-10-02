@@ -1353,18 +1353,11 @@ export default function Chat() {
                             {townChat.towns.country}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {townChat.towns.cost_index && (
-                            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
-                              ${townChat.towns.cost_index}/mo
-                            </div>
-                          )}
-                          {townChat.thread_id && unreadCounts[townChat.thread_id] > 0 && (
-                            <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-semibold rounded-full">
-                              {unreadCounts[townChat.thread_id]}
-                            </div>
-                          )}
-                        </div>
+                        {townChat.thread_id && unreadCounts[townChat.thread_id] > 0 && (
+                          <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-semibold rounded-full">
+                            {unreadCounts[townChat.thread_id]}
+                          </div>
+                        )}
                       </div>
                     </button>
                   ))}
