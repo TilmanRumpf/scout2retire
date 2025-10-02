@@ -23,6 +23,7 @@ export default function Chat() {
   const [messageInput, setMessageInput] = useState('');
   const [favorites, setFavorites] = useState([]);
   const [activeTownChats, setActiveTownChats] = useState([]); // Towns with recent activity or favorited
+  const [unreadCounts, setUnreadCounts] = useState({}); // { threadId: unreadCount }
   const [chatType, setChatType] = useState('town'); // 'town', 'lounge', 'scout', 'friends'
   const [isTyping, setIsTyping] = useState(false);
   const [showCompanionsModal, setShowCompanionsModal] = useState(false);
@@ -146,12 +147,16 @@ export default function Chat() {
           });
 
           if (townSuccess) {
-            // Mark which are favorited
-            const activeTownChatsData = activeTowns.map(town => ({
-              town_id: town.id,
-              towns: town,
-              is_favorited: userFavorites.some(f => f.town_id === town.id)
-            }));
+            // Mark which are favorited and add thread_id
+            const activeTownChatsData = activeTowns.map(town => {
+              const thread = townThreads.find(t => t.town_id === town.id);
+              return {
+                town_id: town.id,
+                thread_id: thread?.id,
+                towns: town,
+                is_favorited: userFavorites.some(f => f.town_id === town.id)
+              };
+            });
 
             // Sort: favorited first, then alphabetically
             activeTownChatsData.sort((a, b) => {
@@ -161,6 +166,9 @@ export default function Chat() {
             });
 
             setActiveTownChats(activeTownChatsData);
+
+            // Load unread counts for all town threads
+            await loadUnreadCounts(townThreads);
           }
         }
 
@@ -417,10 +425,64 @@ export default function Chat() {
       console.error("Stack trace:", err.stack);
     }
   };
-  
+
+  // Load unread counts for threads
+  const loadUnreadCounts = async (threads) => {
+    try {
+      if (!threads || threads.length === 0) return;
+
+      const threadIds = threads.map(t => t.id);
+
+      // Use RPC function to get unread counts efficiently
+      const { data: counts, error } = await supabase.rpc('get_unread_counts', {
+        p_thread_ids: threadIds
+      });
+
+      if (error) {
+        console.error("Error loading unread counts:", error);
+        return;
+      }
+
+      // Convert array to object: { threadId: count }
+      const countsMap = {};
+      counts?.forEach(({ thread_id, unread_count }) => {
+        countsMap[thread_id] = unread_count;
+      });
+
+      setUnreadCounts(countsMap);
+    } catch (err) {
+      console.error("Error loading unread counts:", err);
+    }
+  };
+
+  // Mark thread as read
+  const markThreadAsRead = async (threadId) => {
+    try {
+      const { error } = await supabase.rpc('mark_thread_read', {
+        p_thread_id: threadId
+      });
+
+      if (error) {
+        console.error("Error marking thread as read:", error);
+        return;
+      }
+
+      // Update local state - set count to 0 for this thread
+      setUnreadCounts(prev => ({
+        ...prev,
+        [threadId]: 0
+      }));
+    } catch (err) {
+      console.error("Error marking thread as read:", err);
+    }
+  };
+
   // Load messages for a thread
   const loadMessages = async (threadId) => {
     try {
+      // Mark thread as read when viewing
+      await markThreadAsRead(threadId);
+
       const { data: messagesData, error: messagesError } = await supabase
         .from('chat_messages')
         .select('*')
@@ -506,7 +568,43 @@ export default function Chat() {
       subscription.unsubscribe();
     };
   }, [activeThread, user]);
-  
+
+  // Subscribe to ALL new messages for unread count updates
+  useEffect(() => {
+    if (!user) return;
+
+    // Subscribe to all chat messages
+    const subscription = supabase
+      .channel('all_chat_messages')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages'
+        },
+        (payload) => {
+          // Only increment unread for messages from other users
+          if (payload.new.user_id === user.id) return;
+
+          // Only increment if message is NOT in the currently active thread
+          if (activeThread && payload.new.thread_id === activeThread.id) return;
+
+          // Increment unread count for this thread
+          const threadId = payload.new.thread_id;
+          setUnreadCounts(prev => ({
+            ...prev,
+            [threadId]: (prev[threadId] || 0) + 1
+          }));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [user, activeThread]);
+
   // Scroll to bottom only for NEW messages, not initial load
   useEffect(() => {
     // Skip scrolling on initial mount (when page first loads)
@@ -1255,11 +1353,18 @@ export default function Chat() {
                             {townChat.towns.country}
                           </div>
                         </div>
-                        {townChat.towns.cost_index && (
-                          <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
-                            ${townChat.towns.cost_index}/mo
-                          </div>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {townChat.towns.cost_index && (
+                            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+                              ${townChat.towns.cost_index}/mo
+                            </div>
+                          )}
+                          {townChat.thread_id && unreadCounts[townChat.thread_id] > 0 && (
+                            <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-semibold rounded-full">
+                              {unreadCounts[townChat.thread_id]}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </button>
                   ))}
