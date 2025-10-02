@@ -531,10 +531,10 @@ export default function ProfileUnified() {
 
                 {/* Right side - Info Grid */}
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Full Name */}
+                  {/* Full Name - PRIVATE */}
                   <div>
                     <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} block mb-1`}>
-                      Full Name
+                      Full Name <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">(Private - never shown to others)</span>
                     </label>
                     {isEditingProfile ? (
                       <input
@@ -549,6 +549,9 @@ export default function ProfileUnified() {
                         {profile?.full_name || 'Not set'}
                       </p>
                     )}
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      🔒 For account management only. Other users only see your username "{profile?.username || user?.email?.split('@')[0]}"
+                    </p>
                   </div>
 
                   {/* Email */}
