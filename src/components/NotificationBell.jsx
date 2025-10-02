@@ -163,8 +163,11 @@ export default function NotificationBell() {
       markAsRead(notification.id);
     }
 
-    // Navigate based on notification type
-    if (notification.town_id) {
+    // Navigate based on link or type
+    if (notification.link) {
+      navigate(notification.link);
+      setShowDropdown(false);
+    } else if (notification.town_id) {
       navigate(`/discover?town=${notification.town_id}`);
       setShowDropdown(false);
     } else if (notification.type === 'friend_activity' && notification.related_user_id) {

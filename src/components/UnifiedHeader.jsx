@@ -4,6 +4,7 @@ import { Menu, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign,
 import QuickNav from './QuickNav';
 import FilterBarV3 from './FilterBarV3';
 import Logo from './Logo';
+import NotificationBell from './NotificationBell';
 import { uiConfig } from '../styles/uiConfig';
 
 /*
@@ -232,8 +233,11 @@ export default function UnifiedHeader({
                 </button>
               )}
               
+              {/* Notification Bell */}
+              <NotificationBell />
+
               {/* Menu button - always visible */}
-              <button 
+              <button
                 onClick={handleMenuClick}
                 className={`p-1.5 hover:${uiConfig.colors.secondary} rounded-lg transition-colors`}
                 aria-label="Open navigation menu"

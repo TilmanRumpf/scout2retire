@@ -198,7 +198,7 @@ export default function Chat() {
       const { data, error } = await supabase
         .from('user_connections')
         .select('*')
-        .eq('user_id', userId)
+        .or(`user_id.eq.${userId},friend_id.eq.${userId}`)
         .eq('status', 'accepted');
         
       if (error) {
@@ -210,18 +210,23 @@ export default function Chat() {
       const friendsWithDetails = await Promise.all(
         (data || []).map(async (connection) => {
           try {
-            const { data: friendData, error } = await supabase.rpc('get_user_by_id', { user_id: connection.friend_id });
+            // Determine which user is the friend (the one that's NOT the current user)
+            const friendId = connection.user_id === userId ? connection.friend_id : connection.user_id;
+
+            const { data: friendData, error } = await supabase.rpc('get_user_by_id', { user_id: friendId });
             if (error) {
               console.log("RPC function not available, friend will show without name");
-              return connection;
+              return { ...connection, friend_id: friendId };
             }
             return {
               ...connection,
+              friend_id: friendId,
               friend: friendData?.[0] || null
             };
           } catch (err) {
             console.log("Error fetching friend details:", err);
-            return connection;
+            const friendId = connection.user_id === userId ? connection.friend_id : connection.user_id;
+            return { ...connection, friend_id: friendId };
           }
         })
       );
@@ -365,29 +370,43 @@ export default function Chat() {
     try {
       const { data: messagesData, error: messagesError } = await supabase
         .from('chat_messages')
-        .select(`
-          *,
-          users:user_id (
-            id,
-            email,
-            full_name
-          )
-        `)
+        .select('*')
         .eq('thread_id', threadId)
         .order('created_at', { ascending: true });
-        
+
       if (messagesError) {
         console.error("Messages fetch error:", messagesError);
         toast.error("Failed to load messages");
         return;
       }
-      
-      // Format messages for display
-      const formattedMessages = messagesData.map(msg => ({
-        ...msg,
-        user_name: msg.users?.full_name || msg.users?.email?.split('@')[0] || 'Anonymous'
-      }));
-      
+
+      // Fetch user details for each message using RPC function
+      const formattedMessages = await Promise.all(
+        (messagesData || []).map(async (msg) => {
+          try {
+            const { data: userData } = await supabase.rpc('get_user_by_id', { user_id: msg.user_id });
+            const userInfo = userData?.[0];
+            const username = userInfo?.email?.split('@')[0] || 'Anonymous';
+            console.log(`💡 Setting user_name for ${msg.user_id}:`, {
+              email: userInfo?.email,
+              full_name: userInfo?.full_name,
+              username_being_set: username
+            });
+            // Use email prefix for privacy - never show full name unless user shares it
+            return {
+              ...msg,
+              user_name: username
+            };
+          } catch (err) {
+            console.error('Error fetching user:', err);
+            return {
+              ...msg,
+              user_name: 'Anonymous'
+            };
+          }
+        })
+      );
+
       setMessages(formattedMessages || []);
     } catch (err) {
       console.error("Error loading messages:", err);
@@ -413,33 +432,24 @@ export default function Chat() {
         async (payload) => {
           // Don't add our own messages (they're added optimistically)
           if (payload.new.user_id === user?.id) return;
-          
-          // Fetch full message data with user info
-          const { data, error } = await supabase
-            .from('chat_messages')
-            .select(`
-              *,
-              users:user_id (
-                id,
-                email,
-                full_name
-              )
-            `)
-            .eq('id', payload.new.id)
-            .single();
-            
-          if (error) {
-            console.error("Error fetching new message:", error);
-            return;
+
+          // Fetch user details using RPC function
+          try {
+            const { data: userData } = await supabase.rpc('get_user_by_id', { user_id: payload.new.user_id });
+            const userInfo = userData?.[0];
+
+            const formattedMessage = {
+              ...payload.new,
+              // Use email prefix for privacy - never show full name unless user shares it
+              user_name: userInfo?.email?.split('@')[0] || 'Anonymous'
+            };
+
+            setMessages(prev => [...prev, formattedMessage]);
+          } catch (error) {
+            console.error("Error fetching user for new message:", error);
+            // Add message with Anonymous fallback
+            setMessages(prev => [...prev, { ...payload.new, user_name: 'Anonymous' }]);
           }
-          
-          // Format and add to messages
-          const formattedMessage = {
-            ...data,
-            user_name: data.users?.full_name || data.users?.email?.split('@')[0] || 'Anonymous'
-          };
-          
-          setMessages(prev => [...prev, formattedMessage]);
         }
       )
       .subscribe();
@@ -758,7 +768,21 @@ export default function Chat() {
         setInviteLoading(false);
         return;
       }
-      
+
+      // Create in-app notification for the invited user
+      try {
+        await supabase.rpc('create_notification', {
+          target_user_id: existingUser.id,
+          notification_type: 'invitation_received',
+          notification_title: `${user.email.split('@')[0]} invited you to connect`,
+          notification_message: inviteMessage.trim() || 'Connect to chat and share retirement planning ideas',
+          notification_link: `/chat?invitation=${inviteData.id}`
+        });
+      } catch (notifError) {
+        console.error('Error creating notification:', notifError);
+        // Don't fail the whole invitation if notification fails
+      }
+
       // Send email notification
       const emailResult = await sendInvitationEmailViaAuth(
         email,
@@ -772,10 +796,10 @@ export default function Chat() {
       
       // Create mailto link as fallback
       const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(
-        `${user.full_name || user.email} invited you to Scout2Retire`
+        `${user.email.split('@')[0]} invited you to Scout2Retire`
       )}&body=${encodeURIComponent(
-        `Hi!\n\n${user.full_name || user.email} has invited you to join Scout2Retire, a personalized retirement planning platform.\n\n` +
-        (inviteMessage ? `Personal message from ${user.full_name || user.email}:\n"${inviteMessage}"\n\n` : '') +
+        `Hi!\n\n${user.email.split('@')[0]} has invited you to join Scout2Retire, a personalized retirement planning platform.\n\n` +
+        (inviteMessage ? `Personal message from ${user.email.split('@')[0]}:\n"${inviteMessage}"\n\n` : '') +
         `Click here to accept the invitation and create your account:\n${window.location.origin}/signup?invite_from=${user.id}\n\n` +
         `With Scout2Retire, you can:\n` +
         `- Discover retirement destinations that match your lifestyle\n` +
@@ -783,7 +807,7 @@ export default function Chat() {
         `- Compare locations based on cost, climate, culture, and more\n` +
         `- Plan visits and make informed decisions\n\n` +
         `Looking forward to connecting with you!\n\n` +
-        `Best regards,\n${user.full_name || user.email}`
+        `Best regards,\n${user.email.split('@')[0]}`
       )}`;
       
       // Show success with mailto option
@@ -796,7 +820,7 @@ export default function Chat() {
                   Invitation saved!
                 </p>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  The invitation to {existingUser.full_name || email} has been recorded.
+                  The invitation to {existingUser.email.split('@')[0] || email} has been recorded.
                 </p>
                 <div className="mt-3 flex space-x-2">
                   <a
@@ -836,22 +860,47 @@ export default function Chat() {
   // Accept invitation
   const acceptInvitation = async (connectionId) => {
     try {
+      // Get the invitation details first
+      const { data: inviteData } = await supabase
+        .from('user_connections')
+        .select('user_id')
+        .eq('id', connectionId)
+        .single();
+
       const { error } = await supabase
         .from('user_connections')
         .update({ status: 'accepted' })
         .eq('id', connectionId);
-        
+
       if (error) {
         console.error("Error accepting invitation:", error);
         toast.error("Failed to accept invitation");
         return;
       }
-      
+
+      // Notify the person who sent the invitation
+      if (inviteData?.user_id) {
+        try {
+          await supabase.rpc('create_notification', {
+            target_user_id: inviteData.user_id,
+            notification_type: 'invitation_accepted',
+            notification_title: `${user.email.split('@')[0]} accepted your invitation`,
+            notification_message: 'You can now chat together!',
+            notification_link: `/chat`
+          });
+        } catch (notifError) {
+          console.error('Error creating notification:', notifError);
+        }
+      }
+
       toast.success("Invitation accepted!");
-      
+
       // Reload friends and invitations
       await loadFriends(user.id);
       await loadPendingInvitations(user.id);
+
+      // Auto-switch to Friends tab to show the new friend
+      setFriendsTabActive('friends');
     } catch (err) {
       console.error("Error accepting invitation:", err);
       toast.error("Failed to accept invitation");
@@ -936,7 +985,7 @@ export default function Chat() {
         id: `user-${Date.now()}`,
         message: messageText,
         user_id: user.id,
-        user_name: user.full_name || user.email?.split('@')[0] || 'You',
+        user_name: user.email?.split('@')[0] || 'You',
         created_at: new Date().toISOString()
       };
       
@@ -976,12 +1025,7 @@ export default function Chat() {
       user_id: user.id,
       message: messageText,
       created_at: new Date().toISOString(),
-      user_name: user.full_name || user.email?.split('@')[0] || 'You',
-      users: {
-        id: user.id,
-        email: user.email,
-        full_name: user.full_name
-      }
+      user_name: user.email?.split('@')[0] || 'You'
     };
     
     setMessages(prev => [...prev, optimisticMessage]);
@@ -1045,8 +1089,8 @@ export default function Chat() {
             ? `${activeTown.name} Chat`
             : chatType === 'lounge' 
             ? 'Retirement Lounge'
-            : chatType === 'friends' && activeFriend 
-            ? `Chat with ${activeFriend.friend.full_name || activeFriend.friend.email.split('@')[0]}`
+            : chatType === 'friends' && activeFriend
+            ? `Chat with ${activeFriend.friend.email.split('@')[0]}`
             : 'Retirement Lounge'
         }
         maxWidth="max-w-7xl"
@@ -1107,6 +1151,7 @@ export default function Chat() {
               setInviteMessage={setInviteMessage}
               defaultInviteMessage={defaultInviteMessage}
               setShowCompanionsModal={setShowCompanionsModal}
+              refreshFriends={() => loadFriends(user.id)}
             />
             
             {/* Favorite towns */}
@@ -1177,8 +1222,8 @@ export default function Chat() {
               ) : (
                 <>
                   {messages.map((message, index) => (
-                    <div 
-                      key={message.id} 
+                    <div
+                      key={message.id}
                       className={`flex ${message.user_id === user?.id ? 'justify-end' : 'justify-start'} ${
                         index > 0 && messages[index - 1].user_id === message.user_id ? 'mt-1' : 'mt-4'
                       }`}
@@ -1248,10 +1293,10 @@ export default function Chat() {
                     placeholder={`Message ${
                       chatType === 'town' && activeTown 
                         ? activeTown.name + ' chat' 
-                        : chatType === 'lounge' 
-                        ? 'the retirement lounge' 
+                        : chatType === 'lounge'
+                        ? 'the retirement lounge'
                         : chatType === 'friends' && activeFriend
-                        ? activeFriend.friend.full_name || activeFriend.friend.email.split('@')[0]
+                        ? activeFriend.friend.email.split('@')[0]
                         : 'the community'
                     }...`}
                     className={`flex-1 ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} py-2 px-4 ${uiConfig.colors.input} ${uiConfig.colors.body} ${uiConfig.colors.focusRing} focus:border-transparent`}
@@ -1382,7 +1427,7 @@ export default function Chat() {
                     {pendingInvitations.sent.map(invite => (
                       <div key={invite.id} className={`flex items-center justify-between ${uiConfig.colors.input} p-2 ${uiConfig.layout.radius.md}`}>
                         <span className={`${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
-                          {invite.friend?.full_name || invite.friend?.email || `User ${invite.friend_id?.slice(0, 8)}...`}
+                          {invite.friend?.email?.split('@')[0] || `User ${invite.friend_id?.slice(0, 8)}...`}
                         </span>
                         <div className="flex items-center gap-2">
                           <span className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
@@ -1429,10 +1474,35 @@ export default function Chat() {
             </div>
             
             <div className="p-4 overflow-y-auto max-h-[60vh]">
+              {/* Search box */}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="Search by name or email..."
+                  onChange={(e) => {
+                    const search = e.target.value.toLowerCase();
+                    if (search) {
+                      const filtered = companions.filter(c =>
+                        c.email?.toLowerCase().includes(search)
+                      );
+                      setCompanions(filtered);
+                    } else {
+                      loadSuggestedCompanions(user.id);
+                    }
+                  }}
+                  className={`w-full px-4 py-2 border ${uiConfig.colors.border} ${uiConfig.layout.radius.md} ${uiConfig.colors.input} focus:outline-none focus:ring-2 focus:ring-scout-accent-500`}
+                />
+              </div>
+
               {companions.length === 0 ? (
-                <p className={`text-center ${uiConfig.colors.hint}`}>
-                  No new companions available at the moment. Check back later!
-                </p>
+                <div className="text-center py-8">
+                  <p className={`${uiConfig.colors.hint} mb-2`}>
+                    No users found
+                  </p>
+                  <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint}`}>
+                    Try searching by name or use the "Invite a Friend" button to invite someone by email
+                  </p>
+                </div>
               ) : (
                 <div className="space-y-4">
                   <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint} mb-4`}>
@@ -1447,12 +1517,12 @@ export default function Chat() {
                         <div className="flex items-center">
                           <div className={`w-12 h-12 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center ${uiConfig.colors.accent} mr-3`}>
                             <span className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.medium}`}>
-                              {companion.full_name?.charAt(0) || companion.email.charAt(0).toUpperCase()}
+                              {companion.email.charAt(0).toUpperCase()}
                             </span>
                           </div>
                           <div>
                             <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
-                              {companion.full_name || companion.email.split('@')[0]}
+                              {companion.email.split('@')[0]}
                             </h3>
                             <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint}`}>
                               {companion.similarity_score}% match

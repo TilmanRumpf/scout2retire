@@ -13,18 +13,23 @@ export default function FriendsSection({
   setShowInviteModal,
   setInviteMessage,
   defaultInviteMessage,
-  setShowCompanionsModal
+  setShowCompanionsModal,
+  refreshFriends
 }) {
   return (
     <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
       {/* Header with tabs */}
       <div className={`border-b ${uiConfig.colors.borderLight}`}>
-        <div className="flex">
+        <div className="flex items-center">
           <button
-            onClick={() => setFriendsTabActive('friends')}
+            onClick={() => {
+              setFriendsTabActive('friends');
+              // Refresh friends list when switching to Friends tab
+              if (refreshFriends) refreshFriends();
+            }}
             className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               friendsTabActive === 'friends'
-                ? 'border-scout-accent-500 text-scout-accent-500' 
+                ? 'border-scout-accent-500 text-scout-accent-500'
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
             }`}
           >
@@ -73,12 +78,12 @@ export default function FriendsSection({
                     <div className="flex items-start gap-3">
                       <div className={`w-12 h-12 bg-scout-accent-200 dark:bg-scout-accent-800 ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0`}>
                         <span className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.medium} text-scout-accent-700 dark:text-scout-accent-300`}>
-                          {invite.user?.full_name?.charAt(0) || invite.user?.email?.charAt(0) || '?'}
+                          {invite.user?.email?.charAt(0)?.toUpperCase() || '?'}
                         </span>
                       </div>
                       <div className="flex-1">
                         <h4 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
-                          {invite.user?.full_name || invite.user?.email?.split('@')[0] || 'Someone'} wants to connect
+                          {invite.user?.email?.split('@')[0] || 'Someone'} wants to connect
                         </h4>
                         {invite.message && (
                           <p className={`mt-1 text-sm ${uiConfig.colors.body} italic`}>
@@ -160,12 +165,12 @@ export default function FriendsSection({
                     <div className="flex items-center">
                       <div className={`w-10 h-10 bg-purple-100 dark:bg-purple-900 ${uiConfig.layout.radius.full} flex items-center justify-center text-purple-600 dark:text-purple-400 mr-3`}>
                         <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium}`}>
-                          {friend.friend.full_name?.charAt(0) || friend.friend.email.charAt(0).toUpperCase()}
+                          {friend.friend.email.charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div className="flex-1">
                         <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
-                          {friend.friend.full_name || friend.friend.email.split('@')[0]}
+                          {friend.friend.email.split('@')[0]}
                         </div>
                         <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
                           Click to chat
