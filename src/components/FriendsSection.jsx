@@ -78,12 +78,12 @@ export default function FriendsSection({
                     <div className="flex items-start gap-3">
                       <div className={`w-12 h-12 bg-scout-accent-200 dark:bg-scout-accent-800 ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0`}>
                         <span className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.medium} text-scout-accent-700 dark:text-scout-accent-300`}>
-                          {invite.user?.email?.charAt(0)?.toUpperCase() || '?'}
+                          {invite.user?.username?.charAt(0)?.toUpperCase() || '?'}
                         </span>
                       </div>
                       <div className="flex-1">
                         <h4 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
-                          {invite.user?.email?.split('@')[0] || 'Someone'} wants to connect
+                          {invite.user?.username || 'Someone'} wants to connect
                         </h4>
                         {invite.message && (
                           <p className={`mt-1 text-sm ${uiConfig.colors.body} italic`}>
@@ -165,12 +165,12 @@ export default function FriendsSection({
                     <div className="flex items-center">
                       <div className={`w-10 h-10 bg-purple-100 dark:bg-purple-900 ${uiConfig.layout.radius.full} flex items-center justify-center text-purple-600 dark:text-purple-400 mr-3`}>
                         <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium}`}>
-                          {friend.friend.email.charAt(0).toUpperCase()}
+                          {friend.friend.username?.charAt(0)?.toUpperCase() || '?'}
                         </span>
                       </div>
                       <div className="flex-1">
                         <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
-                          {friend.friend.email.split('@')[0]}
+                          {friend.friend.username || 'Friend'}
                         </div>
                         <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
                           Click to chat
