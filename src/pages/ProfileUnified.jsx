@@ -524,36 +524,13 @@ export default function ProfileUnified() {
                   <AvatarUpload
                     userId={user?.id}
                     currentAvatarUrl={profile?.avatar_url}
-                    fullName={profile?.full_name}
+                    fullName={profile?.username || user?.email?.split('@')[0]}
                     onAvatarUpdate={handleAvatarUpdate}
                   />
                 </div>
 
                 {/* Right side - Info Grid */}
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Full Name - PRIVATE */}
-                  <div>
-                    <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} block mb-1`}>
-                      Full Name <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">(Private - never shown to others)</span>
-                    </label>
-                    {isEditingProfile ? (
-                      <input
-                        type="text"
-                        value={editFormData.full_name}
-                        onChange={(e) => setEditFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                        className={uiConfig.components.input}
-                        placeholder="Enter your full name"
-                      />
-                    ) : (
-                      <p className={`${uiConfig.font.size.base} ${uiConfig.colors.body}`}>
-                        {profile?.full_name || 'Not set'}
-                      </p>
-                    )}
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      🔒 For account management only. Other users only see your username "{profile?.username || user?.email?.split('@')[0]}"
-                    </p>
-                  </div>
-
                   {/* Email */}
                   <div>
                     <label className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} block mb-1`}>
