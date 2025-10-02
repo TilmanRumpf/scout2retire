@@ -166,9 +166,10 @@ function parseAdminPreferences(prefs) {
 function parseCostPreferences(prefs) {
   return {
     // Use Math.max for budget arrays (semantic: maximum user can afford)
-    monthlyBudget: extractMaxFromArrayOrValue(prefs.total_monthly_budget),
-    rentBudget: extractMaxFromArrayOrValue(prefs.max_monthly_rent),
-    healthcareBudget: extractMaxFromArrayOrValue(prefs.monthly_healthcare_budget),
+    // Field names match what calculateCostScore expects
+    totalMonthlyBudget: extractMaxFromArrayOrValue(prefs.total_monthly_budget),
+    maxMonthlyRent: extractMaxFromArrayOrValue(prefs.max_monthly_rent),
+    monthlyHealthcareBudget: extractMaxFromArrayOrValue(prefs.monthly_healthcare_budget),
 
     // Tax sensitivities
     incomeTaxSensitive: Boolean(prefs.income_tax_sensitive),

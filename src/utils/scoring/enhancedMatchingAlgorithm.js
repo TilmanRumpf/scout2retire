@@ -1365,7 +1365,10 @@ function calculateGradualAdminScore(actualScore, userPref, maxPoints) {
 function calculateTaxScore(preferences, town, maxPoints = 15) {
   let score = 0
   let factors = []
-  
+
+  // Parse preferences to access tax sensitivity flags
+  const parsed = parsePreferences(preferences)
+
   // Get tax data - prioritize JSON field, fall back to individual fields
   const taxData = {
     income: town.income_tax_rate_pct,
@@ -1675,11 +1678,9 @@ export function calculateCostScore(preferences, town) {
   // Overall budget fit (40 points)
   // Use cost_of_living_usd (actual USD amount), NOT cost_index (relative scale)
   const townCost = town.cost_of_living_usd || town.typical_monthly_living_cost
-  
-  // Extract budget value from array (use max value as upper limit)
-  const userBudget = Array.isArray(parsed.cost.totalMonthlyBudget) 
-    ? Math.max(...parsed.cost.totalMonthlyBudget)
-    : parsed.cost.totalMonthlyBudget
+
+  // Parser already extracts max from arrays, so this is a number
+  const userBudget = parsed.cost.totalMonthlyBudget
   
   if (!townCost || !userBudget) {
     // If we don't have cost data, give neutral score
@@ -1725,9 +1726,8 @@ export function calculateCostScore(preferences, town) {
   }
   
   // Rent budget match (30 points)
-  const userRentBudget = Array.isArray(parsed.cost.maxMonthlyRent)
-    ? Math.max(...parsed.cost.maxMonthlyRent)
-    : parsed.cost.maxMonthlyRent
+  // Parser already extracts max from arrays, so this is a number
+  const userRentBudget = parsed.cost.maxMonthlyRent
     
   if (userRentBudget && town.typical_rent_1bed) {
     if (userRentBudget >= town.typical_rent_1bed) {
@@ -1740,9 +1740,8 @@ export function calculateCostScore(preferences, town) {
   }
   
   // Healthcare budget match (20 points)
-  const userHealthcareBudget = Array.isArray(parsed.cost.monthlyHealthcareBudget)
-    ? Math.max(...parsed.cost.monthlyHealthcareBudget)
-    : parsed.cost.monthlyHealthcareBudget
+  // Parser already extracts max from arrays, so this is a number
+  const userHealthcareBudget = parsed.cost.monthlyHealthcareBudget
     
   if (userHealthcareBudget && town.healthcare_cost_monthly) {
     if (userHealthcareBudget >= town.healthcare_cost_monthly) {

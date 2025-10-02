@@ -1058,10 +1058,10 @@ export default function Chat() {
         onReset={() => window.location.reload()}
       >
         {/* Spacer for fixed header */}
-        <HeaderSpacer hasFilters={false} />
-        
-        <main className={`${uiConfig.layout.width.containerWide} px-4 py-6`}>
-          <div className="flex flex-col md:flex-row gap-6">
+        <HeaderSpacer hasFilters={true} />
+
+        <main className="flex-1 overflow-hidden">
+          <div className="h-full max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row gap-6">
           {/* Sidebar */}
           <div className="w-full md:w-64 space-y-4">
             {/* Chat navigation */}

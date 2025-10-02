@@ -14,7 +14,7 @@ import SuspenseLoader from './components/SuspenseLoader';
 
 // Core Pages - Lazy loaded for better performance
 const Home = React.lazy(() => import("./pages/Home"));
-const DailyRedesignV2 = React.lazy(() => import("./pages/DailyRedesignV2"));
+const Daily = React.lazy(() => import("./pages/Daily"));
 const Welcome = React.lazy(() => import("./pages/Welcome"));
 const Login = React.lazy(() => import("./pages/Login"));
 const SignupEnhanced = React.lazy(() => import("./pages/SignupEnhanced"));
@@ -250,7 +250,7 @@ const router = createBrowserRouter([
       // Protected routes (require login AND completed onboarding)
       {
         path: "daily",
-        element: <ProtectedRoute><AuthenticatedLayout><DailyRedesignV2 /></AuthenticatedLayout></ProtectedRoute>
+        element: <ProtectedRoute><AuthenticatedLayout><Daily /></AuthenticatedLayout></ProtectedRoute>
       },
       {
         path: "home",

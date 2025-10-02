@@ -330,13 +330,15 @@ What would you like to know about ${name}?`;
     setActiveTown(townContext);
     setMessages([]);
     
-    // If it's a town chat, add an initial message with town-specific synopsis
+    // If it's a town chat, add an initial greeting
     if (townContext) {
-      const townSynopsis = generateTownSynopsis(townContext, userContext);
+      const firstName = getFirstName(userContext?.personal?.name);
+      const townName = townContext.name || townContext.town_name;
+      const greeting = `Hi ${firstName}, how can I help you with ${townName}?`;
       const initialMessage = {
         id: Date.now().toString(),
         type: 'scotty',
-        text: townSynopsis
+        text: greeting
       };
       setMessages([initialMessage]);
     }
@@ -776,8 +778,8 @@ CRITICAL RULE: Do NOT suggest towns like San Sebastián, Split, Trieste, or any 
       {/* Main Content Area - Centered Container */}
       <main className="flex-1 overflow-hidden">
         <div className="h-full max-w-5xl mx-auto flex flex-col">
-          {/* Chat Title (Optional) */}
-          {activeConversation && (
+          {/* Chat Title (Optional) - Hide for empty chats and town conversations with just initial greeting */}
+          {activeConversation && messages.length > 0 && !(messages.length === 1 && messages[0].type === 'scotty') && (
             <div className={`px-6 py-3 border-b ${uiConfig.colors.borderLight}`}>
               <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} text-lg`}>
                 {activeConversation.title}
@@ -787,7 +789,7 @@ CRITICAL RULE: Do NOT suggest towns like San Sebastián, Split, Trieste, or any 
 
           {/* Messages Container */}
           <div className="flex-1 overflow-y-auto p-6">
-            {!activeConversation ? (
+            {!activeConversation || messages.length === 0 || (messages.length === 1 && messages[0].type === 'scotty') ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
                     {contextLoading ? (
@@ -799,7 +801,9 @@ CRITICAL RULE: Do NOT suggest towns like San Sebastián, Split, Trieste, or any 
                         <div className="max-w-2xl mx-auto text-center space-y-8">
                           {/* Main Greeting */}
                           <h1 className="text-4xl font-normal text-gray-900 dark:text-white">
-                            Hi{userContext?.personal?.name ? ` ${getFirstName(userContext.personal.name)}` : ''}, how can I help you?
+                            {messages.length === 1 && messages[0].type === 'scotty'
+                              ? messages[0].text
+                              : `Hi${userContext?.personal?.name ? ` ${getFirstName(userContext.personal.name)}` : ''}, how can I help you?`}
                           </h1>
 
                           {/* Small Disclaimer */}
