@@ -18,26 +18,35 @@ CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(user_id, i
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Users can only see their own notifications
-CREATE POLICY "Users can view own notifications"
-  ON notifications
-  FOR SELECT
-  TO authenticated
-  USING (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can view own notifications"
+    ON notifications
+    FOR SELECT
+    TO authenticated
+    USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Policy: System can insert notifications (we'll use service role or function)
-CREATE POLICY "Allow insert notifications"
-  ON notifications
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (true);
+DO $$ BEGIN
+  CREATE POLICY "Allow insert notifications"
+    ON notifications
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Policy: Users can update their own notifications (mark as read)
-CREATE POLICY "Users can update own notifications"
-  ON notifications
-  FOR UPDATE
-  TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can update own notifications"
+    ON notifications
+    FOR UPDATE
+    TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Function to get unread notification count
 CREATE OR REPLACE FUNCTION get_unread_notification_count()

@@ -314,7 +314,7 @@ export default function Chat() {
       // Get all other users (removing similarity filtering until we have more users)
       const { data: allUsers, error } = await supabase
         .from('users')
-        .select('id, email, full_name, created_at')
+        .select('id, email, created_at')
         .neq('id', userId)
         .limit(20); // Show up to 20 users
         
@@ -387,12 +387,7 @@ export default function Chat() {
             const { data: userData } = await supabase.rpc('get_user_by_id', { user_id: msg.user_id });
             const userInfo = userData?.[0];
             const username = userInfo?.email?.split('@')[0] || 'Anonymous';
-            console.log(`💡 Setting user_name for ${msg.user_id}:`, {
-              email: userInfo?.email,
-              full_name: userInfo?.full_name,
-              username_being_set: username
-            });
-            // Use email prefix for privacy - never show full name unless user shares it
+            // Use email prefix for privacy - RPC function only returns email, not full_name
             return {
               ...msg,
               user_name: username

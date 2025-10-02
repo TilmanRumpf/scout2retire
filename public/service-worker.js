@@ -1,6 +1,6 @@
 // Service Worker for scout2retire
-const CACHE_NAME = 'scout2retire-v1';
-const RUNTIME_CACHE = 'scout2retire-runtime';
+const CACHE_NAME = 'scout2retire-v2-privacy-fix';
+const RUNTIME_CACHE = 'scout2retire-runtime-v2';
 
 // Files to cache on install
 const STATIC_CACHE_URLS = [
