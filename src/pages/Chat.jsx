@@ -22,6 +22,7 @@ export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState('');
   const [favorites, setFavorites] = useState([]);
+  const [activeTownChats, setActiveTownChats] = useState([]); // Towns with recent activity or favorited
   const [chatType, setChatType] = useState('town'); // 'town', 'lounge', 'scout', 'friends'
   const [isTyping, setIsTyping] = useState(false);
   const [showCompanionsModal, setShowCompanionsModal] = useState(false);
@@ -110,7 +111,59 @@ export default function Chat() {
         }
         
         setThreads(threadData || []);
-        
+
+        // Load active town chats (towns with messages in last 30 days + favorited towns)
+        const townThreads = (threadData || []).filter(t => t.town_id !== null);
+        const townIdsWithActivity = [];
+
+        // Get threads with recent messages (last 30 days)
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        for (const thread of townThreads) {
+          const { data: recentMessages } = await supabase
+            .from('chat_messages')
+            .select('id')
+            .eq('thread_id', thread.id)
+            .gte('created_at', thirtyDaysAgo.toISOString())
+            .limit(1);
+
+          if (recentMessages && recentMessages.length > 0) {
+            townIdsWithActivity.push(thread.town_id);
+          }
+        }
+
+        // Combine: favorited towns + towns with activity (remove duplicates)
+        const allActiveTownIds = [...new Set([
+          ...userFavorites.map(f => f.town_id),
+          ...townIdsWithActivity
+        ])];
+
+        // Fetch town data for all active towns
+        if (allActiveTownIds.length > 0) {
+          const { success: townSuccess, towns: activeTowns } = await fetchTowns({
+            townIds: allActiveTownIds
+          });
+
+          if (townSuccess) {
+            // Mark which are favorited
+            const activeTownChatsData = activeTowns.map(town => ({
+              town_id: town.id,
+              towns: town,
+              is_favorited: userFavorites.some(f => f.town_id === town.id)
+            }));
+
+            // Sort: favorited first, then alphabetically
+            activeTownChatsData.sort((a, b) => {
+              if (a.is_favorited && !b.is_favorited) return -1;
+              if (!a.is_favorited && b.is_favorited) return 1;
+              return a.towns.name.localeCompare(b.towns.name);
+            });
+
+            setActiveTownChats(activeTownChatsData);
+          }
+        }
+
         // If townId is provided, load that town and its thread
         if (townId) {
           // Get town data
@@ -1149,48 +1202,62 @@ export default function Chat() {
               refreshFriends={() => loadFriends(user.id)}
             />
             
-            {/* Favorite towns */}
+            {/* Town Chats - Shows favorited + active towns */}
             <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
               <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
                 <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Town Chats</h2>
+                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
+                  Active conversations & favorites
+                </p>
               </div>
-              
-              {favorites.length === 0 ? (
+
+              {activeTownChats.length === 0 ? (
                 <div className={`p-4 text-center ${uiConfig.colors.hint} ${uiConfig.font.size.sm}`}>
-                  <p>No favorite towns yet.</p>
+                  <p>No active town chats yet.</p>
                   <a href="/discover" className={`${uiConfig.colors.accent} hover:underline mt-2 inline-block`}>
                     Discover towns
                   </a>
                 </div>
               ) : (
                 <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 28rem)' }}>
-                  {favorites.map(favorite => (
+                  {activeTownChats.map(townChat => (
                     <button
-                      key={favorite.town_id}
-                      onClick={() => switchToTownChat(favorite.towns)}
+                      key={townChat.town_id}
+                      onClick={() => switchToTownChat(townChat.towns)}
                       className={`w-full text-left p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${
-                        chatType === 'town' && activeTown?.id === favorite.town_id
+                        chatType === 'town' && activeTown?.id === townChat.town_id
                           ? uiConfig.colors.badge
                           : ''
                       }`}
                     >
                       <div className="flex items-center">
                         <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.lg} flex items-center justify-center ${uiConfig.colors.accent} mr-3`}>
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                          </svg>
+                          {townChat.is_favorited ? (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                            </svg>
+                          )}
                         </div>
                         <div className="flex-1">
-                          <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
-                            {favorite.towns.name}
+                          <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} flex items-center gap-2`}>
+                            {townChat.towns.name}
+                            {!townChat.is_favorited && (
+                              <span className={`${uiConfig.font.size.xs} px-1.5 py-0.5 bg-scout-accent-100 dark:bg-scout-accent-900/30 text-scout-accent-700 dark:text-scout-accent-300 rounded`}>
+                                Active
+                              </span>
+                            )}
                           </div>
                           <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
-                            {favorite.towns.country}
+                            {townChat.towns.country}
                           </div>
                         </div>
-                        {favorite.towns.cost_index && (
+                        {townChat.towns.cost_index && (
                           <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
-                            ${favorite.towns.cost_index}/mo
+                            ${townChat.towns.cost_index}/mo
                           </div>
                         )}
                       </div>
