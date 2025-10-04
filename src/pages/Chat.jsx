@@ -253,7 +253,61 @@ export default function Chat() {
     loadData();
   }, [navigate, townId, searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
   // invitationId and pendingInvitations.received are handled within loadData
-  
+
+  // Real-time subscription for chat messages - update unread counts instantly
+  useEffect(() => {
+    if (!user || threads.length === 0) return;
+
+    const subscription = supabase
+      .channel('chat_unread_updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages'
+        },
+        (payload) => {
+          // Only update counts if message is from someone else
+          if (payload.new.user_id !== user.id) {
+            // Refresh unread counts for all threads
+            loadUnreadCounts(threads);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'thread_read_status',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          // Refresh when user marks threads as read
+          loadUnreadCounts(threads);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'thread_read_status',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          // Refresh when user marks threads as read
+          loadUnreadCounts(threads);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [user, threads]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Load user's friends
   const loadFriends = async (userId) => {
     try {
