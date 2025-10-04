@@ -169,9 +169,10 @@ export default function NotificationBell() {
           table: 'chat_messages'
         },
         (payload) => {
-          // Only increment if message is from someone else
+          // Only refresh count if message is from someone else
           if (payload.new.user_id !== user.id) {
-            setUnreadMessagesCount(prev => prev + 1);
+            console.log('[NotificationBell] New message received, refreshing counts');
+            fetchUnreadMessages();
           }
         }
       )

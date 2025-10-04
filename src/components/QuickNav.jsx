@@ -129,9 +129,10 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
             table: 'chat_messages'
           },
           (payload) => {
-            // Only increment if message is from someone else
+            // Only refresh count if message is from someone else
             if (payload.new.user_id !== currentUser.id) {
-              setUnreadMessagesCount(prev => prev + 1);
+              console.log('[QuickNav] New message received, refreshing counts');
+              loadUnreadMessages();
             }
           }
         )
