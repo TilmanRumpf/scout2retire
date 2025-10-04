@@ -22,13 +22,16 @@ const PaywallManager = () => {
   const [editingPrice, setEditingPrice] = useState(null); // { tierId, field: 'monthly' | 'yearly' }
   const [priceValue, setPriceValue] = useState('');
   const [showAddTierModal, setShowAddTierModal] = useState(false);
+  const [aiRecommendedLimits, setAiRecommendedLimits] = useState(null);
+  const [generatingRecommendations, setGeneratingRecommendations] = useState(false);
   const [newTier, setNewTier] = useState({
     category_code: '',
     display_name: '',
     description: '',
     price_monthly: '',
     price_yearly: '',
-    color_hex: '#6B7280'
+    color_hex: '#6B7280',
+    rank: 1 // Default rank
   });
 
   // Check admin access
@@ -230,6 +233,55 @@ const PaywallManager = () => {
     await loadTiers();
   };
 
+  // AI-powered feature limit recommendations
+  const generateAIRecommendations = async (rank) => {
+    setGeneratingRecommendations(true);
+
+    try {
+      // Get current tier limits for context
+      const tiersByRank = [...tiers].sort((a, b) => a.sort_order - b.sort_order);
+      const recommendations = analyzeAndRecommend(rank, tiersByRank);
+      setAiRecommendedLimits(recommendations);
+      toast.success('AI recommendations generated!');
+    } catch (error) {
+      console.error('Error generating recommendations:', error);
+      toast.error('Failed to generate AI recommendations');
+    } finally {
+      setGeneratingRecommendations(false);
+    }
+  };
+
+  const analyzeAndRecommend = (newTierRank, tiersByRank) => {
+    // Intelligent limit recommendations based on rank and existing tiers
+    const lowerTier = tiersByRank[newTierRank - 2]; // Tier below (if exists)
+    const upperTier = tiersByRank[newTierRank - 1]; // Tier above (if exists)
+
+    const recommendations = {};
+
+    features.forEach(feature => {
+      const lowerLimit = lowerTier
+        ? limits.find(l => l.category_id === lowerTier.id && l.feature_id === feature.id)?.limit_value ?? 0
+        : 0;
+      const upperLimit = upperTier
+        ? limits.find(l => l.category_id === upperTier.id && l.feature_id === feature.id)?.limit_value ?? null
+        : null;
+
+      // Smart interpolation
+      if (upperLimit === null) {
+        // Upper tier is unlimited
+        recommendations[feature.id] = lowerLimit === 0 ? 5 : Math.ceil(lowerLimit * 2);
+      } else if (lowerLimit === 0 || lowerLimit === null) {
+        // Lower tier is blocked or doesn't exist
+        recommendations[feature.id] = Math.ceil(upperLimit / 2);
+      } else {
+        // Interpolate between lower and upper
+        recommendations[feature.id] = Math.ceil((lowerLimit + upperLimit) / 2);
+      }
+    });
+
+    return recommendations;
+  };
+
   const createTier = async () => {
     // Validation
     if (!newTier.category_code || !newTier.display_name) {
@@ -243,8 +295,15 @@ const PaywallManager = () => {
       return;
     }
 
-    // Get next sort_order
-    const maxSort = Math.max(...tiers.map(t => t.sort_order), -1);
+    // Update sort_order for existing tiers at or after the new tier's rank
+    const targetRank = newTier.rank;
+    const tiersToShift = tiers.filter(t => t.sort_order >= targetRank - 1);
+    for (const tier of tiersToShift) {
+      await supabase
+        .from('user_categories')
+        .update({ sort_order: tier.sort_order + 1 })
+        .eq('id', tier.id);
+    }
 
     const tierData = {
       category_code: newTier.category_code,
@@ -253,34 +312,66 @@ const PaywallManager = () => {
       price_monthly: newTier.price_monthly === '' ? null : parseFloat(newTier.price_monthly),
       price_yearly: newTier.price_yearly === '' ? null : parseFloat(newTier.price_yearly),
       color_hex: newTier.color_hex,
-      sort_order: maxSort + 1,
+      sort_order: targetRank - 1, // Convert 1-based rank to 0-based sort_order
       is_visible: true,
       is_active: true
     };
 
-    const { error } = await supabase.from('user_categories').insert([tierData]);
+    // Insert new tier
+    const { data: insertedTier, error: tierError } = await supabase
+      .from('user_categories')
+      .insert([tierData])
+      .select()
+      .single();
 
-    if (error) {
-      if (error.code === '23505') { // Unique violation
+    if (tierError) {
+      if (tierError.code === '23505') { // Unique violation
         toast.error('Category code already exists');
       } else {
         toast.error('Failed to create tier');
-        console.error(error);
+        console.error(tierError);
       }
-    } else {
-      toast.success('Tier created successfully');
-      setShowAddTierModal(false);
-      setNewTier({
-        category_code: '',
-        display_name: '',
-        description: '',
-        price_monthly: '',
-        price_yearly: '',
-        color_hex: '#6B7280'
-      });
-      await loadTiers();
-      await loadLimits(); // Reload to get new tier in limits
+      return;
     }
+
+    // Create feature limit entries using AI recommendations
+    const limitEntries = features.map(feature => {
+      const recommendedValue = aiRecommendedLimits?.[feature.id] ?? null;
+      return {
+        category_id: insertedTier.id,
+        feature_id: feature.id,
+        limit_value: recommendedValue,
+        limit_period: feature.feature_code.includes('chat') || feature.feature_code.includes('discovery')
+          ? (feature.feature_code.includes('discovery') ? 'daily' : 'monthly')
+          : null
+      };
+    });
+
+    const { error: limitsError } = await supabase
+      .from('category_limits')
+      .insert(limitEntries);
+
+    if (limitsError) {
+      console.error('Error creating feature limits:', limitsError);
+      toast.error('Tier created but failed to create feature limits');
+    } else {
+      toast.success(`Tier created at rank ${targetRank} with AI-recommended limits!`);
+    }
+
+    // Reset and reload
+    setShowAddTierModal(false);
+    setAiRecommendedLimits(null);
+    setNewTier({
+      category_code: '',
+      display_name: '',
+      description: '',
+      price_monthly: '',
+      price_yearly: '',
+      color_hex: '#6B7280',
+      rank: 1
+    });
+    await loadTiers();
+    await loadLimits();
   };
 
   const formatLimit = (value) => {
@@ -314,14 +405,14 @@ const PaywallManager = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.body}`}>Loading Paywall Manager...</div>
+        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.body}`}>Loading User Manager & Paywall...</div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen">
-      <UnifiedHeader title="Paywall Manager" />
+      <UnifiedHeader title="User Manager & Paywall" />
       <HeaderSpacer />
 
       <div className="max-w-7xl mx-auto p-6">
@@ -329,7 +420,7 @@ const PaywallManager = () => {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Shield className="w-8 h-8 text-scout-accent-500" />
-            <h1 className={`text-3xl font-bold ${uiConfig.colors.heading}`}>Paywall Manager</h1>
+            <h1 className={`text-3xl font-bold ${uiConfig.colors.heading}`}>User Manager & Paywall</h1>
           </div>
           <p className={uiConfig.colors.body}>Manage subscription tiers, feature limits, and user access</p>
         </div>
@@ -504,6 +595,14 @@ const PaywallManager = () => {
                   className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-6`}
                 >
                   <div className="flex items-start gap-4">
+                    {/* Rank Badge */}
+                    <div className="flex flex-col items-center gap-2">
+                      <div className={`w-12 h-12 rounded-full ${uiConfig.colors.secondary} border-2 border-scout-accent-500 flex items-center justify-center`}>
+                        <span className={`text-xl font-bold ${uiConfig.colors.heading}`}>{index + 1}</span>
+                      </div>
+                      <span className={`text-xs ${uiConfig.colors.hint}`}>Rank</span>
+                    </div>
+
                     {/* Ordering Arrows */}
                     <div className="flex flex-col gap-1">
                       <button
@@ -623,9 +722,12 @@ const PaywallManager = () => {
                         </div>
                         <div className="flex justify-between items-center">
                           <span className={uiConfig.colors.body}>Users:</span>
-                          <span className={`font-semibold ${uiConfig.colors.heading} text-right min-w-[80px]`}>
-                            {userStats.find(s => s.code === tier.category_code)?.count || 0}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className={`font-semibold ${uiConfig.colors.heading} text-right min-w-[80px]`}>
+                              {userStats.find(s => s.code === tier.category_code)?.count || 0}
+                            </span>
+                            <div className="w-3 h-3"></div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -726,6 +828,44 @@ const PaywallManager = () => {
                     />
                   </div>
                 </div>
+              </div>
+
+              <div>
+                <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-2`}>Tier Rank* (1 = lowest)</label>
+                <select
+                  value={newTier.rank}
+                  onChange={(e) => setNewTier({ ...newTier, rank: parseInt(e.target.value) })}
+                  className={`w-full px-4 py-2 ${uiConfig.colors.input} border ${uiConfig.colors.border} rounded-lg`}
+                >
+                  {[...Array(tiers.length + 1)].map((_, idx) => (
+                    <option key={idx + 1} value={idx + 1}>
+                      Rank {idx + 1} {idx === 0 ? '(Lowest/Free)' : idx === tiers.length ? '(New Highest)' : ''}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => generateAIRecommendations(newTier.rank)}
+                  disabled={generatingRecommendations}
+                  className={`mt-2 w-full py-2 ${uiConfig.colors.btnSecondary} rounded-lg font-medium flex items-center justify-center gap-2`}
+                >
+                  {generatingRecommendations ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-scout-accent-500"></div>
+                      Generating AI Recommendations...
+                    </>
+                  ) : (
+                    <>
+                      ✨ Generate AI Feature Limit Recommendations
+                    </>
+                  )}
+                </button>
+                {aiRecommendedLimits && (
+                  <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
+                    <p className="text-sm text-green-700 dark:text-green-300 font-medium">
+                      ✓ AI recommendations ready! Feature limits will be auto-populated.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div>

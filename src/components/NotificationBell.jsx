@@ -333,10 +333,10 @@ export default function NotificationBell() {
       >
         <Bell size={24} />
 
-        {/* Notification Badge - Combined count of notifications + messages */}
-        {(unreadCount + unreadMessagesCount) > 0 && (
+        {/* Notification Badge - Only shows notifications table count */}
+        {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium">
-            {(unreadCount + unreadMessagesCount) > 9 ? '9+' : (unreadCount + unreadMessagesCount)}
+            {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
