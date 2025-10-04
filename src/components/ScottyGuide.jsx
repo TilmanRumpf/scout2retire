@@ -10,6 +10,7 @@ import HeaderSpacer from './HeaderSpacer';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
+import { UpgradeModal, useUpgradeModal } from './UpgradeModal';
 
 function ScottyGuide() {
   const [message, setMessage] = useState('');
@@ -26,6 +27,9 @@ function ScottyGuide() {
   const messagesEndRef = useRef(null);
   const historyDropdownRef = useRef(null);
   const navigate = useNavigate();
+
+  // Paywall: Upgrade modal for Scotty chat limits
+  const { upgradeModalProps, showUpgradeModal, hideUpgradeModal } = useUpgradeModal();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -317,7 +321,44 @@ What would you like to know about ${name}?`;
   }, []);
 
 
-  const startNewChat = (topic = null, townContext = null) => {
+  const startNewChat = async (topic = null, townContext = null) => {
+    // Paywall: Check monthly Scotty chat limit
+    try {
+      const { data: chatCount, error } = await supabase.rpc('get_scotty_chat_count_current_month');
+
+      if (error) {
+        console.error('Error checking Scotty chat limit:', error);
+        // Fail open - allow chat if check fails
+      } else {
+        // Get user's limit for scotty_chats
+        const { data: limits } = await supabase.rpc('get_user_limits');
+        const scottyLimit = limits?.find(l => l.feature_code === 'scotty_chats')?.limit_value;
+
+        if (scottyLimit !== null && chatCount >= scottyLimit) {
+          showUpgradeModal({
+            featureName: 'Scotty AI Chats',
+            current_usage: chatCount,
+            limit: scottyLimit,
+            upgrade_to: 'premium',
+            reason: `You've used ${chatCount} of ${scottyLimit} Scotty AI chats this month. Upgrade for more conversations.`
+          });
+          return; // Prevent chat creation
+        }
+
+        // Record this chat in usage tracking
+        await supabase.rpc('record_scotty_chat', {
+          p_metadata: {
+            topic: topic || 'New conversation',
+            town_id: townContext?.id || null,
+            town_name: townContext?.name || townContext?.town_name || null
+          }
+        });
+      }
+    } catch (err) {
+      console.error('Error in Scotty chat limit check:', err);
+      // Fail open - allow chat
+    }
+
     const newConversation = {
       id: `temp_${Date.now()}`, // Temporary ID until saved to database
       title: topic || 'New conversation',
@@ -325,11 +366,11 @@ What would you like to know about ${name}?`;
       createdAt: new Date().toISOString(),
       messages: []
     };
-    
+
     setActiveConversation(newConversation);
     setActiveTown(townContext);
     setMessages([]);
-    
+
     // If it's a town chat, add an initial greeting
     if (townContext) {
       const firstName = getFirstName(userContext?.personal?.name);
@@ -929,6 +970,9 @@ CRITICAL RULE: Do NOT suggest towns like San Sebastián, Split, Trieste, or any 
             )}
           </div>
         </main>
+
+        {/* Upgrade Modal */}
+        <UpgradeModal {...upgradeModalProps} onClose={hideUpgradeModal} />
       </div>
     );
   }

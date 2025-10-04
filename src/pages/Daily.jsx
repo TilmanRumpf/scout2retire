@@ -217,9 +217,23 @@ export default function Daily() {
     return updates[Math.floor(Math.random() * updates.length)];
   };
 
-  // Mock function to fetch recent towns
+  // Fetch recent towns with daily discovery limit
   const fetchRecentTowns = async () => {
     try {
+      // Paywall: Get daily discovery limit
+      const { data: dailyCount } = await supabase.rpc('get_discovery_count_today');
+      const { data: limits } = await supabase.rpc('get_user_limits');
+      const discoveryLimit = limits?.find(l => l.feature_code === 'fresh_discoveries')?.limit_value;
+
+      // If user has reached their daily limit, don't fetch any discoveries
+      if (discoveryLimit !== null && dailyCount >= discoveryLimit) {
+        setRecentTowns([]);
+        return;
+      }
+
+      // Calculate how many discoveries user can still see today
+      const remaining = discoveryLimit === null ? 4 : Math.min(4, discoveryLimit - dailyCount);
+
       const { data } = await supabase
         .from('towns')
         .select('*')
@@ -227,8 +241,8 @@ export default function Daily() {
         .not('image_url_1', 'eq', '')
         .not('image_url_1', 'ilike', 'NULL')  // CRITICAL: Only towns with photos (exclude 'NULL' string)
         .order('created_at', { ascending: false })
-        .limit(4);
-      
+        .limit(remaining > 0 ? remaining : 4);
+
       if (data) {
         // SAFETY: Double-check filtering on client side
         const validTowns = filterTownsWithImagesDebug(data, 'Recent Towns');
