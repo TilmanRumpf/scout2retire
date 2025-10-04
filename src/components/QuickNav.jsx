@@ -437,6 +437,16 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
                 >
                   <span className="font-medium text-scout-orange-500">Towns-Manager</span>
                 </Link>
+                <Link
+                  to="/admin/paywall"
+                  className={`flex items-center justify-between p-2 sm:p-3 text-sm sm:text-base ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
+                    location.pathname === '/admin/paywall'
+                      ? `${uiConfig.colors.success} ${uiConfig.colors.statusSuccess}`
+                      : `${uiConfig.colors.hoverBg}`
+                  }`}
+                >
+                  <span className="font-medium text-scout-orange-500">Paywall Manager</span>
+                </Link>
               </>
             )}
           </nav>
