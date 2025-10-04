@@ -1,6 +1,7 @@
 import supabase from './supabaseClient';
 import { logTownActivity } from './journalUtils';
 import { getPersonalizedTowns } from './scoring'; // NEW: Added import
+import { canUserPerform } from './paywallUtils.js';
 
 // SINGLE SOURCE OF TRUTH FOR TOWN COLUMNS - NEVER DUPLICATE!
 // This caused the 3-hour climate scoring disaster when duplicated
@@ -224,6 +225,27 @@ export const toggleFavorite = async (userId, townId, townName = null, townCountr
     }
 
     // Otherwise, add as favorite
+    // First check if user can add more favorites
+    const { data: currentFavorites } = await supabase
+      .from('favorites')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userIdString);
+
+    const currentCount = currentFavorites?.length || 0;
+    const limitCheck = await canUserPerform('town_favorites', currentCount);
+
+    if (!limitCheck.allowed) {
+      return {
+        success: false,
+        error: limitCheck.reason,
+        limitReached: true,
+        upgradeTo: limitCheck.upgrade_to,
+        featureName: limitCheck.feature_name,
+        currentUsage: limitCheck.current_usage,
+        limit: limitCheck.limit
+      };
+    }
+
     // Make sure we have town name and country for the insert
     if (!townName || !townCountry) {
       const { data: townData, error: townError } = await supabase
@@ -236,11 +258,11 @@ export const toggleFavorite = async (userId, townId, townName = null, townCountr
         console.error("Error fetching town details:", townError);
         return { success: false, error: { message: "Could not fetch town details" } };
       }
-      
+
       townName = townData.name;
       townCountry = townData.country;
     }
-    
+
     const { error: addError } = await supabase
       .from('favorites')
       .insert([{

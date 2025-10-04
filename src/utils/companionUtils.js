@@ -1,4 +1,5 @@
 import supabase from './supabaseClient';
+import { canUserPerform } from './paywallUtils.js';
 
 // Companion/Friend management utilities
 
@@ -97,6 +98,29 @@ export const fetchCompanions = async (userId) => {
 
 export const sendFriendRequest = async (requesterId, receiverEmail) => {
   try {
+    // Check current friend count before allowing new request
+    const { data: currentFriends } = await supabase
+      .from('friendships')
+      .select('id', { count: 'exact', head: true })
+      .or(`requester_id.eq.${requesterId},receiver_id.eq.${requesterId}`)
+      .eq('status', 'accepted');
+
+    const currentCount = currentFriends?.length || 0;
+
+    // Check if user can add more friends
+    const limitCheck = await canUserPerform('chat_partners', currentCount);
+    if (!limitCheck.allowed) {
+      return {
+        success: false,
+        error: limitCheck.reason,
+        limitReached: true,
+        upgradeTo: limitCheck.upgrade_to,
+        featureName: limitCheck.feature_name,
+        currentUsage: limitCheck.current_usage,
+        limit: limitCheck.limit
+      };
+    }
+
     // First, find the user by email
     const { data: userData, error: userError } = await supabase
       .from('users')
