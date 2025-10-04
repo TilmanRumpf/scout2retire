@@ -254,6 +254,13 @@ export default function Chat() {
   }, [navigate, townId, searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
   // invitationId and pendingInvitations.received are handled within loadData
 
+  // Mark thread as read when user opens it
+  useEffect(() => {
+    if (activeThread && user) {
+      markThreadAsRead(activeThread.id);
+    }
+  }, [activeThread, user]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Real-time subscription for chat messages - update unread counts instantly
   useEffect(() => {
     if (!user || threads.length === 0) return;
