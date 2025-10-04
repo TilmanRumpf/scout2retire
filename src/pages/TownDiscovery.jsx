@@ -12,6 +12,7 @@ import TownRadarChart from '../components/TownRadarChart';
 import { uiConfig } from '../styles/uiConfig';
 import { Sparkles, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign, Target, CheckCircle } from 'lucide-react';
 import supabase from '../utils/supabaseClient';
+import { getFeatureLimit } from '../utils/paywallUtils.js';
 
 // Predefined regions and their countries from onboarding
 const REGIONS = [
@@ -50,6 +51,7 @@ export default function TownDiscovery() {
   const [towns, setTowns] = useState([]);
   const [townsLoading, setTownsLoading] = useState(false);
   const [totalTownCount, setTotalTownCount] = useState(0);
+  const [displayLimit, setDisplayLimit] = useState(null);
   
   // Filter and sort states
   const [sortBy, setSortBy] = useState('match');
@@ -112,6 +114,15 @@ export default function TownDiscovery() {
       loadFavorites();
     }
   }, [user]);
+
+  // Load display limit
+  useEffect(() => {
+    const loadDisplayLimit = async () => {
+      const limit = await getFeatureLimit('town_displays');
+      setDisplayLimit(limit);
+    };
+    loadDisplayLimit();
+  }, []);
   
   // Load towns
   useEffect(() => {
@@ -341,6 +352,14 @@ export default function TownDiscovery() {
 
   const selectedTownData = getSelectedTownData();
   const sortedAndFilteredTowns = getSortedAndFilteredTowns();
+
+  // Apply display limit for free/premium tiers
+  const displayedTowns = displayLimit === null
+    ? sortedAndFilteredTowns
+    : sortedAndFilteredTowns.slice(0, displayLimit);
+
+  const isLimitReached = displayLimit !== null && sortedAndFilteredTowns.length > displayLimit;
+
   const countries = getUniqueCountries();
   const filterCount = activeFilterCount();
 
@@ -369,7 +388,7 @@ export default function TownDiscovery() {
           countries: countries,
           filterCount: filterCount,
           clearFilters: clearFilters,
-          resultsCount: sortedAndFilteredTowns.length,
+          resultsCount: displayedTowns.length,
           searchTerm: searchTerm,
           setSearchTerm: setSearchTerm,
           availableTowns: towns,
@@ -807,7 +826,7 @@ export default function TownDiscovery() {
 
 
         {/* Town grid */}
-        {sortedAndFilteredTowns.length === 0 ? (
+        {displayedTowns.length === 0 ? (
           <div className={`text-center py-12 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg}`}>
             <p className={`${uiConfig.colors.body} mb-4`}>
               No towns match your current filters.
@@ -820,8 +839,23 @@ export default function TownDiscovery() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedAndFilteredTowns
+          <>
+            {/* Upgrade hint if limit reached */}
+            {isLimitReached && (
+              <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <strong>Showing {displayLimit} of {sortedAndFilteredTowns.length} towns.</strong>
+                  {' '}
+                  <a href="/pricing" className="underline font-semibold hover:opacity-80">
+                    Upgrade to Premium
+                  </a>
+                  {' '}to see all results.
+                </p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {displayedTowns
               .filter(town => !selectedTownData || String(town.id) !== String(selectedTownData.id))
               .map((town) => (
             <div
@@ -970,9 +1004,10 @@ export default function TownDiscovery() {
             </div>
           ))}
           </div>
+          </>
         )}
-        
-        {townsLoading && sortedAndFilteredTowns.length === 0 && (
+
+        {townsLoading && displayedTowns.length === 0 && (
           <div className="flex justify-center py-8">
             <div className="flex items-center gap-3">
               <div className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full"></div>
