@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Users, Settings, TrendingUp, Lock, Crown, Building2, DollarSign, Edit2, Save, X, Check } from 'lucide-react';
+import { Shield, Users, Settings, TrendingUp, Lock, Crown, Building2, DollarSign, Edit2, Save, X, Check, ArrowUp, ArrowDown, Plus } from 'lucide-react';
 import supabase from '../../utils/supabaseClient';
 import { checkAdminAccess } from '../../utils/paywallUtils';
 import toast from 'react-hot-toast';
@@ -21,6 +21,15 @@ const PaywallManager = () => {
   const [editValue, setEditValue] = useState('');
   const [editingPrice, setEditingPrice] = useState(null); // { tierId, field: 'monthly' | 'yearly' }
   const [priceValue, setPriceValue] = useState('');
+  const [showAddTierModal, setShowAddTierModal] = useState(false);
+  const [newTier, setNewTier] = useState({
+    category_code: '',
+    display_name: '',
+    description: '',
+    price_monthly: '',
+    price_yearly: '',
+    color_hex: '#6B7280'
+  });
 
   // Check admin access
   useEffect(() => {
@@ -192,6 +201,85 @@ const PaywallManager = () => {
       await loadTiers();
       setEditingPrice(null);
       setPriceValue('');
+    }
+  };
+
+  const moveTierUp = async (tierId, currentSortOrder) => {
+    // Find tier above this one
+    const tierAbove = tiers.find(t => t.sort_order === currentSortOrder - 1);
+    if (!tierAbove) return; // Already at top
+
+    // Swap sort orders
+    await supabase.from('user_categories').update({ sort_order: currentSortOrder }).eq('id', tierAbove.id);
+    await supabase.from('user_categories').update({ sort_order: currentSortOrder - 1 }).eq('id', tierId);
+
+    toast.success('Tier moved up');
+    await loadTiers();
+  };
+
+  const moveTierDown = async (tierId, currentSortOrder) => {
+    // Find tier below this one
+    const tierBelow = tiers.find(t => t.sort_order === currentSortOrder + 1);
+    if (!tierBelow) return; // Already at bottom
+
+    // Swap sort orders
+    await supabase.from('user_categories').update({ sort_order: currentSortOrder }).eq('id', tierBelow.id);
+    await supabase.from('user_categories').update({ sort_order: currentSortOrder + 1 }).eq('id', tierId);
+
+    toast.success('Tier moved down');
+    await loadTiers();
+  };
+
+  const createTier = async () => {
+    // Validation
+    if (!newTier.category_code || !newTier.display_name) {
+      toast.error('Category code and display name are required');
+      return;
+    }
+
+    // Validate category_code format (lowercase with underscores only)
+    if (!/^[a-z_]+$/.test(newTier.category_code)) {
+      toast.error('Category code must be lowercase letters and underscores only');
+      return;
+    }
+
+    // Get next sort_order
+    const maxSort = Math.max(...tiers.map(t => t.sort_order), -1);
+
+    const tierData = {
+      category_code: newTier.category_code,
+      display_name: newTier.display_name,
+      description: newTier.description || null,
+      price_monthly: newTier.price_monthly === '' ? null : parseFloat(newTier.price_monthly),
+      price_yearly: newTier.price_yearly === '' ? null : parseFloat(newTier.price_yearly),
+      color_hex: newTier.color_hex,
+      sort_order: maxSort + 1,
+      is_visible: true,
+      is_active: true
+    };
+
+    const { error } = await supabase.from('user_categories').insert([tierData]);
+
+    if (error) {
+      if (error.code === '23505') { // Unique violation
+        toast.error('Category code already exists');
+      } else {
+        toast.error('Failed to create tier');
+        console.error(error);
+      }
+    } else {
+      toast.success('Tier created successfully');
+      setShowAddTierModal(false);
+      setNewTier({
+        category_code: '',
+        display_name: '',
+        description: '',
+        price_monthly: '',
+        price_yearly: '',
+        color_hex: '#6B7280'
+      });
+      await loadTiers();
+      await loadLimits(); // Reload to get new tier in limits
     }
   };
 
@@ -398,115 +486,286 @@ const PaywallManager = () => {
 
         {/* Tiers Tab */}
         {activeTab === 'tiers' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {tiers.map(tier => (
-              <div
-                key={tier.id}
-                className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-6`}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div style={{ color: tier.color_hex }}>
-                      {getTierIcon(tier.category_code)}
-                    </div>
-                    <div>
-                      <h3 className={`text-xl font-bold ${uiConfig.colors.heading}`}>{tier.display_name}</h3>
-                      <p className={`text-sm ${uiConfig.colors.hint}`}>{tier.category_code}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => toggleTierVisibility(tier.id, tier.is_visible)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      tier.is_visible
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
-                    }`}
-                  >
-                    {tier.is_visible ? 'Visible' : 'Hidden'}
-                  </button>
-                </div>
+          <div className="space-y-4">
+            {/* Add Tier Button */}
+            <button
+              onClick={() => setShowAddTierModal(true)}
+              className={`flex items-center gap-2 px-4 py-2 ${uiConfig.colors.btnPrimary} rounded-lg font-medium hover:${uiConfig.colors.btnPrimaryHover} transition-colors`}
+            >
+              <Plus className="w-5 h-5" />
+              Add New Tier
+            </button>
 
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className={uiConfig.colors.body}>Monthly Price:</span>
-                    {editingPrice?.tierId === tier.id && editingPrice?.field === 'monthly' ? (
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center">
-                          <span className="text-sm mr-1">$</span>
-                          <input
-                            type="text"
-                            value={priceValue}
-                            onChange={(e) => setPriceValue(e.target.value)}
-                            placeholder="0"
-                            className={`w-20 px-2 py-1 ${uiConfig.colors.input} border-2 border-scout-accent-500 rounded text-center`}
-                            autoFocus
-                          />
+            {/* Vertical Tier List */}
+            <div className="space-y-3">
+              {tiers.map((tier, index) => (
+                <div
+                  key={tier.id}
+                  className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-6`}
+                >
+                  <div className="flex items-start gap-4">
+                    {/* Ordering Arrows */}
+                    <div className="flex flex-col gap-1">
+                      <button
+                        onClick={() => moveTierUp(tier.id, tier.sort_order)}
+                        disabled={index === 0}
+                        className={`p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+                          index === 0 ? 'opacity-30 cursor-not-allowed' : ''
+                        }`}
+                        title="Move up"
+                      >
+                        <ArrowUp className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => moveTierDown(tier.id, tier.sort_order)}
+                        disabled={index === tiers.length - 1}
+                        className={`p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+                          index === tiers.length - 1 ? 'opacity-30 cursor-not-allowed' : ''
+                        }`}
+                        title="Move down"
+                      >
+                        <ArrowDown className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Tier Content */}
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div style={{ color: tier.color_hex }}>
+                            {getTierIcon(tier.category_code)}
+                          </div>
+                          <div>
+                            <h3 className={`text-xl font-bold ${uiConfig.colors.heading}`}>{tier.display_name}</h3>
+                            <p className={`text-sm ${uiConfig.colors.hint}`}>{tier.category_code}</p>
+                          </div>
                         </div>
-                        <button onClick={savePrice} className="text-green-500 hover:text-green-600">
-                          <Check className="w-4 h-4" />
-                        </button>
-                        <button onClick={cancelPriceEdit} className="text-red-500 hover:text-red-600">
-                          <X className="w-4 h-4" />
+                        <button
+                          onClick={() => toggleTierVisibility(tier.id, tier.is_visible)}
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            tier.is_visible
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                              : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                          }`}
+                        >
+                          {tier.is_visible ? 'Visible' : 'Hidden'}
                         </button>
                       </div>
-                    ) : (
-                      <button
-                        onClick={() => startEditPrice(tier.id, 'monthly', tier.price_monthly)}
-                        className="group flex items-center gap-2 hover:text-scout-accent-500"
-                      >
-                        <span className={`font-semibold ${uiConfig.colors.heading}`}>
-                          {tier.price_monthly ? `$${tier.price_monthly}` : 'Free'}
-                        </span>
-                        <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </button>
-                    )}
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={uiConfig.colors.body}>Yearly Price:</span>
-                    {editingPrice?.tierId === tier.id && editingPrice?.field === 'yearly' ? (
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center">
-                          <span className="text-sm mr-1">$</span>
-                          <input
-                            type="text"
-                            value={priceValue}
-                            onChange={(e) => setPriceValue(e.target.value)}
-                            placeholder="0"
-                            className={`w-20 px-2 py-1 ${uiConfig.colors.input} border-2 border-scout-accent-500 rounded text-center`}
-                            autoFocus
-                          />
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className={uiConfig.colors.body}>Monthly Price:</span>
+                          {editingPrice?.tierId === tier.id && editingPrice?.field === 'monthly' ? (
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center">
+                                <span className="text-sm mr-1">$</span>
+                                <input
+                                  type="text"
+                                  value={priceValue}
+                                  onChange={(e) => setPriceValue(e.target.value)}
+                                  placeholder="0"
+                                  className={`w-20 px-2 py-1 ${uiConfig.colors.input} border-2 border-scout-accent-500 rounded text-center`}
+                                  autoFocus
+                                />
+                              </div>
+                              <button onClick={savePrice} className="text-green-500 hover:text-green-600">
+                                <Check className="w-4 h-4" />
+                              </button>
+                              <button onClick={cancelPriceEdit} className="text-red-500 hover:text-red-600">
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => startEditPrice(tier.id, 'monthly', tier.price_monthly)}
+                              className="group flex items-center gap-2 hover:text-scout-accent-500"
+                            >
+                              <span className={`font-semibold ${uiConfig.colors.heading}`}>
+                                {tier.price_monthly ? `$${tier.price_monthly}` : 'Free'}
+                              </span>
+                              <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </button>
+                          )}
                         </div>
-                        <button onClick={savePrice} className="text-green-500 hover:text-green-600">
-                          <Check className="w-4 h-4" />
-                        </button>
-                        <button onClick={cancelPriceEdit} className="text-red-500 hover:text-red-600">
-                          <X className="w-4 h-4" />
-                        </button>
+                        <div className="flex justify-between items-center">
+                          <span className={uiConfig.colors.body}>Yearly Price:</span>
+                          {editingPrice?.tierId === tier.id && editingPrice?.field === 'yearly' ? (
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center">
+                                <span className="text-sm mr-1">$</span>
+                                <input
+                                  type="text"
+                                  value={priceValue}
+                                  onChange={(e) => setPriceValue(e.target.value)}
+                                  placeholder="0"
+                                  className={`w-20 px-2 py-1 ${uiConfig.colors.input} border-2 border-scout-accent-500 rounded text-center`}
+                                  autoFocus
+                                />
+                              </div>
+                              <button onClick={savePrice} className="text-green-500 hover:text-green-600">
+                                <Check className="w-4 h-4" />
+                              </button>
+                              <button onClick={cancelPriceEdit} className="text-red-500 hover:text-red-600">
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => startEditPrice(tier.id, 'yearly', tier.price_yearly)}
+                              className="group flex items-center gap-2 hover:text-scout-accent-500"
+                            >
+                              <span className={`font-semibold ${uiConfig.colors.heading}`}>
+                                {tier.price_yearly ? `$${tier.price_yearly}` : 'Free'}
+                              </span>
+                              <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex justify-between">
+                          <span className={uiConfig.colors.body}>Users:</span>
+                          <span className={`font-semibold ${uiConfig.colors.heading}`}>
+                            {userStats.find(s => s.code === tier.category_code)?.count || 0}
+                          </span>
+                        </div>
                       </div>
-                    ) : (
-                      <button
-                        onClick={() => startEditPrice(tier.id, 'yearly', tier.price_yearly)}
-                        className="group flex items-center gap-2 hover:text-scout-accent-500"
-                      >
-                        <span className={`font-semibold ${uiConfig.colors.heading}`}>
-                          {tier.price_yearly ? `$${tier.price_yearly}` : 'Free'}
-                        </span>
-                        <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </button>
-                    )}
-                  </div>
-                  <div className="flex justify-between">
-                    <span className={uiConfig.colors.body}>Users:</span>
-                    <span className={`font-semibold ${uiConfig.colors.heading}`}>
-                      {userStats.find(s => s.code === tier.category_code)?.count || 0}
-                    </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>
+
+      {/* Add Tier Modal */}
+      {showAddTierModal && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className={`absolute inset-0 ${uiConfig.colors.overlay}`}
+            onClick={() => setShowAddTierModal(false)}
+          />
+
+          {/* Modal */}
+          <div className={`relative ${uiConfig.colors.card} rounded-2xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto`}>
+            {/* Header */}
+            <div className={`sticky top-0 ${uiConfig.colors.card} border-b ${uiConfig.colors.border} p-6`}>
+              <div className="flex items-center justify-between">
+                <h2 className={`text-2xl font-bold ${uiConfig.colors.heading}`}>Add New Tier</h2>
+                <button
+                  onClick={() => setShowAddTierModal(false)}
+                  className={`p-2 hover:${uiConfig.colors.secondary} rounded-lg transition-colors`}
+                >
+                  <X className={`w-5 h-5 ${uiConfig.colors.subtitle}`} />
+                </button>
+              </div>
+            </div>
+
+            {/* Form */}
+            <div className="p-6 space-y-4">
+              <div>
+                <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-2`}>
+                  Category Code* <span className={uiConfig.colors.hint}>(lowercase, underscores only)</span>
+                </label>
+                <input
+                  type="text"
+                  value={newTier.category_code}
+                  onChange={(e) => setNewTier({ ...newTier, category_code: e.target.value })}
+                  placeholder="e.g., pro_plus"
+                  className={`w-full px-4 py-2 ${uiConfig.colors.input} border ${uiConfig.colors.border} rounded-lg`}
+                />
+              </div>
+
+              <div>
+                <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-2`}>Display Name*</label>
+                <input
+                  type="text"
+                  value={newTier.display_name}
+                  onChange={(e) => setNewTier({ ...newTier, display_name: e.target.value })}
+                  placeholder="e.g., Pro Plus"
+                  className={`w-full px-4 py-2 ${uiConfig.colors.input} border ${uiConfig.colors.border} rounded-lg`}
+                />
+              </div>
+
+              <div>
+                <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-2`}>Description</label>
+                <textarea
+                  value={newTier.description}
+                  onChange={(e) => setNewTier({ ...newTier, description: e.target.value })}
+                  placeholder="Optional tier description"
+                  rows={2}
+                  className={`w-full px-4 py-2 ${uiConfig.colors.input} border ${uiConfig.colors.border} rounded-lg`}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-2`}>Monthly Price</label>
+                  <div className="flex items-center gap-2">
+                    <span>$</span>
+                    <input
+                      type="text"
+                      value={newTier.price_monthly}
+                      onChange={(e) => setNewTier({ ...newTier, price_monthly: e.target.value })}
+                      placeholder="0 or empty for free"
+                      className={`flex-1 px-4 py-2 ${uiConfig.colors.input} border ${uiConfig.colors.border} rounded-lg`}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-2`}>Yearly Price</label>
+                  <div className="flex items-center gap-2">
+                    <span>$</span>
+                    <input
+                      type="text"
+                      value={newTier.price_yearly}
+                      onChange={(e) => setNewTier({ ...newTier, price_yearly: e.target.value })}
+                      placeholder="0 or empty for free"
+                      className={`flex-1 px-4 py-2 ${uiConfig.colors.input} border ${uiConfig.colors.border} rounded-lg`}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-2`}>Color</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={newTier.color_hex}
+                    onChange={(e) => setNewTier({ ...newTier, color_hex: e.target.value })}
+                    className="w-16 h-10 rounded cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={newTier.color_hex}
+                    onChange={(e) => setNewTier({ ...newTier, color_hex: e.target.value })}
+                    placeholder="#6B7280"
+                    className={`flex-1 px-4 py-2 ${uiConfig.colors.input} border ${uiConfig.colors.border} rounded-lg`}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className={`sticky bottom-0 ${uiConfig.colors.card} border-t ${uiConfig.colors.border} p-6 flex gap-3`}>
+              <button
+                onClick={() => setShowAddTierModal(false)}
+                className={`flex-1 py-3 border ${uiConfig.colors.border} rounded-lg font-medium hover:${uiConfig.colors.secondary} transition-colors`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={createTier}
+                className={`flex-1 py-3 ${uiConfig.colors.btnPrimary} rounded-lg font-medium hover:${uiConfig.colors.btnPrimaryHover} transition-colors`}
+              >
+                Create Tier
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
