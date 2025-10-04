@@ -15,7 +15,8 @@ export default function FriendsSection({
   defaultInviteMessage,
   setShowCompanionsModal,
   refreshFriends,
-  unreadCount = 0
+  unreadCount = 0,
+  unreadByFriend = {} // Map of friend_id → unread_count
 }) {
   return (
     <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
@@ -36,15 +37,11 @@ export default function FriendsSection({
           >
             <div className="flex items-center justify-center gap-2">
               <span>Friends</span>
-              {unreadCount > 0 ? (
+              {unreadCount > 0 && (
                 <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
                   {unreadCount}
                 </span>
-              ) : friends.length > 0 ? (
-                <span className="bg-gray-200 dark:bg-gray-700 text-xs px-2 py-0.5 rounded-full">
-                  {friends.length}
-                </span>
-              ) : null}
+              )}
             </div>
           </button>
           <button
@@ -157,36 +154,46 @@ export default function FriendsSection({
                     Find Companions
                   </button>
                 </div>
-                {friends.map(friend => (
-                  <button
-                    key={friend.friend_id}
-                    onClick={() => switchToFriendChat(friend)}
-                    className={`w-full text-left p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${
-                      chatType === 'friends' && activeFriend?.friend_id === friend.friend_id
-                        ? 'bg-scout-accent-50 dark:bg-scout-accent-900/20'
-                        : ''
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <div className={`w-10 h-10 bg-purple-100 dark:bg-purple-900 ${uiConfig.layout.radius.full} flex items-center justify-center text-purple-600 dark:text-purple-400 mr-3`}>
-                        <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium}`}>
-                          {friend.friend.username?.charAt(0)?.toUpperCase() || '?'}
-                        </span>
-                      </div>
-                      <div className="flex-1">
-                        <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
-                          {friend.friend.username || 'Friend'}
+                {friends.map(friend => {
+                  const friendUnread = unreadByFriend[friend.friend_id] || 0;
+                  return (
+                    <button
+                      key={friend.friend_id}
+                      onClick={() => switchToFriendChat(friend)}
+                      className={`w-full text-left p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${
+                        chatType === 'friends' && activeFriend?.friend_id === friend.friend_id
+                          ? 'bg-scout-accent-50 dark:bg-scout-accent-900/20'
+                          : ''
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <div className={`w-10 h-10 bg-purple-100 dark:bg-purple-900 ${uiConfig.layout.radius.full} flex items-center justify-center text-purple-600 dark:text-purple-400 mr-3`}>
+                          <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium}`}>
+                            {friend.friend.username?.charAt(0)?.toUpperCase() || '?'}
+                          </span>
                         </div>
-                        <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
-                          Click to chat
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
+                              {friend.friend.username || 'Friend'}
+                            </div>
+                            {friendUnread > 0 && (
+                              <div className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">
+                                {friendUnread}
+                              </div>
+                            )}
+                          </div>
+                          <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+                            Click to chat
+                          </div>
                         </div>
+                        {chatType === 'friends' && activeFriend?.friend_id === friend.friend_id && (
+                          <div className="w-2 h-2 bg-scout-accent-500 rounded-full"></div>
+                        )}
                       </div>
-                      {chatType === 'friends' && activeFriend?.friend_id === friend.friend_id && (
-                        <div className="w-2 h-2 bg-scout-accent-500 rounded-full"></div>
-                      )}
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             ) : (
               <div className={`p-8 text-center ${uiConfig.colors.hint}`}>

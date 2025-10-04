@@ -196,13 +196,30 @@ export const toggleFavorite = async (userId, townId, townName = null, townCountr
       }
 
       console.log('Favorite removed successfully');
-      
+
+      // Mark the town's chat thread as read (to clear any unread badges)
+      try {
+        const { data: townThread } = await supabase
+          .from('chat_threads')
+          .select('id')
+          .eq('town_id', normalizedTownId)
+          .maybeSingle();
+
+        if (townThread) {
+          await supabase.rpc('mark_thread_read', { p_thread_id: townThread.id });
+          console.log('Marked town thread as read on unfavorite');
+        }
+      } catch (markReadError) {
+        console.error('Error marking thread as read on unfavorite:', markReadError);
+        // Don't fail the unfavorite action if this fails
+      }
+
       // Log the unlike activity to journal
       if (townName && townCountry) {
         console.log('Logging unlike activity to journal...');
         await logTownActivity(userIdString, normalizedTownId, 'unliked', townName, townCountry);
       }
-      
+
       return { success: true, action: 'removed' };
     }
 

@@ -25,6 +25,7 @@ export default function Chat() {
   const [activeTownChats, setActiveTownChats] = useState([]); // Towns with recent activity or favorited
   const [unreadCounts, setUnreadCounts] = useState({}); // { threadId: unreadCount }
   const [unreadByType, setUnreadByType] = useState({ lounge: 0, friends: 0, towns: 0 }); // Unread per chat type
+  const [unreadByFriend, setUnreadByFriend] = useState({}); // { friend_id: unreadCount }
   const [chatType, setChatType] = useState('town'); // 'town', 'lounge', 'scout', 'friends'
   const [isTyping, setIsTyping] = useState(false);
   const [showCompanionsModal, setShowCompanionsModal] = useState(false);
@@ -46,6 +47,7 @@ export default function Chat() {
   const { townId } = useParams();
   const [searchParams] = useSearchParams();
   const invitationId = searchParams.get('invitation');
+  const tabParam = searchParams.get('tab');
   
   // Load companions when modal opens
   useEffect(() => {
@@ -83,6 +85,11 @@ export default function Chat() {
         // Load suggested companions
         await loadSuggestedCompanions(currentUser.id);
         
+        // Auto-switch to Requests tab if tab=requests in URL
+        if (tabParam === 'requests') {
+          setFriendsTabActive('requests');
+        }
+
         // If accessed via notification, scroll to the invitation
         if (invitationId && pendingInvitations.received) {
           const invitation = pendingInvitations.received.find(inv => inv.id === invitationId);
@@ -494,6 +501,8 @@ export default function Chat() {
       if (!threads || threads.length === 0) return;
 
       const threadIds = threads.map(t => t.id);
+      console.log('[Chat] loadUnreadCounts called with threads:', threads.map(t => ({ id: t.id, topic: t.topic })));
+      console.log('[Chat] Calling RPC with threadIds:', threadIds);
 
       // Use RPC function to get unread counts efficiently
       const { data: counts, error } = await supabase.rpc('get_unread_counts', {
@@ -505,6 +514,8 @@ export default function Chat() {
         return;
       }
 
+      console.log('[Chat] RPC returned counts:', counts);
+
       // Convert array to object: { threadId: count }
       const countsMap = {};
       counts?.forEach(({ thread_id, unread_count }) => {
@@ -513,10 +524,11 @@ export default function Chat() {
 
       setUnreadCounts(countsMap);
 
-      // Calculate per-type totals
+      // Calculate per-type totals AND per-friend totals
       let loungeTotal = 0;
       let friendsTotal = 0;
       let townsTotal = 0;
+      const friendUnreadMap = {}; // Map of friend_id → unread_count
 
       threads.forEach(thread => {
         const unreadCount = countsMap[thread.id] || 0;
@@ -526,11 +538,27 @@ export default function Chat() {
         } else if (thread.topic === 'Lounge' || thread.retirement_lounge_id) {
           loungeTotal += unreadCount;
         } else {
+          // Friend chat - extract friend_id from topic
           friendsTotal += unreadCount;
+
+          // Extract friend_id from topic like "friend-{userId}-{friendId}" (sorted IDs)
+          if (thread.topic?.startsWith('friend-')) {
+            const topicWithoutPrefix = thread.topic.replace('friend-', '');
+            const ids = topicWithoutPrefix.split('-');
+
+            // The friend_id is the one that's NOT the current user
+            const friendId = ids.find(id => id !== user?.id);
+            if (friendId) {
+              friendUnreadMap[friendId] = (friendUnreadMap[friendId] || 0) + unreadCount;
+            }
+          }
         }
       });
 
+      console.log('[Chat] Unread totals:', { lounge: loungeTotal, friends: friendsTotal, towns: townsTotal });
+      console.log('[Chat] Per-friend unread:', friendUnreadMap);
       setUnreadByType({ lounge: loungeTotal, friends: friendsTotal, towns: townsTotal });
+      setUnreadByFriend(friendUnreadMap);
     } catch (err) {
       console.error("Error loading unread counts:", err);
     }
@@ -839,9 +867,9 @@ export default function Chat() {
       setMessages([]);
       
       // Find or create thread for this friend chat
-      let friendThread = threads.find(thread => 
-        thread.topic === `friend-${friend.friend_id}` || thread.topic === `friend-${user.id}`
-      );
+      // Topic format: friend-{userId}-{friendId} (sorted)
+      const sortedTopic = `friend-${[user.id, friend.friend_id].sort().join('-')}`;
+      let friendThread = threads.find(thread => thread.topic === sortedTopic);
       
       if (!friendThread) {
         // Create new thread for friend chat
@@ -849,7 +877,7 @@ export default function Chat() {
           .from('chat_threads')
           .insert([{
             town_id: null,
-            topic: `friend-${[user.id, friend.friend_id].sort().join('-')}`,
+            topic: sortedTopic,
             created_by: user.id
           }])
           .select();
@@ -1126,6 +1154,25 @@ export default function Chat() {
       await loadFriends(user.id);
       await loadPendingInvitations(user.id);
 
+      // Mark any related notification as read
+      try {
+        const { data: relatedNotifs } = await supabase
+          .from('notifications')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('is_read', false)
+          .or(`type.eq.invitation_received,type.eq.friend_request,type.eq.new_friend_request`)
+          .limit(5);
+
+        if (relatedNotifs && relatedNotifs.length > 0) {
+          for (const notif of relatedNotifs) {
+            await supabase.rpc('mark_notification_read', { notification_id: notif.id });
+          }
+        }
+      } catch (err) {
+        console.error('Error marking notifications as read:', err);
+      }
+
       // Auto-switch to Friends tab to show the new friend
       setFriendsTabActive('friends');
     } catch (err) {
@@ -1149,9 +1196,28 @@ export default function Chat() {
       }
       
       toast.success("Invitation declined");
-      
+
       // Reload invitations
       await loadPendingInvitations(user.id);
+
+      // Mark any related notification as read
+      try {
+        const { data: relatedNotifs } = await supabase
+          .from('notifications')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('is_read', false)
+          .or(`type.eq.invitation_received,type.eq.friend_request,type.eq.new_friend_request`)
+          .limit(5);
+
+        if (relatedNotifs && relatedNotifs.length > 0) {
+          for (const notif of relatedNotifs) {
+            await supabase.rpc('mark_notification_read', { notification_id: notif.id });
+          }
+        }
+      } catch (err) {
+        console.error('Error marking notifications as read:', err);
+      }
     } catch (err) {
       console.error("Error declining invitation:", err);
       toast.error("Failed to decline invitation");
@@ -1387,6 +1453,7 @@ export default function Chat() {
               setShowCompanionsModal={setShowCompanionsModal}
               refreshFriends={() => loadFriends(user.id)}
               unreadCount={unreadByType.friends}
+              unreadByFriend={unreadByFriend}
             />
             
             {/* Town Chats - Shows favorited + active towns */}

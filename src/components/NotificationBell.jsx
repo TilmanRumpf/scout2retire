@@ -293,20 +293,32 @@ export default function NotificationBell() {
   };
 
   const handleNotificationClick = (notification) => {
+    console.log('[NotificationBell] Clicked notification:', notification);
+
     // Mark as read if unread
     if (!notification.is_read) {
       markAsRead(notification.id);
     }
 
-    // Navigate based on link or type
-    if (notification.link) {
-      navigate(notification.link);
+    // Navigate based on type - notifications use data.connection_id not link field
+    if (
+      notification.type === 'friend_invitation' ||
+      notification.type === 'friend_request' ||
+      notification.type === 'new_friend_request' ||
+      notification.type === 'invitation_received'
+    ) {
+      // Friend invitation - go to chat requests tab
+      console.log('[NotificationBell] Friend invitation - navigating to /chat?tab=requests');
+      navigate('/chat?tab=requests');
       setShowDropdown(false);
-    } else if (notification.town_id) {
-      navigate(`/discover?town=${notification.town_id}`);
-      setShowDropdown(false);
-    } else if (notification.type === 'friend_activity' && notification.related_user_id) {
+    } else if (notification.type === 'invitation_accepted') {
+      // Accepted invitation - go to chat
+      console.log('[NotificationBell] Invitation accepted - navigating to /chat');
       navigate('/chat');
+      setShowDropdown(false);
+    } else {
+      // Unknown type - just close dropdown and mark as read
+      console.log('[NotificationBell] Unknown type:', notification.type, '- just closing');
       setShowDropdown(false);
     }
   };
