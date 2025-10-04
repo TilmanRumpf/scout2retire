@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchTowns, fetchFavorites } from '../utils/townUtils.jsx';
-import { sanitizeChatMessage, MAX_LENGTHS } from '../utils/sanitizeUtils';
+import { sanitizeChatMessage, MAX_LENGTHS, displaySafeContent } from '../utils/sanitizeUtils';
 import { cancelInvitation } from '../utils/companionUtils';
 import { sendInvitationEmailViaAuth } from '../utils/emailUtils';
 import UnifiedErrorBoundary from '../components/UnifiedErrorBoundary';
@@ -1419,7 +1419,7 @@ export default function Chat() {
                             </span>
                           </div>
                         )}
-                        <div className="whitespace-pre-wrap">{message.message}</div>
+                        <div className="whitespace-pre-wrap">{displaySafeContent(message.message)}</div>
                       </div>
                     </div>
                   ))}
