@@ -13,6 +13,8 @@ import CategoryContent from '../components/TownComparison/CategoryContent';
 import { Eye, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign, X, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
+import { canUserPerform } from '../utils/paywallUtils.js';
+import { UpgradeModal, useUpgradeModal } from '../components/UpgradeModal';
 
 export default function TownComparison() {
   const [towns, setTowns] = useState([]);
@@ -24,6 +26,7 @@ export default function TownComparison() {
   const [activeCategory, setActiveCategory] = useState('overview');
   const navigate = useNavigate();
   const location = useLocation();
+  const { upgradeModalProps, showUpgradeModal, hideUpgradeModal } = useUpgradeModal();
 
   // Categories for comparison tabs - Aligned with onboarding steps
   const categories = [
@@ -184,16 +187,19 @@ export default function TownComparison() {
   }, [selectedTownIds, userId]);
 
   // Handle town selection toggle
-  const handleTownSelection = (townId) => {
+  const handleTownSelection = async (townId) => {
     if (selectedTownIds.includes(townId)) {
       // Deselect town
       setSelectedTownIds(prev => prev.filter(id => id !== townId));
     } else {
-      // Select town (max 3)
-      if (selectedTownIds.length >= 3) {
-        toast.error('Maximum 3 towns can be compared at once. Deselect a town first.');
+      // Check limit before adding town
+      const limitCheck = await canUserPerform('compare_towns', selectedTownIds.length);
+
+      if (!limitCheck.allowed) {
+        showUpgradeModal(limitCheck);
         return;
       }
+
       setSelectedTownIds(prev => [...prev, townId]);
     }
   };
@@ -526,6 +532,7 @@ export default function TownComparison() {
         </main>
       </SwipeableCompareContent>
 
+      <UpgradeModal {...upgradeModalProps} onClose={hideUpgradeModal} />
     </div>
   );
 }

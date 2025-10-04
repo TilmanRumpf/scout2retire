@@ -14,6 +14,7 @@ import { uiConfig } from '../styles/uiConfig';
 import supabase from '../utils/supabaseClient';
 import { filterTownsWithImagesDebug } from '../utils/imageValidation';
 import { getPersonalizedTowns } from '../utils/scoring';
+import { getFeatureLimit } from '../utils/paywallUtils.js';
 import {
   MapPin, TrendingUp, DollarSign, Cloud, Users,
   Heart, Compass, Book, MessageSquare, Calendar,
@@ -146,10 +147,16 @@ export default function Daily() {
     if (authUser?.id) {
       const loadTopMatches = async () => {
         try {
-          const result = await getPersonalizedTowns(authUser.id, { limit: 10 });
+          // Get user's limit for top matches
+          const limit = await getFeatureLimit('top_matches');
+          const maxMatches = limit === null ? 20 : limit;
+
+          const result = await getPersonalizedTowns(authUser.id, { limit: maxMatches });
           if (result.success && result.towns) {
-            // Sort by match score descending and take top 10
-            const sorted = [...result.towns].sort((a, b) => b.matchScore - a.matchScore).slice(0, 10);
+            // Sort by match score descending and apply user's limit
+            const sorted = [...result.towns]
+              .sort((a, b) => b.matchScore - a.matchScore)
+              .slice(0, maxMatches);
             setTopMatches(sorted);
           }
         } catch (error) {
