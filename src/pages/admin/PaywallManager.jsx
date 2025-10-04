@@ -17,6 +17,11 @@ const PaywallManager = () => {
   const [features, setFeatures] = useState([]);
   const [limits, setLimits] = useState([]);
   const [userStats, setUserStats] = useState([]);
+
+  // User management states
+  const [users, setUsers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const [editingLimit, setEditingLimit] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [editingPrice, setEditingPrice] = useState(null); // { tierId, field: 'monthly' | 'yearly' }
@@ -120,6 +125,74 @@ const PaywallManager = () => {
       });
 
       setUserStats(statsArray);
+    }
+  };
+
+  // User management functions
+  const searchUsers = async (query) => {
+    if (!query || query.length < 2) {
+      setUsers([]);
+      return;
+    }
+
+    setLoadingUsers(true);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select(`
+          id,
+          email,
+          display_name,
+          category_id,
+          admin_role,
+          is_admin,
+          created_at,
+          category:user_categories(category_code, display_name, color_hex)
+        `)
+        .or(`email.ilike.%${query}%,display_name.ilike.%${query}%`)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (!error) {
+        setUsers(data || []);
+      }
+    } catch (err) {
+      console.error('Error searching users:', err);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const updateUserTier = async (userId, newCategoryId) => {
+    const { error } = await supabase
+      .from('users')
+      .update({ category_id: newCategoryId })
+      .eq('id', userId);
+
+    if (error) {
+      toast.error('Failed to update user tier');
+    } else {
+      toast.success('User tier updated!');
+      searchUsers(searchQuery); // Refresh results
+    }
+  };
+
+  const updateUserAdminRole = async (userId, newRole) => {
+    const isAdmin = newRole !== 'user';
+
+    const { error } = await supabase
+      .from('users')
+      .update({
+        admin_role: newRole,
+        is_admin: isAdmin
+      })
+      .eq('id', userId);
+
+    if (error) {
+      toast.error('Failed to update admin role');
+    } else {
+      toast.success('Admin role updated!');
+      searchUsers(searchQuery); // Refresh results
     }
   };
 
@@ -460,6 +533,17 @@ const PaywallManager = () => {
             <Crown className="w-4 h-4 inline mr-2" />
             Tiers
           </button>
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === 'users'
+                ? 'text-scout-accent-600 dark:text-scout-accent-400 border-b-2 border-scout-accent-600'
+                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            <Users className="w-4 h-4 inline mr-2" />
+            Users
+          </button>
         </div>
 
         {/* Overview Tab */}
@@ -735,6 +819,113 @@ const PaywallManager = () => {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Users Tab */}
+        {activeTab === 'users' && (
+          <div className="space-y-6">
+            {/* Search Bar */}
+            <div className={`${uiConfig.colors.card} p-6 rounded-lg`}>
+              <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-2`}>
+                Search Users (by email or name)
+              </label>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  searchUsers(e.target.value);
+                }}
+                placeholder="Type at least 2 characters..."
+                className={`w-full px-4 py-2 ${uiConfig.colors.input} border ${uiConfig.colors.border} rounded-lg`}
+              />
+            </div>
+
+            {/* User Results */}
+            {loadingUsers ? (
+              <div className="text-center py-8">
+                <div className={`animate-pulse ${uiConfig.colors.body}`}>Searching...</div>
+              </div>
+            ) : users.length > 0 ? (
+              <div className="space-y-3">
+                {users.map((user) => (
+                  <div key={user.id} className={`${uiConfig.colors.card} p-6 rounded-lg`}>
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                          <h3 className={`font-semibold ${uiConfig.colors.heading}`}>
+                            {user.display_name || 'No name'}
+                          </h3>
+                          {user.category && (
+                            <span
+                              className="px-2 py-1 text-xs rounded-full"
+                              style={{
+                                backgroundColor: `${user.category.color_hex}20`,
+                                color: user.category.color_hex
+                              }}
+                            >
+                              {user.category.display_name}
+                            </span>
+                          )}
+                          {user.is_admin && (
+                            <span className="px-2 py-1 text-xs rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                              {user.admin_role || 'admin'}
+                            </span>
+                          )}
+                        </div>
+                        <p className={`text-sm ${uiConfig.colors.hint} mt-1`}>{user.email}</p>
+                        <p className={`text-xs ${uiConfig.colors.hint} mt-1`}>
+                          Joined: {new Date(user.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Tier Selector */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-2`}>
+                          Subscription Tier
+                        </label>
+                        <select
+                          value={user.category_id || ''}
+                          onChange={(e) => updateUserTier(user.id, e.target.value)}
+                          className={`w-full px-3 py-2 ${uiConfig.colors.input} border ${uiConfig.colors.border} rounded-lg`}
+                        >
+                          <option value="">No tier</option>
+                          {tiers.map((tier) => (
+                            <option key={tier.id} value={tier.id}>
+                              {tier.display_name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-2`}>
+                          Admin Role
+                        </label>
+                        <select
+                          value={user.admin_role || 'user'}
+                          onChange={(e) => updateUserAdminRole(user.id, e.target.value)}
+                          className={`w-full px-3 py-2 ${uiConfig.colors.input} border ${uiConfig.colors.border} rounded-lg`}
+                        >
+                          <option value="user">User (no admin)</option>
+                          <option value="moderator">Moderator</option>
+                          <option value="admin">Admin</option>
+                          <option value="executive_admin">Executive Admin</option>
+                          <option value="auditor">Auditor</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : searchQuery.length >= 2 ? (
+              <div className="text-center py-8">
+                <p className={uiConfig.colors.hint}>No users found matching "{searchQuery}"</p>
+              </div>
+            ) : null}
           </div>
         )}
       </div>
