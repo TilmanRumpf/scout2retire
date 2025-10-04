@@ -14,6 +14,8 @@ import { getLoadingBackgroundClass, getLoadingTextClass } from '../../utils/them
 import supabase from '../../utils/supabaseClient';
 import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
 import { CustomDropdown } from '../../components/CustomDropdown';
+import { getFeatureLimit } from '../../utils/paywallUtils';
+import { UpgradeModal, useUpgradeModal } from '../../components/UpgradeModal';
 
 // Multi-Select Mobility Dropdown Component - moved from costs page
 const MobilityDropdown = ({ values = [], onChange, label, options, icon: Icon }) => {
@@ -148,11 +150,14 @@ const OnboardingRegion = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  
+
   // Auto-hide navigation on scroll
   const { isVisible: isNavVisible } = useHideOnScroll();
-  
-  
+
+  // Paywall: Region limit and upgrade modal
+  const [regionLimit, setRegionLimit] = useState(null);
+  const { upgradeModalProps, showUpgradeModal, hideUpgradeModal } = useUpgradeModal();
+
   // Updated state arrays to only have 2 elements instead of 3
   const [selectedRegions, setSelectedRegions] = useState(['', '']);
   const [selectedCountries, setSelectedCountries] = useState(['', '']);
@@ -304,6 +309,15 @@ const OnboardingRegion = () => {
     'Oceania': ['Indonesia', 'Australia', 'New Zealand', 'Philippines']
   };
 
+  // Load region limit from paywall system
+  useEffect(() => {
+    const loadRegionLimit = async () => {
+      const limit = await getFeatureLimit('regions');
+      setRegionLimit(limit);
+    };
+    loadRegionLimit();
+  }, []);
+
   // Load regions from database
   useEffect(() => {
     const fetchRegions = async () => {
@@ -313,7 +327,7 @@ const OnboardingRegion = () => {
           .from('towns')
           .select('geo_region')
           .not('geo_region', 'is', null);
-        
+
         if (error) {
           console.error('Error fetching regions:', error);
           // Fall back to the ordered defaults if needed
@@ -329,7 +343,7 @@ const OnboardingRegion = () => {
         setRegionsLoading(false);
       }
     };
-    
+
     fetchRegions();
   }, []); // Run once on mount
 
@@ -849,13 +863,25 @@ const OnboardingRegion = () => {
                 )}
               </div>
 
-              {/* Second Preference Card */}
+              {/* Second Preference Card - Check paywall limit */}
               <div>
                 <SelectionCard
                   title={getPreferenceLabel(1)}
-                  description={getDisplayValue(1) || "Select region"}
+                  description={getDisplayValue(1) || (regionLimit !== null && regionLimit < 2 ? "Upgrade to unlock" : "Select region")}
                   isSelected={selectedRegions[1] !== ''}
                   onClick={() => {
+                    // Check if user has access to second region
+                    if (regionLimit !== null && regionLimit < 2) {
+                      showUpgradeModal({
+                        featureName: 'Regions',
+                        current_usage: 1,
+                        limit: regionLimit,
+                        upgrade_to: 'premium',
+                        reason: `Your plan allows ${regionLimit} region${regionLimit === 1 ? '' : 's'}. Upgrade to select multiple regions.`
+                      });
+                      return;
+                    }
+
                     // Toggle expanded state
                     if (expandedPreference === 1) {
                       setExpandedPreference(-1);
@@ -866,7 +892,7 @@ const OnboardingRegion = () => {
                         const newShowCountryDropdowns = [...showCountryDropdowns];
                         newShowCountryDropdowns[1] = true;
                         setShowCountryDropdowns(newShowCountryDropdowns);
-                        
+
                         if (selectedCountries[1] && selectedCountries[1] !== '') {
                           const newShowProvinceDropdowns = [...showProvinceDropdowns];
                           newShowProvinceDropdowns[1] = true;
@@ -876,6 +902,7 @@ const OnboardingRegion = () => {
                     }
                   }}
                   showCheckmark={selectedRegions[1] !== ''}
+                  isLocked={regionLimit !== null && regionLimit < 2}
                 />
                 
                 {/* Second Preference Dropdown - appears right after its card */}
@@ -1137,6 +1164,9 @@ const OnboardingRegion = () => {
             </div>
           </div>
         </div>
+
+        {/* Upgrade Modal */}
+        <UpgradeModal {...upgradeModalProps} onClose={hideUpgradeModal} />
       </main>
   );
 };

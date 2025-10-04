@@ -1,40 +1,50 @@
 import React from 'react';
-import { Check } from 'lucide-react';
+import { Check, Lock } from 'lucide-react';
 import { uiConfig } from '../../styles/uiConfig';
 
 /**
  * Reusable Selection Card Component for Onboarding
  * Provides consistent design across all onboarding pages
  */
-export const SelectionCard = ({ 
-  title, 
-  description, 
-  isSelected, 
-  onClick, 
+export const SelectionCard = ({
+  title,
+  description,
+  isSelected,
+  onClick,
   icon: Icon,
   disabled = false,
+  isLocked = false, // Paywall: Show lock icon if feature is locked
   size = 'default', // 'small', 'default', 'large' - kept for backward compatibility
   showCheckmark = true
 }) => {
   // Use centralized configuration - SINGLE SOURCE OF TRUTH
-  const buttonClasses = uiConfig.onboardingButton.getButtonClasses(isSelected, disabled);
+  const buttonClasses = uiConfig.onboardingButton.getButtonClasses(isSelected, disabled || isLocked);
 
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={buttonClasses}
+      className={`${buttonClasses} ${isLocked ? 'opacity-60' : ''}`}
     >
+      {/* Lock indicator for paywall-locked features */}
+      {isLocked && (
+        <div className={uiConfig.onboardingButton.checkmark.position}>
+          <div className="bg-gray-400 dark:bg-gray-600 text-white rounded-full p-1">
+            <Lock className="w-3 h-3" />
+          </div>
+        </div>
+      )}
+
       {/* Selection indicator - using centralized config */}
-      {showCheckmark && isSelected && (
+      {!isLocked && showCheckmark && isSelected && (
         <div className={uiConfig.onboardingButton.checkmark.position}>
           <div className={uiConfig.onboardingButton.checkmark.container}>
             <Check className={uiConfig.onboardingButton.checkmark.icon} />
           </div>
         </div>
       )}
-      
+
       {/* Card content - simple flex column */}
       <div className="flex flex-col justify-center h-full">
         <div className="flex items-center">
@@ -45,7 +55,7 @@ export const SelectionCard = ({
           )}
           <h3 className={`${uiConfig.onboardingButton.typography.title.weight} ${
             isSelected ? uiConfig.onboardingButton.typography.title.selectedColor : uiConfig.onboardingButton.typography.title.unselectedColor
-          } ${uiConfig.onboardingButton.typography.title.size} ${showCheckmark && isSelected ? 'pr-6' : ''}`}>
+          } ${uiConfig.onboardingButton.typography.title.size} ${(showCheckmark && isSelected) || isLocked ? 'pr-6' : ''}`}>
             {title}
           </h3>
         </div>
