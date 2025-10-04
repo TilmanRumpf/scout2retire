@@ -14,7 +14,8 @@ export default function FriendsSection({
   setInviteMessage,
   defaultInviteMessage,
   setShowCompanionsModal,
-  refreshFriends
+  refreshFriends,
+  unreadCount = 0
 }) {
   return (
     <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
@@ -35,11 +36,15 @@ export default function FriendsSection({
           >
             <div className="flex items-center justify-center gap-2">
               <span>Friends</span>
-              {friends.length > 0 && (
+              {unreadCount > 0 ? (
+                <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
+                  {unreadCount}
+                </span>
+              ) : friends.length > 0 ? (
                 <span className="bg-gray-200 dark:bg-gray-700 text-xs px-2 py-0.5 rounded-full">
                   {friends.length}
                 </span>
-              )}
+              ) : null}
             </div>
           </button>
           <button

@@ -24,6 +24,7 @@ export default function Chat() {
   const [favorites, setFavorites] = useState([]);
   const [activeTownChats, setActiveTownChats] = useState([]); // Towns with recent activity or favorited
   const [unreadCounts, setUnreadCounts] = useState({}); // { threadId: unreadCount }
+  const [unreadByType, setUnreadByType] = useState({ lounge: 0, friends: 0, towns: 0 }); // Unread per chat type
   const [chatType, setChatType] = useState('town'); // 'town', 'lounge', 'scout', 'friends'
   const [isTyping, setIsTyping] = useState(false);
   const [showCompanionsModal, setShowCompanionsModal] = useState(false);
@@ -450,6 +451,25 @@ export default function Chat() {
       });
 
       setUnreadCounts(countsMap);
+
+      // Calculate per-type totals
+      let loungeTotal = 0;
+      let friendsTotal = 0;
+      let townsTotal = 0;
+
+      threads.forEach(thread => {
+        const unreadCount = countsMap[thread.id] || 0;
+
+        if (thread.town_id) {
+          townsTotal += unreadCount;
+        } else if (thread.topic === 'Lounge' || thread.retirement_lounge_id) {
+          loungeTotal += unreadCount;
+        } else {
+          friendsTotal += unreadCount;
+        }
+      });
+
+      setUnreadByType({ lounge: loungeTotal, friends: friendsTotal, towns: townsTotal });
     } catch (err) {
       console.error("Error loading unread counts:", err);
     }
@@ -1264,19 +1284,26 @@ export default function Chat() {
                 <button
                   onClick={switchToLoungeChat}
                   className={`w-full text-left px-4 py-3 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
-                    chatType === 'lounge' 
+                    chatType === 'lounge'
                       ? uiConfig.colors.badge
                       : `${uiConfig.states.hover} ${uiConfig.colors.body}`
                   }`}
                 >
-                  <div className="flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-                    </svg>
-                    <div>
-                      <div className={`${uiConfig.font.weight.medium}`}>Retirement Lounge</div>
-                      <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>General discussion</div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                      </svg>
+                      <div>
+                        <div className={`${uiConfig.font.weight.medium}`}>Retirement Lounge</div>
+                        <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>General discussion</div>
+                      </div>
                     </div>
+                    {unreadByType.lounge > 0 && (
+                      <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-semibold rounded-full">
+                        {unreadByType.lounge}
+                      </div>
+                    )}
                   </div>
                 </button>
               </div>
@@ -1298,15 +1325,25 @@ export default function Chat() {
               defaultInviteMessage={defaultInviteMessage}
               setShowCompanionsModal={setShowCompanionsModal}
               refreshFriends={() => loadFriends(user.id)}
+              unreadCount={unreadByType.friends}
             />
             
             {/* Town Chats - Shows favorited + active towns */}
             <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
               <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-                <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Town Chats</h2>
-                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
-                  Active conversations & favorites
-                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Town Chats</h2>
+                    <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
+                      Active conversations & favorites
+                    </p>
+                  </div>
+                  {unreadByType.towns > 0 && (
+                    <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-semibold rounded-full">
+                      {unreadByType.towns}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {activeTownChats.length === 0 ? (
