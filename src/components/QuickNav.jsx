@@ -45,6 +45,19 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
     console.log('[QuickNav] Initial useEffect - calling loadUserAndInvites and loadUnreadMessages');
     loadUserAndInvites();
     loadUnreadMessages();
+
+    // Listen for auth state changes - fetch counts when user logs in
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[QuickNav] Auth state changed:', event, 'session exists:', !!session);
+      if (event === 'SIGNED_IN' && session) {
+        loadUserAndInvites();
+        loadUnreadMessages();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleClose = () => {

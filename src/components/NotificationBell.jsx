@@ -20,6 +20,18 @@ export default function NotificationBell() {
   useEffect(() => {
     console.log('[NotificationBell] Initial useEffect - calling loadUser');
     loadUser();
+
+    // Listen for auth state changes - fetch counts when user logs in
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[NotificationBell] Auth state changed:', event, 'session exists:', !!session);
+      if (event === 'SIGNED_IN' && session) {
+        loadUser();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
