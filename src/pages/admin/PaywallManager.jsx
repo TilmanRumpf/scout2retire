@@ -564,7 +564,7 @@ const PaywallManager = () => {
                                   value={priceValue}
                                   onChange={(e) => setPriceValue(e.target.value)}
                                   placeholder="0"
-                                  className={`w-20 px-2 py-1 ${uiConfig.colors.input} border-2 border-scout-accent-500 rounded text-center`}
+                                  className={`w-20 px-2 py-1 ${uiConfig.colors.input} border-2 border-scout-accent-500 rounded text-right`}
                                   autoFocus
                                 />
                               </div>
@@ -580,7 +580,7 @@ const PaywallManager = () => {
                               onClick={() => startEditPrice(tier.id, 'monthly', tier.price_monthly)}
                               className="group flex items-center gap-2 hover:text-scout-accent-500"
                             >
-                              <span className={`font-semibold ${uiConfig.colors.heading}`}>
+                              <span className={`font-semibold ${uiConfig.colors.heading} text-right min-w-[80px]`}>
                                 {tier.price_monthly ? `$${tier.price_monthly}` : 'Free'}
                               </span>
                               <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -598,7 +598,7 @@ const PaywallManager = () => {
                                   value={priceValue}
                                   onChange={(e) => setPriceValue(e.target.value)}
                                   placeholder="0"
-                                  className={`w-20 px-2 py-1 ${uiConfig.colors.input} border-2 border-scout-accent-500 rounded text-center`}
+                                  className={`w-20 px-2 py-1 ${uiConfig.colors.input} border-2 border-scout-accent-500 rounded text-right`}
                                   autoFocus
                                 />
                               </div>
@@ -614,16 +614,16 @@ const PaywallManager = () => {
                               onClick={() => startEditPrice(tier.id, 'yearly', tier.price_yearly)}
                               className="group flex items-center gap-2 hover:text-scout-accent-500"
                             >
-                              <span className={`font-semibold ${uiConfig.colors.heading}`}>
+                              <span className={`font-semibold ${uiConfig.colors.heading} text-right min-w-[80px]`}>
                                 {tier.price_yearly ? `$${tier.price_yearly}` : 'Free'}
                               </span>
                               <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </button>
                           )}
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between items-center">
                           <span className={uiConfig.colors.body}>Users:</span>
-                          <span className={`font-semibold ${uiConfig.colors.heading}`}>
+                          <span className={`font-semibold ${uiConfig.colors.heading} text-right min-w-[80px]`}>
                             {userStats.find(s => s.code === tier.category_code)?.count || 0}
                           </span>
                         </div>
