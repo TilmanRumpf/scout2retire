@@ -142,14 +142,15 @@ const PaywallManager = () => {
         .select(`
           id,
           email,
-          display_name,
+          full_name,
+          username,
           category_id,
           admin_role,
           is_admin,
           created_at,
           category:user_categories(category_code, display_name, color_hex)
         `)
-        .or(`email.ilike.%${query}%,display_name.ilike.%${query}%`)
+        .or(`email.ilike.%${query}%,full_name.ilike.%${query}%,username.ilike.%${query}%`)
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -855,7 +856,7 @@ const PaywallManager = () => {
                       <div className="flex-1">
                         <div className="flex items-center gap-3">
                           <h3 className={`font-semibold ${uiConfig.colors.heading}`}>
-                            {user.display_name || 'No name'}
+                            {user.full_name || user.username || 'No name'}
                           </h3>
                           {user.category && (
                             <span
