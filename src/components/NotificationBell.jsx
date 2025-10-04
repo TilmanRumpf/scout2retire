@@ -11,30 +11,47 @@ export default function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
+  console.log('[NotificationBell] Component mounted/rendered. unreadMessagesCount:', unreadMessagesCount);
+
   useEffect(() => {
+    console.log('[NotificationBell] Initial useEffect - calling loadUser');
     loadUser();
   }, []);
 
   useEffect(() => {
+    console.log('[NotificationBell] User changed effect. user:', user?.id);
     if (user) {
+      console.log('[NotificationBell] User exists, fetching notifications and messages');
       fetchNotifications();
+      fetchUnreadMessages();
       const unsubscribe = setupRealtimeSubscription();
-      return unsubscribe;
+      const unsubscribeMessages = setupMessageSubscription();
+      return () => {
+        unsubscribe();
+        unsubscribeMessages();
+      };
+    } else {
+      console.log('[NotificationBell] No user yet');
     }
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
-  // fetchNotifications and setupRealtimeSubscription use user internally
+  // fetchNotifications, fetchUnreadMessages, setupRealtimeSubscription, and setupMessageSubscription use user internally
 
   const loadUser = async () => {
+    console.log('[NotificationBell] loadUser called');
     try {
       const { user: currentUser } = await getCurrentUser();
+      console.log('[NotificationBell] getCurrentUser result:', currentUser?.id);
       if (currentUser) {
         setUser(currentUser);
+      } else {
+        console.log('[NotificationBell] No currentUser returned from getCurrentUser');
       }
     } catch (error) {
-      console.error('Error loading user:', error);
+      console.error('[NotificationBell] Error loading user:', error);
     }
   };
 
@@ -74,6 +91,111 @@ export default function NotificationBell() {
     }
   };
 
+  const fetchUnreadMessages = async () => {
+    console.log('[NotificationBell] fetchUnreadMessages called');
+    try {
+      // CRITICAL: Verify we have an authenticated session FIRST
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('[NotificationBell] Session check:', session ? 'Session exists' : 'NO SESSION');
+
+      if (!session) {
+        console.log('[NotificationBell] No session - skipping unread message fetch');
+        setUnreadMessagesCount(0);
+        return;
+      }
+
+      // Get all threads
+      const { data: threads, error: threadsError } = await supabase
+        .from('chat_threads')
+        .select('id');
+
+      console.log('[NotificationBell] Threads query result:', { threads, threadsError });
+
+      if (threadsError) {
+        console.error('[NotificationBell] Error fetching threads:', threadsError);
+        return;
+      }
+
+      if (!threads || threads.length === 0) {
+        console.log('[NotificationBell] No threads found, setting count to 0');
+        setUnreadMessagesCount(0);
+        return;
+      }
+
+      // Get unread counts for all threads
+      const threadIds = threads.map(t => t.id);
+      console.log('[NotificationBell] Thread IDs:', threadIds);
+
+      const { data: counts, error: countsError } = await supabase.rpc('get_unread_counts', {
+        p_thread_ids: threadIds
+      });
+
+      console.log('[NotificationBell] RPC get_unread_counts result:', { counts, countsError });
+
+      if (countsError) {
+        console.error('[NotificationBell] Error fetching unread counts:', countsError);
+        return;
+      }
+
+      // Sum all unread counts
+      const totalUnread = counts?.reduce((sum, item) => sum + (item.unread_count || 0), 0) || 0;
+      console.log('[NotificationBell] Total unread count calculated:', totalUnread);
+      setUnreadMessagesCount(totalUnread);
+    } catch (err) {
+      console.error('[NotificationBell] Error loading unread messages:', err);
+    }
+  };
+
+  const setupMessageSubscription = () => {
+    const subscription = supabase
+      .channel('all_messages_notification_bell')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages'
+        },
+        (payload) => {
+          // Only increment if message is from someone else
+          if (payload.new.user_id !== user.id) {
+            setUnreadMessagesCount(prev => prev + 1);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'thread_read_status',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          // Refresh unread counts when user marks threads as read
+          fetchUnreadMessages();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'thread_read_status',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          // Refresh unread counts when user marks threads as read
+          fetchUnreadMessages();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  };
+
   const setupRealtimeSubscription = () => {
     const subscription = supabase
       .channel('notifications')
@@ -89,7 +211,7 @@ export default function NotificationBell() {
           // Add new notification to the list
           setNotifications(prev => [payload.new, ...prev]);
           setUnreadCount(prev => prev + 1);
-          
+
           // Show toast for new notification
           toast(payload.new.title, {
             icon: getNotificationIcon(payload.new.type),
@@ -185,13 +307,12 @@ export default function NotificationBell() {
         aria-label="Notifications"
       >
         <Bell size={24} />
-        
-        {/* Notification Badge */}
-        {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium">
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
+
+        {/* Notification Badge - Combined count of notifications + messages */}
+        {/* DEBUG: ALWAYS show badge with counts for debugging */}
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium">
+          {unreadCount + unreadMessagesCount}
+        </span>
       </button>
 
       {/* Dropdown */}

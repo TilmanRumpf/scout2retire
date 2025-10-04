@@ -14,12 +14,15 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
-  
+
   // Auto-expand admin section when on admin pages
   const isOnAdminPage = location.pathname.startsWith('/admin');
   const [adminExpanded, setAdminExpanded] = useState(isOnAdminPage);
   const scrollContainerRef = useRef(null);
+
+  console.log('[QuickNav] Component rendered. unreadMessagesCount:', unreadMessagesCount, 'pendingInvitesCount:', pendingInvitesCount);
 
   // Note: Removed location change effect as it was causing immediate closes
 
@@ -37,9 +40,11 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
     }
   }, [isOnAdminPage]);
 
-  // Load user and check for pending invitations
+  // Load user and check for pending invitations and unread messages
   useEffect(() => {
+    console.log('[QuickNav] Initial useEffect - calling loadUserAndInvites and loadUnreadMessages');
     loadUserAndInvites();
+    loadUnreadMessages();
   }, []);
 
   const handleClose = () => {
@@ -50,24 +55,127 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
     }
   };
 
+  const loadUnreadMessages = async () => {
+    console.log('[QuickNav] loadUnreadMessages called');
+    try {
+      // CRITICAL: Verify we have an authenticated session FIRST
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('[QuickNav] Session check:', session ? 'Session exists' : 'NO SESSION');
+
+      if (!session) {
+        console.log('[QuickNav] No session - skipping unread message fetch');
+        setUnreadMessagesCount(0);
+        return;
+      }
+
+      const { user: currentUser } = await getCurrentUser();
+      console.log('[QuickNav] Current user:', currentUser?.id);
+      if (!currentUser) {
+        console.log('[QuickNav] No user found, returning');
+        return;
+      }
+
+      // Get all threads
+      const { data: threads, error: threadsError } = await supabase
+        .from('chat_threads')
+        .select('id');
+
+      console.log('[QuickNav] Threads query result:', { threads, threadsError });
+
+      if (threadsError || !threads || threads.length === 0) {
+        console.log('[QuickNav] No threads found or error, setting count to 0');
+        setUnreadMessagesCount(0);
+        return;
+      }
+
+      // Get unread counts for all threads
+      const threadIds = threads.map(t => t.id);
+      console.log('[QuickNav] Thread IDs:', threadIds);
+
+      const { data: counts, error: countsError } = await supabase.rpc('get_unread_counts', {
+        p_thread_ids: threadIds
+      });
+
+      console.log('[QuickNav] RPC get_unread_counts result:', { counts, countsError });
+
+      if (!countsError && counts) {
+        // Sum all unread counts
+        const totalUnread = counts.reduce((sum, item) => sum + (item.unread_count || 0), 0);
+        console.log('[QuickNav] Total unread count calculated:', totalUnread);
+        setUnreadMessagesCount(totalUnread);
+      }
+
+      // Set up real-time subscription for new messages
+      const messageSubscription = supabase
+        .channel('quicknav_messages')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'chat_messages'
+          },
+          (payload) => {
+            // Only increment if message is from someone else
+            if (payload.new.user_id !== currentUser.id) {
+              setUnreadMessagesCount(prev => prev + 1);
+            }
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'thread_read_status',
+            filter: `user_id=eq.${currentUser.id}`
+          },
+          () => {
+            // Refresh unread counts when user marks threads as read
+            loadUnreadMessages();
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'thread_read_status',
+            filter: `user_id=eq.${currentUser.id}`
+          },
+          () => {
+            // Refresh unread counts when user marks threads as read
+            loadUnreadMessages();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        messageSubscription.unsubscribe();
+      };
+    } catch (error) {
+      console.error('Error loading unread messages:', error);
+    }
+  };
+
   const loadUserAndInvites = async () => {
     try {
       const { user: currentUser, profile } = await getCurrentUser();
       if (currentUser && profile) {
         // Check if user is admin from database profile
         setIsAdmin(profile.is_admin === true);
-        
+
         // Check for pending invitations
         const { data, error } = await supabase
           .from('user_connections')
           .select('id')
           .eq('friend_id', currentUser.id)
           .eq('status', 'pending');
-        
+
         if (!error && data) {
           setPendingInvitesCount(data.length);
         }
-        
+
         // Set up real-time subscription for new invitations
         const subscription = supabase
           .channel('user_invitations')
@@ -82,14 +190,14 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
             async (payload) => {
               if (payload.new.status === 'pending') {
                 setPendingInvitesCount(prev => prev + 1);
-                
+
                 // Get sender's name for the toast
                 try {
-                  const { data: senderData } = await supabase.rpc('get_user_by_id', { 
-                    user_id: payload.new.user_id 
+                  const { data: senderData } = await supabase.rpc('get_user_by_id', {
+                    user_id: payload.new.user_id
                   });
                   const senderName = senderData?.[0]?.full_name || senderData?.[0]?.email || 'Someone';
-                  
+
                   // Show toast notification
                   toast((t) => (
                     <div className="flex items-center justify-between">
@@ -133,7 +241,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
             }
           )
           .subscribe();
-        
+
         return () => {
           subscription.unsubscribe();
         };
@@ -288,10 +396,10 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
                 >
                   {/* FIXED 09JUN25: REMOVED span with mr-3 and item.icon - NO MORE ICONS! */}
                   <span className={`font-medium ${item.special ? 'text-scout-orange-500' : ''}`}>{item.label}</span>
-                  {/* Show badge for pending invitations on Chat */}
-                  {item.path === '/chat' && pendingInvitesCount > 0 && (
+                  {/* DEBUG: ALWAYS show badge for Chat to see counts */}
+                  {item.path === '/chat' && (
                     <span className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold ${uiConfig.colors.btnDanger} rounded-full`}>
-                      {pendingInvitesCount}
+                      {pendingInvitesCount + unreadMessagesCount}
                     </span>
                   )}
                 </Link>
