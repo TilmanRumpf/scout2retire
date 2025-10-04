@@ -19,6 +19,8 @@ const PaywallManager = () => {
   const [userStats, setUserStats] = useState([]);
   const [editingLimit, setEditingLimit] = useState(null);
   const [editValue, setEditValue] = useState('');
+  const [editingPrice, setEditingPrice] = useState(null); // { tierId, field: 'monthly' | 'yearly' }
+  const [priceValue, setPriceValue] = useState('');
 
   // Check admin access
   useEffect(() => {
@@ -152,6 +154,44 @@ const PaywallManager = () => {
     } else {
       toast.success('Tier visibility updated');
       await loadTiers();
+    }
+  };
+
+  const startEditPrice = (tierId, field, currentValue) => {
+    setEditingPrice({ tierId, field });
+    setPriceValue(currentValue === null ? '' : currentValue.toString());
+  };
+
+  const cancelPriceEdit = () => {
+    setEditingPrice(null);
+    setPriceValue('');
+  };
+
+  const savePrice = async () => {
+    if (!editingPrice) return;
+
+    const newValue = priceValue === '' ? null : parseFloat(priceValue);
+
+    // Validate price is a positive number
+    if (newValue !== null && (isNaN(newValue) || newValue < 0)) {
+      toast.error('Price must be a positive number or empty for free');
+      return;
+    }
+
+    const updateField = editingPrice.field === 'monthly' ? 'price_monthly' : 'price_yearly';
+
+    const { error } = await supabase
+      .from('user_categories')
+      .update({ [updateField]: newValue })
+      .eq('id', editingPrice.tierId);
+
+    if (error) {
+      toast.error('Failed to update price');
+    } else {
+      toast.success('Price updated successfully');
+      await loadTiers();
+      setEditingPrice(null);
+      setPriceValue('');
     }
   };
 
@@ -387,17 +427,73 @@ const PaywallManager = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className={uiConfig.colors.body}>Monthly Price:</span>
-                    <span className={`font-semibold ${uiConfig.colors.heading}`}>
-                      {tier.price_monthly ? `$${tier.price_monthly}` : 'Free'}
-                    </span>
+                    {editingPrice?.tierId === tier.id && editingPrice?.field === 'monthly' ? (
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center">
+                          <span className="text-sm mr-1">$</span>
+                          <input
+                            type="text"
+                            value={priceValue}
+                            onChange={(e) => setPriceValue(e.target.value)}
+                            placeholder="0"
+                            className={`w-20 px-2 py-1 ${uiConfig.colors.input} border-2 border-scout-accent-500 rounded text-center`}
+                            autoFocus
+                          />
+                        </div>
+                        <button onClick={savePrice} className="text-green-500 hover:text-green-600">
+                          <Check className="w-4 h-4" />
+                        </button>
+                        <button onClick={cancelPriceEdit} className="text-red-500 hover:text-red-600">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => startEditPrice(tier.id, 'monthly', tier.price_monthly)}
+                        className="group flex items-center gap-2 hover:text-scout-accent-500"
+                      >
+                        <span className={`font-semibold ${uiConfig.colors.heading}`}>
+                          {tier.price_monthly ? `$${tier.price_monthly}` : 'Free'}
+                        </span>
+                        <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </button>
+                    )}
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className={uiConfig.colors.body}>Yearly Price:</span>
-                    <span className={`font-semibold ${uiConfig.colors.heading}`}>
-                      {tier.price_yearly ? `$${tier.price_yearly}` : 'Free'}
-                    </span>
+                    {editingPrice?.tierId === tier.id && editingPrice?.field === 'yearly' ? (
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center">
+                          <span className="text-sm mr-1">$</span>
+                          <input
+                            type="text"
+                            value={priceValue}
+                            onChange={(e) => setPriceValue(e.target.value)}
+                            placeholder="0"
+                            className={`w-20 px-2 py-1 ${uiConfig.colors.input} border-2 border-scout-accent-500 rounded text-center`}
+                            autoFocus
+                          />
+                        </div>
+                        <button onClick={savePrice} className="text-green-500 hover:text-green-600">
+                          <Check className="w-4 h-4" />
+                        </button>
+                        <button onClick={cancelPriceEdit} className="text-red-500 hover:text-red-600">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => startEditPrice(tier.id, 'yearly', tier.price_yearly)}
+                        className="group flex items-center gap-2 hover:text-scout-accent-500"
+                      >
+                        <span className={`font-semibold ${uiConfig.colors.heading}`}>
+                          {tier.price_yearly ? `$${tier.price_yearly}` : 'Free'}
+                        </span>
+                        <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </button>
+                    )}
                   </div>
                   <div className="flex justify-between">
                     <span className={uiConfig.colors.body}>Users:</span>
