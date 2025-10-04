@@ -409,10 +409,10 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
                 >
                   {/* FIXED 09JUN25: REMOVED span with mr-3 and item.icon - NO MORE ICONS! */}
                   <span className={`font-medium ${item.special ? 'text-scout-orange-500' : ''}`}>{item.label}</span>
-                  {/* DEBUG: ALWAYS show badge for Chat to see counts */}
-                  {item.path === '/chat' && (
+                  {/* Show badge for pending invitations + unread messages on Chat */}
+                  {item.path === '/chat' && (pendingInvitesCount + unreadMessagesCount) > 0 && (
                     <span className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold ${uiConfig.colors.btnDanger} rounded-full`}>
-                      {pendingInvitesCount + unreadMessagesCount}
+                      {(pendingInvitesCount + unreadMessagesCount) > 9 ? '9+' : (pendingInvitesCount + unreadMessagesCount)}
                     </span>
                   )}
                 </Link>
