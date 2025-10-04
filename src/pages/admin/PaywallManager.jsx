@@ -193,7 +193,7 @@ const PaywallManager = () => {
 
   return (
     <div className="min-h-screen">
-      <UnifiedHeader />
+      <UnifiedHeader title="Paywall Manager" />
       <HeaderSpacer />
 
       <div className="max-w-7xl mx-auto p-6">
