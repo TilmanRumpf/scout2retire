@@ -80,6 +80,8 @@ When debugging "field is undefined" or "value not showing":
 □ Never create files in root (except configs)
 □ If stuck 2+ hours, you're solving wrong problem
 □ Check for duplicate definitions: `grep -n "const sameName"`
+□ **File >24hrs old? Assume outdated - Query live data, never trust stale docs**
+□ **Data counts (how many X?)** → Query database NOW, don't code from docs
 
 # 📊 DATABASE CATEGORICAL VALUES - UPDATED SEPTEMBER 30, 2025
 **CRITICAL**: Database uses rich descriptive values - don't force regression to generic terms!
