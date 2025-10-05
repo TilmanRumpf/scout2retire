@@ -137,6 +137,8 @@ const PaywallManager = () => {
 
     setLoadingUsers(true);
     try {
+      console.log('🔍 Searching users with query:', query);
+
       const { data, error } = await supabase
         .from('users')
         .select(`
@@ -154,11 +156,18 @@ const PaywallManager = () => {
         .order('created_at', { ascending: false })
         .limit(20);
 
-      if (!error) {
+      console.log('📊 Search results:', { data, error });
+
+      if (error) {
+        console.error('❌ Search error:', error);
+        toast.error(`Search failed: ${error.message}`);
+      } else {
+        console.log(`✅ Found ${data?.length || 0} users`);
         setUsers(data || []);
       }
     } catch (err) {
-      console.error('Error searching users:', err);
+      console.error('💥 Exception during search:', err);
+      toast.error('Search failed');
     } finally {
       setLoadingUsers(false);
     }
@@ -840,7 +849,16 @@ const PaywallManager = () => {
                 }}
                 placeholder="Type at least 2 characters..."
                 className={`w-full px-4 py-2 ${uiConfig.colors.input} border ${uiConfig.colors.border} rounded-lg`}
+                autoComplete="off"
+                list="user-suggestions"
               />
+              <datalist id="user-suggestions">
+                {users.map((user) => (
+                  <option key={user.id} value={user.email}>
+                    {user.full_name || user.username}
+                  </option>
+                ))}
+              </datalist>
             </div>
 
             {/* User Results */}
