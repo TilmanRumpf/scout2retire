@@ -1,0 +1,11 @@
+{
+  "description": "Test update - Change Lunenburg image URL",
+  "table": "towns",
+  "operation": "update",
+  "filters": {
+    "name": "Lunenburg"
+  },
+  "updates": {
+    "image_url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4"
+  }
+}

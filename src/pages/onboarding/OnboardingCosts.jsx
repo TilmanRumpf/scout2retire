@@ -336,23 +336,23 @@ export default function OnboardingCosts() {
   }, [navigate]);
 
   const handleBudgetSelect = (field, value) => {
-    // For housing_preference, keep single select
-    if (field === 'housing_preference') {
+    // For single-select fields (housing_preference, monthly_healthcare_budget), keep single select
+    if (field === 'housing_preference' || field === 'monthly_healthcare_budget') {
       setFormData(prev => ({
         ...prev,
         [field]: value
       }));
       return;
     }
-    
+
     // For budget fields, toggle multi-select
     setFormData(prev => {
       const currentValues = Array.isArray(prev[field]) ? prev[field] : [];
       const isSelected = currentValues.includes(value);
-      
+
       return {
         ...prev,
-        [field]: isSelected 
+        [field]: isSelected
           ? currentValues.filter(v => v !== value)
           : [...currentValues, value]
       };

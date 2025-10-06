@@ -49,6 +49,14 @@ export default function OptimizedImage({
     };
   }, [lazy, rootMargin]);
 
+  // Update imageSrc when src prop changes (for non-lazy images)
+  useEffect(() => {
+    if (!lazy && src) {
+      setImageSrc(src);
+      setImageLoadError(false); // Reset error state when src changes
+    }
+  }, [src, lazy]);
+
   // Load image when it's in viewport (for lazy loading)
   useEffect(() => {
     if (!lazy) return;

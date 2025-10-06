@@ -1,0 +1,11 @@
+{
+  "description": "BAN ugly truck parking lot image from Nova Scotia heritage inspiration - replace with better image",
+  "table": "regional_inspirations",
+  "operation": "update",
+  "filters": {
+    "title": "Nova Scotia heritage?"
+  },
+  "updates": {
+    "image_url": "https://images.pexels.com/photos/247506/pexels-photo-247506.jpeg?auto=compress&cs=tinysrgb&w=800"
+  }
+}

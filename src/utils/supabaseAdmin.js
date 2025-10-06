@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 
+// CRITICAL: Delete any stale shell env vars before loading .env
+delete process.env.SUPABASE_SERVICE_ROLE_KEY
+
 dotenv.config()
 
 const url = process.env.VITE_SUPABASE_URL

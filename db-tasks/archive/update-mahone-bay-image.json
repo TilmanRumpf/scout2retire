@@ -1,0 +1,11 @@
+{
+  "description": "Update Mahone Bay image URL",
+  "table": "towns",
+  "operation": "update",
+  "filters": {
+    "name": "Mahone Bay"
+  },
+  "updates": {
+    "image_url_1": "https://axlruvvsjepsulcbqlho.supabase.co/storage/v1/object/public/town-images/ca-mahone-bay-1599px-The_Churches_of_Mahone_Bay,_NS.jpg"
+  }
+}

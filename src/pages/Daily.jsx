@@ -190,7 +190,7 @@ export default function Daily() {
           
           // Fetch towns for today's inspiration
           if (inspiration) {
-            fetchInspirationTowns(inspiration.region);
+            fetchInspirationTowns(inspiration.sampleTowns);
           }
           
           // Fetch daily retirement tip
@@ -288,22 +288,50 @@ export default function Daily() {
     }
   };
 
-  // Fetch towns for today's inspiration region
-  const fetchInspirationTowns = async (regionName) => {
+  // Fetch towns for today's inspiration using sample town names
+  const fetchInspirationTowns = async (sampleTownNames = []) => {
+    try {
+      if (!sampleTownNames || sampleTownNames.length === 0) {
+        setInspirationTowns([]);
+        return;
+      }
+
+      // Fetch towns by name
+      const { data, error } = await supabase
+        .from('towns')
+        .select('*')
+        .in('name', sampleTownNames)
+        .not('image_url_1', 'is', null);
+
+      if (error) {
+        console.error('Error fetching inspiration towns:', error);
+        setInspirationTowns([]);
+        return;
+      }
+
+      setInspirationTowns(data || []);
+    } catch (err) {
+      console.error('Error in fetchInspirationTowns:', err);
+      setInspirationTowns([]);
+    }
+  };
+
+  // DEPRECATED - Old region-based fetching (keeping commented for reference)
+  /* const fetchInspirationTownsOld = async (regionName, inspirationTitle = '') => {
     try {
       let query = supabase.from('towns').select('*');
-      
+
       // Filter for towns with photos (quality control) - CRITICAL SAFETY FEATURE
       query = query
         .not('image_url_1', 'is', null)
         .not('image_url_1', 'eq', '')
         .not('image_url_1', 'ilike', 'NULL')  // Filter out 'NULL' string
         .not('image_url_1', 'eq', 'null');   // Filter out lowercase 'null' string
-      
+
       // Define regions and their countries
       const regionDefinitions = {
         'Europe': [
-          'Portugal', 'Spain', 'France', 'Italy', 'Greece', 
+          'Portugal', 'Spain', 'France', 'Italy', 'Greece',
           'Netherlands', 'Germany', 'Belgium', 'Austria', 'Switzerland',
           'Czech Republic', 'Poland', 'Croatia', 'Malta', 'Cyprus',
           'Slovenia', 'Latvia', 'Estonia', 'Lithuania', 'Hungary',
@@ -374,15 +402,25 @@ export default function Daily() {
           setInspirationTowns(validTowns);
         } else {
           // For single countries or small results, just use what we have
+          let townList = data;
+
+          // SPECIAL FILTER: If title mentions "island", only show island towns
+          if (inspirationTitle && inspirationTitle.toLowerCase().includes('island')) {
+            townList = data.filter(town => {
+              const regions = town.regions || [];
+              return regions.includes('Island');
+            });
+          }
+
           // SAFETY: Filter out any towns without valid images
-          const validTowns = filterTownsWithImagesDebug(data, 'Daily Inspiration - Country');
+          const validTowns = filterTownsWithImagesDebug(townList, 'Daily Inspiration - Country');
           setInspirationTowns(validTowns);
         }
       }
     } catch (err) {
       console.error("Error fetching inspiration towns:", err);
     }
-  };
+  }; */
 
   const handleSaveJournal = async () => {
     if (!journalEntry.trim()) {
@@ -465,7 +503,9 @@ export default function Daily() {
         description: inspiration.description,
         region: inspiration.region_name,
         image: inspiration.image_url,
-        link: inspiration.link
+        link: inspiration.link,
+        subtitle: inspiration.subtitle,
+        sampleTowns: inspiration.typical_town_examples || []
       };
       
     } catch (err) {
@@ -677,12 +717,14 @@ export default function Daily() {
                           description: inspiration.description,
                           region: inspiration.region_name,
                           image: inspiration.image_url,
-                          link: inspiration.link
+                          link: inspiration.link,
+                          subtitle: inspiration.subtitle,
+                          sampleTowns: inspiration.typical_town_examples || []
                         };
                       } while (newInspiration.region === todaysInspiration.region && data.length > 1);
-                      
+
                       setTodaysInspiration(newInspiration);
-                      fetchInspirationTowns(newInspiration.region);
+                      fetchInspirationTowns(newInspiration.sampleTowns);
                     } catch (err) {
                       console.error("Error getting new inspiration:", err);
                     }
@@ -698,6 +740,7 @@ export default function Daily() {
                   {/* Clean image without text overlay */}
                   <Link to={todaysInspiration.link} className="block relative h-48">
                     <OptimizedImage
+                      key={todaysInspiration.image}
                       src={todaysInspiration.image}
                       alt={todaysInspiration.region}
                       className="w-full h-full object-cover"
@@ -712,7 +755,9 @@ export default function Daily() {
                     <div className="flex justify-between items-baseline mb-3">
                       <div>
                         <h3 className={`text-lg md:text-xl font-semibold ${uiConfig.colors.heading} mb-1`}>{todaysInspiration.title}</h3>
-                        <p className={`text-sm ${uiConfig.colors.body}`}>{todaysInspiration.region}</p>
+                        <p className={`text-sm ${uiConfig.colors.body}`}>
+                          {todaysInspiration.subtitle || todaysInspiration.region}
+                        </p>
                       </div>
                     </div>
                     
@@ -727,7 +772,7 @@ export default function Daily() {
                     {inspirationTowns.length > 0 && (
                       <>
                         <div className={`text-sm ${uiConfig.colors.body} mb-2`}>
-                          Towns in {todaysInspiration.region}:
+                          {todaysInspiration.subtitle || `Towns in ${todaysInspiration.region}`}:
                         </div>
                         
                         {/* Towns list */}

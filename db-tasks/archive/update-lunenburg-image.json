@@ -1,0 +1,11 @@
+{
+  "description": "Update Lunenburg image URL",
+  "table": "towns",
+  "operation": "update",
+  "filters": {
+    "name": "Lunenburg"
+  },
+  "updates": {
+    "image_url_1": "https://axlruvvsjepsulcbqlho.supabase.co/storage/v1/object/public/town-images/ca-lunenburg-waterfront-2000x1500.jpg"
+  }
+}

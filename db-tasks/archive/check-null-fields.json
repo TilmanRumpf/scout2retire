@@ -1,0 +1,11 @@
+{
+  "description": "Check for any remaining null fields in towns",
+  "table": "towns",
+  "operation": "update",
+  "filters": {
+    "regional_connectivity": null
+  },
+  "updates": {
+    "regional_connectivity": ["highways", "regional_bus", "domestic_flights"]
+  }
+}

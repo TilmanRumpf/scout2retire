@@ -445,7 +445,7 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
                       : `${uiConfig.colors.hoverBg}`
                   }`}
                 >
-                  <span className="font-medium text-scout-orange-500">Paywall Manager</span>
+                  <span className="font-medium text-scout-orange-500">User Manager & Paywall</span>
                 </Link>
               </>
             )}

@@ -10,6 +10,10 @@
  *   npm run db:run db-tasks/task-name.json -- --apply  # Execute changes
  */
 
+// CRITICAL: Delete any stale shell env vars before loading .env
+// (Claude Code or terminal may have old cached keys)
+delete process.env.SUPABASE_SERVICE_ROLE_KEY
+
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -79,7 +83,8 @@ async function handleUpdate() {
 
   // Step 1: Preview affected rows
   console.log('Step 1: Querying affected rows...')
-  let query = supabaseAdmin.from(table).select('id, name')
+  // Select all columns to handle different table schemas
+  let query = supabaseAdmin.from(table).select('*')
 
   // Apply filters (null-safe)
   Object.entries(filters).forEach(([key, value]) => {
@@ -98,7 +103,8 @@ async function handleUpdate() {
 
   console.log(`   Found ${preview?.length || 0} rows to update`)
   if (preview?.length > 0) {
-    console.log('   Sample:', preview.slice(0, 3).map(r => `${r.name} (${r.id})`).join(', '))
+    const displayName = (r) => r.name || r.title || r.id
+    console.log('   Sample:', preview.slice(0, 3).map(r => `${displayName(r)} (${r.id})`).join(', '))
   }
 
   if (!preview || preview.length === 0) {
@@ -116,7 +122,7 @@ async function handleUpdate() {
 
   // Step 2: Execute update
   console.log('\nStep 2: Executing update...')
-  let updateQuery = supabaseAdmin.from(table)
+  let updateQuery = supabaseAdmin.from(table).update(updates)
 
   Object.entries(filters).forEach(([key, value]) => {
     if (value === null || value === 'null') {
@@ -128,7 +134,7 @@ async function handleUpdate() {
     }
   })
 
-  const { data: result, error } = await updateQuery.update(updates).select('id')
+  const { data: result, error } = await updateQuery.select('id')
 
   if (error) throw error
 

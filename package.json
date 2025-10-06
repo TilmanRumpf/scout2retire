@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "db:run": "node db-runner.js",
+    "db:test": "node test-supabase-key.js",
     "verify:styles": "node scripts/verify-styles.js",
     "verify:navigation": "node scripts/verify-navigation.js",
     "verify:all": "npm run lint && npm run verify:styles && npm run verify:navigation",
