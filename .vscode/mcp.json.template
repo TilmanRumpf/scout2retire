@@ -1,0 +1,28 @@
+{
+	"servers": {
+		"Ref": {
+			"type": "http",
+			"url": "https://api.ref.tools/mcp?apiKey=YOUR_REF_API_KEY_HERE"
+		},
+		"supabase": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"-y",
+				"@supabase/mcp-server-supabase@latest",
+				"--project-ref=axlruvvsjepsulcbqlho"
+			],
+			"env": {
+				"SUPABASE_ACCESS_TOKEN": "YOUR_SUPABASE_ACCESS_TOKEN_HERE"
+			}
+		}
+	},
+	"inputs": [
+		{
+			"type": "promptString",
+			"id": "supabase-access-token",
+			"description": "Supabase personal access token",
+			"password": true
+		}
+	]
+}

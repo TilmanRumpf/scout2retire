@@ -151,3 +151,8 @@ test-results/
 chrome/
 .pw-user/
 .pw-user-a/
+.vscode/mcp.json
+
+# MCP Server configurations (contain tokens)
+.vscode/mcp.json
+.claude/mcp.json

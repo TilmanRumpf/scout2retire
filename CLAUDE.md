@@ -431,18 +431,25 @@ const mockResults = { fake: 'data' };
 // ✅ ALWAYS
 const response = await fetch('/api/claude-search');
 // Use real APIs: Claude Haiku, SerpAPI, or show "Open Google Search"
-2. SUPABASE - USE MCP SERVER FIRST, SDK SECOND
-javascript// BEST: Use Supabase MCP Server in Agent Mode
-"Use Supabase MCP to execute: SELECT * FROM towns WHERE photos IS NOT NULL"
-"Use Supabase MCP to update towns set country = 'USA' where id = 123"
+2. SUPABASE - DECISION TREE (READ docs/SUPABASE_TOOL_DECISION_TREE.md)
+javascript// ⚠️ CRITICAL: NEVER USE SELECT * WITH TOWNS TABLE (170 columns!)
+// ALWAYS use column sets from townColumnSets.js
 
-// FALLBACK: If MCP not available, use SDK
-const { data, error } = await supabase
+// ✅ MCP for quick investigation
+"Use Supabase MCP to execute: SELECT id, name, country, overall_score FROM towns LIMIT 10"
+
+// ✅ SDK for frontend code
+import { COLUMN_SETS } from './utils/townColumnSets'
+const { data } = await supabase
   .from('towns')
-  .update({ country: 'United States' })
-  .eq('id', townId);
+  .select(COLUMN_SETS.basic)
+  .eq('id', townId)
 
-// NEVER: Say "please run this SQL manually"
+// ✅ Helper script for batch operations
+// Modify claude-db-helper.js, then: node claude-db-helper.js
+
+// ❌ NEVER: SELECT * FROM towns
+// ❌ NEVER: Say "please run this SQL manually"
 3. CLAUDE API - USE HAIKU
 javascriptmodel: 'claude-3-haiku-20240307' // $0.25/million tokens
 // NOT Opus ($15/M), NOT Sonnet ($3/M)
@@ -595,3 +602,86 @@ SELECT COUNT(*) FROM towns WHERE geographic_features_actual IS NOT NULL;
 ```
 
 Remember: You have Playwright MCP for UI and Supabase MCP for data. USE THEM BOTH. No excuses. Stop being a dead turtle.
+
+---
+
+# 🎯 SUPABASE PROFESSIONAL WORKFLOW (Added 2025-10-06)
+
+## 📖 MANDATORY READING BEFORE SUPABASE WORK
+1. **docs/SUPABASE_TOOL_DECISION_TREE.md** - Which tool to use when
+2. **src/utils/townColumnSets.js** - Predefined column sets (NEVER SELECT *)
+
+## 🚨 CRITICAL RULES FOR 170-COLUMN TABLE
+
+### NEVER:
+- ❌ `SELECT * FROM towns` (170 columns = massive payload)
+- ❌ Suggest "run this SQL in Supabase dashboard"
+- ❌ Query without checking which columns are needed
+- ❌ Use service role key in frontend code
+- ❌ Make assumptions about data - VERIFY FIRST
+
+### ALWAYS:
+- ✅ Use `COLUMN_SETS` from `townColumnSets.js`
+- ✅ Verify data with MCP/Playwright before debugging
+- ✅ Use `.toLowerCase()` on string comparisons
+- ✅ Check for duplicate variable definitions
+- ✅ Write programmatic fixes, not manual steps
+- ✅ Read SUPABASE_TOOL_DECISION_TREE.md first
+
+## 🎯 QUICK TOOL SELECTION
+
+**Need to query data for investigation?**
+→ Use Supabase MCP: `SELECT id, name, country FROM towns WHERE name ILIKE '%valencia%' LIMIT 5`
+
+**Need to fix data programmatically?**
+→ Modify `claude-db-helper.js`, run with `node claude-db-helper.js`
+
+**Need to query in frontend code?**
+→ Use SDK with column sets:
+```javascript
+import { supabase } from './utils/supabaseClient'
+import { COLUMN_SETS } from './utils/townColumnSets'
+
+const { data } = await supabase
+  .from('towns')
+  .select(COLUMN_SETS.searchResults) // NOT SELECT *
+  .limit(20)
+```
+
+## 🔍 DEBUGGING PROTOCOL
+
+Before debugging Supabase issues:
+1. **Use Playwright** to see what UI shows
+2. **Use Supabase MCP** to query actual database
+3. **Compare** and identify discrepancy
+4. **Fix root cause** (not symptoms)
+5. **Verify fix** with both tools
+
+## 📊 PERFORMANCE GUIDELINES
+
+- **Minimal** (4 cols): id, name, country, state_code
+- **Basic** (8 cols): + overall_score, photos, description, region
+- **Full Detail** (~50 cols): Use ONLY for single town view
+- **Custom**: `combineColumnSets('basic', 'climate')`
+
+## 🎓 LESSONS FROM DISASTERS
+
+### 40-Hour Case Sensitivity Bug
+**Wrong**: Assumed database issue, rebuilt scoring
+**Right**: Used MCP to SELECT values, found "Coastal" ≠ "coastal"
+
+### 3-Hour Duplicate Definition
+**Wrong**: Blamed RLS/permissions
+**Right**: Checked for `grep -n "const selectColumns"` found 2 definitions
+
+### Admin Scoring Wrong Table
+**Wrong**: Modified `users` table
+**Right**: Used MCP to inspect schema, found data in `user_preferences`
+
+---
+
+**Last Updated**: 2025-10-06
+**Critical Files**:
+- docs/SUPABASE_TOOL_DECISION_TREE.md
+- src/utils/townColumnSets.js
+- claude-db-helper.js
