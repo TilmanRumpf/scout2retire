@@ -1,0 +1,13 @@
+{
+  "description": "Backfill mobility and connectivity fields for towns with null values",
+  "table": "towns",
+  "operation": "update",
+  "filters": {
+    "local_mobility_options": null
+  },
+  "updates": {
+    "local_mobility_options": ["walking", "cycling", "public_transit", "ride_sharing", "car_rental"],
+    "regional_connectivity": ["highways", "regional_bus", "domestic_flights"],
+    "international_access": ["international_airport", "connecting_flights"]
+  }
+}
