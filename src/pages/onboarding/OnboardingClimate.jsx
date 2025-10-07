@@ -124,11 +124,11 @@ export default function OnboardingClimate() {
     });
   };
 
-  const handleSkip = async () => {
+  const handleSaveAndExit = async () => {
     setLoading(true);
     await autoSave();
     setLoading(false);
-    navigate('/onboarding/culture');
+    navigate('/onboarding/complete');
   };
 
   const handleSubmit = async (e) => {
@@ -367,7 +367,11 @@ export default function OnboardingClimate() {
                   ).join(', ')}</div>
                 )}
                 {formData.seasonal_preference && formData.seasonal_preference !== 'Optional' && (
-                  <div><span className={`${uiConfig.font.weight.medium}`}>Seasonal:</span> {formData.seasonal_preference.replace(/_/g, ' ')}</div>
+                  <div><span className={`${uiConfig.font.weight.medium}`}>Seasonal:</span> {{
+                    'all_seasons': 'All Seasons',
+                    'summer_focused': 'Warm Seasons',
+                    'winter_focused': 'Cool Seasons'
+                  }[formData.seasonal_preference] || formData.seasonal_preference}</div>
                 )}
               </div>
             </div>
@@ -395,10 +399,10 @@ export default function OnboardingClimate() {
               <div className="flex-1 flex justify-center">
                 <button
                   type="button"
-                  onClick={handleSkip}
+                  onClick={handleSaveAndExit}
                   className={uiConfig.components.buttonSecondary}
                 >
-                  Skip
+                  Save & Exit
                 </button>
               </div>
               <button

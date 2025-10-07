@@ -354,11 +354,11 @@ export default function OnboardingCulture() {
     }));
   };
 
-  const handleSkip = async () => {
+  const handleSaveAndExit = async () => {
     setLoading(true);
     await autoSave();
     setLoading(false);
-    navigate('/onboarding/hobbies');
+    navigate('/onboarding/complete');
   };
 
   const handleSubmit = async (e) => {
@@ -650,10 +650,10 @@ export default function OnboardingCulture() {
               <div className="flex-1 flex justify-center">
                 <button
                   type="button"
-                  onClick={handleSkip}
+                  onClick={handleSaveAndExit}
                   className={uiConfig.components.buttonSecondary}
                 >
-                  Skip
+                  Save & Exit
                 </button>
               </div>
               <button

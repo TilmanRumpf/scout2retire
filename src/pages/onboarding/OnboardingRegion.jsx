@@ -579,17 +579,17 @@ const OnboardingRegion = () => {
   };
 
   const handleFeatureToggle = (feature) => {
-    setSelectedFeatures(prev => 
-      prev.includes(feature) 
-        ? prev.filter(f => f !== feature)
+    setSelectedFeatures(prev =>
+      prev.some(f => f.toLowerCase() === feature.toLowerCase())
+        ? prev.filter(f => f.toLowerCase() !== feature.toLowerCase())
         : [...prev, feature]
     );
   };
 
   const handleVegetationToggle = (vegetation) => {
-    setSelectedVegetation(prev => 
-      prev.includes(vegetation) 
-        ? prev.filter(v => v !== vegetation)
+    setSelectedVegetation(prev =>
+      prev.some(v => v.toLowerCase() === vegetation.toLowerCase())
+        ? prev.filter(v => v.toLowerCase() !== vegetation.toLowerCase())
         : [...prev, vegetation]
     );
   };
@@ -601,11 +601,11 @@ const OnboardingRegion = () => {
     }));
   };
 
-  const handleSkip = async () => {
+  const handleSaveAndExit = async () => {
     setLoading(true);
     await autoSave();
     setLoading(false);
-    navigate('/onboarding/climate');
+    navigate('/onboarding/complete');
   };
 
   // Function to get the hierarchical display value
@@ -1010,7 +1010,7 @@ const OnboardingRegion = () => {
                 <SelectionCard
                   key={feature}
                   title={feature.charAt(0).toUpperCase() + feature.slice(1)}
-                  isSelected={selectedFeatures.includes(feature)}
+                  isSelected={selectedFeatures.some(f => f.toLowerCase() === feature.toLowerCase())}
                   onClick={() => handleFeatureToggle(feature)}
                   size="small"
                 />
@@ -1028,7 +1028,7 @@ const OnboardingRegion = () => {
                 <SelectionCard
                   key={vegetation}
                   title={vegetation}
-                  isSelected={selectedVegetation.includes(vegetation)}
+                  isSelected={selectedVegetation.some(v => v.toLowerCase() === vegetation.toLowerCase())}
                   onClick={() => handleVegetationToggle(vegetation)}
                   size="small"
                 />
@@ -1147,10 +1147,10 @@ const OnboardingRegion = () => {
               <div className="flex-1 flex justify-center">
                 <button
                   type="button"
-                  onClick={handleSkip}
+                  onClick={handleSaveAndExit}
                   className={uiConfig.components.buttonSecondary}
                 >
-                  Skip
+                  Save & Exit
                 </button>
               </div>
               <button

@@ -1,6 +1,6 @@
 // Option 3: Icon-based Compact Design
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, X, Globe, DollarSign, Crosshair, SortDesc, Search } from 'lucide-react';
+import { ChevronDown, X, Globe, DollarSign, Crosshair, SortDesc, Search, MessageCircle, Users, MapPin } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { uiConfig } from '../styles/uiConfig';
 
@@ -20,17 +20,30 @@ export default function FilterBarV3({
   filterCount,
   clearFilters,
   resultsCount,
-  variant = 'default', // 'default' or 'integrated'
+  variant = 'default', // 'default', 'integrated', 'chat'
   searchTerm,
   setSearchTerm,
   availableTowns = [],
-  setSelectedTown
+  setSelectedTown,
+
+  // Chat-specific props
+  chatSearchTerm,
+  setChatSearchTerm,
+  filterChatType,
+  setFilterChatType,
+  messages = [],
+  threads = [],
+  activeTownChats = [],
+  friends = [],
+  unreadByType = {},
+  availableCountries = []
 }) {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [searchInput, setSearchInput] = useState(searchTerm || '');
   const [isTyping, setIsTyping] = useState(false);
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const typingTimeoutRef = useRef(null);
   
   // Refs for each button to calculate positions
@@ -210,9 +223,279 @@ export default function FilterBarV3({
     );
   };
 
+  // Chat search results
+  const getChatSearchResults = () => {
+    if (!chatSearchTerm || chatSearchTerm.length < 2) return [];
+
+    const search = chatSearchTerm.toLowerCase();
+    const results = [];
+
+    // Search through messages
+    messages.forEach(msg => {
+      if (msg.message?.toLowerCase().includes(search)) {
+        results.push({
+          type: 'message',
+          text: msg.message,
+          user: msg.user_name,
+          date: msg.created_at,
+          id: msg.id
+        });
+      }
+    });
+
+    // Search through town names and countries
+    activeTownChats.forEach(tc => {
+      if (tc.towns.name.toLowerCase().includes(search) ||
+          tc.towns.country.toLowerCase().includes(search)) {
+        results.push({
+          type: 'town',
+          name: tc.towns.name,
+          country: tc.towns.country,
+          id: tc.town_id
+        });
+      }
+    });
+
+    // Search through friend names
+    friends.forEach(friend => {
+      if (friend.friend?.username?.toLowerCase().includes(search)) {
+        results.push({
+          type: 'friend',
+          name: friend.friend.username,
+          id: friend.friend_id
+        });
+      }
+    });
+
+    // Search through thread topics
+    threads.forEach(thread => {
+      if (thread.topic?.toLowerCase().includes(search)) {
+        results.push({
+          type: 'topic',
+          topic: thread.topic,
+          id: thread.id
+        });
+      }
+    });
+
+    return results.slice(0, 10); // Limit to 10 results
+  };
+
   // Main render for both variants
   return (
     <>
+      {/* Chat variant - search + filter buttons */}
+      {variant === 'chat' ? (
+        <div className="flex items-center gap-2 w-full overflow-x-auto">
+          {/* Chat Search Input */}
+          <div className="relative flex-shrink-0 min-w-[200px] max-w-[300px]" ref={searchInputRef}>
+            <div className="relative">
+              <Search size={16} className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.subtitle}`} />
+              <input
+                type="text"
+                value={chatSearchTerm || ''}
+                onChange={(e) => {
+                  setChatSearchTerm(e.target.value);
+                  setShowSearchDropdown(e.target.value.length >= 2);
+                }}
+                onFocus={() => {
+                  if (chatSearchTerm && chatSearchTerm.length >= 2) {
+                    setShowSearchDropdown(true);
+                  }
+                }}
+                placeholder="Search messages, towns, friends..."
+                className={`w-full h-9 pl-9 pr-8 text-sm ${uiConfig.colors.input} rounded-lg border ${uiConfig.colors.border} focus:outline-none focus:border-scout-accent-400 transition-all`}
+              />
+              {chatSearchTerm && (
+                <button
+                  onClick={() => {
+                    setChatSearchTerm('');
+                    setShowSearchDropdown(false);
+                  }}
+                  className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.subtitle} hover:${uiConfig.colors.body} p-0.5`}
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
+            {/* Chat Search Dropdown */}
+            {showSearchDropdown && chatSearchTerm && chatSearchTerm.length >= 2 && (() => {
+              const results = getChatSearchResults();
+
+              if (results.length === 0) {
+                return (
+                  <div className={`absolute z-[9999] w-full mt-2 ${uiConfig.colors.card} rounded-lg shadow-md p-4`}>
+                    <p className={`text-sm ${uiConfig.colors.hint} text-center`}>No results found</p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className={`absolute z-[9999] w-full mt-2 ${uiConfig.colors.card} rounded-lg shadow-md max-h-80 overflow-auto`}
+                     style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}>
+                  {results.map((result, idx) => (
+                    <button
+                      key={`${result.type}-${result.id || idx}`}
+                      onClick={() => {
+                        // Handle navigation based on result type
+                        setChatSearchTerm('');
+                        setShowSearchDropdown(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 hover:${uiConfig.colors.secondary} transition-colors border-b ${uiConfig.colors.borderLight} last:border-b-0 last:rounded-b-lg`}
+                    >
+                      {result.type === 'message' && (
+                        <div>
+                          <div className={`text-xs ${uiConfig.colors.subtitle} mb-1`}>
+                            💬 Message from {result.user}
+                          </div>
+                          <div className={`text-sm ${uiConfig.colors.body} line-clamp-2`}>
+                            {result.text}
+                          </div>
+                        </div>
+                      )}
+                      {result.type === 'town' && (
+                        <div>
+                          <div className={`text-xs ${uiConfig.colors.subtitle} mb-1`}>
+                            🏙️ Town Chat
+                          </div>
+                          <div className={`text-sm font-medium ${uiConfig.colors.heading}`}>
+                            {result.name}, {result.country}
+                          </div>
+                        </div>
+                      )}
+                      {result.type === 'friend' && (
+                        <div>
+                          <div className={`text-xs ${uiConfig.colors.subtitle} mb-1`}>
+                            👤 Friend
+                          </div>
+                          <div className={`text-sm font-medium ${uiConfig.colors.heading}`}>
+                            {result.name}
+                          </div>
+                        </div>
+                      )}
+                      {result.type === 'topic' && (
+                        <div>
+                          <div className={`text-xs ${uiConfig.colors.subtitle} mb-1`}>
+                            💭 Topic
+                          </div>
+                          <div className={`text-sm font-medium ${uiConfig.colors.heading}`}>
+                            {result.topic}
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Filter Buttons - Scrollable with bubble counts */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Towns Button with bubble count */}
+            <button
+              onClick={() => {
+                if (setFilterChatType) {
+                  setFilterChatType(prev => prev === 'towns' ? 'all' : 'towns');
+                }
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors whitespace-nowrap relative ${
+                filterChatType === 'towns'
+                  ? `border-2 border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-600 dark:text-scout-accent-300 font-medium`
+                  : `border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 ${uiConfig.colors.body} hover:border-scout-accent-300`
+              }`}
+            >
+              <MapPin size={14} />
+              <span>Towns</span>
+              {unreadByType.towns > 0 && (
+                <div className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-semibold rounded-full">
+                  {unreadByType.towns > 99 ? '99+' : unreadByType.towns}
+                </div>
+              )}
+            </button>
+
+            {/* Countries Button - dropdown for filtering by country */}
+            <div className="relative">
+              <button
+                onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors whitespace-nowrap ${
+                  filterCountry !== 'all'
+                    ? `border-2 border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-600 dark:text-scout-accent-300 font-medium`
+                    : `border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 ${uiConfig.colors.body} hover:border-scout-accent-300`
+                }`}
+              >
+                <Globe size={14} />
+                <span>{filterCountry !== 'all' ? filterCountry : 'Countries'}</span>
+                <ChevronDown size={12} className={`transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Country Dropdown */}
+              {showCountryDropdown && availableCountries && availableCountries.length > 0 && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowCountryDropdown(false)}
+                  />
+                  <div className={`absolute z-[9999] mt-2 w-56 ${uiConfig.colors.card} rounded-lg shadow-md max-h-60 overflow-auto`}
+                       style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}>
+                    <button
+                      onClick={() => {
+                        if (setFilterCountry) setFilterCountry('all');
+                        setShowCountryDropdown(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm hover:${uiConfig.colors.secondary} ${
+                        filterCountry === 'all' ? `${uiConfig.colors.secondary} font-medium` : ''
+                      }`}
+                    >
+                      All Countries
+                    </button>
+                    {availableCountries.map(country => (
+                      <button
+                        key={country}
+                        onClick={() => {
+                          if (setFilterCountry) setFilterCountry(country);
+                          setShowCountryDropdown(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm hover:${uiConfig.colors.secondary} ${
+                          filterCountry === country ? `${uiConfig.colors.secondary} font-medium` : ''
+                        }`}
+                      >
+                        {country}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Friends Button with bubble count */}
+            <button
+              onClick={() => {
+                if (setFilterChatType) {
+                  setFilterChatType(prev => prev === 'friends' ? 'all' : 'friends');
+                }
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors whitespace-nowrap relative ${
+                filterChatType === 'friends'
+                  ? `border-2 border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-600 dark:text-scout-accent-300 font-medium`
+                  : `border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 ${uiConfig.colors.body} hover:border-scout-accent-300`
+              }`}
+            >
+              <Users size={14} />
+              <span>Friends</span>
+              {unreadByType.friends > 0 && (
+                <div className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-semibold rounded-full">
+                  {unreadByType.friends > 99 ? '99+' : unreadByType.friends}
+                </div>
+              )}
+            </button>
+
+            {/* Overflow indicator - show when scrollable */}
+            <div className={`text-xs ${uiConfig.colors.hint} px-2`}>...</div>
+          </div>
+        </div>
+      ) : (
       <div className={`flex ${variant === 'mobile' ? 'flex-col gap-3' : 'items-center gap-2'} w-full`}>
         {/* Search Input - Clean Zillow style */}
         <div className={`relative ${variant === 'mobile' ? 'w-full' : variant === 'compact' ? 'flex-shrink min-w-[180px] max-w-[240px]' : 'flex-shrink-0 w-64'}`} ref={searchInputRef}>
@@ -547,8 +830,19 @@ export default function FilterBarV3({
         </div>
         ) : null}
       </div>
-      
-      {/* Portal Dropdowns */}
+      )}
+
+      {/* Click outside to close chat search dropdown */}
+      {variant === 'chat' && showSearchDropdown && (
+        <div
+          className="fixed inset-0 z-[40]"
+          onClick={() => setShowSearchDropdown(false)}
+        />
+      )}
+
+      {/* Portal Dropdowns - only for non-chat variants */}
+      {variant !== 'chat' && (
+      <>
       {openDropdown === 'sort' && (
         <PortalDropdown>
           {['match', 'name', 'cost-low', 'cost-high', 'region', 'climate', 'culture', 'hobbies', 'administration', 'budget'].map(option => (
@@ -698,10 +992,12 @@ export default function FilterBarV3({
       
       {/* Click outside to close dropdowns */}
       {openDropdown && (
-        <div 
-          className="fixed inset-0 z-[40]" 
+        <div
+          className="fixed inset-0 z-[40]"
           onClick={() => setOpenDropdown(null)}
         />
+      )}
+      </>
       )}
     </>
   );

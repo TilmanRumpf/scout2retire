@@ -147,6 +147,13 @@ export default function OnboardingReview() {
         );
         
       case 'climate_preferences':
+        // Seasonal preference display mapping
+        const seasonalLabels = {
+          'all_seasons': 'All Seasons',
+          'summer_focused': 'Warm Seasons',
+          'winter_focused': 'Cool Seasons'
+        };
+
         return (
           <div className={`space-y-1 ${uiConfig.font.size.xs}`}>
             {data.summer_climate_preference && data.summer_climate_preference.length > 0 && (
@@ -171,6 +178,18 @@ export default function OnboardingReview() {
               <p>
                 <span className={`${uiConfig.font.weight.medium}`}>Sunshine:</span>{' '}
                 {data.sunshine.join(', ')}
+              </p>
+            )}
+            {data.precipitation && data.precipitation.length > 0 && (
+              <p>
+                <span className={`${uiConfig.font.weight.medium}`}>Precipitation:</span>{' '}
+                {data.precipitation.join(', ')}
+              </p>
+            )}
+            {data.seasonal_preference && data.seasonal_preference !== 'Optional' && (
+              <p>
+                <span className={`${uiConfig.font.weight.medium}`}>Seasonal:</span>{' '}
+                {seasonalLabels[data.seasonal_preference] || data.seasonal_preference}
               </p>
             )}
           </div>
@@ -311,27 +330,69 @@ export default function OnboardingReview() {
         );
         
       case 'costs':
+        // Tier definitions matching OnboardingCosts.jsx
+        const budgetTiers = [
+          { value: 1500, label: '$1,500-2,000' },
+          { value: 2000, label: '$2,000-3,000' },
+          { value: 3000, label: '$3,000-4,000' },
+          { value: 4000, label: '$4,000-5,000' },
+          { value: 5000, label: '$5,000+' }
+        ];
+        const rentTiers = [
+          { value: 500, label: '$500-750' },
+          { value: 750, label: '$750-1,000' },
+          { value: 1000, label: '$1,000-1,500' },
+          { value: 1500, label: '$1,500-2,000' },
+          { value: 2000, label: '$2,000+' }
+        ];
+        const homePriceTiers = [
+          { value: 100000, label: '$100k-200k' },
+          { value: 200000, label: '$200k-300k' },
+          { value: 300000, label: '$300k-400k' },
+          { value: 400000, label: '$400k-500k' },
+          { value: 500000, label: '$500k+' }
+        ];
+        const healthcareTiers = [
+          { value: 500, label: '$500-750' },
+          { value: 750, label: '$750-1,000' },
+          { value: 1000, label: '$1,000-1,250' },
+          { value: 1250, label: '$1,250-1,500' },
+          { value: 1500, label: '$1,500+' }
+        ];
+
+        // Helper to format array values
+        const formatBudgetArray = (values, tiers) => {
+          if (!values || !Array.isArray(values) || values.length === 0) {
+            return 'Not specified';
+          }
+          return values.map(v => tiers.find(t => t.value === v)?.label).filter(Boolean).join(', ') || 'Not specified';
+        };
+
+        // Helper to find closest tier (for healthcare single select)
+        const findClosestTier = (value, tiers) => {
+          if (!value) return tiers[0]?.value;
+          return tiers.reduce((prev, curr) =>
+            Math.abs(curr.value - value) < Math.abs(prev.value - value) ? curr : prev
+          ).value;
+        };
+
         return (
           <div className={`space-y-1 ${uiConfig.font.size.xs}`}>
             <p>
               <span className={`${uiConfig.font.weight.medium}`}>Monthly Budget:</span>{' '}
-              ${data.total_monthly_budget ? data.total_monthly_budget.toLocaleString() : '0'}
-              {data.total_monthly_budget >= 5000 && '+'}
+              {formatBudgetArray(data.total_monthly_budget, budgetTiers)}
             </p>
             <p>
               <span className={`${uiConfig.font.weight.medium}`}>Max Rent:</span>{' '}
-              ${data.max_monthly_rent ? data.max_monthly_rent.toLocaleString() : '0'}
-              {data.max_monthly_rent >= 2000 && '+'}
+              {formatBudgetArray(data.max_monthly_rent, rentTiers)}
             </p>
             <p>
               <span className={`${uiConfig.font.weight.medium}`}>Max Home Price:</span>{' '}
-              ${data.max_home_price ? data.max_home_price.toLocaleString() : '0'}
-              {data.max_home_price >= 500000 && '+'}
+              {formatBudgetArray(data.max_home_price, homePriceTiers)}
             </p>
             <p>
               <span className={`${uiConfig.font.weight.medium}`}>Healthcare Budget:</span>{' '}
-              ${data.monthly_healthcare_budget || '0'}/month
-              {data.monthly_healthcare_budget >= 1500 && '+'}
+              {healthcareTiers.find(t => t.value === findClosestTier(data.monthly_healthcare_budget, healthcareTiers))?.label || 'Not specified'}/month
             </p>
           </div>
         );

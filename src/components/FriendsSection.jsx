@@ -70,43 +70,54 @@ export default function FriendsSection({
           // Friend Requests Tab
           <div>
             {pendingInvitations?.received && pendingInvitations.received.length > 0 ? (
-              <div className="p-4">
+              <div className="p-2 space-y-1">
                 {pendingInvitations.received.map(invite => (
-                  <div 
-                    key={invite.id} 
-                    id={`invitation-${invite.id}`} 
-                    className="mb-4 p-3 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg border border-scout-accent-200 dark:border-scout-accent-800"
+                  <div
+                    key={invite.id}
+                    id={`invitation-${invite.id}`}
+                    className="p-3 bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg border border-scout-accent-200 dark:border-scout-accent-800"
                   >
-                    <div className="flex items-start gap-3">
-                      <div className={`w-12 h-12 bg-scout-accent-200 dark:bg-scout-accent-800 ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0`}>
-                        <span className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.medium} text-scout-accent-700 dark:text-scout-accent-300`}>
-                          {invite.user?.username?.charAt(0)?.toUpperCase() || '?'}
-                        </span>
-                      </div>
-                      <div className="flex-1">
-                        <h4 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
-                          {invite.user?.username || 'Someone'} wants to connect
-                        </h4>
-                        {invite.message && (
-                          <p className={`mt-1 text-sm ${uiConfig.colors.body} italic`}>
-                            "{invite.message}"
-                          </p>
-                        )}
-                        <div className="mt-3 flex gap-2">
-                          <button
-                            onClick={() => acceptInvitation(invite.id)}
-                            className="px-4 py-1.5 bg-scout-accent-500 text-white text-sm rounded-md hover:bg-scout-accent-600 transition-colors"
-                          >
-                            Accept
-                          </button>
-                          <button
-                            onClick={() => declineInvitation(invite.id)}
-                            className="px-4 py-1.5 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-md hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors"
-                          >
-                            Decline
-                          </button>
+                    {/* Header with avatar/emoticon and name */}
+                    <div className="flex items-center gap-3">
+                      {/* Use emoticon if available, otherwise use letter avatar */}
+                      {invite.user?.emoticon ? (
+                        <div className="text-2xl flex-shrink-0">
+                          {invite.user.emoticon}
+                        </div>
+                      ) : (
+                        <div className={`w-10 h-10 bg-scout-accent-200 dark:bg-scout-accent-800 ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0`}>
+                          <span className={`text-sm ${uiConfig.font.weight.medium} text-scout-accent-700 dark:text-scout-accent-300`}>
+                            {invite.user?.username?.charAt(0)?.toUpperCase() || '?'}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} text-sm`}>
+                          {invite.user?.username || 'Someone'}
+                        </div>
+                        <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+                          wants to connect
                         </div>
                       </div>
+                    </div>
+
+                    {/* Horizontal divider */}
+                    <div className={`my-3 border-t ${uiConfig.colors.borderLight}`}></div>
+
+                    {/* Action buttons - full width */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => acceptInvitation(invite.id)}
+                        className="flex-1 px-3 py-2 bg-scout-accent-500 text-white text-sm font-medium rounded-md hover:bg-scout-accent-600 transition-colors"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => declineInvitation(invite.id)}
+                        className="flex-1 px-3 py-2 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-md hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors"
+                      >
+                        Decline
+                      </button>
                     </div>
                   </div>
                 ))}

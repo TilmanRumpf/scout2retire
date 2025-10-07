@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Trash2, Home } from 'lucide-react';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchTowns, fetchFavorites } from '../utils/townUtils.jsx';
 import { sanitizeChatMessage, MAX_LENGTHS, displaySafeContent } from '../utils/sanitizeUtils';
@@ -9,6 +10,8 @@ import UnifiedErrorBoundary from '../components/UnifiedErrorBoundary';
 import UnifiedHeader from '../components/UnifiedHeader';
 import HeaderSpacer from '../components/HeaderSpacer';
 import FriendsSection from '../components/FriendsSection';
+import UserActionSheet from '../components/UserActionSheet';
+import ReportUserModal from '../components/ReportUserModal';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
@@ -16,6 +19,7 @@ import { uiConfig } from '../styles/uiConfig';
 export default function Chat() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [userHomeTown, setUserHomeTown] = useState(null); // User's home town for chat
   const [threads, setThreads] = useState([]);
   const [activeTown, setActiveTown] = useState(null);
   const [activeThread, setActiveThread] = useState(null);
@@ -40,7 +44,23 @@ export default function Chat() {
   
   const defaultInviteMessage = "Hi! I'm using Scout2Retire to plan my retirement. I've been exploring different retirement destinations and would love to connect with you to share ideas and experiences. Maybe we can help each other find the perfect place to enjoy our next chapter!\n\nLooking forward to chatting with you about our retirement plans.";
   const [pendingInvitations, setPendingInvitations] = useState({ sent: [], received: [] });
-  
+
+  // User action sheet state
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [mutedUsers, setMutedUsers] = useState(() => {
+    const stored = localStorage.getItem('mutedUsers');
+    return stored ? JSON.parse(stored) : [];
+  });
+  const [blockedUsers, setBlockedUsers] = useState([]);
+  const [showMutedMessages, setShowMutedMessages] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [userToReport, setUserToReport] = useState(null);
+
+  // Chat search and filter state
+  const [chatSearchTerm, setChatSearchTerm] = useState('');
+  const [filterChatType, setFilterChatType] = useState('all'); // 'all', 'towns', 'friends'
+  const [filterCountry, setFilterCountry] = useState('all');
+
   const messagesEndRef = useRef(null);
   const isInitialMount = useRef(true); // Track if this is the first mount
   const navigate = useNavigate();
@@ -62,7 +82,7 @@ export default function Chat() {
     const loadData = async () => {
       try {
         setLoading(true);
-        
+
         // Get current user
         const { user: currentUser, profile: userProfile } = await getCurrentUser();
         if (!currentUser) {
@@ -71,7 +91,36 @@ export default function Chat() {
         }
         
         setUser({ ...currentUser, ...userProfile });
-        
+
+        // Fetch user's home town if they have one
+        if (userProfile?.hometown) {
+          // Extract just the city name (before first comma)
+          const cityName = userProfile.hometown.split(',')[0].trim();
+
+          // Try exact match first with city name only
+          let { data: homeTownData, error: homeTownError } = await supabase
+            .from('towns')
+            .select('id, name, country, region')
+            .ilike('name', cityName)
+            .limit(1);
+
+          // If no exact match, try partial match
+          if (!homeTownData || homeTownData.length === 0) {
+            const result = await supabase
+              .from('towns')
+              .select('id, name, country, region')
+              .ilike('name', `%${cityName}%`)
+              .limit(1);
+
+            homeTownData = result.data;
+            homeTownError = result.error;
+          }
+
+          if (homeTownData && homeTownData.length > 0 && !homeTownError) {
+            setUserHomeTown(homeTownData[0]);
+          }
+        }
+
         // Fetch user's favorites
         const { success: favSuccess, favorites: userFavorites } = await fetchFavorites(currentUser.id);
         if (favSuccess) {
@@ -81,7 +130,10 @@ export default function Chat() {
         // Fetch user's friends and pending invitations
         await loadFriends(currentUser.id);
         await loadPendingInvitations(currentUser.id);
-        
+
+        // Load blocked users
+        await loadBlockedUsers();
+
         // Load suggested companions
         await loadSuggestedCompanions(currentUser.id);
         
@@ -366,7 +418,25 @@ export default function Chat() {
       console.error("Error loading friends:", err);
     }
   };
-  
+
+  // Load blocked users
+  const loadBlockedUsers = async () => {
+    try {
+      const { data, error } = await supabase.rpc('get_blocked_users');
+
+      if (error) {
+        console.error("Error loading blocked users:", error);
+        return;
+      }
+
+      // Extract just the IDs
+      const blockedIds = (data || []).map(item => item.blocked_user_id);
+      setBlockedUsers(blockedIds);
+    } catch (err) {
+      console.error("Error loading blocked users:", err);
+    }
+  };
+
   // Load pending invitations
   const loadPendingInvitations = async (userId) => {
     try {
@@ -671,6 +741,23 @@ export default function Chat() {
           }
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `thread_id=eq.${activeThread.id}`
+        },
+        (payload) => {
+          // Update message in UI when deleted (or any other update)
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === payload.new.id ? { ...msg, ...payload.new } : msg
+            )
+          );
+        }
+      )
       .subscribe();
       
     return () => {
@@ -915,21 +1002,114 @@ export default function Chat() {
           friend_id: targetUserId,
           status: 'pending'
         }]);
-        
+
       if (error) {
         console.error("Error sending friend request:", error);
         toast.error("Failed to send friend request");
         return;
       }
-      
+
       toast.success("Friend request sent!");
       setShowCompanionsModal(false);
-      
+
       // Reload companions to update UI
       await loadSuggestedCompanions(user.id);
     } catch (err) {
       console.error("Error sending friend request:", err);
       toast.error("Failed to send friend request");
+    }
+  };
+
+  // Handle user action from UserActionSheet
+  const handleUserAction = async (actionId, userId) => {
+    switch (actionId) {
+      case 'profile':
+        navigate(`/profile/${userId}`);
+        break;
+
+      case 'message':
+        // Find friend connection and open chat
+        const friend = friends.find(f => f.friend_id === userId);
+        if (friend) {
+          setActiveFriend(friend);
+          setChatType('friends');
+        }
+        break;
+
+      case 'addFriend':
+        await sendFriendRequest(userId);
+        break;
+
+      case 'follow':
+        // Follow functionality (to be implemented)
+        toast('Follow functionality coming soon', { icon: '🚧' });
+        break;
+
+      case 'mute':
+        toggleMute(userId);
+        break;
+
+      case 'block':
+        if (blockedUsers.includes(userId)) {
+          await unblockUser(userId);
+        } else {
+          await blockUser(userId);
+        }
+        break;
+
+      case 'report':
+        setUserToReport({ id: userId, name: selectedUser?.name || 'Unknown' });
+        setShowReportModal(true);
+        break;
+
+      // Removed: copy and share actions (disabled for now)
+
+      default:
+        console.warn('Unknown action:', actionId);
+    }
+  };
+
+  // Toggle mute for a user
+  const toggleMute = (userId) => {
+    setMutedUsers(prev => {
+      const newMuted = prev.includes(userId)
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId];
+      localStorage.setItem('mutedUsers', JSON.stringify(newMuted));
+      return newMuted;
+    });
+
+    const isMuting = !mutedUsers.includes(userId);
+    toast.success(isMuting ? 'User muted in this chat' : 'User unmuted');
+  };
+
+  // Block user
+  const blockUser = async (userId) => {
+    try {
+      const { error } = await supabase.rpc('block_user', { p_user_id: userId });
+
+      if (error) throw error;
+
+      setBlockedUsers(prev => [...prev, userId]);
+      toast.success('User blocked');
+    } catch (err) {
+      console.error('Error blocking user:', err);
+      toast.error('Failed to block user');
+    }
+  };
+
+  // Unblock user
+  const unblockUser = async (userId) => {
+    try {
+      const { error } = await supabase.rpc('unblock_user', { p_user_id: userId });
+
+      if (error) throw error;
+
+      setBlockedUsers(prev => prev.filter(id => id !== userId));
+      toast.success('User unblocked');
+    } catch (err) {
+      console.error('Error unblocking user:', err);
+      toast.error('Failed to unblock user');
     }
   };
   
@@ -1255,6 +1435,41 @@ export default function Chat() {
     }
   };
   
+  // Delete a chat message
+  const deleteMessage = async (messageId) => {
+    try {
+      const { data, error } = await supabase.rpc('delete_chat_message', {
+        p_message_id: messageId
+      });
+
+      if (error) {
+        console.error('Error deleting message:', error);
+        toast.error('Failed to delete message');
+        return;
+      }
+
+      // Check the response
+      if (!data.success) {
+        toast.error(data.error || 'Failed to delete message');
+        return;
+      }
+
+      // Optimistically update the UI
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === messageId
+            ? { ...msg, deleted_at: new Date().toISOString(), deleted_by: user.id }
+            : msg
+        )
+      );
+
+      toast.success('Message deleted');
+    } catch (err) {
+      console.error('Error deleting message:', err);
+      toast.error('Failed to delete message');
+    }
+  };
+
   // Handle sending a message
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -1376,9 +1591,9 @@ export default function Chat() {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
-      <UnifiedHeader 
+      <UnifiedHeader
         title={
-          chatType === 'town' && activeTown 
+          chatType === 'town' && activeTown
             ? `${activeTown.name} Chat`
             : chatType === 'lounge'
             ? 'Retirement Lounge'
@@ -1387,6 +1602,32 @@ export default function Chat() {
             : 'Retirement Lounge'
         }
         maxWidth="max-w-7xl"
+        showFilters={true}
+        filterProps={{
+          // Chat search - searches messages, topics, countries, town names
+          chatSearchTerm,
+          setChatSearchTerm,
+
+          // Filter buttons
+          filterChatType,
+          setFilterChatType,
+          filterCountry,
+          setFilterCountry,
+
+          // Available data for search
+          messages: messages,
+          threads: threads,
+          activeTownChats: activeTownChats,
+          friends: friends,
+
+          // Unread counts for bubble badges
+          unreadByType,
+
+          // Available countries for dropdown
+          availableCountries: [...new Set(activeTownChats.map(tc => tc.towns.country).filter(Boolean))].sort(),
+
+          variant: 'chat' // Tell FilterBarV3 to use chat mode
+        }}
       />
 
       <UnifiedErrorBoundary variant="compact"
@@ -1401,12 +1642,13 @@ export default function Chat() {
           <div className="h-full max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row gap-6">
           {/* Sidebar */}
           <div className="w-full md:w-64 space-y-4">
-            {/* Chat navigation */}
+            {/* Chat navigation - Only show lounge if filter is 'all' or not filtering */}
+            {(filterChatType === 'all' || filterChatType === 'lounge') && (
             <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
               <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
                 <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Chat Options</h2>
               </div>
-              
+
               <div className="p-2 space-y-1">
                 <button
                   onClick={switchToLoungeChat}
@@ -1435,8 +1677,10 @@ export default function Chat() {
                 </button>
               </div>
             </div>
-            
-            {/* Friends & Connections */}
+            )}
+
+            {/* Friends & Connections - Only show if filter is 'all' or 'friends' */}
+            {(filterChatType === 'all' || filterChatType === 'friends') && (
             <FriendsSection
               friendsTabActive={friendsTabActive}
               setFriendsTabActive={setFriendsTabActive}
@@ -1455,8 +1699,10 @@ export default function Chat() {
               unreadCount={unreadByType.friends}
               unreadByFriend={unreadByFriend}
             />
-            
-            {/* Town Chats - Shows favorited + active towns */}
+            )}
+
+            {/* Town Chats - Shows favorited + active towns - Only show if filter is 'all' or 'towns' */}
+            {(filterChatType === 'all' || filterChatType === 'towns') && (
             <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
               <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
                 <div className="flex items-center justify-between">
@@ -1474,7 +1720,7 @@ export default function Chat() {
                 </div>
               </div>
 
-              {activeTownChats.length === 0 ? (
+              {activeTownChats.length === 0 && !userHomeTown ? (
                 <div className={`p-4 text-center ${uiConfig.colors.hint} ${uiConfig.font.size.sm}`}>
                   <p>No active town chats yet.</p>
                   <a href="/discover" className={`${uiConfig.colors.accent} hover:underline mt-2 inline-block`}>
@@ -1483,7 +1729,52 @@ export default function Chat() {
                 </div>
               ) : (
                 <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 28rem)' }}>
-                  {activeTownChats.map(townChat => (
+                  {/* Home Town - Always first */}
+                  {userHomeTown && (
+                    filterCountry === 'all' || userHomeTown.country === filterCountry
+                  ) && (
+                    <button
+                      key={`home-${userHomeTown.id}`}
+                      onClick={() => switchToTownChat(userHomeTown)}
+                      className={`w-full text-left p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${
+                        chatType === 'town' && activeTown?.id === userHomeTown.id
+                          ? uiConfig.colors.badge
+                          : ''
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.lg} flex items-center justify-center ${uiConfig.colors.accent} mr-3`}>
+                          <Home className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1">
+                          <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} flex items-center gap-2`}>
+                            {userHomeTown.name}
+                            <span className={`text-xs ${uiConfig.colors.hint} font-normal`}>
+                              (Home)
+                            </span>
+                          </div>
+                          <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+                            {userHomeTown.country}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  )}
+
+                  {/* Other Town Chats */}
+                  {activeTownChats
+                    .filter(townChat => {
+                      // Don't show home town twice
+                      if (userHomeTown && townChat.town_id === userHomeTown.id) {
+                        return false;
+                      }
+                      // Filter by country if selected
+                      if (filterCountry !== 'all' && townChat.towns.country !== filterCountry) {
+                        return false;
+                      }
+                      return true;
+                    })
+                    .map(townChat => (
                     <button
                       key={townChat.town_id}
                       onClick={() => switchToTownChat(townChat.towns)}
@@ -1529,50 +1820,121 @@ export default function Chat() {
                 </div>
               )}
             </div>
+            )}
           </div>
-          
+
           {/* Chat area - Full height on all screens */}
           <div className={`flex-1 min-w-0 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden flex flex-col`} style={{ height: 'calc(100vh - 10rem)' }}>
             {/* Chat messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.length === 0 ? (
-                <div className="h-full flex items-center justify-center">
-                  <div className={`text-center ${uiConfig.colors.hint}`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                    <p>No messages yet. Start the conversation!</p>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {messages.map((message, index) => (
+              {(() => {
+                // Filter messages based on muted/blocked users
+                const filteredMessages = showMutedMessages
+                  ? messages
+                  : messages.filter(msg =>
+                      !mutedUsers.includes(msg.user_id) &&
+                      !blockedUsers.includes(msg.user_id)
+                    );
+
+                const hiddenCount = messages.length - filteredMessages.length;
+
+                return (
+                  <>
+                    {hiddenCount > 0 && (
+                      <button
+                        onClick={() => setShowMutedMessages(!showMutedMessages)}
+                        className={`w-full text-center ${uiConfig.font.size.xs} ${uiConfig.colors.hint} hover:${uiConfig.colors.body} py-2 ${uiConfig.layout.radius.lg} hover:${uiConfig.colors.secondary} transition-colors`}
+                      >
+                        {showMutedMessages
+                          ? `Hide ${hiddenCount} muted/blocked message${hiddenCount > 1 ? 's' : ''}`
+                          : `Show ${hiddenCount} muted/blocked message${hiddenCount > 1 ? 's' : ''}`
+                        }
+                      </button>
+                    )}
+
+                    {filteredMessages.length === 0 ? (
+                      <div className="h-full flex items-center justify-center">
+                        <div className={`text-center ${uiConfig.colors.hint}`}>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          </svg>
+                          <p>No messages yet. Start the conversation!</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {filteredMessages.map((message, index) => {
+                          // Check if message is deleted
+                          const isDeleted = message.deleted_at;
+
+                          // Check if message can be deleted (own message, within time window)
+                          const now = new Date();
+                          const messageTime = new Date(message.created_at);
+                          const messageAge = (now - messageTime) / 1000 / 60; // in minutes
+                          const DELETE_WINDOW_MINUTES = 15; // 15 minutes
+
+                          const isOwnMessage = message.user_id === user?.id;
+                          const withinTimeWindow = messageAge < DELETE_WINDOW_MINUTES;
+                          const canDelete = isOwnMessage && !isDeleted && withinTimeWindow;
+
+                          // Debug log for ALL own messages
+                          if (isOwnMessage) {
+                            console.log('🗑️ DELETE CHECK:', {
+                              message_id: message.id,
+                              message_preview: message.message?.substring(0, 30),
+                              age_minutes: messageAge.toFixed(1),
+                              age_hours: (messageAge / 60).toFixed(1),
+                              created_at: message.created_at,
+                              isDeleted,
+                              canDelete,
+                              user_id_match: message.user_id === user?.id,
+                              message_user_id: message.user_id,
+                              current_user_id: user?.id
+                            });
+                          }
+
+                          return (
                     <div
                       key={message.id}
                       className={`flex ${message.user_id === user?.id ? 'justify-end' : 'justify-start'} ${
                         index > 0 && messages[index - 1].user_id === message.user_id ? 'mt-1' : 'mt-4'
                       }`}
                     >
-                      <div 
-                        className={`max-w-[75%] ${uiConfig.layout.radius.lg} px-4 py-2 ${
-                          message.user_id === user?.id
+                      <div
+                        className={`max-w-[75%] ${uiConfig.layout.radius.lg} px-4 py-2 relative group ${
+                          isDeleted
+                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 italic'
+                            : message.user_id === user?.id
                             ? 'bg-scout-accent-600 text-white'
                             : message.user_id === 'scout'
                             ? 'bg-blue-600 text-white'
                             : `${uiConfig.colors.input} ${uiConfig.colors.body}`
                         }`}
                       >
-                        {(index === 0 || messages[index - 1].user_id !== message.user_id) && (
+                        {(index === 0 || messages[index - 1].user_id !== message.user_id) && !isDeleted && (
                           <div className="flex items-center text-xs mb-1">
-                            <span className={`${uiConfig.font.weight.medium} ${
-                              message.user_id === user?.id
-                                ? 'text-scout-accent-100'
-                                : message.user_id === 'scout'
-                                ? 'text-blue-100'
-                                : uiConfig.colors.hint
-                            }`}>
-                              {message.user_id === user?.id ? 'You' : message.user_name}
-                            </span>
+                            {message.user_id === user?.id ? (
+                              <span className={`${uiConfig.font.weight.medium} text-scout-accent-100`}>
+                                You
+                              </span>
+                            ) : message.user_id === 'scout' ? (
+                              <span className={`${uiConfig.font.weight.medium} text-blue-100`}>
+                                {message.user_name}
+                              </span>
+                            ) : (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedUser({
+                                    id: message.user_id,
+                                    name: message.user_name
+                                  });
+                                }}
+                                className={`${uiConfig.font.weight.medium} ${uiConfig.colors.hint} hover:underline cursor-pointer active:opacity-70 transition-opacity`}
+                              >
+                                {message.user_name}
+                              </button>
+                            )}
                             <span className={`ml-2 ${
                               message.user_id === user?.id
                                 ? 'text-scout-accent-200'
@@ -1584,10 +1946,36 @@ export default function Chat() {
                             </span>
                           </div>
                         )}
-                        <div className="whitespace-pre-wrap">{displaySafeContent(message.message)}</div>
+
+                        {/* Message content or deleted placeholder */}
+                        {isDeleted ? (
+                          <div className="flex items-center gap-2">
+                            <Trash2 className="w-3 h-3" />
+                            <span>This message was deleted</span>
+                          </div>
+                        ) : (
+                          <div className="whitespace-pre-wrap">{displaySafeContent(message.message)}</div>
+                        )}
+
+                        {/* Delete button (visible on mobile, hover-only on desktop) */}
+                        {canDelete && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (window.confirm('Delete this message? This cannot be undone.')) {
+                                deleteMessage(message.id);
+                              }
+                            }}
+                            className="absolute -top-2 -right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full md:opacity-0 md:group-hover:opacity-100 transition-opacity shadow-lg z-10"
+                            title="Delete message"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
                       </div>
                     </div>
-                  ))}
+                          );
+                        })}
                   {isTyping && chatType === 'scout' && (
                     <div className="flex justify-start">
                       <div className={`bg-blue-600 text-white ${uiConfig.layout.radius.lg} px-4 py-2`}>
@@ -1601,8 +1989,11 @@ export default function Chat() {
                       </div>
                     </div>
                   )}
-                </>
-              )}
+                      </>
+                    )}
+                  </>
+                );
+              })()}
               <div ref={messagesEndRef} />
             </div>
             
@@ -1647,9 +2038,37 @@ export default function Chat() {
         </div>
         </main>
       </UnifiedErrorBoundary>
-      
+
       {/* Bottom navigation for mobile */}
-      
+
+      {/* User Action Sheet */}
+      {selectedUser && (
+        <UserActionSheet
+          userId={selectedUser.id}
+          username={selectedUser.name}
+          currentUserId={user?.id}
+          isFriend={friends.some(f => f.friend_id === selectedUser.id)}
+          isBlocked={blockedUsers.includes(selectedUser.id)}
+          isMuted={mutedUsers.includes(selectedUser.id)}
+          isOpen={!!selectedUser}
+          onClose={() => setSelectedUser(null)}
+          onAction={handleUserAction}
+        />
+      )}
+
+      {/* Report User Modal */}
+      {userToReport && (
+        <ReportUserModal
+          userId={userToReport.id}
+          username={userToReport.name}
+          isOpen={showReportModal}
+          onClose={() => {
+            setShowReportModal(false);
+            setUserToReport(null);
+          }}
+        />
+      )}
+
       {/* Invite Modal */}
       {showInviteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

@@ -376,11 +376,11 @@ export default function OnboardingCosts() {
     }));
   };
 
-  const handleSkip = async () => {
+  const handleSaveAndExit = async () => {
     setLoading(true);
     await autoSave();
     setLoading(false);
-    navigate('/onboarding/review');
+    navigate('/onboarding/complete');
   };
 
   const handleSubmit = async (e) => {
@@ -615,7 +615,7 @@ export default function OnboardingCosts() {
                   ? formData.max_home_price.map(v => homePriceTiers.find(t => t.value === v)?.label).filter(Boolean).join(', ')
                   : 'Not selected'}</div>
               )}
-              <div>• Healthcare: {healthcareTiers.find(t => t.value === formData.monthly_healthcare_budget)?.label || 'Not selected'}</div>
+              <div>• Healthcare: {healthcareTiers.find(t => t.value === findClosestTier(formData.monthly_healthcare_budget, healthcareTiers))?.label || 'Not selected'}</div>
               {(formData.mobility.local?.length > 0 || formData.mobility.regional?.length > 0 || formData.mobility.international?.length > 0) && (
                 <div>• Transportation: {[
                   formData.mobility.local?.length > 0 && `Local: ${formData.mobility.local.map(id => localMobilityOptions.find(o => o.id === id)?.label).filter(Boolean).join(', ')}`,
@@ -655,10 +655,10 @@ export default function OnboardingCosts() {
             <div className="flex-1 flex justify-center">
               <button
                 type="button"
-                onClick={handleSkip}
+                onClick={handleSaveAndExit}
                 className={uiConfig.components.buttonSecondary}
               >
-                Skip
+                Save & Exit
               </button>
             </div>
             <button

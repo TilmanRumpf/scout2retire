@@ -860,11 +860,11 @@ export default function OnboardingHobbies() {
     setTempHobbiesSelections([]);
   };
 
-  const handleSkip = async () => {
+  const handleSaveAndExit = async () => {
     setLoading(true);
     await autoSave();
     setLoading(false);
-    navigate('/onboarding/administration');
+    navigate('/onboarding/complete');
   };
 
   const handleSubmit = async (e) => {
@@ -1170,10 +1170,10 @@ export default function OnboardingHobbies() {
               <div className="flex-1 flex justify-center">
                 <button
                   type="button"
-                  onClick={handleSkip}
+                  onClick={handleSaveAndExit}
                   className={uiConfig.components.buttonSecondary}
                 >
-                  Skip
+                  Save & Exit
                 </button>
               </div>
               <button
