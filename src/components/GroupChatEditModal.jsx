@@ -551,10 +551,10 @@ export default function GroupChatEditModal({
         .from('group-images')
         .getPublicUrl(fileName);
 
-      // Update chat_threads with new image_url
+      // Update chat_threads with new group_image_url
       const { error: updateError } = await supabase
         .from('chat_threads')
-        .update({ image_url: publicUrl })
+        .update({ group_image_url: publicUrl })
         .eq('id', groupChat.id);
 
       if (updateError) throw updateError;
@@ -835,10 +835,10 @@ export default function GroupChatEditModal({
             </label>
 
             {/* Current Image Preview */}
-            {groupChat?.image_url && (
+            {groupChat?.group_image_url && (
               <div className="mb-3">
                 <img
-                  src={groupChat.image_url}
+                  src={groupChat.group_image_url}
                   alt="Group"
                   className={`w-32 h-32 object-cover rounded-lg border ${uiConfig.colors.border}`}
                 />

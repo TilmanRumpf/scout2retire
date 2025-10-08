@@ -703,7 +703,7 @@ export default function GroupChatModal({
                     return;
                   }
                   setGroupType('sensitive_private');
-                  setInvitePolicy('creator_only');
+                  setInvitePolicy('admins_only');
                   setIsPublic(false);
                 }}
                 disabled={!canCreateSensitive}
