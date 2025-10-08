@@ -294,6 +294,10 @@ const router = createBrowserRouter([
         element: <ProtectedRoute><AuthenticatedLayout><Chat /></AuthenticatedLayout></ProtectedRoute>
       },
       {
+        path: "chat/group/:groupId",
+        element: <ProtectedRoute><AuthenticatedLayout><Chat /></AuthenticatedLayout></ProtectedRoute>
+      },
+      {
         path: "profile",
         element: <ProtectedRoute><AuthenticatedLayout><ProfileUnified /></AuthenticatedLayout></ProtectedRoute>
       },

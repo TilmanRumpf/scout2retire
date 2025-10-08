@@ -14,6 +14,7 @@ export default function FriendsSection({
   setInviteMessage,
   defaultInviteMessage,
   setShowCompanionsModal,
+  setShowGroupChatModal,
   refreshFriends,
   unreadCount = 0,
   unreadByFriend = {} // Map of friend_id → unread_count
@@ -157,6 +158,20 @@ export default function FriendsSection({
                   </button>
                   <button
                     onClick={() => {
+                      console.log("Create Group Chat button clicked", { setShowGroupChatModal });
+                      if (setShowGroupChatModal) {
+                        console.log("Calling setShowGroupChatModal(true)");
+                        setShowGroupChatModal(true);
+                      } else {
+                        console.error("setShowGroupChatModal is undefined!");
+                      }
+                    }}
+                    className={`w-full ${uiConfig.colors.btnSecondary} py-2 rounded-md text-sm font-medium`}
+                  >
+                    Create Group Chat
+                  </button>
+                  <button
+                    onClick={() => {
                       console.log("Find Companions button clicked (with friends)");
                       setShowCompanionsModal(true);
                     }}
@@ -198,9 +213,6 @@ export default function FriendsSection({
                             Click to chat
                           </div>
                         </div>
-                        {chatType === 'friends' && activeFriend?.friend_id === friend.friend_id && (
-                          <div className="w-2 h-2 bg-scout-accent-500 rounded-full"></div>
-                        )}
                       </div>
                     </button>
                   );
@@ -222,7 +234,16 @@ export default function FriendsSection({
                   >
                     Invite a Friend
                   </button>
-                  <button 
+                  <button
+                    onClick={() => {
+                      console.log("Create Group Chat button clicked (no friends)");
+                      if (setShowGroupChatModal) setShowGroupChatModal(true);
+                    }}
+                    className={`block w-full ${uiConfig.colors.btnSecondary} py-2 rounded-md text-sm font-medium`}
+                  >
+                    Create Group Chat
+                  </button>
+                  <button
                     onClick={() => {
                       console.log("Find Companions button clicked (no friends)");
                       setShowCompanionsModal(true);

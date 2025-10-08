@@ -94,43 +94,24 @@ export default function NotificationBell() {
         return;
       }
 
-      // Get read status for all threads
+      // Use the database function to get unread counts (more efficient)
       const threadIds = threads.map(t => t.id);
-      const { data: readStatuses, error: readError } = await supabase
-        .from('thread_read_status')
-        .select('thread_id, last_read_message_id')
-        .eq('user_id', user.id)
-        .in('thread_id', threadIds);
+      const { data: unreadCounts, error: unreadError } = await supabase
+        .rpc('get_unread_counts', { p_thread_ids: threadIds });
 
-      console.log('[NotificationBell] Read statuses:', readStatuses);
-
-      if (readError) {
-        console.error('[NotificationBell] Error fetching read statuses:', readError);
+      if (unreadError) {
+        console.error('[NotificationBell] Error fetching unread counts:', unreadError);
+        setUnreadMessagesCount(0);
+        return;
       }
 
-      // Create map of read statuses
-      const readStatusMap = {};
-      (readStatuses || []).forEach(status => {
-        readStatusMap[status.thread_id] = status.last_read_message_id;
-      });
+      console.log('[NotificationBell] Unread counts:', unreadCounts);
 
-      // Count unread messages for each thread
+      // Sum up all unread counts
       let totalUnread = 0;
-      for (const thread of threads) {
-        const lastReadId = readStatusMap[thread.id];
-
-        // Count messages in this thread that are unread
-        const { count, error: countError } = await supabase
-          .from('chat_messages')
-          .select('id', { count: 'exact', head: true })
-          .eq('thread_id', thread.id)
-          .neq('user_id', user.id) // Don't count own messages
-          .gte('id', lastReadId ? lastReadId + 1 : 0); // Count from after last read, or all if no read status
-
-        if (!countError && count) {
-          totalUnread += count;
-        }
-      }
+      (unreadCounts || []).forEach(item => {
+        totalUnread += item.unread_count || 0;
+      });
 
       console.log('[NotificationBell] Total unread count calculated:', totalUnread);
       setUnreadMessagesCount(totalUnread);
@@ -140,6 +121,8 @@ export default function NotificationBell() {
   };
 
   const setupMessageSubscription = () => {
+    if (!user) return () => {};
+
     const subscription = supabase
       .channel('all_messages_notification_bell')
       .on(
@@ -166,7 +149,7 @@ export default function NotificationBell() {
           filter: `user_id=eq.${user.id}`
         },
         () => {
-          // Refresh unread counts when user marks threads as read
+          console.log('[NotificationBell] Thread marked as read (INSERT), refreshing counts');
           fetchUnreadMessages();
         }
       )
@@ -179,13 +162,16 @@ export default function NotificationBell() {
           filter: `user_id=eq.${user.id}`
         },
         () => {
-          // Refresh unread counts when user marks threads as read
+          console.log('[NotificationBell] Thread marked as read (UPDATE), refreshing counts');
           fetchUnreadMessages();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[NotificationBell] Subscription status:', status);
+      });
 
     return () => {
+      console.log('[NotificationBell] Unsubscribing from message updates');
       subscription.unsubscribe();
     };
   };

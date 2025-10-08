@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Trash2, Home } from 'lucide-react';
+import { Trash2, Home, Settings, Users, Pin } from 'lucide-react';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchTowns, fetchFavorites } from '../utils/townUtils.jsx';
 import { sanitizeChatMessage, MAX_LENGTHS, displaySafeContent } from '../utils/sanitizeUtils';
@@ -12,9 +12,12 @@ import HeaderSpacer from '../components/HeaderSpacer';
 import FriendsSection from '../components/FriendsSection';
 import UserActionSheet from '../components/UserActionSheet';
 import ReportUserModal from '../components/ReportUserModal';
+import GroupChatModal from '../components/GroupChatModal';
+import GroupChatEditModal from '../components/GroupChatEditModal';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
+import { useModerationActions } from '../hooks/useModerationActions';
 
 export default function Chat() {
   const [loading, setLoading] = useState(true);
@@ -33,10 +36,14 @@ export default function Chat() {
   const [chatType, setChatType] = useState('town'); // 'town', 'lounge', 'scout', 'friends'
   const [isTyping, setIsTyping] = useState(false);
   const [showCompanionsModal, setShowCompanionsModal] = useState(false);
+  const [showGroupChatModal, setShowGroupChatModal] = useState(false);
+  const [showGroupEditModal, setShowGroupEditModal] = useState(false);
   const [companions, setCompanions] = useState([]);
   const [friends, setFriends] = useState([]);
   const [activeFriend, setActiveFriend] = useState(null);
   const [friendsTabActive, setFriendsTabActive] = useState('friends'); // 'friends' or 'requests'
+  const [groupChats, setGroupChats] = useState([]);
+  const [activeGroupChat, setActiveGroupChat] = useState(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteMessage, setInviteMessage] = useState('');
@@ -68,7 +75,10 @@ export default function Chat() {
   const [searchParams] = useSearchParams();
   const invitationId = searchParams.get('invitation');
   const tabParam = searchParams.get('tab');
-  
+
+  // Moderation actions hook
+  const { deleteMessage: deleteMsgAction, pinMessage: pinMessageAction } = useModerationActions();
+
   // Load companions when modal opens
   useEffect(() => {
     if (showCompanionsModal && user) {
@@ -127,8 +137,9 @@ export default function Chat() {
           setFavorites(userFavorites);
         }
         
-        // Fetch user's friends and pending invitations
+        // Fetch user's friends, group chats, and pending invitations
         await loadFriends(currentUser.id);
+        await loadGroupChats(currentUser.id);
         await loadPendingInvitations(currentUser.id);
 
         // Load blocked users
@@ -416,6 +427,64 @@ export default function Chat() {
       setFriends(friendsWithDetails);
     } catch (err) {
       console.error("Error loading friends:", err);
+    }
+  };
+
+  // Load group chats
+  const loadGroupChats = async (userId) => {
+    try {
+      console.log('🔍 Loading group chats for user:', userId);
+
+      // First get the thread IDs
+      const { data: memberData, error: memberError } = await supabase
+        .from('group_chat_members')
+        .select('thread_id, role')
+        .eq('user_id', userId);
+
+      if (memberError) {
+        console.error('❌ Error loading group chat members:', memberError);
+        return;
+      }
+
+      console.log('📦 Member data:', memberData);
+
+      if (!memberData || memberData.length === 0) {
+        setGroupChats([]);
+        return;
+      }
+
+      // Then get the thread details
+      const threadIds = memberData.map(m => m.thread_id);
+      const { data: threadData, error: threadError } = await supabase
+        .from('chat_threads')
+        .select('id, topic, is_group, is_public, category, geo_region, geo_country, geo_province, created_by, created_at')
+        .in('id', threadIds);
+
+      if (threadError) {
+        console.error('❌ Error loading group chat threads:', threadError);
+        return;
+      }
+
+      console.log('📦 Thread data:', threadData);
+
+      // Combine the data
+      const groups = threadData.map(thread => {
+        const member = memberData.find(m => m.thread_id === thread.id);
+        return {
+          ...thread,
+          role: member?.role || 'member'
+        };
+      });
+
+      console.log('✅ Transformed group chats:', groups);
+      setGroupChats(groups);
+
+      // Load unread counts for group chats
+      if (groups.length > 0) {
+        await loadUnreadCounts(groups);
+      }
+    } catch (err) {
+      console.error('💥 Error loading group chats:', err);
     }
   };
 
@@ -905,8 +974,28 @@ export default function Chat() {
       toast.error("Failed to load lounge chat");
     }
   };
-  
-  
+
+  // Switch to group chat
+  const switchToGroupChat = async (group) => {
+    try {
+      console.log('🔵 switchToGroupChat called with:', group);
+      setActiveGroupChat(group);
+      setChatType('group');
+      setMessages([]);
+      setActiveThread(group);
+
+      // Update URL to show we're in group chat
+      console.log('🔵 Navigating to:', `/chat/group/${group.id}`);
+      navigate(`/chat/group/${group.id}`, { replace: true });
+
+      // Fetch messages for this group thread
+      await loadMessages(group.id);
+    } catch (err) {
+      console.error("Error switching to group chat:", err);
+      toast.error("Failed to load group chat");
+    }
+  };
+
   // Simple AI responses for lounge chat
   const getAIResponse = (userMessage) => {
     const message = userMessage.toLowerCase();
@@ -1017,6 +1106,95 @@ export default function Chat() {
     } catch (err) {
       console.error("Error sending friend request:", err);
       toast.error("Failed to send friend request");
+    }
+  };
+
+  // Create group chat
+  const handleCreateGroup = async ({ name, category, geographicScope, memberIds, createdBy, isPublic, groupType, invitePolicy, discoverability, groupImageUrl }) => {
+    try {
+      console.log('Creating group chat with:', { name, category, geographicScope, memberIds, createdBy, isPublic, groupType, invitePolicy, discoverability, groupImageUrl });
+
+      // Validate Sensitive Private permission
+      if (groupType === 'sensitive_private') {
+        const { canCreateSensitiveGroups } = await import('../utils/accountTiers');
+        if (!canCreateSensitiveGroups(user)) {
+          toast.error('Premium tier or higher required to create Sensitive Private groups');
+          throw new Error('Insufficient permissions for Sensitive Private groups');
+        }
+      }
+
+      // Create a new thread for the group chat
+      const { data: newThread, error: threadError} = await supabase
+        .from('chat_threads')
+        .insert([{
+          topic: name,
+          created_by: createdBy,
+          is_group: true,
+          is_public: isPublic ?? true,
+          category: category,
+          geo_region: geographicScope?.region || null,
+          geo_country: geographicScope?.country || null,
+          geo_province: geographicScope?.province || null,
+          group_type: groupType || 'public',
+          invite_policy: invitePolicy || 'all_members',
+          discoverability: discoverability || (isPublic ? 'searchable' : 'link_only'),
+          succession_enabled: groupType !== 'sensitive_private',
+          group_image_url: groupImageUrl || null
+        }])
+        .select()
+        .single();
+
+      if (threadError) {
+        console.error('Thread creation error:', threadError);
+        toast.error(`Database error: ${threadError.message}`);
+        throw threadError;
+      }
+
+      console.log('Thread created:', newThread);
+
+      // Add all selected members to the group
+      const groupMembers = memberIds.map(friendId => ({
+        thread_id: newThread.id,
+        user_id: friendId,
+        role: 'member',
+        joined_at: new Date().toISOString()
+      }));
+
+      // Also add the creator as creator role
+      groupMembers.push({
+        thread_id: newThread.id,
+        user_id: createdBy,
+        role: 'creator',
+        joined_at: new Date().toISOString()
+      });
+
+      console.log('Inserting group members:', groupMembers);
+
+      const { error: membersError } = await supabase
+        .from('group_chat_members')
+        .insert(groupMembers);
+
+      if (membersError) {
+        console.error('Members insertion error:', membersError);
+        toast.error(`Failed to add members: ${membersError.message}`);
+        throw membersError;
+      }
+
+      console.log('Group members added successfully');
+
+      toast.success(`Group "${name}" created!`);
+
+      // Switch to the new group chat
+      setActiveThread(newThread);
+      setActiveGroupChat(newThread);
+      setChatType('group');
+      await loadGroupChats(createdBy);
+      await loadMessages(newThread.id);
+
+    } catch (error) {
+      console.error('Error creating group chat:', error);
+      toast.error(`Failed to create group: ${error.message}`);
+      throw error;
     }
   };
 
@@ -1435,25 +1613,11 @@ export default function Chat() {
     }
   };
   
-  // Delete a chat message
+  // Delete a chat message (with role-based permissions)
   const deleteMessage = async (messageId) => {
-    try {
-      const { data, error } = await supabase.rpc('delete_chat_message', {
-        p_message_id: messageId
-      });
+    const result = await deleteMsgAction(messageId);
 
-      if (error) {
-        console.error('Error deleting message:', error);
-        toast.error('Failed to delete message');
-        return;
-      }
-
-      // Check the response
-      if (!data.success) {
-        toast.error(data.error || 'Failed to delete message');
-        return;
-      }
-
+    if (result.success) {
       // Optimistically update the UI
       setMessages(prev =>
         prev.map(msg =>
@@ -1462,11 +1626,27 @@ export default function Chat() {
             : msg
         )
       );
+    }
+  };
 
-      toast.success('Message deleted');
-    } catch (err) {
-      console.error('Error deleting message:', err);
-      toast.error('Failed to delete message');
+  // Pin/Unpin a chat message (group chats only)
+  const handlePinMessage = async (messageId, shouldPin) => {
+    const result = await pinMessageAction(messageId, shouldPin);
+
+    if (result.success) {
+      // Optimistically update the UI
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === messageId
+            ? {
+                ...msg,
+                is_pinned: shouldPin,
+                pinned_at: shouldPin ? new Date().toISOString() : null,
+                pinned_by: shouldPin ? user.id : null
+              }
+            : msg
+        )
+      );
     }
   };
 
@@ -1599,6 +1779,8 @@ export default function Chat() {
             ? 'Retirement Lounge'
             : chatType === 'friends' && activeFriend
             ? `Chat with ${activeFriend.friend.username || 'Friend'}`
+            : chatType === 'group' && activeGroupChat
+            ? activeGroupChat.topic || 'Group Chat'
             : 'Retirement Lounge'
         }
         maxWidth="max-w-7xl"
@@ -1695,10 +1877,72 @@ export default function Chat() {
               setInviteMessage={setInviteMessage}
               defaultInviteMessage={defaultInviteMessage}
               setShowCompanionsModal={setShowCompanionsModal}
+              setShowGroupChatModal={setShowGroupChatModal}
               refreshFriends={() => loadFriends(user.id)}
               unreadCount={unreadByType.friends}
               unreadByFriend={unreadByFriend}
             />
+            )}
+
+            {/* Group Chats - Only show if filter is 'all' */}
+            {filterChatType === 'all' && groupChats.length > 0 && (
+            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
+              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
+                <div className="flex items-center justify-between">
+                  <div className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
+                    Group Chats
+                  </div>
+                  {groupChats.reduce((total, g) => total + (unreadCounts[g.id] || 0), 0) > 0 && (
+                    <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-semibold rounded-full">
+                      {groupChats.reduce((total, g) => total + (unreadCounts[g.id] || 0), 0)}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                {groupChats.map(group => (
+                  <button
+                    type="button"
+                    key={group.id}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('🟢 Group chat button clicked:', group.topic);
+                      switchToGroupChat(group);
+                      return false;
+                    }}
+                    className={`w-full text-left p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${
+                      chatType === 'group' && activeGroupChat?.id === group.id
+                        ? 'bg-scout-accent-50 dark:bg-scout-accent-900/20'
+                        : ''
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className={`w-10 h-10 ${group.is_public ? 'bg-green-100 dark:bg-green-900' : 'bg-purple-100 dark:bg-purple-900'} ${uiConfig.layout.radius.full} flex items-center justify-center ${group.is_public ? 'text-green-600 dark:text-green-400' : 'text-purple-600 dark:text-purple-400'} mr-3`}>
+                        <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium}`}>
+                          {group.is_public ? '🌐' : '🔒'}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
+                            {group.topic || 'Untitled Group'}
+                          </div>
+                          {unreadCounts[group.id] > 0 && (
+                            <div className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">
+                              {unreadCounts[group.id]}
+                            </div>
+                          )}
+                        </div>
+                        <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+                          {group.category || 'General'} {group.role === 'admin' && '• Admin'}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
             )}
 
             {/* Town Chats - Shows favorited + active towns - Only show if filter is 'all' or 'towns' */}
@@ -1825,6 +2069,32 @@ export default function Chat() {
 
           {/* Chat area - Full height on all screens */}
           <div className={`flex-1 min-w-0 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden flex flex-col`} style={{ height: 'calc(100vh - 10rem)' }}>
+            {/* Group Chat Header with Settings */}
+            {chatType === 'group' && activeGroupChat && (
+              <div className={`flex items-center justify-between p-4 border-b ${uiConfig.colors.borderLight}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg`}>
+                    <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div>
+                    <div className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
+                      {activeGroupChat.topic || 'Group Chat'}
+                    </div>
+                    <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+                      {activeGroupChat.category || 'General'}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowGroupEditModal(true)}
+                  className={`p-2 ${uiConfig.colors.hint} hover:${uiConfig.colors.body} rounded-lg transition-colors`}
+                  title="Group Settings"
+                >
+                  <Settings className="h-5 w-5" />
+                </button>
+              </div>
+            )}
+
             {/* Chat messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {(() => {
@@ -1876,6 +2146,9 @@ export default function Chat() {
                           const isOwnMessage = message.user_id === user?.id;
                           const withinTimeWindow = messageAge < DELETE_WINDOW_MINUTES;
                           const canDelete = isOwnMessage && !isDeleted && withinTimeWindow;
+
+                          // Check if message can be pinned (group chats only, for now all members can pin)
+                          const canPin = chatType === 'group' && !isDeleted;
 
                           // Debug log for ALL own messages
                           if (isOwnMessage) {
@@ -1970,6 +2243,24 @@ export default function Chat() {
                             title="Delete message"
                           >
                             <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
+
+                        {/* Pin button (group chats only) */}
+                        {canPin && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePinMessage(message.id, !message.is_pinned);
+                            }}
+                            className={`absolute -top-2 ${canDelete ? '-right-12' : '-right-2'} p-1.5 ${
+                              message.is_pinned
+                                ? 'bg-amber-500 hover:bg-amber-600'
+                                : 'bg-scout-accent-500 hover:bg-scout-accent-600'
+                            } text-white rounded-full md:opacity-0 md:group-hover:opacity-100 transition-opacity shadow-lg z-10`}
+                            title={message.is_pinned ? "Unpin message" : "Pin message"}
+                          >
+                            <Pin className={`w-3 h-3 ${message.is_pinned ? 'fill-current' : ''}`} />
                           </button>
                         )}
                       </div>
@@ -2289,6 +2580,25 @@ export default function Chat() {
           </div>
         </div>
       )}
+
+      {/* Group Chat Modal */}
+      <GroupChatModal
+        isOpen={showGroupChatModal}
+        onClose={() => setShowGroupChatModal(false)}
+        friends={friends}
+        onCreateGroup={handleCreateGroup}
+        currentUser={user}
+      />
+
+      {/* Group Chat Edit Modal */}
+      <GroupChatEditModal
+        isOpen={showGroupEditModal}
+        onClose={() => setShowGroupEditModal(false)}
+        groupChat={activeGroupChat}
+        currentUser={user}
+        friends={friends}
+        onUpdate={() => user && loadGroupChats(user.id)}
+      />
     </div>
   );
 }

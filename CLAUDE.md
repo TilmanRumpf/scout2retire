@@ -11,6 +11,26 @@
 3. **AUTOMATE EVERYTHING** - If it can't be automated, it's wrong
 4. **NO MANUAL STEPS** - Every fix must be code-executable
 
+## 🔴 SQL EXECUTION PROTOCOL - MANDATORY
+**IF YOU DARE TO ASK ME TO RUN SQL, FOLLOW THIS EXACTLY:**
+
+1. **Show the FULL SQL** - Every single line, no summaries
+2. **Ask me to run it** - Explicitly request execution
+3. **Wait for me to run it** - Do NOT proceed until I confirm
+4. **Verify I ran it** - Check that I executed the command
+5. **Check if it made it** - Query the database to confirm success
+
+**VIOLATION = INSTANT DEATH**
+
+Example:
+```
+Here's the SQL you need to run:
+
+[FULL SQL HERE - ALL LINES]
+
+Please run this now. I'll wait for your confirmation, then verify it worked.
+```
+
 ## 📖 MANDATORY CLAUDE.MD PROTOCOL
 1. **READ CLAUDE.MD FIRST** - Before EVERY single response
 2. **RECOMMEND IMPROVEMENTS** - When you learn something, add it

@@ -287,8 +287,134 @@ export default function FilterBarV3({
       {/* Chat variant - search + filter buttons */}
       {variant === 'chat' ? (
         <div className="flex items-center gap-2 w-full overflow-x-auto">
-          {/* Chat Search Input */}
-          <div className="relative flex-shrink-0 min-w-[200px] max-w-[300px]" ref={searchInputRef}>
+          {/* Filter Buttons - Scrollable with bubble counts */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Lounge Button - FIRST BUTTON */}
+            <button
+              onClick={() => {
+                if (setFilterChatType) {
+                  setFilterChatType(prev => prev === 'lounge' ? 'all' : 'lounge');
+                }
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border-2 transition-colors whitespace-nowrap relative ${
+                filterChatType === 'lounge'
+                  ? `border-[#86A789] bg-[#86A789]/10 text-[#86A789] font-medium`
+                  : `border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 ${uiConfig.colors.body} hover:border-[#86A789]`
+              }`}
+            >
+              <MessageCircle size={14} />
+              <span>Lounge</span>
+              {unreadByType.lounge > 0 && (
+                <div className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-semibold rounded-full">
+                  {unreadByType.lounge > 99 ? '99+' : unreadByType.lounge}
+                </div>
+              )}
+            </button>
+
+            {/* Towns Button */}
+            <button
+              onClick={() => {
+                if (setFilterChatType) {
+                  setFilterChatType(prev => prev === 'towns' ? 'all' : 'towns');
+                }
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border-2 transition-colors whitespace-nowrap relative ${
+                filterChatType === 'towns'
+                  ? `border-[#86A789] bg-[#86A789]/10 text-[#86A789] font-medium`
+                  : `border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 ${uiConfig.colors.body} hover:border-[#86A789]`
+              }`}
+            >
+              <MapPin size={14} />
+              <span>Towns</span>
+              {unreadByType.towns > 0 && (
+                <div className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-semibold rounded-full">
+                  {unreadByType.towns > 99 ? '99+' : unreadByType.towns}
+                </div>
+              )}
+            </button>
+
+            {/* Countries Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border-2 transition-colors whitespace-nowrap ${
+                  filterCountry !== 'all'
+                    ? `border-[#86A789] bg-[#86A789]/10 text-[#86A789] font-medium`
+                    : `border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 ${uiConfig.colors.body} hover:border-[#86A789]`
+                }`}
+              >
+                <Globe size={14} />
+                <span>{filterCountry !== 'all' ? filterCountry : 'Countries'}</span>
+                <ChevronDown size={12} className={`transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Country Dropdown Menu */}
+              {showCountryDropdown && availableCountries && availableCountries.length > 0 && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowCountryDropdown(false)}
+                  />
+                  <div className={`absolute z-[9999] mt-2 w-56 ${uiConfig.colors.card} rounded-lg shadow-md max-h-60 overflow-auto`}
+                       style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}>
+                    <button
+                      onClick={() => {
+                        if (setFilterCountry) setFilterCountry('all');
+                        setShowCountryDropdown(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm hover:${uiConfig.colors.secondary} ${
+                        filterCountry === 'all' ? `${uiConfig.colors.secondary} font-medium` : ''
+                      }`}
+                    >
+                      All Countries
+                    </button>
+                    {availableCountries.map(country => (
+                      <button
+                        key={country}
+                        onClick={() => {
+                          if (setFilterCountry) setFilterCountry(country);
+                          setShowCountryDropdown(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm hover:${uiConfig.colors.secondary} ${
+                          filterCountry === country ? `${uiConfig.colors.secondary} font-medium` : ''
+                        }`}
+                      >
+                        {country}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Friends Button */}
+            <button
+              onClick={() => {
+                if (setFilterChatType) {
+                  setFilterChatType(prev => prev === 'friends' ? 'all' : 'friends');
+                }
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border-2 transition-colors whitespace-nowrap relative ${
+                filterChatType === 'friends'
+                  ? `border-[#86A789] bg-[#86A789]/10 text-[#86A789] font-medium`
+                  : `border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 ${uiConfig.colors.body} hover:border-[#86A789]`
+              }`}
+            >
+              <Users size={14} />
+              <span>Friends</span>
+              {unreadByType.friends > 0 && (
+                <div className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-semibold rounded-full">
+                  {unreadByType.friends > 99 ? '99+' : unreadByType.friends}
+                </div>
+              )}
+            </button>
+
+            {/* Overflow indicator */}
+            <div className={`text-xs ${uiConfig.colors.hint} px-2`}>...</div>
+          </div>
+
+          {/* Chat Search Input - moved to end */}
+          <div className="relative flex-shrink-0 min-w-[200px] max-w-[300px] ml-auto" ref={searchInputRef}>
             <div className="relative">
               <Search size={16} className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${uiConfig.colors.subtitle}`} />
               <input
@@ -389,110 +515,6 @@ export default function FilterBarV3({
                 </div>
               );
             })()}
-          </div>
-
-          {/* Filter Buttons - Scrollable with bubble counts */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Towns Button with bubble count */}
-            <button
-              onClick={() => {
-                if (setFilterChatType) {
-                  setFilterChatType(prev => prev === 'towns' ? 'all' : 'towns');
-                }
-              }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors whitespace-nowrap relative ${
-                filterChatType === 'towns'
-                  ? `border-2 border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-600 dark:text-scout-accent-300 font-medium`
-                  : `border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 ${uiConfig.colors.body} hover:border-scout-accent-300`
-              }`}
-            >
-              <MapPin size={14} />
-              <span>Towns</span>
-              {unreadByType.towns > 0 && (
-                <div className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-semibold rounded-full">
-                  {unreadByType.towns > 99 ? '99+' : unreadByType.towns}
-                </div>
-              )}
-            </button>
-
-            {/* Countries Button - dropdown for filtering by country */}
-            <div className="relative">
-              <button
-                onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors whitespace-nowrap ${
-                  filterCountry !== 'all'
-                    ? `border-2 border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-600 dark:text-scout-accent-300 font-medium`
-                    : `border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 ${uiConfig.colors.body} hover:border-scout-accent-300`
-                }`}
-              >
-                <Globe size={14} />
-                <span>{filterCountry !== 'all' ? filterCountry : 'Countries'}</span>
-                <ChevronDown size={12} className={`transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} />
-              </button>
-
-              {/* Country Dropdown */}
-              {showCountryDropdown && availableCountries && availableCountries.length > 0 && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setShowCountryDropdown(false)}
-                  />
-                  <div className={`absolute z-[9999] mt-2 w-56 ${uiConfig.colors.card} rounded-lg shadow-md max-h-60 overflow-auto`}
-                       style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}>
-                    <button
-                      onClick={() => {
-                        if (setFilterCountry) setFilterCountry('all');
-                        setShowCountryDropdown(false);
-                      }}
-                      className={`w-full text-left px-4 py-2 text-sm hover:${uiConfig.colors.secondary} ${
-                        filterCountry === 'all' ? `${uiConfig.colors.secondary} font-medium` : ''
-                      }`}
-                    >
-                      All Countries
-                    </button>
-                    {availableCountries.map(country => (
-                      <button
-                        key={country}
-                        onClick={() => {
-                          if (setFilterCountry) setFilterCountry(country);
-                          setShowCountryDropdown(false);
-                        }}
-                        className={`w-full text-left px-4 py-2 text-sm hover:${uiConfig.colors.secondary} ${
-                          filterCountry === country ? `${uiConfig.colors.secondary} font-medium` : ''
-                        }`}
-                      >
-                        {country}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Friends Button with bubble count */}
-            <button
-              onClick={() => {
-                if (setFilterChatType) {
-                  setFilterChatType(prev => prev === 'friends' ? 'all' : 'friends');
-                }
-              }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors whitespace-nowrap relative ${
-                filterChatType === 'friends'
-                  ? `border-2 border-scout-accent-300 bg-scout-accent-50 dark:bg-scout-accent-900/20 text-scout-accent-600 dark:text-scout-accent-300 font-medium`
-                  : `border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/30 ${uiConfig.colors.body} hover:border-scout-accent-300`
-              }`}
-            >
-              <Users size={14} />
-              <span>Friends</span>
-              {unreadByType.friends > 0 && (
-                <div className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-semibold rounded-full">
-                  {unreadByType.friends > 99 ? '99+' : unreadByType.friends}
-                </div>
-              )}
-            </button>
-
-            {/* Overflow indicator - show when scrollable */}
-            <div className={`text-xs ${uiConfig.colors.hint} px-2`}>...</div>
           </div>
         </div>
       ) : (
