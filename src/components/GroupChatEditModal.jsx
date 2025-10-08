@@ -20,7 +20,7 @@ export default function GroupChatEditModal({
   const [geoCountry, setGeoCountry] = useState('');
   const [geoProvince, setGeoProvince] = useState('');
   const [isPublic, setIsPublic] = useState(false);
-  const [invitePolicy, setInvitePolicy] = useState('everyone');
+  const [invitePolicy, setInvitePolicy] = useState('all_members');
   const [adminsOnlyMessaging, setAdminsOnlyMessaging] = useState(false);
   const [groupImage, setGroupImage] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -52,7 +52,7 @@ export default function GroupChatEditModal({
       setGeoCountry(groupChat.geo_country || '');
       setGeoProvince(groupChat.geo_province || '');
       setIsPublic(groupChat.is_public || false);
-      setInvitePolicy(groupChat.invite_policy || 'everyone');
+      setInvitePolicy(groupChat.invite_policy || 'all_members');
       setAdminsOnlyMessaging(groupChat.admins_only_messaging || false);
     }
   }, [isOpen, groupChat]);
@@ -118,7 +118,7 @@ export default function GroupChatEditModal({
         .from('chat_messages')
         .select(`
           id,
-          content,
+          message,
           created_at,
           pinned_at,
           pinned_by,
@@ -765,9 +765,9 @@ export default function GroupChatEditModal({
                 !isAdmin ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
-              <option value="everyone">Everyone (All Members)</option>
+              <option value="all_members">All Members</option>
+              <option value="members_with_approval">Members (With Approval)</option>
               <option value="admins_only">Admins Only</option>
-              <option value="creator_only">Creator Only</option>
             </select>
           </div>
 
