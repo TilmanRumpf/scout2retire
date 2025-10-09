@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { uiConfig } from '../styles/uiConfig';
 import { X, Users, Upload, Trash2, UserPlus, Crown, Star, Shield, Gavel, Ban } from 'lucide-react';
 import supabase from '../utils/supabaseClient';
 import toast from 'react-hot-toast';
 import { useModerationActions } from '../hooks/useModerationActions';
 
-export default function GroupChatEditModal({
+const GroupChatEditModal = React.memo(function GroupChatEditModal({
   isOpen,
   onClose,
   groupChat,
@@ -1197,4 +1197,6 @@ export default function GroupChatEditModal({
       </div>
     </div>
   );
-}
+});
+
+export default GroupChatEditModal;

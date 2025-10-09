@@ -71,7 +71,7 @@ export default function Chat() {
   const messagesEndRef = useRef(null);
   const isInitialMount = useRef(true); // Track if this is the first mount
   const navigate = useNavigate();
-  const { townId } = useParams();
+  const { townId, groupId } = useParams();
   const [searchParams] = useSearchParams();
   const invitationId = searchParams.get('invitation');
   const tabParam = searchParams.get('tab');
@@ -82,7 +82,6 @@ export default function Chat() {
   // Load companions when modal opens
   useEffect(() => {
     if (showCompanionsModal && user) {
-      console.log("Companions modal opened, loading companions...");
       loadSuggestedCompanions(user.id);
     }
   }, [showCompanionsModal, user]);
@@ -91,10 +90,14 @@ export default function Chat() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        const perfStart = performance.now();
+        console.log('🚀 [PERF] Chat load started');
         setLoading(true);
 
         // Get current user
+        const t1 = performance.now();
         const { user: currentUser, profile: userProfile } = await getCurrentUser();
+        console.log(`⏱️ [PERF] getCurrentUser: ${(performance.now() - t1).toFixed(0)}ms`);
         if (!currentUser) {
           navigate('/welcome');
           return;
@@ -102,134 +105,98 @@ export default function Chat() {
         
         setUser({ ...currentUser, ...userProfile });
 
-        // Fetch user's home town if they have one
-        if (userProfile?.hometown) {
-          // Extract just the city name (before first comma)
-          const cityName = userProfile.hometown.split(',')[0].trim();
-
-          // Try exact match first with city name only
-          let { data: homeTownData, error: homeTownError } = await supabase
-            .from('towns')
-            .select('id, name, country, region')
-            .ilike('name', cityName)
-            .limit(1);
-
-          // If no exact match, try partial match
-          if (!homeTownData || homeTownData.length === 0) {
-            const result = await supabase
-              .from('towns')
-              .select('id, name, country, region')
-              .ilike('name', `%${cityName}%`)
-              .limit(1);
-
-            homeTownData = result.data;
-            homeTownError = result.error;
-          }
-
-          if (homeTownData && homeTownData.length > 0 && !homeTownError) {
-            setUserHomeTown(homeTownData[0]);
-          }
-        }
-
-        // Fetch user's favorites
-        const { success: favSuccess, favorites: userFavorites } = await fetchFavorites(currentUser.id);
-        if (favSuccess) {
-          setFavorites(userFavorites);
-        }
-        
-        // Fetch user's friends, group chats, and pending invitations
-        await loadFriends(currentUser.id);
-        await loadGroupChats(currentUser.id);
-        await loadPendingInvitations(currentUser.id);
-
-        // Load blocked users
-        await loadBlockedUsers();
-
-        // Load suggested companions
-        await loadSuggestedCompanions(currentUser.id);
-        
-        // Auto-switch to Requests tab if tab=requests in URL
-        if (tabParam === 'requests') {
-          setFriendsTabActive('requests');
-        }
-
-        // If accessed via notification, scroll to the invitation
-        if (invitationId && pendingInvitations.received) {
-          const invitation = pendingInvitations.received.find(inv => inv.id === invitationId);
-          if (invitation) {
-            // Highlight the invitation
-            setTimeout(() => {
-              const element = document.getElementById(`invitation-${invitationId}`);
-              if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                element.classList.add('ring-2', 'ring-scout-accent-500', 'ring-opacity-75');
-                setTimeout(() => {
-                  element.classList.remove('ring-2', 'ring-scout-accent-500', 'ring-opacity-75');
-                }, 3000);
-              }
-            }, 500);
-          }
-        }
-        
-        // Fetch chat threads
+        // CRITICAL PATH ONLY: Load threads immediately to show UI
+        const t2 = performance.now();
         const { data: threadData, error: threadError } = await supabase
           .from('chat_threads')
           .select('*')
           .order('created_at', { ascending: false });
-          
+
         if (threadError) {
           console.error("Thread fetch error:", threadError);
           toast.error("Failed to load chat threads");
         }
-        
+
         setThreads(threadData || []);
+        console.log(`⏱️ [PERF] Load threads: ${(performance.now() - t2).toFixed(0)}ms`);
 
-        // Load active town chats (towns with messages in last 30 days + favorited towns)
+        // Show UI NOW - don't wait for anything else
+        setLoading(false);
+        console.log(`🎯 [PERF] UI VISIBLE: ${(performance.now() - perfStart).toFixed(0)}ms`);
+
+        // Load everything else in parallel (doesn't block rendering)
+        const t3 = performance.now();
+        const [
+          favResult,
+          _friends,
+          _groups,
+          _invites,
+          _blocked,
+          _companions,
+          _hometown
+        ] = await Promise.all([
+          fetchFavorites(currentUser.id),
+          loadFriends(currentUser.id),
+          loadGroupChats(currentUser.id),
+          loadPendingInvitations(currentUser.id),
+          loadBlockedUsers(),
+          loadSuggestedCompanions(currentUser.id),
+          userProfile?.hometown ? (async () => {
+            const cityName = userProfile.hometown.split(',')[0].trim();
+            const { data } = await supabase
+              .from('towns')
+              .select('id, name, country, region')
+              .ilike('name', cityName)
+              .limit(1);
+            if (data?.[0]) setUserHomeTown(data[0]);
+          })() : Promise.resolve()
+        ]);
+
+        const { success: favSuccess, favorites: userFavorites } = favResult;
+        if (favSuccess) setFavorites(userFavorites);
+        console.log(`⏱️ [PERF] Parallel loads: ${(performance.now() - t3).toFixed(0)}ms`);
+
+        // Town activity & unread counts (nice-to-have, loads in background)
+        const t4 = performance.now();
         const townThreads = (threadData || []).filter(t => t.town_id !== null);
-        const townIdsWithActivity = [];
+        let townIdsWithActivity = [];
 
-        // Get threads with recent messages (last 30 days)
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        if (townThreads.length > 0) {
+          const threadIds = townThreads.map(t => t.id);
+          const { data: activeThreads } = await supabase.rpc('get_threads_with_recent_activity', {
+            p_thread_ids: threadIds,
+            p_days_ago: 30
+          });
 
-        for (const thread of townThreads) {
-          const { data: recentMessages } = await supabase
-            .from('chat_messages')
-            .select('id')
-            .eq('thread_id', thread.id)
-            .gte('created_at', thirtyDaysAgo.toISOString())
-            .limit(1);
-
-          if (recentMessages && recentMessages.length > 0) {
-            townIdsWithActivity.push(thread.town_id);
+          if (activeThreads) {
+            const activeThreadIdSet = new Set(activeThreads.map(t => t.thread_id));
+            townIdsWithActivity = townThreads
+              .filter(t => activeThreadIdSet.has(t.id))
+              .map(t => t.town_id);
           }
         }
 
-        // Combine: favorited towns + towns with activity (remove duplicates)
         const allActiveTownIds = [...new Set([
-          ...userFavorites.map(f => f.town_id),
+          ...(userFavorites || []).map(f => f.town_id),
           ...townIdsWithActivity
         ])];
 
-        // Fetch town data for all active towns
         if (allActiveTownIds.length > 0) {
           const { success: townSuccess, towns: activeTowns } = await fetchTowns({
             townIds: allActiveTownIds
           });
 
           if (townSuccess) {
-            // Mark which are favorited and add thread_id
             const activeTownChatsData = activeTowns.map(town => {
               const thread = townThreads.find(t => t.town_id === town.id);
               return {
                 town_id: town.id,
                 thread_id: thread?.id,
                 towns: town,
-                is_favorited: userFavorites.some(f => f.town_id === town.id)
+                is_favorited: (userFavorites || []).some(f => f.town_id === town.id)
               };
             });
 
-            // Sort: favorited first, then alphabetically
             activeTownChatsData.sort((a, b) => {
               if (a.is_favorited && !b.is_favorited) return -1;
               if (!a.is_favorited && b.is_favorited) return 1;
@@ -237,24 +204,66 @@ export default function Chat() {
             });
 
             setActiveTownChats(activeTownChatsData);
-
-            // Load unread counts for all town threads
-            await loadUnreadCounts(townThreads);
           }
         }
 
-        // If townId is provided, load that town and its thread
-        if (townId) {
+        // Unread counts load last (slowest, least important)
+        if (townThreads.length > 0) {
+          await loadUnreadCounts(townThreads);
+        }
+        console.log(`⏱️ [PERF] Towns+badges: ${(performance.now() - t4).toFixed(0)}ms`);
+        console.log(`🏁 [PERF] TOTAL: ${(performance.now() - perfStart).toFixed(0)}ms`);
+
+        // Tab switching
+        if (tabParam === 'requests') {
+          setFriendsTabActive('requests');
+        }
+
+        // If groupId is provided, load that group chat
+        if (groupId) {
+          // Group chats are already loaded by loadGroupChats above
+          // Wait a bit for state to update, then find the group
+          // Better approach: query directly
+          const { data: groupData, error: groupError } = await supabase
+            .from('chat_threads')
+            .select('id, topic, is_group, is_public, category, geo_region, geo_country, geo_province, created_by, created_at')
+            .eq('id', groupId)
+            .single();
+
+          if (groupError || !groupData) {
+            console.error("Group chat not found:", groupId, groupError);
+            toast.error("Group chat not found");
+            navigate('/chat', { replace: true });
+          } else {
+            // Check if user is a member
+            const { data: memberCheck } = await supabase
+              .from('group_chat_members')
+              .select('role')
+              .eq('thread_id', groupId)
+              .eq('user_id', currentUser.id)
+              .single();
+
+            if (!memberCheck) {
+              toast.error("You are not a member of this group");
+              navigate('/chat', { replace: true });
+            } else {
+              setActiveGroupChat(groupData);
+              setChatType('group');
+              setActiveThread(groupData);
+              await loadMessages(groupData.id);
+            }
+          }
+        } else if (townId) {
           // Get town data
           const { success, towns } = await fetchTowns({ townIds: [townId] });
-          
+
           if (success && towns.length > 0) {
             setActiveTown(towns[0]);
             setChatType('town');
-            
+
             // Find or create thread for this town
             let townThread = threadData?.find(thread => thread.town_id === townId);
-            
+
             if (!townThread) {
               // Create new thread for this town
               const { data: newThread, error: createError } = await supabase
@@ -265,7 +274,7 @@ export default function Chat() {
                   created_by: currentUser.id
                 }])
                 .select();
-                
+
               if (createError) {
                 console.error("Create thread error:", createError);
                 toast.error("Failed to create chat thread");
@@ -274,14 +283,14 @@ export default function Chat() {
                 setThreads(prev => [townThread, ...prev]);
               }
             }
-            
+
             if (townThread) {
               setActiveThread(townThread);
               await loadMessages(townThread.id);
             }
           }
         } else {
-          // Default to lounge chat if no town specified
+          // Default to lounge chat if no town or group specified
           setChatType('lounge');
           
           // Find or create lounge thread
@@ -319,9 +328,9 @@ export default function Chat() {
         setLoading(false);
       }
     };
-    
+
     loadData();
-  }, [navigate, townId, searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [navigate, townId, groupId, searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
   // invitationId and pendingInvitations.received are handled within loadData
 
   // Mark thread as read when user opens it
@@ -393,37 +402,55 @@ export default function Chat() {
         .select('*')
         .or(`user_id.eq.${userId},friend_id.eq.${userId}`)
         .eq('status', 'accepted');
-        
+
       if (error) {
         console.error("Error loading friends:", error);
         return;
       }
-      
-      // Fetch user details for friends
-      const friendsWithDetails = await Promise.all(
-        (data || []).map(async (connection) => {
-          try {
-            // Determine which user is the friend (the one that's NOT the current user)
-            const friendId = connection.user_id === userId ? connection.friend_id : connection.user_id;
 
-            const { data: friendData, error } = await supabase.rpc('get_user_by_id', { user_id: friendId });
-            if (error) {
-              console.log("RPC function not available, friend will show without name");
-              return { ...connection, friend_id: friendId };
-            }
-            return {
-              ...connection,
-              friend_id: friendId,
-              friend: friendData?.[0] || null
-            };
-          } catch (err) {
-            console.log("Error fetching friend details:", err);
-            const friendId = connection.user_id === userId ? connection.friend_id : connection.user_id;
-            return { ...connection, friend_id: friendId };
-          }
-        })
+      if (!data || data.length === 0) {
+        setFriends([]);
+        return;
+      }
+
+      // PERFORMANCE FIX: Batch user lookups instead of N queries
+      // Get unique friend IDs
+      const friendIds = data.map(connection =>
+        connection.user_id === userId ? connection.friend_id : connection.user_id
       );
-      
+
+      // Fetch all friend details in one query
+      const { data: friendsData, error: friendsError } = await supabase.rpc('get_users_by_ids', {
+        p_user_ids: friendIds
+      });
+
+      if (friendsError) {
+        console.error("Error fetching friends batch:", friendsError);
+        // Fallback without names
+        const friendsWithoutDetails = data.map(connection => {
+          const friendId = connection.user_id === userId ? connection.friend_id : connection.user_id;
+          return { ...connection, friend_id: friendId };
+        });
+        setFriends(friendsWithoutDetails);
+        return;
+      }
+
+      // Create lookup map
+      const friendsMap = {};
+      friendsData?.forEach(friend => {
+        friendsMap[friend.id] = { id: friend.id, username: friend.username };
+      });
+
+      // Map connections with friend data
+      const friendsWithDetails = data.map(connection => {
+        const friendId = connection.user_id === userId ? connection.friend_id : connection.user_id;
+        return {
+          ...connection,
+          friend_id: friendId,
+          friend: friendsMap[friendId] || null
+        };
+      });
+
       setFriends(friendsWithDetails);
     } catch (err) {
       console.error("Error loading friends:", err);
@@ -433,8 +460,6 @@ export default function Chat() {
   // Load group chats
   const loadGroupChats = async (userId) => {
     try {
-      console.log('🔍 Loading group chats for user:', userId);
-
       // First get the thread IDs
       const { data: memberData, error: memberError } = await supabase
         .from('group_chat_members')
@@ -442,11 +467,9 @@ export default function Chat() {
         .eq('user_id', userId);
 
       if (memberError) {
-        console.error('❌ Error loading group chat members:', memberError);
+        console.error('Error loading group chat members:', memberError);
         return;
       }
-
-      console.log('📦 Member data:', memberData);
 
       if (!memberData || memberData.length === 0) {
         setGroupChats([]);
@@ -461,11 +484,9 @@ export default function Chat() {
         .in('id', threadIds);
 
       if (threadError) {
-        console.error('❌ Error loading group chat threads:', threadError);
+        console.error('Error loading group chat threads:', threadError);
         return;
       }
-
-      console.log('📦 Thread data:', threadData);
 
       // Combine the data
       const groups = threadData.map(thread => {
@@ -476,7 +497,6 @@ export default function Chat() {
         };
       });
 
-      console.log('✅ Transformed group chats:', groups);
       setGroupChats(groups);
 
       // Load unread counts for group chats
@@ -484,7 +504,7 @@ export default function Chat() {
         await loadUnreadCounts(groups);
       }
     } catch (err) {
-      console.error('💥 Error loading group chats:', err);
+      console.error('Error loading group chats:', err);
     }
   };
 
@@ -528,46 +548,36 @@ export default function Chat() {
         return;
       }
       
-      // Fetch user details for sent invitations
-      const sentWithDetails = await Promise.all(
-        (sentInvites || []).map(async (invite) => {
-          try {
-            const { data: friendData, error } = await supabase.rpc('get_user_by_id', { user_id: invite.friend_id });
-            if (error) {
-              console.log("RPC function not available, invitation will show without name");
-              return invite;
-            }
-            return {
-              ...invite,
-              friend: friendData?.[0] || null
-            };
-          } catch (err) {
-            console.log("Error fetching friend details:", err);
-            return invite;
-          }
-        })
-      );
-      
-      // Fetch user details for received invitations
-      const receivedWithDetails = await Promise.all(
-        (receivedInvites || []).map(async (invite) => {
-          try {
-            const { data: userData, error } = await supabase.rpc('get_user_by_id', { user_id: invite.user_id });
-            if (error) {
-              console.log("RPC function not available, invitation will show without name");
-              return invite;
-            }
-            return {
-              ...invite,
-              user: userData?.[0] || null
-            };
-          } catch (err) {
-            console.log("Error fetching user details:", err);
-            return invite;
-          }
-        })
-      );
-      
+      // PERFORMANCE FIX: Batch user lookups for invitations
+      // Get all unique user IDs from both sent and received invitations
+      const sentUserIds = (sentInvites || []).map(i => i.friend_id);
+      const receivedUserIds = (receivedInvites || []).map(i => i.user_id);
+      const allUserIds = [...new Set([...sentUserIds, ...receivedUserIds])];
+
+      let usersMap = {};
+      if (allUserIds.length > 0) {
+        const { data: usersData, error: usersError } = await supabase.rpc('get_users_by_ids', {
+          p_user_ids: allUserIds
+        });
+
+        if (!usersError && usersData) {
+          usersData.forEach(user => {
+            usersMap[user.id] = { id: user.id, username: user.username };
+          });
+        }
+      }
+
+      // Map invitations with user data
+      const sentWithDetails = (sentInvites || []).map(invite => ({
+        ...invite,
+        friend: usersMap[invite.friend_id] || null
+      }));
+
+      const receivedWithDetails = (receivedInvites || []).map(invite => ({
+        ...invite,
+        user: usersMap[invite.user_id] || null
+      }));
+
       setPendingInvitations({
         sent: sentWithDetails,
         received: receivedWithDetails
@@ -593,9 +603,7 @@ export default function Chat() {
         toast.error(`Failed to load users: ${error.message}`);
         return;
       }
-      
-      console.log("All users found:", allUsers?.length || 0, allUsers);
-      
+
       // Get existing connections to filter them out
       const { data: connections, error: connError } = await supabase
         .from('user_connections')
@@ -640,8 +648,6 @@ export default function Chat() {
       if (!threads || threads.length === 0) return;
 
       const threadIds = threads.map(t => t.id);
-      console.log('[Chat] loadUnreadCounts called with threads:', threads.map(t => ({ id: t.id, topic: t.topic })));
-      console.log('[Chat] Calling RPC with threadIds:', threadIds);
 
       // Use RPC function to get unread counts efficiently
       const { data: counts, error } = await supabase.rpc('get_unread_counts', {
@@ -652,8 +658,6 @@ export default function Chat() {
         console.error("Error loading unread counts:", error);
         return;
       }
-
-      console.log('[Chat] RPC returned counts:', counts);
 
       // Convert array to object: { threadId: count }
       const countsMap = {};
@@ -694,8 +698,6 @@ export default function Chat() {
         }
       });
 
-      console.log('[Chat] Unread totals:', { lounge: loungeTotal, friends: friendsTotal, towns: townsTotal });
-      console.log('[Chat] Per-friend unread:', friendUnreadMap);
       setUnreadByType({ lounge: loungeTotal, friends: friendsTotal, towns: townsTotal });
       setUnreadByFriend(friendUnreadMap);
     } catch (err) {
@@ -743,27 +745,42 @@ export default function Chat() {
         return;
       }
 
-      // Fetch user details for each message using RPC function
-      const formattedMessages = await Promise.all(
-        (messagesData || []).map(async (msg) => {
-          try {
-            const { data: userData } = await supabase.rpc('get_user_by_id', { user_id: msg.user_id });
-            const userInfo = userData?.[0];
-            const username = userInfo?.username || 'Anonymous';
-            // Use username for privacy - RPC function returns username only
-            return {
-              ...msg,
-              user_name: username
-            };
-          } catch (err) {
-            console.error('Error fetching user:', err);
-            return {
-              ...msg,
-              user_name: 'Anonymous'
-            };
-          }
-        })
-      );
+      // PERFORMANCE FIX: Batch user lookups instead of N+1 queries
+      // Get unique user IDs from all messages
+      const uniqueUserIds = [...new Set(messagesData?.map(m => m.user_id) || [])];
+
+      if (uniqueUserIds.length === 0) {
+        setMessages([]);
+        return;
+      }
+
+      // Fetch all users in a single query
+      const { data: usersData, error: usersError } = await supabase.rpc('get_users_by_ids', {
+        p_user_ids: uniqueUserIds
+      });
+
+      if (usersError) {
+        console.error('Error fetching users batch:', usersError);
+        // Fallback to anonymous if batch fetch fails
+        const formattedMessages = messagesData.map(msg => ({
+          ...msg,
+          user_name: 'Anonymous'
+        }));
+        setMessages(formattedMessages);
+        return;
+      }
+
+      // Create lookup map for O(1) access
+      const usersMap = {};
+      usersData?.forEach(user => {
+        usersMap[user.id] = user.username;
+      });
+
+      // Map messages with user data (no more async operations!)
+      const formattedMessages = messagesData.map(msg => ({
+        ...msg,
+        user_name: usersMap[msg.user_id] || 'Anonymous'
+      }));
 
       setMessages(formattedMessages || []);
     } catch (err) {
@@ -978,14 +995,12 @@ export default function Chat() {
   // Switch to group chat
   const switchToGroupChat = async (group) => {
     try {
-      console.log('🔵 switchToGroupChat called with:', group);
       setActiveGroupChat(group);
       setChatType('group');
       setMessages([]);
       setActiveThread(group);
 
       // Update URL to show we're in group chat
-      console.log('🔵 Navigating to:', `/chat/group/${group.id}`);
       navigate(`/chat/group/${group.id}`, { replace: true });
 
       // Fetch messages for this group thread
@@ -1112,8 +1127,6 @@ export default function Chat() {
   // Create group chat
   const handleCreateGroup = async ({ name, category, geographicScope, memberIds, createdBy, isPublic, groupType, invitePolicy, discoverability, groupImageUrl }) => {
     try {
-      console.log('Creating group chat with:', { name, category, geographicScope, memberIds, createdBy, isPublic, groupType, invitePolicy, discoverability, groupImageUrl });
-
       // Validate Sensitive Private permission
       if (groupType === 'sensitive_private') {
         const { canCreateSensitiveGroups } = await import('../utils/accountTiers');
@@ -1150,8 +1163,6 @@ export default function Chat() {
         throw threadError;
       }
 
-      console.log('Thread created:', newThread);
-
       // Add all selected members to the group
       const groupMembers = memberIds.map(friendId => ({
         thread_id: newThread.id,
@@ -1168,8 +1179,6 @@ export default function Chat() {
         joined_at: new Date().toISOString()
       });
 
-      console.log('Inserting group members:', groupMembers);
-
       const { error: membersError } = await supabase
         .from('group_chat_members')
         .insert(groupMembers);
@@ -1179,8 +1188,6 @@ export default function Chat() {
         toast.error(`Failed to add members: ${membersError.message}`);
         throw membersError;
       }
-
-      console.log('Group members added successfully');
 
       toast.success(`Group "${name}" created!`);
 
@@ -1297,19 +1304,16 @@ export default function Chat() {
       toast.error("Please enter a valid email address");
       return;
     }
-    
-    console.log("Searching for user with email:", email);
+
     setInviteLoading(true);
-    
+
     try {
       // Use RPC function to search for user by email
       const { data: searchResult, error: searchError } = await supabase
-        .rpc('search_user_by_email', { 
-          search_email: email.trim().toLowerCase() 
+        .rpc('search_user_by_email', {
+          search_email: email.trim().toLowerCase()
         });
-      
-      console.log("RPC search result:", { searchResult, searchError });
-      
+
       if (searchError) {
         console.error("Search error:", searchError);
         
@@ -1328,10 +1332,9 @@ export default function Chat() {
         setInviteLoading(false);
         return;
       }
-      
+
       const existingUser = searchResult[0];
-      console.log("Found user:", existingUser);
-      
+
       // Check if already connected - check both directions separately for clarity
       const { data: sentConnections } = await supabase
         .from('user_connections')
@@ -1350,12 +1353,9 @@ export default function Chat() {
       // Filter to only active connections (pending or accepted)
       const existingConnection = [...(sentConnections || []), ...(receivedConnections || [])]
         .filter(conn => conn.status === 'pending' || conn.status === 'accepted');
-        
-      console.log("Existing connections found:", { sentConnections, receivedConnections, existingConnection });
-        
+
       if (existingConnection && existingConnection.length > 0) {
         const connection = existingConnection[0];
-        console.log("Found existing connection:", connection);
         if (connection.status === 'accepted') {
           toast.error("You're already connected with this user!");
         } else if (connection.status === 'pending') {
@@ -1907,7 +1907,6 @@ export default function Chat() {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      console.log('🟢 Group chat button clicked:', group.topic);
                       switchToGroupChat(group);
                       return false;
                     }}
@@ -2149,22 +2148,6 @@ export default function Chat() {
 
                           // Check if message can be pinned (group chats only, for now all members can pin)
                           const canPin = chatType === 'group' && !isDeleted;
-
-                          // Debug log for ALL own messages
-                          if (isOwnMessage) {
-                            console.log('🗑️ DELETE CHECK:', {
-                              message_id: message.id,
-                              message_preview: message.message?.substring(0, 30),
-                              age_minutes: messageAge.toFixed(1),
-                              age_hours: (messageAge / 60).toFixed(1),
-                              created_at: message.created_at,
-                              isDeleted,
-                              canDelete,
-                              user_id_match: message.user_id === user?.id,
-                              message_user_id: message.user_id,
-                              current_user_id: user?.id
-                            });
-                          }
 
                           return (
                     <div

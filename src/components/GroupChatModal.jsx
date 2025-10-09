@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { uiConfig } from '../styles/uiConfig';
 import { X, Users, Check, Lock, Shield, Globe, Eye, Upload, Image as ImageIcon, Search } from 'lucide-react';
 import supabase from '../utils/supabaseClient';
@@ -67,7 +67,7 @@ const COUNTRY_PROVINCES = {
   'Brazil': ['São Paulo', 'Rio de Janeiro', 'Minas Gerais', 'Bahia', 'Paraná', 'Rio Grande do Sul', 'Pernambuco', 'Ceará', 'Pará', 'Santa Catarina', 'Maranhão', 'Goiás', 'Paraíba', 'Espírito Santo', 'Amazonas', 'Mato Grosso', 'Rio Grande do Norte', 'Alagoas', 'Piauí', 'Distrito Federal', 'Mato Grosso do Sul', 'Sergipe', 'Rondônia', 'Acre', 'Amapá', 'Roraima', 'Tocantins']
 };
 
-export default function GroupChatModal({
+const GroupChatModal = React.memo(function GroupChatModal({
   isOpen,
   onClose,
   friends = [],
@@ -984,4 +984,6 @@ export default function GroupChatModal({
       </div>
     </div>
   );
-}
+});
+
+export default GroupChatModal;

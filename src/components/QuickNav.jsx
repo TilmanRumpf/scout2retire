@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 import '../styles/fonts.css';
 
-export default function QuickNav({ isOpen: propIsOpen, onClose }) {
+const QuickNav = React.memo(function QuickNav({ isOpen: propIsOpen, onClose }) {
   // Use props if provided, otherwise manage state internally
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const isOpen = propIsOpen !== undefined ? propIsOpen : internalIsOpen;
@@ -21,8 +21,6 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
   const isOnAdminPage = location.pathname.startsWith('/admin');
   const [adminExpanded, setAdminExpanded] = useState(isOnAdminPage);
   const scrollContainerRef = useRef(null);
-
-  console.log('[QuickNav] Component rendered. unreadMessagesCount:', unreadMessagesCount, 'pendingInvitesCount:', pendingInvitesCount);
 
   // Note: Removed location change effect as it was causing immediate closes
 
@@ -41,15 +39,19 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
   }, [isOnAdminPage]);
 
   // Load user and check for pending invitations and unread messages
+  // PERFORMANCE FIX: Only load once, ignore duplicate auth events
+  const hasLoadedRef = useRef(false);
   useEffect(() => {
-    console.log('[QuickNav] Initial useEffect - calling loadUserAndInvites and loadUnreadMessages');
+    if (hasLoadedRef.current) return; // Already loaded
+    hasLoadedRef.current = true;
     loadUserAndInvites();
     loadUnreadMessages();
 
-    // Listen for auth state changes - fetch counts when user logs in
+    // Listen for auth state changes - ONLY respond to SIGNED_IN once
+    let hasSignedIn = false;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[QuickNav] Auth state changed:', event, 'session exists:', !!session);
-      if (event === 'SIGNED_IN' && session) {
+      if (event === 'SIGNED_IN' && session && !hasSignedIn) {
+        hasSignedIn = true;
         loadUserAndInvites();
         loadUnreadMessages();
       }
@@ -69,22 +71,17 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
   };
 
   const loadUnreadMessages = async () => {
-    console.log('[QuickNav] loadUnreadMessages called');
     try {
       // CRITICAL: Verify we have an authenticated session FIRST
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('[QuickNav] Session check:', session ? 'Session exists' : 'NO SESSION');
 
       if (!session) {
-        console.log('[QuickNav] No session - skipping unread message fetch');
         setUnreadMessagesCount(0);
         return;
       }
 
       const { user: currentUser } = await getCurrentUser();
-      console.log('[QuickNav] Current user:', currentUser?.id);
       if (!currentUser) {
-        console.log('[QuickNav] No user found, returning');
         return;
       }
 
@@ -93,28 +90,21 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
         .from('chat_threads')
         .select('id');
 
-      console.log('[QuickNav] Threads query result:', { threads, threadsError });
-
       if (threadsError || !threads || threads.length === 0) {
-        console.log('[QuickNav] No threads found or error, setting count to 0');
         setUnreadMessagesCount(0);
         return;
       }
 
       // Get unread counts for all threads
       const threadIds = threads.map(t => t.id);
-      console.log('[QuickNav] Thread IDs:', threadIds);
 
       const { data: counts, error: countsError } = await supabase.rpc('get_unread_counts', {
         p_thread_ids: threadIds
       });
 
-      console.log('[QuickNav] RPC get_unread_counts result:', { counts, countsError });
-
       if (!countsError && counts) {
         // Sum all unread counts
         const totalUnread = counts.reduce((sum, item) => sum + (item.unread_count || 0), 0);
-        console.log('[QuickNav] Total unread count calculated:', totalUnread);
         setUnreadMessagesCount(totalUnread);
       }
 
@@ -131,7 +121,6 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
           (payload) => {
             // Only refresh count if message is from someone else
             if (payload.new.user_id !== currentUser.id) {
-              console.log('[QuickNav] New message received, refreshing counts');
               loadUnreadMessages();
             }
           }
@@ -462,4 +451,6 @@ export default function QuickNav({ isOpen: propIsOpen, onClose }) {
 
     </>
   );
-}
+});
+
+export default QuickNav;

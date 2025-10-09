@@ -1,24 +1,27 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell } from 'lucide-react';
 import supabase from '../utils/supabaseClient';
 import { getCurrentUser } from '../utils/authUtils';
 
-export default function NotificationBell() {
+const NotificationBell = React.memo(function NotificationBell() {
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  console.log('[NotificationBell] Component mounted/rendered. unreadMessagesCount:', unreadMessagesCount);
-
+  // PERFORMANCE FIX: Only load once
+  const hasLoadedRef = useRef(false);
   useEffect(() => {
-    console.log('[NotificationBell] Initial useEffect - calling loadUser');
+    if (hasLoadedRef.current) return;
+
+    hasLoadedRef.current = true;
     loadUser();
 
-    // Listen for auth state changes - fetch counts when user logs in
+    // Listen for auth state changes - ONLY respond once
+    let hasSignedIn = false;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[NotificationBell] Auth state changed:', event, 'session exists:', !!session);
-      if (event === 'SIGNED_IN' && session) {
+      if (event === 'SIGNED_IN' && session && !hasSignedIn) {
+        hasSignedIn = true;
         loadUser();
       }
     });
@@ -29,29 +32,21 @@ export default function NotificationBell() {
   }, []);
 
   useEffect(() => {
-    console.log('[NotificationBell] User changed effect. user:', user?.id);
     if (user) {
-      console.log('[NotificationBell] User exists, fetching messages');
       fetchUnreadMessages();
       const unsubscribeMessages = setupMessageSubscription();
       return () => {
         unsubscribeMessages();
       };
-    } else {
-      console.log('[NotificationBell] No user yet');
     }
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
   // fetchUnreadMessages and setupMessageSubscription use user internally
 
   const loadUser = async () => {
-    console.log('[NotificationBell] loadUser called');
     try {
       const { user: currentUser } = await getCurrentUser();
-      console.log('[NotificationBell] getCurrentUser result:', currentUser?.id);
       if (currentUser) {
         setUser(currentUser);
-      } else {
-        console.log('[NotificationBell] No currentUser returned from getCurrentUser');
       }
     } catch (error) {
       console.error('[NotificationBell] Error loading user:', error);
@@ -60,14 +55,11 @@ export default function NotificationBell() {
 
 
   const fetchUnreadMessages = async () => {
-    console.log('[NotificationBell] fetchUnreadMessages called');
     try {
       // CRITICAL: Verify we have an authenticated session FIRST
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('[NotificationBell] Session check:', session ? 'Session exists' : 'NO SESSION');
 
       if (!session) {
-        console.log('[NotificationBell] No session - skipping unread message fetch');
         setUnreadMessagesCount(0);
         return;
       }
@@ -81,15 +73,12 @@ export default function NotificationBell() {
         `)
         .order('created_at', { foreignTable: 'chat_messages', ascending: false });
 
-      console.log('[NotificationBell] Threads query result:', { threads, threadsError });
-
       if (threadsError) {
         console.error('[NotificationBell] Error fetching threads:', threadsError);
         return;
       }
 
       if (!threads || threads.length === 0) {
-        console.log('[NotificationBell] No threads found, setting count to 0');
         setUnreadMessagesCount(0);
         return;
       }
@@ -105,15 +94,12 @@ export default function NotificationBell() {
         return;
       }
 
-      console.log('[NotificationBell] Unread counts:', unreadCounts);
-
       // Sum up all unread counts
       let totalUnread = 0;
       (unreadCounts || []).forEach(item => {
         totalUnread += item.unread_count || 0;
       });
 
-      console.log('[NotificationBell] Total unread count calculated:', totalUnread);
       setUnreadMessagesCount(totalUnread);
     } catch (err) {
       console.error('[NotificationBell] Error loading unread messages:', err);
@@ -135,7 +121,6 @@ export default function NotificationBell() {
         (payload) => {
           // Only refresh count if message is from someone else
           if (payload.new.user_id !== user.id) {
-            console.log('[NotificationBell] New message received, refreshing counts');
             fetchUnreadMessages();
           }
         }
@@ -149,7 +134,6 @@ export default function NotificationBell() {
           filter: `user_id=eq.${user.id}`
         },
         () => {
-          console.log('[NotificationBell] Thread marked as read (INSERT), refreshing counts');
           fetchUnreadMessages();
         }
       )
@@ -162,16 +146,12 @@ export default function NotificationBell() {
           filter: `user_id=eq.${user.id}`
         },
         () => {
-          console.log('[NotificationBell] Thread marked as read (UPDATE), refreshing counts');
           fetchUnreadMessages();
         }
       )
-      .subscribe((status) => {
-        console.log('[NotificationBell] Subscription status:', status);
-      });
+      .subscribe();
 
     return () => {
-      console.log('[NotificationBell] Unsubscribing from message updates');
       subscription.unsubscribe();
     };
   };
@@ -196,4 +176,6 @@ export default function NotificationBell() {
       </button>
     </div>
   );
-}
+});
+
+export default NotificationBell;
