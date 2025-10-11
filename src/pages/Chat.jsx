@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Trash2, Home, Settings, Users, User, MapPin, Pin, ChevronLeft, Plus, Send, MoreVertical, Search, UserPlus, Heart, Star } from 'lucide-react';
 import { getCurrentUser } from '../utils/authUtils';
@@ -14,98 +14,87 @@ import UserActionSheet from '../components/UserActionSheet';
 import ReportUserModal from '../components/ReportUserModal';
 import GroupChatModal from '../components/GroupChatModal';
 import GroupChatEditModal from '../components/GroupChatEditModal';
+import InviteModal from '../components/chat/InviteModal';
+import CompanionsModal from '../components/chat/CompanionsModal';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
 import { useModerationActions } from '../hooks/useModerationActions';
 import { useIsMobile } from '../hooks/useMobileDetection';
+import { useChatState } from '../hooks/useChatState';
 
 export default function Chat() {
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
-  const [userHomeTown, setUserHomeTown] = useState(null); // User's home town for chat
-  const [threads, setThreads] = useState([]);
-  const [activeTown, setActiveTown] = useState(null);
-  const [activeThread, setActiveThread] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [messageInput, setMessageInput] = useState('');
-  const [favorites, setFavorites] = useState([]);
-  const [activeTownChats, setActiveTownChats] = useState([]); // Towns with recent activity or favorited
-  const [unreadCounts, setUnreadCounts] = useState({}); // { threadId: unreadCount }
-  const [unreadByType, setUnreadByType] = useState({ lounge: 0, friends: 0, towns: 0 }); // Unread per chat type
-  const [unreadByFriend, setUnreadByFriend] = useState({}); // { friend_id: unreadCount }
-  const [chatType, setChatType] = useState('town'); // 'town', 'lounge', 'scout', 'friends'
-  const [isTyping, setIsTyping] = useState(false);
-  const [showCompanionsModal, setShowCompanionsModal] = useState(false);
-  const [showGroupChatModal, setShowGroupChatModal] = useState(false);
-  const [showGroupEditModal, setShowGroupEditModal] = useState(false);
-  const [companions, setCompanions] = useState([]);
-  const [friends, setFriends] = useState([]);
-  const [activeFriend, setActiveFriend] = useState(null);
-  const [friendsTabActive, setFriendsTabActive] = useState('friends'); // 'friends' or 'requests'
-  const [groupChats, setGroupChats] = useState([]);
-  const [activeGroupChat, setActiveGroupChat] = useState(null);
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteMessage, setInviteMessage] = useState('');
-  const [inviteLoading, setInviteLoading] = useState(false);
+  // Extract all state management to custom hook
+  const chatState = useChatState();
+  const {
+    loading, setLoading,
+    user, setUser,
+    userHomeTown, setUserHomeTown,
+    threads, setThreads,
+    activeTown, setActiveTown,
+    activeThread, setActiveThread,
+    messages, setMessages,
+    messageInput, setMessageInput,
+    favorites, setFavorites,
+    activeTownChats, setActiveTownChats,
+    unreadCounts, setUnreadCounts,
+    unreadByType, setUnreadByType,
+    unreadByFriend, setUnreadByFriend,
+    chatType, setChatType,
+    isTyping, setIsTyping,
+    showCompanionsModal, setShowCompanionsModal,
+    showGroupChatModal, setShowGroupChatModal,
+    showGroupEditModal, setShowGroupEditModal,
+    showInviteModal, setShowInviteModal,
+    showReportModal, setShowReportModal,
+    companions, setCompanions,
+    friends, setFriends,
+    activeFriend, setActiveFriend,
+    friendsTabActive, setFriendsTabActive,
+    groupChats, setGroupChats,
+    activeGroupChat, setActiveGroupChat,
+    pendingInvitations, setPendingInvitations,
+    inviteEmail, setInviteEmail,
+    inviteMessage, setInviteMessage,
+    inviteLoading, setInviteLoading,
+    defaultInviteMessage,
+    selectedUser, setSelectedUser,
+    mutedUsers, setMutedUsers,
+    blockedUsers, setBlockedUsers,
+    showMutedMessages, setShowMutedMessages,
+    userToReport, setUserToReport,
+    chatSearchTerm, setChatSearchTerm,
+    filterChatType, setFilterChatType,
+    filterCountry, setFilterCountry,
+    loungesSearchTerm, setLoungesSearchTerm,
+    townLoungeSearchTerm, setTownLoungeSearchTerm,
+    groupsSearchTerm, setGroupsSearchTerm,
+    friendsSearchTerm, setFriendsSearchTerm,
+    favoritesSearchTerm, setFavoritesSearchTerm,
+    showChatList, setShowChatList,
+    showMobileActions, setShowMobileActions,
+    activeTab, setActiveTab,
+    loungeView, setLoungeView,
+    selectedCountry, setSelectedCountry,
+    allCountries, setAllCountries,
+    allTowns, setAllTowns,
+    userCountries, setUserCountries,
+    likedMembers, setLikedMembers,
+    chatFavorites, setChatFavorites,
+    countryLikes, setCountryLikes,
+    showCountryAutocomplete, setShowCountryAutocomplete,
+    showTownAutocomplete, setShowTownAutocomplete,
+    countryDropdownPos, setCountryDropdownPos,
+    townDropdownPos, setTownDropdownPos,
+    messagesEndRef,
+    isInitialMount,
+    countrySearchRef,
+    countryInputRef,
+    townSearchRef,
+    townInputRef,
+  } = chatState;
 
-  const defaultInviteMessage = "Hi! I'm using Scout2Retire to plan my retirement. I've been exploring different retirement destinations and would love to connect with you to share ideas and experiences. Maybe we can help each other find the perfect place to enjoy our next chapter!\n\nLooking forward to chatting with you about our retirement plans.";
-  const [pendingInvitations, setPendingInvitations] = useState({ sent: [], received: [] });
-
-  // User action sheet state
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [mutedUsers, setMutedUsers] = useState(() => {
-    const stored = localStorage.getItem('mutedUsers');
-    return stored ? JSON.parse(stored) : [];
-  });
-  const [blockedUsers, setBlockedUsers] = useState([]);
-  const [showMutedMessages, setShowMutedMessages] = useState(false);
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [userToReport, setUserToReport] = useState(null);
-
-  // Chat search and filter state
-  const [chatSearchTerm, setChatSearchTerm] = useState('');
-  const [filterChatType, setFilterChatType] = useState('all'); // 'all', 'towns', 'friends'
-  const [filterCountry, setFilterCountry] = useState('all');
-
-  // Tab-specific search state
-  const [loungesSearchTerm, setLoungesSearchTerm] = useState(''); // Country lounge search
-  const [townLoungeSearchTerm, setTownLoungeSearchTerm] = useState(''); // Town lounge search
-  const [groupsSearchTerm, setGroupsSearchTerm] = useState('');
-  const [friendsSearchTerm, setFriendsSearchTerm] = useState('');
-  const [favoritesSearchTerm, setFavoritesSearchTerm] = useState('');
-
-  // Mobile-specific state (Phase 1)
-  const isMobile = useIsMobile(768); // Use existing mobile detection hook
-  const [showChatList, setShowChatList] = useState(true); // true = list view, false = conversation view
-  const [showMobileActions, setShowMobileActions] = useState(false); // For bottom action sheet
-
-  // Tab navigation state (all screens)
-  const [activeTab, setActiveTab] = useState('lobby'); // 'lobby'|'lounges'|'groups'|'friends'|'favorites'
-  const [loungeView, setLoungeView] = useState(null); // null|'retirement'|'country'|'town'
-  const [selectedCountry, setSelectedCountry] = useState(null); // For country lounge chat
-
-  // Auto-generated lists
-  const [allCountries, setAllCountries] = useState([]); // From towns table
-  const [allTowns, setAllTowns] = useState([]); // From towns table
-  const [userCountries, setUserCountries] = useState([]); // Countries from favorited towns
-
-  // Likes & Favorites
-  const [likedMembers, setLikedMembers] = useState([]); // One-way likes
-  const [chatFavorites, setChatFavorites] = useState([]); // Favorited chats
-  const [countryLikes, setCountryLikes] = useState([]); // Liked countries
-  const [showCountryAutocomplete, setShowCountryAutocomplete] = useState(false); // Show country autocomplete dropdown
-  const [showTownAutocomplete, setShowTownAutocomplete] = useState(false); // Show town autocomplete dropdown
-  const [countryDropdownPos, setCountryDropdownPos] = useState({ top: 0, left: 0, width: 0 }); // Country dropdown position
-  const [townDropdownPos, setTownDropdownPos] = useState({ top: 0, left: 0, width: 0 }); // Town dropdown position
-
-  const messagesEndRef = useRef(null);
-  const isInitialMount = useRef(true); // Track if this is the first mount
-  const countrySearchRef = useRef(null); // Ref for country autocomplete dropdown
-  const countryInputRef = useRef(null); // Ref for country search input
-  const townSearchRef = useRef(null); // Ref for town autocomplete dropdown
-  const townInputRef = useRef(null); // Ref for town search input
+  const isMobile = useIsMobile(768);
   const navigate = useNavigate();
   const { townId, groupId } = useParams();
   const [searchParams] = useSearchParams();
@@ -3485,225 +3474,29 @@ export default function Chat() {
       )}
 
       {/* Invite Modal */}
-      {showInviteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className={`${uiConfig.colors.modal} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.xl} max-w-md w-full`}>
-            <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-              <div className="flex justify-between items-center">
-                <h2 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
-                  Invite a Friend
-                </h2>
-                <button
-                  onClick={() => {
-                    setShowInviteModal(false);
-                    setInviteEmail('');
-                    // Keep the message for next time
-                  }}
-                  className={`${uiConfig.colors.hint} hover:${uiConfig.colors.body}`}
-                >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            
-            <div className="p-6">
-              <p className={`${uiConfig.colors.body} mb-4`}>
-                Connect with someone who shares your retirement dreams:
-              </p>
-              
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                sendInviteByEmail(inviteEmail);
-              }}>
-                <div className="space-y-4">
-                  <div>
-                    <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
-                      Friend's Email Address
-                    </label>
-                    <input
-                      type="email"
-                      value={inviteEmail}
-                      onChange={(e) => setInviteEmail(e.target.value)}
-                      placeholder="friend@example.com"
-                      className={`w-full px-4 py-2 border ${uiConfig.colors.border} ${uiConfig.layout.radius.md} ${uiConfig.colors.input} ${uiConfig.colors.body} ${uiConfig.colors.focusRing} focus:border-transparent`}
-                      required
-                      disabled={inviteLoading}
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className={`block ${uiConfig.font.size.sm} ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-2`}>
-                      Personal Message (Optional)
-                    </label>
-                    <textarea
-                      value={inviteMessage}
-                      onChange={(e) => {
-                        setInviteMessage(e.target.value);
-                      }}
-                      placeholder="Add your personal message here..."
-                      rows={4}
-                      maxLength={500}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-scout-accent-400 focus:border-transparent resize-none"
-                      disabled={inviteLoading}
-                    />
-                    <div className={`mt-1 text-xs ${uiConfig.colors.hint} text-right`}>
-                      {inviteMessage.length}/500
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex justify-end gap-3 mt-6">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowInviteModal(false);
-                      setInviteEmail('');
-                      // Keep the message for next time
-                    }}
-                    className={`px-4 py-2 ${uiConfig.colors.btnNeutral} ${uiConfig.layout.radius.md}`}
-                    disabled={inviteLoading}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className={`px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.layout.radius.md} disabled:opacity-50 disabled:cursor-not-allowed`}
-                    disabled={inviteLoading || !inviteEmail}
-                  >
-                    {inviteLoading ? 'Sending...' : 'Send Invitation'}
-                  </button>
-                </div>
-              </form>
-              
-              {pendingInvitations?.sent && pendingInvitations.sent.length > 0 && (
-                <div className={`mt-6 pt-6 border-t ${uiConfig.colors.borderLight}`}>
-                  <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint} mb-3`}>
-                    Pending invitations you've sent:
-                  </p>
-                  <div className="space-y-2">
-                    {pendingInvitations.sent.map(invite => (
-                      <div key={invite.id} className={`flex items-center justify-between ${uiConfig.colors.input} p-2 ${uiConfig.layout.radius.md}`}>
-                        <span className={`${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
-                          {invite.friend?.username || `User ${invite.friend_id?.slice(0, 8)}...`}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
-                            Pending
-                          </span>
-                          <button
-                            onClick={() => cancelSentInvitation(invite.id)}
-                            className="text-red-500 hover:text-red-700 transition-colors"
-                            title="Cancel invitation"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <InviteModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        inviteEmail={inviteEmail}
+        setInviteEmail={setInviteEmail}
+        inviteMessage={inviteMessage}
+        setInviteMessage={setInviteMessage}
+        inviteLoading={inviteLoading}
+        pendingInvitations={pendingInvitations}
+        onSendInvite={sendInviteByEmail}
+        onCancelInvitation={cancelSentInvitation}
+      />
       
       {/* Companions Modal */}
-      {showCompanionsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className={`${uiConfig.colors.modal} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.xl} max-w-md w-full max-h-[80vh] overflow-hidden`}>
-            <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-              <div className="flex justify-between items-center">
-                <h2 className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
-                  Find Companions
-                </h2>
-                <button
-                  onClick={() => setShowCompanionsModal(false)}
-                  className={`${uiConfig.colors.hint} hover:${uiConfig.colors.body}`}
-                >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            
-            <div className="p-4 overflow-y-auto max-h-[60vh]">
-              {/* Search box */}
-              <div className="mb-4">
-                <input
-                  type="text"
-                  placeholder="Search by name or email..."
-                  onChange={(e) => {
-                    const search = e.target.value.toLowerCase();
-                    if (search) {
-                      const filtered = companions.filter(c =>
-                        c.username?.toLowerCase().includes(search)
-                      );
-                      setCompanions(filtered);
-                    } else {
-                      loadSuggestedCompanions(user.id);
-                    }
-                  }}
-                  className={`w-full px-4 py-2 border ${uiConfig.colors.border} ${uiConfig.layout.radius.md} ${uiConfig.colors.input} focus:outline-none focus:ring-2 focus:ring-scout-accent-500`}
-                />
-              </div>
-
-              {companions.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className={`${uiConfig.colors.hint} mb-2`}>
-                    No users found
-                  </p>
-                  <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint}`}>
-                    Try searching by name or use the "Invite a Friend" button to invite someone by email
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint} mb-4`}>
-                    Connect with other Scout2Retire members:
-                  </p>
-                  {companions.map(companion => (
-                    <div 
-                      key={companion.id} 
-                      className={`${uiConfig.colors.input} ${uiConfig.layout.radius.lg} p-4`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center">
-                          <div className={`w-12 h-12 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center ${uiConfig.colors.accent} mr-3`}>
-                            <span className={`${uiConfig.font.size.lg} ${uiConfig.font.weight.medium}`}>
-                              {companion.username?.charAt(0)?.toUpperCase() || '?'}
-                            </span>
-                          </div>
-                          <div>
-                            <h3 className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
-                              {companion.username || 'User'}
-                            </h3>
-                            <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint}`}>
-                              {companion.similarity_score}% match
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => sendFriendRequest(companion.id)}
-                          className={`px-3 py-1 bg-scout-accent-600 hover:bg-scout-accent-700 text-white ${uiConfig.font.size.sm} ${uiConfig.layout.radius.md} ${uiConfig.animation.transition}`}
-                        >
-                          Connect
-                        </button>
-                      </div>
-                      
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <CompanionsModal
+        isOpen={showCompanionsModal}
+        onClose={() => setShowCompanionsModal(false)}
+        companions={companions}
+        setCompanions={setCompanions}
+        user={user}
+        onLoadSuggestedCompanions={loadSuggestedCompanions}
+        onSendFriendRequest={sendFriendRequest}
+      />
 
       {/* Group Chat Modal */}
       <GroupChatModal
