@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Trash2, Home, Settings, Users, Pin } from 'lucide-react';
+import { Trash2, Home, Settings, Users, User, MapPin, Pin, ChevronLeft, Plus, Send, MoreVertical, Search, UserPlus, Heart, Star } from 'lucide-react';
 import { getCurrentUser } from '../utils/authUtils';
-import { fetchTowns, fetchFavorites } from '../utils/townUtils.jsx';
+import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
 import { sanitizeChatMessage, MAX_LENGTHS, displaySafeContent } from '../utils/sanitizeUtils';
 import { cancelInvitation } from '../utils/companionUtils';
 import { sendInvitationEmailViaAuth } from '../utils/emailUtils';
@@ -18,6 +18,7 @@ import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
 import { useModerationActions } from '../hooks/useModerationActions';
+import { useIsMobile } from '../hooks/useMobileDetection';
 
 export default function Chat() {
   const [loading, setLoading] = useState(true);
@@ -48,7 +49,7 @@ export default function Chat() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteMessage, setInviteMessage] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
-  
+
   const defaultInviteMessage = "Hi! I'm using Scout2Retire to plan my retirement. I've been exploring different retirement destinations and would love to connect with you to share ideas and experiences. Maybe we can help each other find the perfect place to enjoy our next chapter!\n\nLooking forward to chatting with you about our retirement plans.";
   const [pendingInvitations, setPendingInvitations] = useState({ sent: [], received: [] });
 
@@ -68,8 +69,43 @@ export default function Chat() {
   const [filterChatType, setFilterChatType] = useState('all'); // 'all', 'towns', 'friends'
   const [filterCountry, setFilterCountry] = useState('all');
 
+  // Tab-specific search state
+  const [loungesSearchTerm, setLoungesSearchTerm] = useState(''); // Country lounge search
+  const [townLoungeSearchTerm, setTownLoungeSearchTerm] = useState(''); // Town lounge search
+  const [groupsSearchTerm, setGroupsSearchTerm] = useState('');
+  const [friendsSearchTerm, setFriendsSearchTerm] = useState('');
+  const [favoritesSearchTerm, setFavoritesSearchTerm] = useState('');
+
+  // Mobile-specific state (Phase 1)
+  const isMobile = useIsMobile(768); // Use existing mobile detection hook
+  const [showChatList, setShowChatList] = useState(true); // true = list view, false = conversation view
+  const [showMobileActions, setShowMobileActions] = useState(false); // For bottom action sheet
+
+  // Tab navigation state (all screens)
+  const [activeTab, setActiveTab] = useState('lobby'); // 'lobby'|'lounges'|'groups'|'friends'|'favorites'
+  const [loungeView, setLoungeView] = useState(null); // null|'retirement'|'country'|'town'
+  const [selectedCountry, setSelectedCountry] = useState(null); // For country lounge chat
+
+  // Auto-generated lists
+  const [allCountries, setAllCountries] = useState([]); // From towns table
+  const [allTowns, setAllTowns] = useState([]); // From towns table
+  const [userCountries, setUserCountries] = useState([]); // Countries from favorited towns
+
+  // Likes & Favorites
+  const [likedMembers, setLikedMembers] = useState([]); // One-way likes
+  const [chatFavorites, setChatFavorites] = useState([]); // Favorited chats
+  const [countryLikes, setCountryLikes] = useState([]); // Liked countries
+  const [showCountryAutocomplete, setShowCountryAutocomplete] = useState(false); // Show country autocomplete dropdown
+  const [showTownAutocomplete, setShowTownAutocomplete] = useState(false); // Show town autocomplete dropdown
+  const [countryDropdownPos, setCountryDropdownPos] = useState({ top: 0, left: 0, width: 0 }); // Country dropdown position
+  const [townDropdownPos, setTownDropdownPos] = useState({ top: 0, left: 0, width: 0 }); // Town dropdown position
+
   const messagesEndRef = useRef(null);
   const isInitialMount = useRef(true); // Track if this is the first mount
+  const countrySearchRef = useRef(null); // Ref for country autocomplete dropdown
+  const countryInputRef = useRef(null); // Ref for country search input
+  const townSearchRef = useRef(null); // Ref for town autocomplete dropdown
+  const townInputRef = useRef(null); // Ref for town search input
   const navigate = useNavigate();
   const { townId, groupId } = useParams();
   const [searchParams] = useSearchParams();
@@ -133,7 +169,11 @@ export default function Chat() {
           _invites,
           _blocked,
           _companions,
-          _hometown
+          _hometown,
+          _countries,
+          _towns,
+          _likes,
+          _favorites
         ] = await Promise.all([
           fetchFavorites(currentUser.id),
           loadFriends(currentUser.id),
@@ -149,11 +189,20 @@ export default function Chat() {
               .ilike('name', cityName)
               .limit(1);
             if (data?.[0]) setUserHomeTown(data[0]);
-          })() : Promise.resolve()
+          })() : Promise.resolve(),
+          loadAllCountries(),
+          loadAllTowns(),
+          loadLikedMembers(currentUser.id),
+          loadChatFavorites(currentUser.id),
+          loadCountryLikes(currentUser.id)
         ]);
 
         const { success: favSuccess, favorites: userFavorites } = favResult;
-        if (favSuccess) setFavorites(userFavorites);
+        if (favSuccess) {
+          setFavorites(userFavorites);
+          // Load user's countries from favorited towns
+          await loadUserCountries(userFavorites);
+        }
         console.log(`⏱️ [PERF] Parallel loads: ${(performance.now() - t3).toFixed(0)}ms`);
 
         // Town activity & unread counts (nice-to-have, loads in background)
@@ -642,6 +691,291 @@ export default function Chat() {
     }
   };
 
+  // Load all countries (auto-generated from towns table)
+  const loadAllCountries = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('towns')
+        .select('country')
+        .order('country');
+
+      if (error) {
+        console.error("Error loading countries:", error);
+        return;
+      }
+
+      const unique = [...new Set(data?.map(t => t.country) || [])];
+      setAllCountries(unique);
+    } catch (err) {
+      console.error("Error loading countries:", err);
+    }
+  };
+
+  // Load user's countries (from favorited towns)
+  const loadUserCountries = async (userFavorites) => {
+    try {
+      if (!userFavorites || userFavorites.length === 0) {
+        setUserCountries([]);
+        return;
+      }
+
+      const townIds = userFavorites.map(f => f.town_id);
+      const { data, error } = await supabase
+        .from('towns')
+        .select('country')
+        .in('id', townIds);
+
+      if (error) {
+        console.error("Error loading user countries:", error);
+        return;
+      }
+
+      const unique = [...new Set(data?.map(t => t.country) || [])];
+      setUserCountries(unique);
+    } catch (err) {
+      console.error("Error loading user countries:", err);
+    }
+  };
+
+  // Load all towns (auto-generated)
+  const loadAllTowns = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('towns')
+        .select('id, name, country')
+        .order('name');
+
+      if (error) {
+        console.error("Error loading towns:", error);
+        return;
+      }
+
+      setAllTowns(data || []);
+    } catch (err) {
+      console.error("Error loading towns:", err);
+    }
+  };
+
+  // Load liked members
+  const loadLikedMembers = async (userId) => {
+    try {
+      const { data: likes, error } = await supabase
+        .from('user_likes')
+        .select('liked_user_id')
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error("Error loading likes:", error);
+        return;
+      }
+
+      if (!likes || likes.length === 0) {
+        setLikedMembers([]);
+        return;
+      }
+
+      // Batch fetch user details
+      const userIds = likes.map(l => l.liked_user_id);
+      const { data: users, error: usersError } = await supabase.rpc('get_users_by_ids', {
+        p_user_ids: userIds
+      });
+
+      if (usersError) {
+        console.error("Error fetching liked users batch:", usersError);
+        return;
+      }
+
+      setLikedMembers(users || []);
+    } catch (err) {
+      console.error("Error loading liked members:", err);
+    }
+  };
+
+  // Load chat favorites
+  const loadChatFavorites = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('chat_favorites')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error("Error loading chat favorites:", error);
+        return;
+      }
+
+      setChatFavorites(data || []);
+    } catch (err) {
+      console.error("Error loading chat favorites:", err);
+    }
+  };
+
+  // Load country likes
+  const loadCountryLikes = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('country_likes')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error("Error loading country likes:", error);
+        return;
+      }
+
+      setCountryLikes(data || []);
+    } catch (err) {
+      console.error("Error loading country likes:", err);
+    }
+  };
+
+  // Toggle country like
+  const toggleCountryLike = async (countryName) => {
+    try {
+      if (!user) return;
+
+      const isLiked = countryLikes.some(c => c.country_name === countryName);
+
+      if (isLiked) {
+        // Unlike
+        const { error } = await supabase
+          .from('country_likes')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('country_name', countryName);
+
+        if (error) {
+          console.error("Error unliking country:", error);
+          toast.error("Failed to unlike country");
+          return;
+        }
+
+        setCountryLikes(countryLikes.filter(c => c.country_name !== countryName));
+        toast.success(`Removed ${countryName} from likes`);
+      } else {
+        // Like
+        const { error } = await supabase
+          .from('country_likes')
+          .insert({
+            user_id: user.id,
+            country_name: countryName
+          });
+
+        if (error) {
+          console.error("Error liking country:", error);
+          toast.error("Failed to like country");
+          return;
+        }
+
+        const { data: newLike } = await supabase
+          .from('country_likes')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('country_name', countryName)
+          .single();
+
+        if (newLike) {
+          setCountryLikes([...countryLikes, newLike]);
+        }
+        toast.success(`Added ${countryName} to likes`);
+      }
+    } catch (err) {
+      console.error("Error toggling country like:", err);
+      toast.error("An error occurred");
+    }
+  };
+
+  // Toggle like/unlike member
+  const toggleLikeMember = async (memberId) => {
+    try {
+      if (!user) return;
+
+      const isLiked = likedMembers.some(m => m.id === memberId);
+
+      if (isLiked) {
+        // Unlike
+        const { error } = await supabase
+          .from('user_likes')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('liked_user_id', memberId);
+
+        if (error) {
+          console.error("Error unliking member:", error);
+          toast.error("Failed to unlike member");
+          return;
+        }
+      } else {
+        // Like
+        console.log('Attempting to like member:', { user_id: user.id, liked_user_id: memberId });
+        const { error } = await supabase
+          .from('user_likes')
+          .insert({ user_id: user.id, liked_user_id: memberId });
+
+        if (error) {
+          console.error("Error liking member:", error);
+          console.error("Error details:", error.message, error.details, error.hint);
+          toast.error(`Failed to like member: ${error.message}`);
+          return;
+        }
+      }
+
+      await loadLikedMembers(user.id);
+    } catch (err) {
+      console.error("Error toggling like:", err);
+      toast.error("An error occurred");
+    }
+  };
+
+  // Toggle favorite/unfavorite chat
+  const toggleFavoriteChat = async (chatType, referenceId, referenceName) => {
+    try {
+      if (!user) return;
+
+      const isFaved = chatFavorites.some(
+        f => f.chat_type === chatType && f.reference_id === referenceId
+      );
+
+      if (isFaved) {
+        // Unfave
+        const { error } = await supabase
+          .from('chat_favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('chat_type', chatType)
+          .eq('reference_id', referenceId);
+
+        if (error) {
+          console.error("Error unfavoriting chat:", error);
+          toast.error("Failed to unfavorite");
+          return;
+        }
+      } else {
+        // Fave
+        const { error } = await supabase
+          .from('chat_favorites')
+          .insert({
+            user_id: user.id,
+            chat_type: chatType,
+            reference_id: referenceId,
+            reference_name: referenceName
+          });
+
+        if (error) {
+          console.error("Error favoriting chat:", error);
+          toast.error("Failed to favorite");
+          return;
+        }
+      }
+
+      await loadChatFavorites(user.id);
+    } catch (err) {
+      console.error("Error toggling favorite:", err);
+      toast.error("An error occurred");
+    }
+  };
+
   // Load unread counts for threads
   const loadUnreadCounts = async (threads) => {
     try {
@@ -903,14 +1237,36 @@ export default function Chat() {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]); // Watch the full messages array for new additions
-  
+
+  // Handle click outside autocomplete to close it
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (countrySearchRef.current && !countrySearchRef.current.contains(event.target)) {
+        setShowCountryAutocomplete(false);
+      }
+      if (townSearchRef.current && !townSearchRef.current.contains(event.target)) {
+        setShowTownAutocomplete(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   // Switch to town chat
   const switchToTownChat = async (town) => {
     try {
       setActiveTown(town);
       setChatType('town');
       setMessages([]);
-      
+
+      // Mobile: Hide chat list, show conversation
+      if (isMobile) {
+        setShowChatList(false);
+      }
+
       // Find or create thread for this town
       let townThread = threads.find(thread => thread.town_id === town.id);
       
@@ -954,7 +1310,12 @@ export default function Chat() {
       setActiveTown(null);
       setChatType('lounge');
       setMessages([]);
-      
+
+      // Mobile: Hide chat list, show conversation
+      if (isMobile) {
+        setShowChatList(false);
+      }
+
       // Find or create lounge thread
       let loungeThread = threads.find(thread => thread.town_id === null && thread.topic === 'Lounge');
       
@@ -999,6 +1360,11 @@ export default function Chat() {
       setChatType('group');
       setMessages([]);
       setActiveThread(group);
+
+      // Mobile: Hide chat list, show conversation
+      if (isMobile) {
+        setShowChatList(false);
+      }
 
       // Update URL to show we're in group chat
       navigate(`/chat/group/${group.id}`, { replace: true });
@@ -1056,7 +1422,12 @@ export default function Chat() {
       setChatType('friends');
       setActiveTown(null);
       setMessages([]);
-      
+
+      // Mobile: Hide chat list, show conversation
+      if (isMobile) {
+        setShowChatList(false);
+      }
+
       // Find or create thread for this friend chat
       // Topic format: friend-{userId}-{friendId} (sorted)
       const sortedTopic = `friend-${[user.id, friend.friend_id].sort().join('-')}`;
@@ -1784,32 +2155,78 @@ export default function Chat() {
             : 'Retirement Lounge'
         }
         maxWidth="max-w-7xl"
-        showFilters={true}
-        filterProps={{
-          // Chat search - searches messages, topics, countries, town names
-          chatSearchTerm,
-          setChatSearchTerm,
-
-          // Filter buttons
-          filterChatType,
-          setFilterChatType,
-          filterCountry,
-          setFilterCountry,
-
-          // Available data for search
-          messages: messages,
-          threads: threads,
-          activeTownChats: activeTownChats,
-          friends: friends,
-
-          // Unread counts for bubble badges
-          unreadByType,
-
-          // Available countries for dropdown
-          availableCountries: [...new Set(activeTownChats.map(tc => tc.towns.country).filter(Boolean))].sort(),
-
-          variant: 'chat' // Tell FilterBarV3 to use chat mode
-        }}
+        tabs={[
+          {
+            id: 'lobby',
+            label: 'Lobby',
+            icon: Home,
+            isActive: activeTab === 'lobby',
+            onClick: () => {
+              if (isMobile && activeTab === 'lobby' && !showChatList) {
+                // Toggle: return to list view
+                setShowChatList(true);
+              } else {
+                setActiveTab('lobby');
+              }
+            }
+          },
+          {
+            id: 'lounges',
+            label: 'Lounges',
+            icon: Users,
+            isActive: activeTab === 'lounges',
+            onClick: () => {
+              if (isMobile && activeTab === 'lounges' && !showChatList) {
+                // Toggle: return to list view
+                setShowChatList(true);
+              } else {
+                setActiveTab('lounges');
+              }
+            }
+          },
+          {
+            id: 'groups',
+            label: 'Groups',
+            icon: UserPlus,
+            isActive: activeTab === 'groups',
+            onClick: () => {
+              if (isMobile && activeTab === 'groups' && !showChatList) {
+                // Toggle: return to list view
+                setShowChatList(true);
+              } else {
+                setActiveTab('groups');
+              }
+            }
+          },
+          {
+            id: 'friends',
+            label: 'Friends',
+            icon: Heart,
+            isActive: activeTab === 'friends',
+            onClick: () => {
+              if (isMobile && activeTab === 'friends' && !showChatList) {
+                // Toggle: return to list view
+                setShowChatList(true);
+              } else {
+                setActiveTab('friends');
+              }
+            }
+          },
+          {
+            id: 'favorites',
+            label: 'Favorites',
+            icon: Star,
+            isActive: activeTab === 'favorites',
+            onClick: () => {
+              if (isMobile && activeTab === 'favorites' && !showChatList) {
+                // Toggle: return to list view
+                setShowChatList(true);
+              } else {
+                setActiveTab('favorites');
+              }
+            }
+          }
+        ]}
       />
 
       <UnifiedErrorBoundary variant="compact"
@@ -1817,256 +2234,887 @@ export default function Chat() {
         fallbackMessage="We're having trouble loading the chat. Please try refreshing the page."
         onReset={() => window.location.reload()}
       >
-        {/* Spacer for fixed header */}
+        {/* Spacer for fixed header with tabs row */}
         <HeaderSpacer hasFilters={true} />
 
         <main className="flex-1 overflow-hidden">
           <div className="h-full max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row gap-6">
-          {/* Sidebar */}
+
+          {/* Tab-Based Content - Conditional on mobile */}
+          {(showChatList || !isMobile) && (
           <div className="w-full md:w-64 space-y-4">
-            {/* Chat navigation - Only show lounge if filter is 'all' or not filtering */}
-            {(filterChatType === 'all' || filterChatType === 'lounge') && (
-            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
-              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-                <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Chat Options</h2>
-              </div>
 
-              <div className="p-2 space-y-1">
-                <button
-                  onClick={switchToLoungeChat}
-                  className={`w-full text-left px-4 py-3 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
-                    chatType === 'lounge'
-                      ? uiConfig.colors.badge
-                      : `${uiConfig.states.hover} ${uiConfig.colors.body}`
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-                      </svg>
-                      <div>
-                        <div className={`${uiConfig.font.weight.medium}`}>Retirement Lounge</div>
-                        <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>General discussion</div>
-                      </div>
-                    </div>
-                    {unreadByType.lounge > 0 && (
-                      <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-semibold rounded-full">
-                        {unreadByType.lounge}
-                      </div>
-                    )}
-                  </div>
-                </button>
-              </div>
-            </div>
-            )}
-
-            {/* Friends & Connections - Only show if filter is 'all' or 'friends' */}
-            {(filterChatType === 'all' || filterChatType === 'friends') && (
-            <FriendsSection
-              friendsTabActive={friendsTabActive}
-              setFriendsTabActive={setFriendsTabActive}
-              friends={friends}
-              pendingInvitations={pendingInvitations}
-              acceptInvitation={acceptInvitation}
-              declineInvitation={declineInvitation}
-              switchToFriendChat={switchToFriendChat}
-              chatType={chatType}
-              activeFriend={activeFriend}
-              setShowInviteModal={setShowInviteModal}
-              setInviteMessage={setInviteMessage}
-              defaultInviteMessage={defaultInviteMessage}
-              setShowCompanionsModal={setShowCompanionsModal}
-              setShowGroupChatModal={setShowGroupChatModal}
-              refreshFriends={() => loadFriends(user.id)}
-              unreadCount={unreadByType.friends}
-              unreadByFriend={unreadByFriend}
-            />
-            )}
-
-            {/* Group Chats - Only show if filter is 'all' */}
-            {filterChatType === 'all' && groupChats.length > 0 && (
-            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
-              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-                <div className="flex items-center justify-between">
-                  <div className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
-                    Group Chats
-                  </div>
-                  {groupChats.reduce((total, g) => total + (unreadCounts[g.id] || 0), 0) > 0 && (
-                    <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-semibold rounded-full">
-                      {groupChats.reduce((total, g) => total + (unreadCounts[g.id] || 0), 0)}
-                    </div>
-                  )}
+            {/* ========== LOBBY TAB ========== */}
+            {activeTab === 'lobby' && (
+            <div className="space-y-4">
+              {/* Search Bar */}
+              <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.sm} p-3`}>
+                <div className="relative">
+                  <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${uiConfig.colors.hint}`} />
+                  <input
+                    type="search"
+                    placeholder="Search favorites..."
+                    value={favoritesSearchTerm}
+                    onChange={(e) => setFavoritesSearchTerm(e.target.value)}
+                    className={`w-full h-10 pl-10 pr-4 ${uiConfig.layout.radius.full} ${uiConfig.colors.input} ${uiConfig.font.size.sm}`}
+                  />
                 </div>
               </div>
-              <div>
-                {groupChats.map(group => (
-                  <button
-                    type="button"
-                    key={group.id}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      switchToGroupChat(group);
-                      return false;
-                    }}
-                    className={`w-full text-left p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${
-                      chatType === 'group' && activeGroupChat?.id === group.id
-                        ? 'bg-scout-accent-50 dark:bg-scout-accent-900/20'
-                        : ''
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <div className={`w-10 h-10 ${group.is_public ? 'bg-green-100 dark:bg-green-900' : 'bg-purple-100 dark:bg-purple-900'} ${uiConfig.layout.radius.full} flex items-center justify-center ${group.is_public ? 'text-green-600 dark:text-green-400' : 'text-purple-600 dark:text-purple-400'} mr-3`}>
-                        <span className={`${uiConfig.font.size.sm} ${uiConfig.font.weight.medium}`}>
-                          {group.is_public ? '🌐' : '🔒'}
-                        </span>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading}`}>
-                            {group.topic || 'Untitled Group'}
+
+              <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
+              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
+                <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Lobby</h2>
+                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
+                  Your favorited chats
+                </p>
+              </div>
+
+              <div className="max-h-96 overflow-y-auto">
+                {chatFavorites.length === 0 ? (
+                  <div className={`p-8 text-center ${uiConfig.colors.hint}`}>
+                    <p>No favorites yet.</p>
+                    <p className={`${uiConfig.font.size.xs} mt-2`}>Tap ⭐ on any chat to add it here!</p>
+                  </div>
+                ) : (
+                  chatFavorites.map(fav => (
+                    <div
+                      key={fav.id}
+                      className={`flex items-center justify-between p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover}`}
+                    >
+                      <button
+                        onClick={() => {
+                          // Handle navigation based on chat type
+                          if (fav.chat_type === 'friend') {
+                            const friendData = friends.find(f => f.friend.id === fav.reference_id);
+                            if (friendData) switchToFriendChat(friendData);
+                          } else if (fav.chat_type === 'group') {
+                            const groupData = groupChats.find(g => g.id === fav.reference_id);
+                            if (groupData) switchToGroupChat(groupData);
+                          } else if (fav.chat_type === 'town_lounge') {
+                            const townData = allTowns.find(t => t.id === fav.reference_id);
+                            if (townData) switchToTownChat(townData);
+                          } else if (fav.chat_type === 'country_lounge') {
+                            setSelectedCountry(fav.reference_name);
+                            toast.success(`Opening ${fav.reference_name} lounge`);
+                          }
+                        }}
+                        className="flex-1 text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center`}>
+                            {fav.chat_type === 'friend' && <User className="h-5 w-5" />}
+                            {fav.chat_type === 'group' && <Users className="h-5 w-5" />}
+                            {fav.chat_type === 'town_lounge' && <Home className="h-5 w-5" />}
+                            {fav.chat_type === 'country_lounge' && <MapPin className="h-5 w-5" />}
                           </div>
-                          {unreadCounts[group.id] > 0 && (
-                            <div className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">
-                              {unreadCounts[group.id]}
+                          <div>
+                            <div className={uiConfig.font.weight.medium}>{fav.reference_name}</div>
+                            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} capitalize`}>
+                              {fav.chat_type.replace('_', ' ')}
                             </div>
-                          )}
+                          </div>
                         </div>
-                        <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
-                          {group.category || 'General'} {group.role === 'admin' && '• Admin'}
-                        </div>
-                      </div>
+                      </button>
+                      <button
+                        onClick={() => toggleFavoriteChat(fav.chat_type, fav.reference_id, fav.reference_name)}
+                        className="p-2"
+                        title="Unfavorite"
+                      >
+                        ⭐
+                      </button>
                     </div>
-                  </button>
-                ))}
+                  ))
+                )}
+              </div>
               </div>
             </div>
             )}
+            {/* ========== END LOBBY TAB ========== */}
 
-            {/* Town Chats - Shows favorited + active towns - Only show if filter is 'all' or 'towns' */}
-            {(filterChatType === 'all' || filterChatType === 'towns') && (
-            <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
-              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Town Chats</h2>
-                    <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
-                      Active conversations & favorites
-                    </p>
+            {/* ========== LOUNGES TAB ========== */}
+            {activeTab === 'lounges' && (
+            <div className="space-y-4">
+
+              {/* Main Lounge List */}
+              {!loungeView && (
+                <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
+                  <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
+                    <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Lounges</h2>
                   </div>
-                  {unreadByType.towns > 0 && (
-                    <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-semibold rounded-full">
-                      {unreadByType.towns}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {activeTownChats.length === 0 && !userHomeTown ? (
-                <div className={`p-4 text-center ${uiConfig.colors.hint} ${uiConfig.font.size.sm}`}>
-                  <p>No active town chats yet.</p>
-                  <a href="/discover" className={`${uiConfig.colors.accent} hover:underline mt-2 inline-block`}>
-                    Discover towns
-                  </a>
-                </div>
-              ) : (
-                <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 28rem)' }}>
-                  {/* Home Town - Always first */}
-                  {userHomeTown && (
-                    filterCountry === 'all' || userHomeTown.country === filterCountry
-                  ) && (
+                  <div className="p-2 space-y-1">
+                    {/* Retirement Lounge */}
                     <button
-                      key={`home-${userHomeTown.id}`}
-                      onClick={() => switchToTownChat(userHomeTown)}
-                      className={`w-full text-left p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${
-                        chatType === 'town' && activeTown?.id === userHomeTown.id
-                          ? uiConfig.colors.badge
-                          : ''
+                      onClick={switchToLoungeChat}
+                      className={`w-full text-left px-4 py-3 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
+                        chatType === 'lounge' ? uiConfig.colors.badge : `${uiConfig.states.hover}`
                       }`}
                     >
-                      <div className="flex items-center">
-                        <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.lg} flex items-center justify-center ${uiConfig.colors.accent} mr-3`}>
-                          <Home className="h-5 w-5" />
-                        </div>
-                        <div className="flex-1">
-                          <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} flex items-center gap-2`}>
-                            {userHomeTown.name}
-                            <span className={`text-xs ${uiConfig.colors.hint} font-normal`}>
-                              (Home)
-                            </span>
-                          </div>
-                          <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
-                            {userHomeTown.country}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Users className="h-5 w-5" />
+                          <div>
+                            <div className={uiConfig.font.weight.medium}>Retirement Lounge</div>
+                            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>General discussion</div>
                           </div>
                         </div>
-                      </div>
-                    </button>
-                  )}
-
-                  {/* Other Town Chats */}
-                  {activeTownChats
-                    .filter(townChat => {
-                      // Don't show home town twice
-                      if (userHomeTown && townChat.town_id === userHomeTown.id) {
-                        return false;
-                      }
-                      // Filter by country if selected
-                      if (filterCountry !== 'all' && townChat.towns.country !== filterCountry) {
-                        return false;
-                      }
-                      return true;
-                    })
-                    .map(townChat => (
-                    <button
-                      key={townChat.town_id}
-                      onClick={() => switchToTownChat(townChat.towns)}
-                      className={`w-full text-left p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${
-                        chatType === 'town' && activeTown?.id === townChat.town_id
-                          ? uiConfig.colors.badge
-                          : ''
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.lg} flex items-center justify-center ${uiConfig.colors.accent} mr-3`}>
-                          {townChat.is_favorited ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                          ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-                            </svg>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} flex items-center gap-2`}>
-                            {townChat.towns.name}
-                            {!townChat.is_favorited && (
-                              <span className={`${uiConfig.font.size.xs} px-1.5 py-0.5 bg-scout-accent-100 dark:bg-scout-accent-900/30 text-scout-accent-700 dark:text-scout-accent-300 rounded`}>
-                                Active
-                              </span>
-                            )}
-                          </div>
-                          <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
-                            {townChat.towns.country}
-                          </div>
-                        </div>
-                        {townChat.thread_id && unreadCounts[townChat.thread_id] > 0 && (
-                          <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-semibold rounded-full">
-                            {unreadCounts[townChat.thread_id]}
+                        {unreadByType.lounge > 0 && (
+                          <div className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">
+                            {unreadByType.lounge}
                           </div>
                         )}
                       </div>
                     </button>
-                  ))}
+
+                    {/* Country Lounge */}
+                    <button
+                      onClick={() => setLoungeView('country')}
+                      className={`w-full text-left px-4 py-3 ${uiConfig.layout.radius.md} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <MapPin className="h-5 w-5" />
+                          <div>
+                            <div className={uiConfig.font.weight.medium}>Country Lounge</div>
+                            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>Chat by country</div>
+                          </div>
+                        </div>
+                        <ChevronLeft className="h-4 w-4 rotate-180" />
+                      </div>
+                    </button>
+
+                    {/* Town Lounge */}
+                    <button
+                      onClick={() => setLoungeView('town')}
+                      className={`w-full text-left px-4 py-3 ${uiConfig.layout.radius.md} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Home className="h-5 w-5" />
+                          <div>
+                            <div className={uiConfig.font.weight.medium}>Town Lounge</div>
+                            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>Chat by town</div>
+                          </div>
+                        </div>
+                        <ChevronLeft className="h-4 w-4 rotate-180" />
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Country Lounge Subsection */}
+              {loungeView === 'country' && (
+                <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md}`}>
+                  <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
+                    <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Country Lounge</h2>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto relative">
+                    {/* User's Liked Countries */}
+                    {countryLikes.length > 0 && (
+                      <>
+                        <div className={`px-4 py-2 ${uiConfig.font.size.xs} ${uiConfig.font.weight.semibold} ${uiConfig.colors.hint} uppercase`}>
+                          My Countries
+                        </div>
+                        {countryLikes.map(countryLike => {
+                          const country = countryLike.country_name;
+                          return (
+                            <div
+                              key={`liked-${country}`}
+                              className={`flex items-center justify-between px-4 py-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
+                            >
+                              <button
+                                onClick={() => {
+                                  setSelectedCountry(country);
+                                  toast.success(`Opening ${country} lounge`);
+                                }}
+                                className="flex-1 text-left"
+                              >
+                                {country}
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleCountryLike(country);
+                                }}
+                                className="p-1.5 ml-2"
+                                aria-label="Unlike country"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                                </svg>
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </>
+                    )}
+
+                    {/* Search Bar - Right after MY COUNTRIES */}
+                    <div className={`p-3 sticky top-0 ${uiConfig.colors.card} border-b ${uiConfig.colors.borderLight} z-30`}>
+                      <div className="relative" ref={countrySearchRef}>
+                        <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${uiConfig.colors.hint}`} />
+                        <input
+                          ref={countryInputRef}
+                          type="text"
+                          placeholder="Search lounges..."
+                          value={loungesSearchTerm}
+                          onChange={(e) => {
+                            setLoungesSearchTerm(e.target.value);
+                            if (e.target.value.length > 0) {
+                              const rect = e.target.getBoundingClientRect();
+                              setCountryDropdownPos({
+                                top: rect.bottom + 4,
+                                left: rect.left,
+                                width: rect.width
+                              });
+                              setShowCountryAutocomplete(true);
+                            } else {
+                              setShowCountryAutocomplete(false);
+                            }
+                          }}
+                          onFocus={() => {
+                            if (loungesSearchTerm.length > 0) {
+                              const rect = countryInputRef.current.getBoundingClientRect();
+                              setCountryDropdownPos({
+                                top: rect.bottom + 4,
+                                left: rect.left,
+                                width: rect.width
+                              });
+                              setShowCountryAutocomplete(true);
+                            }
+                          }}
+                          autoComplete="off"
+                          className={`w-full h-10 pl-10 pr-4 ${uiConfig.layout.radius.full} ${uiConfig.colors.input} ${uiConfig.font.size.sm}`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Autocomplete Dropdown - Rendered at document level */}
+                    {showCountryAutocomplete && loungesSearchTerm && (
+                      <div
+                        className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.lg} border ${uiConfig.colors.borderLight} max-h-60 overflow-y-auto`}
+                        style={{
+                          position: 'fixed',
+                          top: `${countryDropdownPos.top}px`,
+                          left: `${countryDropdownPos.left}px`,
+                          width: `${countryDropdownPos.width}px`,
+                          zIndex: 9999
+                        }}
+                      >
+                        {allCountries
+                          .filter(country =>
+                            country.toLowerCase().includes(loungesSearchTerm.toLowerCase()) &&
+                            !countryLikes.some(c => c.country_name === country)
+                          )
+                          .slice(0, 10) // Show max 10 suggestions
+                          .map(country => (
+                            <button
+                              key={country}
+                              onClick={() => {
+                                toggleCountryLike(country);
+                                setLoungesSearchTerm('');
+                                setShowCountryAutocomplete(false);
+                                toast.success(`Added ${country} to My Countries`);
+                              }}
+                              className={`w-full text-left px-4 py-2.5 ${uiConfig.states.hover} ${uiConfig.animation.transition} border-b ${uiConfig.colors.borderLight} last:border-b-0`}
+                            >
+                              <span className={uiConfig.font.size.sm}>{country}</span>
+                            </button>
+                          ))
+                        }
+                        {allCountries.filter(country =>
+                          country.toLowerCase().includes(loungesSearchTerm.toLowerCase()) &&
+                          !countryLikes.some(c => c.country_name === country)
+                        ).length === 0 && (
+                          <div className={`px-4 py-3 ${uiConfig.colors.hint} ${uiConfig.font.size.sm} text-center`}>
+                            {countryLikes.some(c => c.country_name.toLowerCase().includes(loungesSearchTerm.toLowerCase()))
+                              ? "Already in My Countries"
+                              : "No countries found"}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* All Countries (no header, just list) */}
+                    {allCountries
+                      .filter(country =>
+                        !countryLikes.some(c => c.country_name === country) &&
+                        (loungesSearchTerm === '' || country.toLowerCase().includes(loungesSearchTerm.toLowerCase()))
+                      )
+                      .map(country => {
+                        return (
+                          <div
+                            key={country}
+                            className={`flex items-center justify-between px-4 py-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
+                          >
+                            <button
+                              onClick={() => {
+                                setSelectedCountry(country);
+                                toast.success(`Opening ${country} lounge`);
+                              }}
+                              className="flex-1 text-left"
+                            >
+                              {country}
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleCountryLike(country);
+                              }}
+                              className="p-1.5 ml-2"
+                              aria-label="Like country"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                              </svg>
+                            </button>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
+
+              {/* Town Lounge Subsection */}
+              {loungeView === 'town' && (
+                <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md}`}>
+                  <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
+                    <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Town Lounge</h2>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto relative">
+                    {/* Favorited Towns */}
+                    {favorites.length > 0 && (
+                      <>
+                        <div className={`px-4 py-2 ${uiConfig.font.size.xs} ${uiConfig.font.weight.semibold} ${uiConfig.colors.hint} uppercase`}>
+                          My Favorite Towns
+                        </div>
+                        {favorites
+                          .map(f => allTowns.find(t => t.id === f.town_id))
+                          .filter(Boolean)
+                          .sort((a, b) => a.name.localeCompare(b.name))
+                          .map(town => (
+                            <div
+                              key={`fav-${town.id}`}
+                              className={`flex items-center justify-between px-4 py-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
+                            >
+                              <button
+                                onClick={() => switchToTownChat(town)}
+                                className="flex-1 text-left"
+                              >
+                                <div className={uiConfig.font.weight.medium}>{town.name}</div>
+                                <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>{town.country}</div>
+                              </button>
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  const result = await toggleFavorite(user.id, town.id, town.name, town.country);
+                                  if (result.success) {
+                                    const updatedFavorites = await fetchFavorites(user.id, 'TownLounge');
+                                    if (updatedFavorites.success) {
+                                      setFavorites(updatedFavorites.favorites);
+                                      toast.success(`Removed ${town.name} from favorites`);
+                                    }
+                                  }
+                                }}
+                                className="p-1.5 ml-2"
+                                aria-label="Unlike town"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                                </svg>
+                              </button>
+                            </div>
+                          ))}
+                      </>
+                    )}
+
+                    {/* Search Bar - Right after MY FAVORITE TOWNS */}
+                    <div className={`p-3 sticky top-0 ${uiConfig.colors.card} border-b ${uiConfig.colors.borderLight} z-30`}>
+                      <div className="relative" ref={townSearchRef}>
+                        <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${uiConfig.colors.hint}`} />
+                        <input
+                          ref={townInputRef}
+                          type="text"
+                          placeholder="Search towns..."
+                          value={townLoungeSearchTerm}
+                          onChange={(e) => {
+                            setTownLoungeSearchTerm(e.target.value);
+                            if (e.target.value.length > 0) {
+                              const rect = e.target.getBoundingClientRect();
+                              setTownDropdownPos({
+                                top: rect.bottom + 4,
+                                left: rect.left,
+                                width: rect.width
+                              });
+                              setShowTownAutocomplete(true);
+                            } else {
+                              setShowTownAutocomplete(false);
+                            }
+                          }}
+                          onFocus={() => {
+                            if (townLoungeSearchTerm.length > 0) {
+                              const rect = townInputRef.current.getBoundingClientRect();
+                              setTownDropdownPos({
+                                top: rect.bottom + 4,
+                                left: rect.left,
+                                width: rect.width
+                              });
+                              setShowTownAutocomplete(true);
+                            }
+                          }}
+                          autoComplete="off"
+                          className={`w-full h-10 pl-10 pr-4 ${uiConfig.layout.radius.full} ${uiConfig.colors.input} ${uiConfig.font.size.sm}`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Autocomplete Dropdown - Rendered at document level */}
+                    {showTownAutocomplete && townLoungeSearchTerm && (
+                      <div
+                        className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.lg} border ${uiConfig.colors.borderLight} max-h-60 overflow-y-auto`}
+                        style={{
+                          position: 'fixed',
+                          top: `${townDropdownPos.top}px`,
+                          left: `${townDropdownPos.left}px`,
+                          width: `${townDropdownPos.width}px`,
+                          zIndex: 9999
+                        }}
+                      >
+                        {allTowns
+                          .filter(town =>
+                            town.name.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()) ||
+                            town.country.toLowerCase().includes(townLoungeSearchTerm.toLowerCase())
+                          )
+                          .slice(0, 10) // Show max 10 suggestions
+                          .map(town => (
+                            <button
+                              key={town.id}
+                              onClick={() => {
+                                switchToTownChat(town);
+                                setTownLoungeSearchTerm('');
+                                setShowTownAutocomplete(false);
+                              }}
+                              className={`w-full text-left px-4 py-2.5 ${uiConfig.states.hover} ${uiConfig.animation.transition} border-b ${uiConfig.colors.borderLight} last:border-b-0`}
+                            >
+                              <div className={uiConfig.font.size.sm}>{town.name}</div>
+                              <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>{town.country}</div>
+                            </button>
+                          ))
+                        }
+                        {allTowns.filter(town =>
+                          town.name.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()) ||
+                          town.country.toLowerCase().includes(townLoungeSearchTerm.toLowerCase())
+                        ).length === 0 && (
+                          <div className={`px-4 py-3 ${uiConfig.colors.hint} ${uiConfig.font.size.sm} text-center`}>
+                            No towns found
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* All Towns (filtered by search) */}
+                    {allTowns
+                      .filter(town =>
+                        // Exclude favorited towns
+                        !favorites.some(f => f.town_id === town.id) &&
+                        // Filter by search term
+                        (townLoungeSearchTerm === '' ||
+                          town.name.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()) ||
+                          town.country.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()))
+                      )
+                      .map(town => (
+                        <div
+                          key={town.id}
+                          className={`flex items-center justify-between px-4 py-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
+                        >
+                          <button
+                            onClick={() => switchToTownChat(town)}
+                            className="flex-1 text-left"
+                          >
+                            <div className={uiConfig.font.weight.medium}>{town.name}</div>
+                            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>{town.country}</div>
+                          </button>
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              const result = await toggleFavorite(user.id, town.id, town.name, town.country);
+                              if (result.success) {
+                                const updatedFavorites = await fetchFavorites(user.id, 'TownLounge');
+                                if (updatedFavorites.success) {
+                                  setFavorites(updatedFavorites.favorites);
+                                  toast.success(`Added ${town.name} to favorites`);
+                                }
+                              }
+                            }}
+                            className="p-1.5 ml-2"
+                            aria-label="Like town"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                  </div>
                 </div>
               )}
             </div>
             )}
-          </div>
+            {/* ========== END LOUNGES TAB ========== */}
 
-          {/* Chat area - Full height on all screens */}
+            {/* ========== GROUPS TAB ========== */}
+            {activeTab === 'groups' && (
+            <div className="space-y-4">
+              {/* Search Bar */}
+              <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.sm} p-3`}>
+                <div className="relative">
+                  <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${uiConfig.colors.hint}`} />
+                  <input
+                    type="search"
+                    placeholder="Search groups..."
+                    value={groupsSearchTerm}
+                    onChange={(e) => setGroupsSearchTerm(e.target.value)}
+                    className={`w-full h-10 pl-10 pr-4 ${uiConfig.layout.radius.full} ${uiConfig.colors.input} ${uiConfig.font.size.sm}`}
+                  />
+                </div>
+              </div>
+
+              <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
+              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
+                <div className="flex items-center justify-between">
+                  <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Groups</h2>
+                  <button
+                    onClick={() => setShowGroupChatModal(true)}
+                    className={`${uiConfig.colors.btnSecondary} px-3 py-1 text-xs ${uiConfig.layout.radius.md}`}
+                  >
+                    Create Group
+                  </button>
+                </div>
+              </div>
+
+              <div className="max-h-96 overflow-y-auto">
+                {/* My Groups */}
+                {groupChats.filter(g => g.created_by === user?.id || g.members?.includes(user?.id)).length > 0 && (
+                  <>
+                    <div className={`px-4 py-2 ${uiConfig.font.size.xs} ${uiConfig.font.weight.semibold} ${uiConfig.colors.hint} uppercase`}>
+                      My Groups
+                    </div>
+                    {groupChats
+                      .filter(g => g.created_by === user?.id || g.members?.includes(user?.id))
+                      .sort((a, b) => (a.topic || '').localeCompare(b.topic || ''))
+                      .map(group => (
+                        <button
+                          key={group.id}
+                          onClick={() => switchToGroupChat(group)}
+                          className={`w-full text-left p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${
+                            chatType === 'group' && activeGroupChat?.id === group.id ? uiConfig.colors.badge : ''
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 ${group.is_public ? 'bg-green-100 dark:bg-green-900' : 'bg-purple-100 dark:bg-purple-900'} ${uiConfig.layout.radius.full} flex items-center justify-center`}>
+                              <span>{group.is_public ? '🌐' : '🔒'}</span>
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <div className={uiConfig.font.weight.medium}>{group.topic || 'Untitled Group'}</div>
+                                {unreadCounts[group.id] > 0 && (
+                                  <div className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">
+                                    {unreadCounts[group.id]}
+                                  </div>
+                                )}
+                              </div>
+                              <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+                                {group.category || 'General'} {group.role === 'admin' && '• Admin'}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    <hr className="my-2" />
+                  </>
+                )}
+
+                {/* Other Groups */}
+                {groupChats.filter(g => g.is_public && g.created_by !== user?.id && !g.members?.includes(user?.id)).length > 0 && (
+                  <>
+                    <div className={`px-4 py-2 ${uiConfig.font.size.xs} ${uiConfig.font.weight.semibold} ${uiConfig.colors.hint} uppercase`}>
+                      Other Groups
+                    </div>
+                    {groupChats
+                      .filter(g => g.is_public && g.created_by !== user?.id && !g.members?.includes(user?.id))
+                      .sort((a, b) => (a.topic || '').localeCompare(b.topic || ''))
+                      .map(group => (
+                        <button
+                          key={group.id}
+                          onClick={() => switchToGroupChat(group)}
+                          className={`w-full text-left p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                              <span>🌐</span>
+                            </div>
+                            <div className="flex-1">
+                              <div className={uiConfig.font.weight.medium}>{group.topic || 'Untitled Group'}</div>
+                              <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+                                {group.category || 'General'}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                  </>
+                )}
+
+                {groupChats.length === 0 && (
+                  <div className={`p-8 text-center ${uiConfig.colors.hint}`}>
+                    <p>No groups yet.</p>
+                    <button
+                      onClick={() => setShowGroupChatModal(true)}
+                      className={`mt-3 ${uiConfig.colors.btnPrimary} px-4 py-2 ${uiConfig.layout.radius.md}`}
+                    >
+                      Create First Group
+                    </button>
+                  </div>
+                )}
+              </div>
+              </div>
+            </div>
+            )}
+            {/* ========== END GROUPS TAB ========== */}
+
+            {/* ========== FRIENDS TAB ========== */}
+            {activeTab === 'friends' && (
+            <div className="space-y-4">
+              {/* Search Bar */}
+              <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.sm} p-3`}>
+                <div className="relative">
+                  <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${uiConfig.colors.hint}`} />
+                  <input
+                    type="search"
+                    placeholder="Search friends..."
+                    value={friendsSearchTerm}
+                    onChange={(e) => setFriendsSearchTerm(e.target.value)}
+                    className={`w-full h-10 pl-10 pr-4 ${uiConfig.layout.radius.full} ${uiConfig.colors.input} ${uiConfig.font.size.sm}`}
+                  />
+                </div>
+              </div>
+
+              <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
+              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
+                <div className="flex items-center justify-between">
+                  <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Friends</h2>
+                  <button
+                    onClick={() => setShowInviteModal(true)}
+                    className={`${uiConfig.colors.btnSecondary} px-3 py-1 text-xs ${uiConfig.layout.radius.md}`}
+                  >
+                    Invite Friend
+                  </button>
+                </div>
+              </div>
+
+              <div className="max-h-96 overflow-y-auto">
+                {/* Liked Members */}
+                {likedMembers.length > 0 && (
+                  <>
+                    <div className={`px-4 py-2 ${uiConfig.font.size.xs} ${uiConfig.font.weight.semibold} ${uiConfig.colors.hint} uppercase`}>
+                      Liked Members
+                    </div>
+                    {likedMembers
+                      .sort((a, b) => (a.username || '').localeCompare(b.username || ''))
+                      .map(member => (
+                        <div
+                          key={member.id}
+                          className={`flex items-center justify-between p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover}`}
+                        >
+                          <button
+                            onClick={() => {
+                              // Find friend data for this member
+                              const friendData = friends.find(f => f.friend.id === member.id);
+                              if (friendData) {
+                                switchToFriendChat(friendData);
+                              } else {
+                                toast.error("Not yet friends with this member");
+                              }
+                            }}
+                            className="flex-1 text-left"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center`}>
+                                <User className="h-5 w-5" />
+                              </div>
+                              <div className={uiConfig.font.weight.medium}>{member.username || 'Member'}</div>
+                            </div>
+                          </button>
+                          <button
+                            onClick={() => toggleLikeMember(member.id)}
+                            className="p-2"
+                            title="Unlike"
+                          >
+                            ❤️
+                          </button>
+                        </div>
+                      ))}
+                    <hr className="my-2" />
+                  </>
+                )}
+
+                {/* Friends */}
+                {friends.length > 0 && (
+                  <>
+                    <div className={`px-4 py-2 ${uiConfig.font.size.xs} ${uiConfig.font.weight.semibold} ${uiConfig.colors.hint} uppercase`}>
+                      Friends
+                    </div>
+                    {friends
+                      .filter(f => !likedMembers.some(lm => lm.id === f.friend.id))
+                      .sort((a, b) => (a.friend.username || '').localeCompare(b.friend.username || ''))
+                      .map(friend => (
+                        <div
+                          key={friend.id}
+                          className={`flex items-center justify-between p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${
+                            chatType === 'friends' && activeFriend?.id === friend.id ? uiConfig.colors.badge : ''
+                          }`}
+                        >
+                          <button
+                            onClick={() => switchToFriendChat(friend)}
+                            className="flex-1 text-left"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center`}>
+                                <User className="h-5 w-5" />
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <div className={uiConfig.font.weight.medium}>{friend.friend.username || 'Friend'}</div>
+                                  {unreadByFriend[friend.friend_id] > 0 && (
+                                    <div className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">
+                                      {unreadByFriend[friend.friend_id]}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </button>
+                          <button
+                            onClick={() => toggleLikeMember(friend.friend.id)}
+                            className="p-2"
+                            title="Like this member"
+                          >
+                            🤍
+                          </button>
+                        </div>
+                      ))}
+                  </>
+                )}
+
+                {friends.length === 0 && likedMembers.length === 0 && (
+                  <div className={`p-8 text-center ${uiConfig.colors.hint}`}>
+                    <p>No friends yet.</p>
+                    <button
+                      onClick={() => setShowInviteModal(true)}
+                      className={`mt-3 ${uiConfig.colors.btnPrimary} px-4 py-2 ${uiConfig.layout.radius.md}`}
+                    >
+                      Invite a Friend
+                    </button>
+                  </div>
+                )}
+              </div>
+              </div>
+            </div>
+            )}
+            {/* ========== END FRIENDS TAB ========== */}
+
+            {/* ========== FAVORITES TAB ========== */}
+            {activeTab === 'favorites' && (
+            <div className="space-y-4">
+              {/* Search Bar */}
+              <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.sm} p-3`}>
+                <div className="relative">
+                  <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${uiConfig.colors.hint}`} />
+                  <input
+                    type="search"
+                    placeholder="Search favorites..."
+                    value={favoritesSearchTerm}
+                    onChange={(e) => setFavoritesSearchTerm(e.target.value)}
+                    className={`w-full h-10 pl-10 pr-4 ${uiConfig.layout.radius.full} ${uiConfig.colors.input} ${uiConfig.font.size.sm}`}
+                  />
+                </div>
+              </div>
+
+              <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
+              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
+                <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Favorites</h2>
+                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
+                  Your favorited chats
+                </p>
+              </div>
+
+              <div className="max-h-96 overflow-y-auto">
+                {chatFavorites.length === 0 ? (
+                  <div className={`p-8 text-center ${uiConfig.colors.hint}`}>
+                    <p>No favorites yet.</p>
+                    <p className={`${uiConfig.font.size.xs} mt-2`}>Tap ⭐ on any chat to add it here!</p>
+                  </div>
+                ) : (
+                  chatFavorites.map(fav => (
+                    <div
+                      key={fav.id}
+                      className={`flex items-center justify-between p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover}`}
+                    >
+                      <button
+                        onClick={() => {
+                          // Handle navigation based on chat type
+                          if (fav.chat_type === 'friend') {
+                            const friendData = friends.find(f => f.friend.id === fav.reference_id);
+                            if (friendData) switchToFriendChat(friendData);
+                          } else if (fav.chat_type === 'group') {
+                            const groupData = groupChats.find(g => g.id === fav.reference_id);
+                            if (groupData) switchToGroupChat(groupData);
+                          } else if (fav.chat_type === 'town_lounge') {
+                            const townData = allTowns.find(t => t.id === fav.reference_id);
+                            if (townData) switchToTownChat(townData);
+                          } else if (fav.chat_type === 'country_lounge') {
+                            setSelectedCountry(fav.reference_name);
+                            toast.success(`Opening ${fav.reference_name} lounge`);
+                          }
+                        }}
+                        className="flex-1 text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center`}>
+                            {fav.chat_type === 'friend' && <User className="h-5 w-5" />}
+                            {fav.chat_type === 'group' && <Users className="h-5 w-5" />}
+                            {fav.chat_type === 'town_lounge' && <Home className="h-5 w-5" />}
+                            {fav.chat_type === 'country_lounge' && <MapPin className="h-5 w-5" />}
+                          </div>
+                          <div>
+                            <div className={uiConfig.font.weight.medium}>{fav.reference_name}</div>
+                            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} capitalize`}>
+                              {fav.chat_type.replace('_', ' ')}
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => toggleFavoriteChat(fav.chat_type, fav.reference_id, fav.reference_name)}
+                        className="p-2"
+                        title="Unfavorite"
+                      >
+                        ⭐
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+              </div>
+            </div>
+            )}
+            {/* ========== END FAVORITES TAB ========== */}
+
+          </div>
+          )}
+
+          {/* Chat area - Desktop (always) + Mobile (when chat selected) */}
+          {(!isMobile || !showChatList) && (
           <div className={`flex-1 min-w-0 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden flex flex-col`} style={{ height: 'calc(100vh - 10rem)' }}>
             {/* Group Chat Header with Settings */}
             {chatType === 'group' && activeGroupChat && (
@@ -2309,11 +3357,104 @@ export default function Chat() {
               </form>
             </div>
           </div>
+          )}
         </div>
         </main>
       </UnifiedErrorBoundary>
 
       {/* Bottom navigation for mobile */}
+
+      {/* MOBILE: Action Sheet (Bottom Sheet) */}
+      {isMobile && showMobileActions && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity"
+            onClick={() => setShowMobileActions(false)}
+            aria-hidden="true"
+          />
+
+          {/* Bottom Sheet */}
+          <div className={`fixed left-0 right-0 bottom-0 z-50 ${uiConfig.colors.card} rounded-t-3xl ${uiConfig.layout.shadow.xl} transition-transform duration-300 transform translate-y-0`}>
+            {/* Handle Indicator */}
+            <div className="pt-3 pb-2 flex justify-center">
+              <div className="w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="px-4 pb-8 space-y-2">
+              {/* Invite a Friend */}
+              <button
+                onClick={() => {
+                  setShowMobileActions(false);
+                  setShowInviteModal(true);
+                }}
+                className={`w-full flex items-center gap-4 p-4 ${uiConfig.layout.radius.lg} ${uiConfig.states.hover} ${uiConfig.animation.transition} active:scale-98`}
+              >
+                <div className={`w-12 h-12 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0`}>
+                  <UserPlus className="h-6 w-6 text-scout-accent-600 dark:text-scout-accent-400" />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
+                    Invite a Friend
+                  </div>
+                  <div className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint}`}>
+                    Connect with someone you know
+                  </div>
+                </div>
+              </button>
+
+              {/* Create Group Chat */}
+              <button
+                onClick={() => {
+                  setShowMobileActions(false);
+                  setShowGroupChatModal(true);
+                }}
+                className={`w-full flex items-center gap-4 p-4 ${uiConfig.layout.radius.lg} ${uiConfig.states.hover} ${uiConfig.animation.transition} active:scale-98`}
+              >
+                <div className={`w-12 h-12 bg-purple-100 dark:bg-purple-900/30 ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0`}>
+                  <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
+                    Create Group Chat
+                  </div>
+                  <div className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint}`}>
+                    Start a new group conversation
+                  </div>
+                </div>
+              </button>
+
+              {/* Browse Towns */}
+              <a
+                href="/discover"
+                onClick={() => setShowMobileActions(false)}
+                className={`w-full flex items-center gap-4 p-4 ${uiConfig.layout.radius.lg} ${uiConfig.states.hover} ${uiConfig.animation.transition} active:scale-98 block`}
+              >
+                <div className={`w-12 h-12 bg-green-100 dark:bg-green-900/30 ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0`}>
+                  <MapPin className="h-6 w-6 text-green-600 dark:text-green-400" />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
+                    Browse Towns
+                  </div>
+                  <div className={`${uiConfig.font.size.sm} ${uiConfig.colors.hint}`}>
+                    Discover retirement destinations
+                  </div>
+                </div>
+              </a>
+
+              {/* Cancel Button */}
+              <button
+                onClick={() => setShowMobileActions(false)}
+                className={`w-full p-4 ${uiConfig.layout.radius.lg} ${uiConfig.colors.btnSecondary} ${uiConfig.font.weight.semibold} ${uiConfig.animation.transition} active:scale-98 mt-2`}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* User Action Sheet */}
       {selectedUser && (
