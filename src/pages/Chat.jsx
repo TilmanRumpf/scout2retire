@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Trash2, Home, Settings, Users, User, MapPin, Pin, ChevronLeft, Plus, Send, MoreVertical, Search, UserPlus, Heart, Star } from 'lucide-react';
+import { Home, Users, User, MapPin, UserPlus, Star } from 'lucide-react';
 import { getCurrentUser } from '../utils/authUtils';
-import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
-import { sanitizeChatMessage, MAX_LENGTHS, displaySafeContent } from '../utils/sanitizeUtils';
+import { fetchTowns, fetchFavorites } from '../utils/townUtils.jsx';
 import { cancelInvitation } from '../utils/companionUtils';
 import { sendInvitationEmailViaAuth } from '../utils/emailUtils';
+import { formatMessageDate, getAIResponse } from '../utils/chatUtils';
 import UnifiedErrorBoundary from '../components/UnifiedErrorBoundary';
 import UnifiedHeader from '../components/UnifiedHeader';
 import HeaderSpacer from '../components/HeaderSpacer';
@@ -17,12 +17,18 @@ import GroupChatEditModal from '../components/GroupChatEditModal';
 import InviteModal from '../components/chat/InviteModal';
 import CompanionsModal from '../components/chat/CompanionsModal';
 import LobbyTab from '../components/chat/LobbyTab';
+import LoungesTab from '../components/chat/LoungesTab';
+import GroupsTab from '../components/chat/GroupsTab';
+import FriendsTab from '../components/chat/FriendsTab';
+import FavoritesTab from '../components/chat/FavoritesTab';
+import ChatArea from '../components/chat/ChatArea';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
 import { useModerationActions } from '../hooks/useModerationActions';
 import { useIsMobile } from '../hooks/useMobileDetection';
 import { useChatState } from '../hooks/useChatState';
+import { useChatActions } from '../hooks/useChatActions';
 
 export default function Chat() {
   // Extract all state management to custom hook
@@ -128,7 +134,7 @@ export default function Chat() {
           navigate('/welcome');
           return;
         }
-        
+
         setUser({ ...currentUser, ...userProfile });
 
         // CRITICAL PATH ONLY: Load threads immediately to show UI
@@ -331,10 +337,10 @@ export default function Chat() {
         } else {
           // Default to lounge chat if no town or group specified
           setChatType('lounge');
-          
+
           // Find or create lounge thread
           let loungeThread = threadData?.find(thread => thread.town_id === null && thread.topic === 'Lounge');
-          
+
           if (!loungeThread) {
             // Create lounge thread
             const { data: newThread, error: createError } = await supabase
@@ -345,7 +351,7 @@ export default function Chat() {
                 created_by: currentUser.id
               }])
               .select();
-              
+
             if (createError) {
               console.error("Create lounge error:", createError);
               toast.error("Failed to create lounge chat");
@@ -354,7 +360,7 @@ export default function Chat() {
               setThreads(prev => [loungeThread, ...prev]);
             }
           }
-          
+
           if (loungeThread) {
             setActiveThread(loungeThread);
             await loadMessages(loungeThread.id);
@@ -574,19 +580,19 @@ export default function Chat() {
         .select('*')
         .eq('user_id', userId)
         .eq('status', 'pending');
-        
+
       // Load invitations received by the user
       const { data: receivedInvites, error: receivedError } = await supabase
         .from('user_connections')
         .select('*')
         .eq('friend_id', userId)
         .eq('status', 'pending');
-        
+
       if (sentError || receivedError) {
         console.error("Error loading invitations:", sentError || receivedError);
         return;
       }
-      
+
       // PERFORMANCE FIX: Batch user lookups for invitations
       // Get all unique user IDs from both sent and received invitations
       const sentUserIds = (sentInvites || []).map(i => i.friend_id);
@@ -625,7 +631,7 @@ export default function Chat() {
       console.error("Error loading pending invitations:", err);
     }
   };
-  
+
   // Load suggested companions (showing all users for now)
   const loadSuggestedCompanions = async (userId) => {
     try {
@@ -635,7 +641,7 @@ export default function Chat() {
         .select('id, username, created_at')
         .neq('id', userId)
         .limit(20); // Show up to 20 users
-        
+
       if (error) {
         console.error("Error loading users:", error);
         console.error("Error details:", error.message, error.code, error.details);
@@ -648,7 +654,7 @@ export default function Chat() {
         .from('user_connections')
         .select('friend_id, user_id, status')
         .or(`user_id.eq.${userId},friend_id.eq.${userId}`);
-      
+
       if (connError) {
         console.error("Error loading connections:", connError);
       }
@@ -1112,11 +1118,11 @@ export default function Chat() {
       toast.error("Failed to load messages");
     }
   };
-  
+
   // Subscribe to new messages
   useEffect(() => {
     if (!activeThread) return;
-    
+
     // Subscribe to new messages in this thread
     const subscription = supabase
       .channel(`chat_messages:thread_id=eq.${activeThread.id}`)
@@ -1169,7 +1175,7 @@ export default function Chat() {
         }
       )
       .subscribe();
-      
+
     return () => {
       subscription.unsubscribe();
     };
@@ -1221,7 +1227,7 @@ export default function Chat() {
       }
       return; // Don't scroll on initial load
     }
-    
+
     // Only scroll for new messages after initial load
     if (messages.length > 0) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -1245,218 +1251,30 @@ export default function Chat() {
     };
   }, []);
 
-  // Switch to town chat
-  const switchToTownChat = async (town) => {
-    try {
-      setActiveTown(town);
-      setChatType('town');
-      setMessages([]);
+  // Use chat actions hook
+  const { switchToTownChat, switchToLoungeChat, switchToGroupChat, switchToFriendChat, handleSendMessage } = useChatActions({
+    user,
+    threads,
+    setThreads,
+    setActiveTown,
+    setChatType,
+    setMessages,
+    setActiveThread,
+    setActiveGroupChat,
+    setActiveFriend,
+    setShowChatList,
+    messageInput,
+    setMessageInput,
+    activeThread,
+    chatType,
+    isTyping,
+    setIsTyping,
+    isMobile,
+    loadMessages,
+    markThreadAsRead,
+    getAIResponse
+  });
 
-      // Mobile: Hide chat list, show conversation
-      if (isMobile) {
-        setShowChatList(false);
-      }
-
-      // Find or create thread for this town
-      let townThread = threads.find(thread => thread.town_id === town.id);
-      
-      if (!townThread) {
-        // Create new thread for this town
-        const { data: newThread, error: createError } = await supabase
-          .from('chat_threads')
-          .insert([{
-            town_id: town.id,
-            topic: town.name,
-            created_by: user.id
-          }])
-          .select();
-          
-        if (createError) {
-          console.error("Create thread error:", createError);
-          toast.error("Failed to create town chat");
-          return;
-        }
-        
-        townThread = newThread[0];
-        setThreads(prev => [townThread, ...prev]);
-      }
-      
-      setActiveThread(townThread);
-      
-      // Update URL
-      navigate(`/chat/${town.id}`, { replace: true });
-      
-      // Fetch messages for this thread
-      await loadMessages(townThread.id);
-    } catch (err) {
-      console.error("Error switching to town chat:", err);
-      toast.error("Failed to load town chat");
-    }
-  };
-  
-  // Switch to lounge chat
-  const switchToLoungeChat = async () => {
-    try {
-      setActiveTown(null);
-      setChatType('lounge');
-      setMessages([]);
-
-      // Mobile: Hide chat list, show conversation
-      if (isMobile) {
-        setShowChatList(false);
-      }
-
-      // Find or create lounge thread
-      let loungeThread = threads.find(thread => thread.town_id === null && thread.topic === 'Lounge');
-      
-      if (!loungeThread) {
-        // Create lounge thread
-        const { data: newThread, error: createError } = await supabase
-          .from('chat_threads')
-          .insert([{
-            town_id: null,
-            topic: 'Lounge',
-            created_by: user.id
-          }])
-          .select();
-          
-        if (createError) {
-          console.error("Create lounge error:", createError);
-          toast.error("Failed to create lounge chat");
-          return;
-        }
-        
-        loungeThread = newThread[0];
-        setThreads(prev => [loungeThread, ...prev]);
-      }
-      
-      setActiveThread(loungeThread);
-      
-      // Update URL
-      navigate('/chat', { replace: true });
-      
-      // Fetch messages for lounge
-      await loadMessages(loungeThread.id);
-    } catch (err) {
-      console.error("Error switching to lounge chat:", err);
-      toast.error("Failed to load lounge chat");
-    }
-  };
-
-  // Switch to group chat
-  const switchToGroupChat = async (group) => {
-    try {
-      setActiveGroupChat(group);
-      setChatType('group');
-      setMessages([]);
-      setActiveThread(group);
-
-      // Mobile: Hide chat list, show conversation
-      if (isMobile) {
-        setShowChatList(false);
-      }
-
-      // Update URL to show we're in group chat
-      navigate(`/chat/group/${group.id}`, { replace: true });
-
-      // Fetch messages for this group thread
-      await loadMessages(group.id);
-    } catch (err) {
-      console.error("Error switching to group chat:", err);
-      toast.error("Failed to load group chat");
-    }
-  };
-
-  // Simple AI responses for lounge chat
-  const getAIResponse = (userMessage) => {
-    const message = userMessage.toLowerCase();
-    
-    // Cost of living queries
-    if (message.includes('cost') || message.includes('expensive') || message.includes('budget') || message.includes('afford')) {
-      return "Great question about cost of living! Here's what I can tell you:\n\n**Most Affordable Regions:**\n• Southeast Asia: Thailand ($800-1500/mo), Vietnam ($700-1200/mo), Malaysia ($900-1500/mo)\n• Eastern Europe: Bulgaria ($700-1200/mo), Romania ($800-1400/mo)\n• Latin America: Mexico ($1000-1800/mo), Ecuador ($800-1500/mo), Colombia ($900-1600/mo)\n\n**Mid-Range Options:**\n• Portugal ($1500-2500/mo), Spain ($1800-3000/mo)\n• Greece ($1400-2400/mo), Croatia ($1200-2200/mo)\n\n**Higher Cost but High Quality:**\n• France ($2500-4000/mo), Italy ($2000-3500/mo)\n• Australia ($2500-4500/mo), Canada ($2000-3500/mo)\n\nWould you like specific breakdowns for any of these locations?";
-    }
-    
-    // Visa and residency queries
-    if (message.includes('visa') || message.includes('permit') || message.includes('residency') || message.includes('stay')) {
-      return "I'd be happy to explain retirement visa options!\n\n**Popular Retirement Visas:**\n\n**Portugal D7 Visa**\n• Passive income: €705/month minimum\n• Path to EU residency in 5 years\n• Access to Schengen Area\n\n**Spain Non-Lucrative Visa**\n• Savings requirement: ~€27,000/year\n• Cannot work locally\n• Renewable annually\n\n**Panama Pensionado Program**\n• $1,000/month pension required\n• Many discounts for retirees\n• Fast track to permanent residency\n\n**Mexico Temporary Resident Visa**\n• Income: ~$1,500-2,000/month\n• Valid for up to 4 years\n• Can lead to permanent residency\n\n**Thailand Retirement Visa (O-A)**\n• Age 50+ required\n• 800,000 baht ($22,000) in bank\n• Annual renewal\n\nWhich country's requirements would you like more details about?";
-    }
-    
-    // Healthcare queries
-    if (message.includes('healthcare') || message.includes('medical') || message.includes('hospital') || message.includes('doctor') || message.includes('insurance')) {
-      return "Healthcare is a crucial consideration for retirement abroad! Here's an overview:\n\n**Top Healthcare Systems for Expats:**\n\n**France** - Often ranked #1 globally\n• Universal coverage after 3 months residency\n• Small co-pays, excellent quality\n• Private insurance: €50-150/month\n\n**Spain & Portugal**\n• High-quality public systems\n• Private insurance: €50-100/month\n• English-speaking doctors in major cities\n\n**Thailand & Malaysia**\n• Medical tourism destinations\n• Modern private hospitals\n• Costs: 30-50% of US prices\n• Insurance: $100-200/month\n\n**Mexico**\n• IMSS public system available\n• Quality private care at low cost\n• Many US-trained doctors\n• Insurance: $50-150/month\n\n**Key Tips:**\n• Most countries require health insurance for visa\n• Pre-existing conditions often covered after waiting period\n• Consider medical evacuation insurance\n\nWould you like specific information about healthcare in a particular country?";
-    }
-    
-    // Weather and climate queries
-    if (message.includes('weather') || message.includes('climate') || message.includes('temperature') || message.includes('rain')) {
-      return "Let me help you find the perfect climate for your retirement!\n\n**Year-Round Spring Climate:**\n• Canary Islands, Spain (18-24°C)\n• Madeira, Portugal (16-23°C)\n• Kunming, China (15-22°C)\n• Cuenca, Ecuador (14-21°C)\n\n**Mediterranean Climate:**\n• Costa del Sol, Spain\n• Algarve, Portugal\n• Crete, Greece\n• Malta\n\n**Tropical Paradise:**\n• Penang, Malaysia\n• Chiang Mai, Thailand (cooler)\n• Bali, Indonesia (highlands)\n• Costa Rica (Central Valley)\n\n**Four Distinct Seasons:**\n• Tuscany, Italy\n• Provence, France\n• Porto, Portugal\n• Ljubljana, Slovenia\n\n**Dry & Sunny:**\n• Arizona, USA (300+ sunny days)\n• Mendoza, Argentina\n• Perth, Australia\n\nWhat type of climate appeals to you most?";
-    }
-    
-    // Tax queries
-    if (message.includes('tax') || message.includes('taxes')) {
-      return "Tax planning is essential for retirement abroad! Here's what you should know:\n\n**Tax-Friendly Countries for Retirees:**\n\n**No Tax on Foreign Income:**\n• Panama (territorial tax system)\n• Costa Rica (foreign income exempt)\n• Malaysia (MM2H program)\n• Thailand (foreign income not remitted)\n\n**Low Tax Countries:**\n• Portugal (NHR program - 10 years tax benefits)\n• Greece (7% flat tax option)\n• Italy (7% flat tax in southern regions)\n• Cyprus (various exemptions)\n\n**Important Considerations:**\n• US citizens taxed on worldwide income\n• Check tax treaties to avoid double taxation\n• Some countries tax pensions differently\n• Consider state taxes if keeping US ties\n\n**Recommended Steps:**\n1. Consult international tax advisor\n2. Understand reporting requirements (FBAR, etc.)\n3. Plan your tax residency carefully\n4. Consider timing of move\n\nWould you like specific information about any country's tax system?";
-    }
-    
-    // General recommendations
-    if (message.includes('recommend') || message.includes('suggest') || message.includes('best') || message.includes('where should')) {
-      return `Based on what you've told me, I'd love to help you find the perfect retirement spot!\n\nTo give you the best recommendations, could you tell me more about:\n• Your monthly budget range?\n• Preferred climate (tropical, temperate, four seasons)?\n• Important factors (healthcare, expat community, culture)?\n• Any countries you're already considering?\n\nIn the meantime, here are some popular choices by budget:\n\n**Budget-Friendly:** Portugal, Mexico, Malaysia\n**Mid-Range:** Spain, Greece, Costa Rica\n**Premium:** France, Australia, Switzerland\n\nWhat matters most to you in your retirement destination?`;
-    }
-    
-    // Default response
-    return "That's an interesting question! While I'm continuously learning, I can help you with:\n\n• Cost of living comparisons\n• Visa and residency requirements\n• Healthcare systems overview\n• Climate and weather patterns\n• Tax considerations for expats\n• Specific country information\n\nWhat aspect of retirement abroad would you like to explore? Or feel free to ask about a specific country you're considering!";
-  };
-  
-  // Switch to friend chat
-  const switchToFriendChat = async (friend) => {
-    try {
-      setActiveFriend(friend);
-      setChatType('friends');
-      setActiveTown(null);
-      setMessages([]);
-
-      // Mobile: Hide chat list, show conversation
-      if (isMobile) {
-        setShowChatList(false);
-      }
-
-      // Find or create thread for this friend chat
-      // Topic format: friend-{userId}-{friendId} (sorted)
-      const sortedTopic = `friend-${[user.id, friend.friend_id].sort().join('-')}`;
-      let friendThread = threads.find(thread => thread.topic === sortedTopic);
-      
-      if (!friendThread) {
-        // Create new thread for friend chat
-        const { data: newThread, error: createError } = await supabase
-          .from('chat_threads')
-          .insert([{
-            town_id: null,
-            topic: sortedTopic,
-            created_by: user.id
-          }])
-          .select();
-          
-        if (createError) {
-          console.error("Create friend thread error:", createError);
-          toast.error("Failed to create friend chat");
-          return;
-        }
-        
-        friendThread = newThread[0];
-        setThreads(prev => [friendThread, ...prev]);
-      }
-      
-      setActiveThread(friendThread);
-      
-      // Update URL
-      navigate(`/chat?friend=${friend.friend_id}`, { replace: true });
-      
-      // Fetch messages for this thread
-      await loadMessages(friendThread.id);
-    } catch (err) {
-      console.error("Error switching to friend chat:", err);
-      toast.error("Failed to load friend chat");
-    }
-  };
-  
   // Send friend request
   const sendFriendRequest = async (targetUserId) => {
     try {
@@ -1658,7 +1476,7 @@ export default function Chat() {
       toast.error('Failed to unblock user');
     }
   };
-  
+
   // Send invitation by email
   const sendInviteByEmail = async (email) => {
     if (!email || !email.includes('@')) {
@@ -1677,7 +1495,7 @@ export default function Chat() {
 
       if (searchError) {
         console.error("Search error:", searchError);
-        
+
         // If the function doesn't exist yet, provide instructions
         if (searchError.code === '42883') {
           toast.error("Search function not set up yet. Please run the migration SQL in Supabase.");
@@ -1687,7 +1505,7 @@ export default function Chat() {
         setInviteLoading(false);
         return;
       }
-      
+
       if (!searchResult || searchResult.length === 0) {
         toast.error("No user found with this email address. Please check the email and ensure they've signed up.");
         setInviteLoading(false);
@@ -1703,14 +1521,14 @@ export default function Chat() {
         .eq('user_id', user.id)
         .eq('friend_id', existingUser.id)
         .neq('status', 'cancelled'); // Exclude cancelled connections
-        
+
       const { data: receivedConnections } = await supabase
         .from('user_connections')
         .select('*')
         .eq('user_id', existingUser.id)
         .eq('friend_id', user.id)
         .neq('status', 'cancelled'); // Exclude cancelled connections
-        
+
       // Filter to only active connections (pending or accepted)
       const existingConnection = [...(sentConnections || []), ...(receivedConnections || [])]
         .filter(conn => conn.status === 'pending' || conn.status === 'accepted');
@@ -1725,7 +1543,7 @@ export default function Chat() {
         setInviteLoading(false);
         return;
       }
-      
+
       // Send the invitation with message
       const { error: inviteError } = await supabase
         .from('user_connections')
@@ -1735,7 +1553,7 @@ export default function Chat() {
           status: 'pending',
           message: inviteMessage.trim() || null
         }]);
-        
+
       if (inviteError) {
         console.error("Error sending invitation:", inviteError);
         toast.error("Failed to send invitation");
@@ -1763,11 +1581,11 @@ export default function Chat() {
         user,
         inviteMessage.trim()
       );
-      
+
       if (!emailResult.success) {
         console.error("Email error:", emailResult.error);
       }
-      
+
       // Create mailto link as fallback
       const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(
         `${user.username || 'Someone'} invited you to Scout2Retire`
@@ -1783,7 +1601,7 @@ export default function Chat() {
         `Looking forward to connecting with you!\n\n` +
         `Best regards,\n${user.username || 'Someone'}`
       )}`;
-      
+
       // Show success with mailto option
       toast.custom((t) => (
         <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}>
@@ -1815,14 +1633,14 @@ export default function Chat() {
           </div>
         </div>
       ), { duration: 8000 });
-      
+
       setShowInviteModal(false);
       setInviteEmail('');
       setInviteMessage('');
-      
+
       // Reload invitations
       await loadPendingInvitations(user.id);
-      
+
     } catch (err) {
       console.error("Error sending invitation by email:", err);
       toast.error("An error occurred while sending the invitation");
@@ -1830,7 +1648,7 @@ export default function Chat() {
       setInviteLoading(false);
     }
   };
-  
+
   // Accept invitation
   const acceptInvitation = async (connectionId) => {
     try {
@@ -1899,7 +1717,7 @@ export default function Chat() {
       toast.error("Failed to accept invitation");
     }
   };
-  
+
   // Decline invitation
   const declineInvitation = async (connectionId) => {
     try {
@@ -1907,13 +1725,13 @@ export default function Chat() {
         .from('user_connections')
         .delete()
         .eq('id', connectionId);
-        
+
       if (error) {
         console.error("Error declining invitation:", error);
         toast.error("Failed to decline invitation");
         return;
       }
-      
+
       toast.success("Invitation declined");
 
       // Reload invitations
@@ -1942,38 +1760,38 @@ export default function Chat() {
       toast.error("Failed to decline invitation");
     }
   };
-  
+
   // Cancel sent invitation
   const cancelSentInvitation = async (connectionId) => {
     // Store the invitation to cancel for potential restoration
     const invitationToCancel = pendingInvitations.sent.find(inv => inv.id === connectionId);
     if (!invitationToCancel) return;
-    
+
     // Optimistically update UI
     setPendingInvitations(prev => ({
       ...prev,
       sent: prev.sent.filter(invite => invite.id !== connectionId)
     }));
-    
-    // Call the utility function
-    const { success, error } = await cancelInvitation(connectionId, user.id);
-    
-    if (!success) {
-      // Restore the invitation if cancellation failed
+
+    // Call cancelInvitation from companionUtils
+    const { error } = await cancelInvitation(connectionId);
+
+    if (error) {
+      // Restore the invitation to UI on error
       setPendingInvitations(prev => ({
         ...prev,
-        sent: [...prev.sent, invitationToCancel].sort((a, b) => 
+        sent: [...prev.sent, invitationToCancel].sort((a, b) =>
           new Date(b.created_at) - new Date(a.created_at)
         )
       }));
-      
+
       toast.error("Failed to cancel invitation");
       console.error("Cancel invitation error:", error);
     } else {
       toast.success("Invitation canceled");
     }
   };
-  
+
   // Delete a chat message (with role-based permissions)
   const deleteMessage = async (messageId) => {
     const result = await deleteMsgAction(messageId);
@@ -2011,140 +1829,33 @@ export default function Chat() {
     }
   };
 
-  // Handle sending a message
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    
-    if (!messageInput.trim()) return;
-    
-    // Sanitize and validate the message
-    const validation = sanitizeChatMessage(messageInput);
-    
-    if (!validation.valid) {
-      toast.error(validation.error);
-      return;
-    }
-    
-    const messageText = validation.sanitized;
-    setMessageInput('');
-    
-    if (chatType === 'scout') {
-      // Handle scout AI chat
-      const userMessage = {
-        id: `user-${Date.now()}`,
-        message: messageText,
-        user_id: user.id,
-        user_name: user.username || 'You',
-        created_at: new Date().toISOString()
-      };
-      
-      setMessages(prev => [...prev, userMessage]);
-      
-      // Show typing indicator
-      setIsTyping(true);
-      
-      // Simulate AI response with typing delay
-      setTimeout(() => {
-        const aiResponse = getAIResponse(messageText);
-        
-        const loungeResponse = {
-          id: `lounge-${Date.now()}`,
-          message: aiResponse,
-          user_id: 'community',
-          user_name: 'Community Assistant',
-          created_at: new Date().toISOString()
-        };
-        
-        setMessages(prev => [...prev, loungeResponse]);
-        setIsTyping(false);
-      }, 1000 + Math.random() * 1000); // 1-2 second delay
-      
-      return;
-    }
-    
-    if (!activeThread) {
-      toast.error("No active chat selected");
-      return;
-    }
-    
-    // Optimistically add message to UI
-    const optimisticMessage = {
-      id: `temp-${Date.now()}`,
-      thread_id: activeThread.id,
-      user_id: user.id,
-      message: messageText,
-      created_at: new Date().toISOString(),
-      user_name: user.username || 'You'
-    };
-    
-    setMessages(prev => [...prev, optimisticMessage]);
-    
-    try {
-      // Add message to database
-      const { error } = await supabase
-        .from('chat_messages')
-        .insert([{
-          thread_id: activeThread.id,
-          user_id: user.id,
-          message: messageText
-        }])
-        .select();
-        
-      if (error) {
-        // Remove optimistic message on error
-        setMessages(prev => prev.filter(m => m.id !== optimisticMessage.id));
-        toast.error("Failed to send message");
-        console.error("Send message error:", error);
-      }
-    } catch (err) {
-      // Remove optimistic message on error
-      setMessages(prev => prev.filter(m => m.id !== optimisticMessage.id));
-      console.error("Error sending message:", err);
-      toast.error("Failed to send message");
-    }
-  };
-  
-  // Format date for display
-  const formatMessageDate = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMin = Math.round(diffMs / 60000);
-    const diffHrs = Math.round(diffMs / 3600000);
-    const diffDays = Math.round(diffMs / 86400000);
-    
-    if (diffMin < 1) return 'just now';
-    if (diffMin < 60) return `${diffMin}m ago`;
-    if (diffHrs < 24) return `${diffHrs}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    
-    return date.toLocaleDateString();
-  };
-  
-  // Render loading state
   if (loading) {
     return (
-      <div className={`min-h-screen ${uiConfig.colors.page} p-4 flex items-center justify-center`}>
-        <div className={`${uiConfig.animation.pulse} ${uiConfig.colors.accent} ${uiConfig.font.weight.semibold}`}>Loading chat...</div>
+      <div className={`min-h-screen ${uiConfig.colors.background}`}>
+        <UnifiedHeader
+          currentPage="chat"
+          user={user}
+          tabs={[
+            { id: 'lobby', label: 'Lobby', icon: Home, isActive: false, onClick: () => {} },
+            { id: 'lounges', label: 'Lounges', icon: Users, isActive: false, onClick: () => {} },
+            { id: 'groups', label: 'Groups', icon: Users, isActive: false, onClick: () => {} },
+            { id: 'friends', label: 'Friends', icon: User, isActive: false, onClick: () => {} },
+            { id: 'favorites', label: 'Favorites', icon: Star, isActive: false, onClick: () => {} }
+          ]}
+        />
+        <HeaderSpacer hasFilters={true} />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-scout-accent-600"></div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen ${uiConfig.colors.page} pb-20 md:pb-4`}>
+    <div className={`min-h-screen ${uiConfig.colors.background}`}>
       <UnifiedHeader
-        title={
-          chatType === 'town' && activeTown
-            ? `${activeTown.name} Chat`
-            : chatType === 'lounge'
-            ? 'Retirement Lounge'
-            : chatType === 'friends' && activeFriend
-            ? `Chat with ${activeFriend.friend.username || 'Friend'}`
-            : chatType === 'group' && activeGroupChat
-            ? activeGroupChat.topic || 'Group Chat'
-            : 'Retirement Lounge'
-        }
-        maxWidth="max-w-7xl"
+        currentPage="chat"
+        user={user}
         tabs={[
           {
             id: 'lobby',
@@ -2164,6 +1875,7 @@ export default function Chat() {
             id: 'lounges',
             label: 'Lounges',
             icon: Users,
+            badge: unreadByType.lounge > 0 ? unreadByType.lounge : null,
             isActive: activeTab === 'lounges',
             onClick: () => {
               if (isMobile && activeTab === 'lounges' && !showChatList) {
@@ -2171,13 +1883,14 @@ export default function Chat() {
                 setShowChatList(true);
               } else {
                 setActiveTab('lounges');
+                setLoungeView(null);
               }
             }
           },
           {
             id: 'groups',
             label: 'Groups',
-            icon: UserPlus,
+            icon: Users,
             isActive: activeTab === 'groups',
             onClick: () => {
               if (isMobile && activeTab === 'groups' && !showChatList) {
@@ -2191,7 +1904,8 @@ export default function Chat() {
           {
             id: 'friends',
             label: 'Friends',
-            icon: Heart,
+            icon: User,
+            badge: unreadByType.friends > 0 ? unreadByType.friends : null,
             isActive: activeTab === 'friends',
             onClick: () => {
               if (isMobile && activeTab === 'friends' && !showChatList) {
@@ -2254,780 +1968,89 @@ export default function Chat() {
 
             {/* ========== LOUNGES TAB ========== */}
             {activeTab === 'lounges' && (
-            <div className="space-y-4">
-
-              {/* Main Lounge List */}
-              {!loungeView && (
-                <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
-                  <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-                    <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Lounges</h2>
-                  </div>
-                  <div className="p-2 space-y-1">
-                    {/* Retirement Lounge */}
-                    <button
-                      onClick={switchToLoungeChat}
-                      className={`w-full text-left px-4 py-3 ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
-                        chatType === 'lounge' ? uiConfig.colors.badge : `${uiConfig.states.hover}`
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Users className="h-5 w-5" />
-                          <div>
-                            <div className={uiConfig.font.weight.medium}>Retirement Lounge</div>
-                            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>General discussion</div>
-                          </div>
-                        </div>
-                        {unreadByType.lounge > 0 && (
-                          <div className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">
-                            {unreadByType.lounge}
-                          </div>
-                        )}
-                      </div>
-                    </button>
-
-                    {/* Country Lounge */}
-                    <button
-                      onClick={() => setLoungeView('country')}
-                      className={`w-full text-left px-4 py-3 ${uiConfig.layout.radius.md} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <MapPin className="h-5 w-5" />
-                          <div>
-                            <div className={uiConfig.font.weight.medium}>Country Lounge</div>
-                            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>Chat by country</div>
-                          </div>
-                        </div>
-                        <ChevronLeft className="h-4 w-4 rotate-180" />
-                      </div>
-                    </button>
-
-                    {/* Town Lounge */}
-                    <button
-                      onClick={() => setLoungeView('town')}
-                      className={`w-full text-left px-4 py-3 ${uiConfig.layout.radius.md} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Home className="h-5 w-5" />
-                          <div>
-                            <div className={uiConfig.font.weight.medium}>Town Lounge</div>
-                            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>Chat by town</div>
-                          </div>
-                        </div>
-                        <ChevronLeft className="h-4 w-4 rotate-180" />
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Country Lounge Subsection */}
-              {loungeView === 'country' && (
-                <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md}`}>
-                  <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-                    <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Country Lounge</h2>
-                  </div>
-                  <div className="max-h-96 overflow-y-auto relative">
-                    {/* User's Liked Countries */}
-                    {countryLikes.length > 0 && (
-                      <>
-                        <div className={`px-4 py-2 ${uiConfig.font.size.xs} ${uiConfig.font.weight.semibold} ${uiConfig.colors.hint} uppercase`}>
-                          My Countries
-                        </div>
-                        {countryLikes.map(countryLike => {
-                          const country = countryLike.country_name;
-                          return (
-                            <div
-                              key={`liked-${country}`}
-                              className={`flex items-center justify-between px-4 py-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
-                            >
-                              <button
-                                onClick={() => {
-                                  setSelectedCountry(country);
-                                  toast.success(`Opening ${country} lounge`);
-                                }}
-                                className="flex-1 text-left"
-                              >
-                                {country}
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleCountryLike(country);
-                                }}
-                                className="p-1.5 ml-2"
-                                aria-label="Unlike country"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                                </svg>
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </>
-                    )}
-
-                    {/* Search Bar - Right after MY COUNTRIES */}
-                    <div className={`p-3 sticky top-0 ${uiConfig.colors.card} border-b ${uiConfig.colors.borderLight} z-30`}>
-                      <div className="relative" ref={countrySearchRef}>
-                        <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${uiConfig.colors.hint}`} />
-                        <input
-                          ref={countryInputRef}
-                          type="text"
-                          placeholder="Search lounges..."
-                          value={loungesSearchTerm}
-                          onChange={(e) => {
-                            setLoungesSearchTerm(e.target.value);
-                            if (e.target.value.length > 0) {
-                              const rect = e.target.getBoundingClientRect();
-                              setCountryDropdownPos({
-                                top: rect.bottom + 4,
-                                left: rect.left,
-                                width: rect.width
-                              });
-                              setShowCountryAutocomplete(true);
-                            } else {
-                              setShowCountryAutocomplete(false);
-                            }
-                          }}
-                          onFocus={() => {
-                            if (loungesSearchTerm.length > 0) {
-                              const rect = countryInputRef.current.getBoundingClientRect();
-                              setCountryDropdownPos({
-                                top: rect.bottom + 4,
-                                left: rect.left,
-                                width: rect.width
-                              });
-                              setShowCountryAutocomplete(true);
-                            }
-                          }}
-                          autoComplete="off"
-                          className={`w-full h-10 pl-10 pr-4 ${uiConfig.layout.radius.full} ${uiConfig.colors.input} ${uiConfig.font.size.sm}`}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Autocomplete Dropdown - Rendered at document level */}
-                    {showCountryAutocomplete && loungesSearchTerm && (
-                      <div
-                        className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.lg} border ${uiConfig.colors.borderLight} max-h-60 overflow-y-auto`}
-                        style={{
-                          position: 'fixed',
-                          top: `${countryDropdownPos.top}px`,
-                          left: `${countryDropdownPos.left}px`,
-                          width: `${countryDropdownPos.width}px`,
-                          zIndex: 9999
-                        }}
-                      >
-                        {allCountries
-                          .filter(country =>
-                            country.toLowerCase().includes(loungesSearchTerm.toLowerCase()) &&
-                            !countryLikes.some(c => c.country_name === country)
-                          )
-                          .slice(0, 10) // Show max 10 suggestions
-                          .map(country => (
-                            <button
-                              key={country}
-                              onClick={() => {
-                                toggleCountryLike(country);
-                                setLoungesSearchTerm('');
-                                setShowCountryAutocomplete(false);
-                                toast.success(`Added ${country} to My Countries`);
-                              }}
-                              className={`w-full text-left px-4 py-2.5 ${uiConfig.states.hover} ${uiConfig.animation.transition} border-b ${uiConfig.colors.borderLight} last:border-b-0`}
-                            >
-                              <span className={uiConfig.font.size.sm}>{country}</span>
-                            </button>
-                          ))
-                        }
-                        {allCountries.filter(country =>
-                          country.toLowerCase().includes(loungesSearchTerm.toLowerCase()) &&
-                          !countryLikes.some(c => c.country_name === country)
-                        ).length === 0 && (
-                          <div className={`px-4 py-3 ${uiConfig.colors.hint} ${uiConfig.font.size.sm} text-center`}>
-                            {countryLikes.some(c => c.country_name.toLowerCase().includes(loungesSearchTerm.toLowerCase()))
-                              ? "Already in My Countries"
-                              : "No countries found"}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* All Countries (no header, just list) */}
-                    {allCountries
-                      .filter(country =>
-                        !countryLikes.some(c => c.country_name === country) &&
-                        (loungesSearchTerm === '' || country.toLowerCase().includes(loungesSearchTerm.toLowerCase()))
-                      )
-                      .map(country => {
-                        return (
-                          <div
-                            key={country}
-                            className={`flex items-center justify-between px-4 py-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
-                          >
-                            <button
-                              onClick={() => {
-                                setSelectedCountry(country);
-                                toast.success(`Opening ${country} lounge`);
-                              }}
-                              className="flex-1 text-left"
-                            >
-                              {country}
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleCountryLike(country);
-                              }}
-                              className="p-1.5 ml-2"
-                              aria-label="Like country"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                              </svg>
-                            </button>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </div>
-              )}
-
-              {/* Town Lounge Subsection */}
-              {loungeView === 'town' && (
-                <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md}`}>
-                  <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-                    <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Town Lounge</h2>
-                  </div>
-                  <div className="max-h-96 overflow-y-auto relative">
-                    {/* Favorited Towns */}
-                    {favorites.length > 0 && (
-                      <>
-                        <div className={`px-4 py-2 ${uiConfig.font.size.xs} ${uiConfig.font.weight.semibold} ${uiConfig.colors.hint} uppercase`}>
-                          My Favorite Towns
-                        </div>
-                        {favorites
-                          .map(f => allTowns.find(t => t.id === f.town_id))
-                          .filter(Boolean)
-                          .sort((a, b) => a.name.localeCompare(b.name))
-                          .map(town => (
-                            <div
-                              key={`fav-${town.id}`}
-                              className={`flex items-center justify-between px-4 py-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
-                            >
-                              <button
-                                onClick={() => switchToTownChat(town)}
-                                className="flex-1 text-left"
-                              >
-                                <div className={uiConfig.font.weight.medium}>{town.name}</div>
-                                <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>{town.country}</div>
-                              </button>
-                              <button
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-                                  const result = await toggleFavorite(user.id, town.id, town.name, town.country);
-                                  if (result.success) {
-                                    const updatedFavorites = await fetchFavorites(user.id, 'TownLounge');
-                                    if (updatedFavorites.success) {
-                                      setFavorites(updatedFavorites.favorites);
-                                      toast.success(`Removed ${town.name} from favorites`);
-                                    }
-                                  }
-                                }}
-                                className="p-1.5 ml-2"
-                                aria-label="Unlike town"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                                </svg>
-                              </button>
-                            </div>
-                          ))}
-                      </>
-                    )}
-
-                    {/* Search Bar - Right after MY FAVORITE TOWNS */}
-                    <div className={`p-3 sticky top-0 ${uiConfig.colors.card} border-b ${uiConfig.colors.borderLight} z-30`}>
-                      <div className="relative" ref={townSearchRef}>
-                        <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${uiConfig.colors.hint}`} />
-                        <input
-                          ref={townInputRef}
-                          type="text"
-                          placeholder="Search towns..."
-                          value={townLoungeSearchTerm}
-                          onChange={(e) => {
-                            setTownLoungeSearchTerm(e.target.value);
-                            if (e.target.value.length > 0) {
-                              const rect = e.target.getBoundingClientRect();
-                              setTownDropdownPos({
-                                top: rect.bottom + 4,
-                                left: rect.left,
-                                width: rect.width
-                              });
-                              setShowTownAutocomplete(true);
-                            } else {
-                              setShowTownAutocomplete(false);
-                            }
-                          }}
-                          onFocus={() => {
-                            if (townLoungeSearchTerm.length > 0) {
-                              const rect = townInputRef.current.getBoundingClientRect();
-                              setTownDropdownPos({
-                                top: rect.bottom + 4,
-                                left: rect.left,
-                                width: rect.width
-                              });
-                              setShowTownAutocomplete(true);
-                            }
-                          }}
-                          autoComplete="off"
-                          className={`w-full h-10 pl-10 pr-4 ${uiConfig.layout.radius.full} ${uiConfig.colors.input} ${uiConfig.font.size.sm}`}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Autocomplete Dropdown - Rendered at document level */}
-                    {showTownAutocomplete && townLoungeSearchTerm && (
-                      <div
-                        className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.lg} border ${uiConfig.colors.borderLight} max-h-60 overflow-y-auto`}
-                        style={{
-                          position: 'fixed',
-                          top: `${townDropdownPos.top}px`,
-                          left: `${townDropdownPos.left}px`,
-                          width: `${townDropdownPos.width}px`,
-                          zIndex: 9999
-                        }}
-                      >
-                        {allTowns
-                          .filter(town =>
-                            town.name.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()) ||
-                            town.country.toLowerCase().includes(townLoungeSearchTerm.toLowerCase())
-                          )
-                          .slice(0, 10) // Show max 10 suggestions
-                          .map(town => (
-                            <button
-                              key={town.id}
-                              onClick={() => {
-                                switchToTownChat(town);
-                                setTownLoungeSearchTerm('');
-                                setShowTownAutocomplete(false);
-                              }}
-                              className={`w-full text-left px-4 py-2.5 ${uiConfig.states.hover} ${uiConfig.animation.transition} border-b ${uiConfig.colors.borderLight} last:border-b-0`}
-                            >
-                              <div className={uiConfig.font.size.sm}>{town.name}</div>
-                              <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>{town.country}</div>
-                            </button>
-                          ))
-                        }
-                        {allTowns.filter(town =>
-                          town.name.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()) ||
-                          town.country.toLowerCase().includes(townLoungeSearchTerm.toLowerCase())
-                        ).length === 0 && (
-                          <div className={`px-4 py-3 ${uiConfig.colors.hint} ${uiConfig.font.size.sm} text-center`}>
-                            No towns found
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* All Towns (filtered by search) */}
-                    {allTowns
-                      .filter(town =>
-                        // Exclude favorited towns
-                        !favorites.some(f => f.town_id === town.id) &&
-                        // Filter by search term
-                        (townLoungeSearchTerm === '' ||
-                          town.name.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()) ||
-                          town.country.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()))
-                      )
-                      .map(town => (
-                        <div
-                          key={town.id}
-                          className={`flex items-center justify-between px-4 py-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
-                        >
-                          <button
-                            onClick={() => switchToTownChat(town)}
-                            className="flex-1 text-left"
-                          >
-                            <div className={uiConfig.font.weight.medium}>{town.name}</div>
-                            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>{town.country}</div>
-                          </button>
-                          <button
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              const result = await toggleFavorite(user.id, town.id, town.name, town.country);
-                              if (result.success) {
-                                const updatedFavorites = await fetchFavorites(user.id, 'TownLounge');
-                                if (updatedFavorites.success) {
-                                  setFavorites(updatedFavorites.favorites);
-                                  toast.success(`Added ${town.name} to favorites`);
-                                }
-                              }
-                            }}
-                            className="p-1.5 ml-2"
-                            aria-label="Like town"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              )}
-            </div>
+              <LoungesTab
+                user={user}
+                loungeView={loungeView}
+                setLoungeView={setLoungeView}
+                chatType={chatType}
+                unreadByType={unreadByType}
+                countryLikes={countryLikes}
+                favorites={favorites}
+                allCountries={allCountries}
+                allTowns={allTowns}
+                loungesSearchTerm={loungesSearchTerm}
+                setLoungesSearchTerm={setLoungesSearchTerm}
+                townLoungeSearchTerm={townLoungeSearchTerm}
+                setTownLoungeSearchTerm={setTownLoungeSearchTerm}
+                showCountryAutocomplete={showCountryAutocomplete}
+                setShowCountryAutocomplete={setShowCountryAutocomplete}
+                showTownAutocomplete={showTownAutocomplete}
+                setShowTownAutocomplete={setShowTownAutocomplete}
+                countryDropdownPos={countryDropdownPos}
+                setCountryDropdownPos={setCountryDropdownPos}
+                townDropdownPos={townDropdownPos}
+                setTownDropdownPos={setTownDropdownPos}
+                countrySearchRef={countrySearchRef}
+                countryInputRef={countryInputRef}
+                townSearchRef={townSearchRef}
+                townInputRef={townInputRef}
+                setSelectedCountry={setSelectedCountry}
+                setFavorites={setFavorites}
+                onSwitchToLoungeChat={switchToLoungeChat}
+                onSwitchToTownChat={switchToTownChat}
+                onToggleCountryLike={toggleCountryLike}
+              />
             )}
             {/* ========== END LOUNGES TAB ========== */}
 
             {/* ========== GROUPS TAB ========== */}
             {activeTab === 'groups' && (
-            <div className="space-y-4">
-              {/* Search Bar */}
-              <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.sm} p-3`}>
-                <div className="relative">
-                  <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${uiConfig.colors.hint}`} />
-                  <input
-                    type="search"
-                    placeholder="Search groups..."
-                    value={groupsSearchTerm}
-                    onChange={(e) => setGroupsSearchTerm(e.target.value)}
-                    className={`w-full h-10 pl-10 pr-4 ${uiConfig.layout.radius.full} ${uiConfig.colors.input} ${uiConfig.font.size.sm}`}
-                  />
-                </div>
-              </div>
-
-              <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
-              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-                <div className="flex items-center justify-between">
-                  <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Groups</h2>
-                  <button
-                    onClick={() => setShowGroupChatModal(true)}
-                    className={`${uiConfig.colors.btnSecondary} px-3 py-1 text-xs ${uiConfig.layout.radius.md}`}
-                  >
-                    Create Group
-                  </button>
-                </div>
-              </div>
-
-              <div className="max-h-96 overflow-y-auto">
-                {/* My Groups */}
-                {groupChats.filter(g => g.created_by === user?.id || g.members?.includes(user?.id)).length > 0 && (
-                  <>
-                    <div className={`px-4 py-2 ${uiConfig.font.size.xs} ${uiConfig.font.weight.semibold} ${uiConfig.colors.hint} uppercase`}>
-                      My Groups
-                    </div>
-                    {groupChats
-                      .filter(g => g.created_by === user?.id || g.members?.includes(user?.id))
-                      .sort((a, b) => (a.topic || '').localeCompare(b.topic || ''))
-                      .map(group => (
-                        <button
-                          key={group.id}
-                          onClick={() => switchToGroupChat(group)}
-                          className={`w-full text-left p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${
-                            chatType === 'group' && activeGroupChat?.id === group.id ? uiConfig.colors.badge : ''
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 ${group.is_public ? 'bg-green-100 dark:bg-green-900' : 'bg-purple-100 dark:bg-purple-900'} ${uiConfig.layout.radius.full} flex items-center justify-center`}>
-                              <span>{group.is_public ? '🌐' : '🔒'}</span>
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <div className={uiConfig.font.weight.medium}>{group.topic || 'Untitled Group'}</div>
-                                {unreadCounts[group.id] > 0 && (
-                                  <div className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">
-                                    {unreadCounts[group.id]}
-                                  </div>
-                                )}
-                              </div>
-                              <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
-                                {group.category || 'General'} {group.role === 'admin' && '• Admin'}
-                              </div>
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-                    <hr className="my-2" />
-                  </>
-                )}
-
-                {/* Other Groups */}
-                {groupChats.filter(g => g.is_public && g.created_by !== user?.id && !g.members?.includes(user?.id)).length > 0 && (
-                  <>
-                    <div className={`px-4 py-2 ${uiConfig.font.size.xs} ${uiConfig.font.weight.semibold} ${uiConfig.colors.hint} uppercase`}>
-                      Other Groups
-                    </div>
-                    {groupChats
-                      .filter(g => g.is_public && g.created_by !== user?.id && !g.members?.includes(user?.id))
-                      .sort((a, b) => (a.topic || '').localeCompare(b.topic || ''))
-                      .map(group => (
-                        <button
-                          key={group.id}
-                          onClick={() => switchToGroupChat(group)}
-                          className={`w-full text-left p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                              <span>🌐</span>
-                            </div>
-                            <div className="flex-1">
-                              <div className={uiConfig.font.weight.medium}>{group.topic || 'Untitled Group'}</div>
-                              <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
-                                {group.category || 'General'}
-                              </div>
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-                  </>
-                )}
-
-                {groupChats.length === 0 && (
-                  <div className={`p-8 text-center ${uiConfig.colors.hint}`}>
-                    <p>No groups yet.</p>
-                    <button
-                      onClick={() => setShowGroupChatModal(true)}
-                      className={`mt-3 ${uiConfig.colors.btnPrimary} px-4 py-2 ${uiConfig.layout.radius.md}`}
-                    >
-                      Create First Group
-                    </button>
-                  </div>
-                )}
-              </div>
-              </div>
-            </div>
+              <GroupsTab
+                user={user}
+                groupsSearchTerm={groupsSearchTerm}
+                setGroupsSearchTerm={setGroupsSearchTerm}
+                groupChats={groupChats}
+                chatType={chatType}
+                activeGroupChat={activeGroupChat}
+                unreadCounts={unreadCounts}
+                setShowGroupChatModal={setShowGroupChatModal}
+                onSwitchToGroupChat={switchToGroupChat}
+              />
             )}
             {/* ========== END GROUPS TAB ========== */}
 
             {/* ========== FRIENDS TAB ========== */}
             {activeTab === 'friends' && (
-            <div className="space-y-4">
-              {/* Search Bar */}
-              <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.sm} p-3`}>
-                <div className="relative">
-                  <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${uiConfig.colors.hint}`} />
-                  <input
-                    type="search"
-                    placeholder="Search friends..."
-                    value={friendsSearchTerm}
-                    onChange={(e) => setFriendsSearchTerm(e.target.value)}
-                    className={`w-full h-10 pl-10 pr-4 ${uiConfig.layout.radius.full} ${uiConfig.colors.input} ${uiConfig.font.size.sm}`}
-                  />
-                </div>
-              </div>
-
-              <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
-              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-                <div className="flex items-center justify-between">
-                  <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Friends</h2>
-                  <button
-                    onClick={() => setShowInviteModal(true)}
-                    className={`${uiConfig.colors.btnSecondary} px-3 py-1 text-xs ${uiConfig.layout.radius.md}`}
-                  >
-                    Invite Friend
-                  </button>
-                </div>
-              </div>
-
-              <div className="max-h-96 overflow-y-auto">
-                {/* Liked Members */}
-                {likedMembers.length > 0 && (
-                  <>
-                    <div className={`px-4 py-2 ${uiConfig.font.size.xs} ${uiConfig.font.weight.semibold} ${uiConfig.colors.hint} uppercase`}>
-                      Liked Members
-                    </div>
-                    {likedMembers
-                      .sort((a, b) => (a.username || '').localeCompare(b.username || ''))
-                      .map(member => (
-                        <div
-                          key={member.id}
-                          className={`flex items-center justify-between p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover}`}
-                        >
-                          <button
-                            onClick={() => {
-                              // Find friend data for this member
-                              const friendData = friends.find(f => f.friend.id === member.id);
-                              if (friendData) {
-                                switchToFriendChat(friendData);
-                              } else {
-                                toast.error("Not yet friends with this member");
-                              }
-                            }}
-                            className="flex-1 text-left"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center`}>
-                                <User className="h-5 w-5" />
-                              </div>
-                              <div className={uiConfig.font.weight.medium}>{member.username || 'Member'}</div>
-                            </div>
-                          </button>
-                          <button
-                            onClick={() => toggleLikeMember(member.id)}
-                            className="p-2"
-                            title="Unlike"
-                          >
-                            ❤️
-                          </button>
-                        </div>
-                      ))}
-                    <hr className="my-2" />
-                  </>
-                )}
-
-                {/* Friends */}
-                {friends.length > 0 && (
-                  <>
-                    <div className={`px-4 py-2 ${uiConfig.font.size.xs} ${uiConfig.font.weight.semibold} ${uiConfig.colors.hint} uppercase`}>
-                      Friends
-                    </div>
-                    {friends
-                      .filter(f => !likedMembers.some(lm => lm.id === f.friend.id))
-                      .sort((a, b) => (a.friend.username || '').localeCompare(b.friend.username || ''))
-                      .map(friend => (
-                        <div
-                          key={friend.id}
-                          className={`flex items-center justify-between p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${
-                            chatType === 'friends' && activeFriend?.id === friend.id ? uiConfig.colors.badge : ''
-                          }`}
-                        >
-                          <button
-                            onClick={() => switchToFriendChat(friend)}
-                            className="flex-1 text-left"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center`}>
-                                <User className="h-5 w-5" />
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <div className={uiConfig.font.weight.medium}>{friend.friend.username || 'Friend'}</div>
-                                  {unreadByFriend[friend.friend_id] > 0 && (
-                                    <div className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">
-                                      {unreadByFriend[friend.friend_id]}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </button>
-                          <button
-                            onClick={() => toggleLikeMember(friend.friend.id)}
-                            className="p-2"
-                            title="Like this member"
-                          >
-                            🤍
-                          </button>
-                        </div>
-                      ))}
-                  </>
-                )}
-
-                {friends.length === 0 && likedMembers.length === 0 && (
-                  <div className={`p-8 text-center ${uiConfig.colors.hint}`}>
-                    <p>No friends yet.</p>
-                    <button
-                      onClick={() => setShowInviteModal(true)}
-                      className={`mt-3 ${uiConfig.colors.btnPrimary} px-4 py-2 ${uiConfig.layout.radius.md}`}
-                    >
-                      Invite a Friend
-                    </button>
-                  </div>
-                )}
-              </div>
-              </div>
-            </div>
+              <FriendsTab
+                friendsSearchTerm={friendsSearchTerm}
+                setFriendsSearchTerm={setFriendsSearchTerm}
+                likedMembers={likedMembers}
+                friends={friends}
+                chatType={chatType}
+                activeFriend={activeFriend}
+                unreadByFriend={unreadByFriend}
+                setShowInviteModal={setShowInviteModal}
+                onSwitchToFriendChat={switchToFriendChat}
+                onToggleLikeMember={toggleLikeMember}
+              />
             )}
             {/* ========== END FRIENDS TAB ========== */}
 
             {/* ========== FAVORITES TAB ========== */}
             {activeTab === 'favorites' && (
-            <div className="space-y-4">
-              {/* Search Bar */}
-              <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.sm} p-3`}>
-                <div className="relative">
-                  <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${uiConfig.colors.hint}`} />
-                  <input
-                    type="search"
-                    placeholder="Search favorites..."
-                    value={favoritesSearchTerm}
-                    onChange={(e) => setFavoritesSearchTerm(e.target.value)}
-                    className={`w-full h-10 pl-10 pr-4 ${uiConfig.layout.radius.full} ${uiConfig.colors.input} ${uiConfig.font.size.sm}`}
-                  />
-                </div>
-              </div>
-
-              <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
-              <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-                <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Favorites</h2>
-                <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
-                  Your favorited chats
-                </p>
-              </div>
-
-              <div className="max-h-96 overflow-y-auto">
-                {chatFavorites.length === 0 ? (
-                  <div className={`p-8 text-center ${uiConfig.colors.hint}`}>
-                    <p>No favorites yet.</p>
-                    <p className={`${uiConfig.font.size.xs} mt-2`}>Tap ⭐ on any chat to add it here!</p>
-                  </div>
-                ) : (
-                  chatFavorites.map(fav => (
-                    <div
-                      key={fav.id}
-                      className={`flex items-center justify-between p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover}`}
-                    >
-                      <button
-                        onClick={() => {
-                          // Handle navigation based on chat type
-                          if (fav.chat_type === 'friend') {
-                            const friendData = friends.find(f => f.friend.id === fav.reference_id);
-                            if (friendData) switchToFriendChat(friendData);
-                          } else if (fav.chat_type === 'group') {
-                            const groupData = groupChats.find(g => g.id === fav.reference_id);
-                            if (groupData) switchToGroupChat(groupData);
-                          } else if (fav.chat_type === 'town_lounge') {
-                            const townData = allTowns.find(t => t.id === fav.reference_id);
-                            if (townData) switchToTownChat(townData);
-                          } else if (fav.chat_type === 'country_lounge') {
-                            setSelectedCountry(fav.reference_name);
-                            toast.success(`Opening ${fav.reference_name} lounge`);
-                          }
-                        }}
-                        className="flex-1 text-left"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center`}>
-                            {fav.chat_type === 'friend' && <User className="h-5 w-5" />}
-                            {fav.chat_type === 'group' && <Users className="h-5 w-5" />}
-                            {fav.chat_type === 'town_lounge' && <Home className="h-5 w-5" />}
-                            {fav.chat_type === 'country_lounge' && <MapPin className="h-5 w-5" />}
-                          </div>
-                          <div>
-                            <div className={uiConfig.font.weight.medium}>{fav.reference_name}</div>
-                            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} capitalize`}>
-                              {fav.chat_type.replace('_', ' ')}
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-                      <button
-                        onClick={() => toggleFavoriteChat(fav.chat_type, fav.reference_id, fav.reference_name)}
-                        className="p-2"
-                        title="Unfavorite"
-                      >
-                        ⭐
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-              </div>
-            </div>
+              <FavoritesTab
+                favoritesSearchTerm={favoritesSearchTerm}
+                setFavoritesSearchTerm={setFavoritesSearchTerm}
+                chatFavorites={chatFavorites}
+                friends={friends}
+                groupChats={groupChats}
+                allTowns={allTowns}
+                onSwitchToFriendChat={switchToFriendChat}
+                onSwitchToGroupChat={switchToGroupChat}
+                onSwitchToTownChat={switchToTownChat}
+                onToggleFavoriteChat={toggleFavoriteChat}
+                setSelectedCountry={setSelectedCountry}
+              />
             )}
             {/* ========== END FAVORITES TAB ========== */}
 
@@ -3036,248 +2059,28 @@ export default function Chat() {
 
           {/* Chat area - Desktop (always) + Mobile (when chat selected) */}
           {(!isMobile || !showChatList) && (
-          <div className={`flex-1 min-w-0 ${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden flex flex-col`} style={{ height: 'calc(100vh - 10rem)' }}>
-            {/* Group Chat Header with Settings */}
-            {chatType === 'group' && activeGroupChat && (
-              <div className={`flex items-center justify-between p-4 border-b ${uiConfig.colors.borderLight}`}>
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg`}>
-                    <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <div>
-                    <div className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>
-                      {activeGroupChat.topic || 'Group Chat'}
-                    </div>
-                    <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
-                      {activeGroupChat.category || 'General'}
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowGroupEditModal(true)}
-                  className={`p-2 ${uiConfig.colors.hint} hover:${uiConfig.colors.body} rounded-lg transition-colors`}
-                  title="Group Settings"
-                >
-                  <Settings className="h-5 w-5" />
-                </button>
-              </div>
-            )}
-
-            {/* Chat messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {(() => {
-                // Filter messages based on muted/blocked users
-                const filteredMessages = showMutedMessages
-                  ? messages
-                  : messages.filter(msg =>
-                      !mutedUsers.includes(msg.user_id) &&
-                      !blockedUsers.includes(msg.user_id)
-                    );
-
-                const hiddenCount = messages.length - filteredMessages.length;
-
-                return (
-                  <>
-                    {hiddenCount > 0 && (
-                      <button
-                        onClick={() => setShowMutedMessages(!showMutedMessages)}
-                        className={`w-full text-center ${uiConfig.font.size.xs} ${uiConfig.colors.hint} hover:${uiConfig.colors.body} py-2 ${uiConfig.layout.radius.lg} hover:${uiConfig.colors.secondary} transition-colors`}
-                      >
-                        {showMutedMessages
-                          ? `Hide ${hiddenCount} muted/blocked message${hiddenCount > 1 ? 's' : ''}`
-                          : `Show ${hiddenCount} muted/blocked message${hiddenCount > 1 ? 's' : ''}`
-                        }
-                      </button>
-                    )}
-
-                    {filteredMessages.length === 0 ? (
-                      <div className="h-full flex items-center justify-center">
-                        <div className={`text-center ${uiConfig.colors.hint}`}>
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                          </svg>
-                          <p>No messages yet. Start the conversation!</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        {filteredMessages.map((message, index) => {
-                          // Check if message is deleted
-                          const isDeleted = message.deleted_at;
-
-                          // Check if message can be deleted (own message, within time window)
-                          const now = new Date();
-                          const messageTime = new Date(message.created_at);
-                          const messageAge = (now - messageTime) / 1000 / 60; // in minutes
-                          const DELETE_WINDOW_MINUTES = 15; // 15 minutes
-
-                          const isOwnMessage = message.user_id === user?.id;
-                          const withinTimeWindow = messageAge < DELETE_WINDOW_MINUTES;
-                          const canDelete = isOwnMessage && !isDeleted && withinTimeWindow;
-
-                          // Check if message can be pinned (group chats only, for now all members can pin)
-                          const canPin = chatType === 'group' && !isDeleted;
-
-                          return (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.user_id === user?.id ? 'justify-end' : 'justify-start'} ${
-                        index > 0 && messages[index - 1].user_id === message.user_id ? 'mt-1' : 'mt-4'
-                      }`}
-                    >
-                      <div
-                        className={`max-w-[75%] ${uiConfig.layout.radius.lg} px-4 py-2 relative group ${
-                          isDeleted
-                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 italic'
-                            : message.user_id === user?.id
-                            ? 'bg-scout-accent-600 text-white'
-                            : message.user_id === 'scout'
-                            ? 'bg-blue-600 text-white'
-                            : `${uiConfig.colors.input} ${uiConfig.colors.body}`
-                        }`}
-                      >
-                        {(index === 0 || messages[index - 1].user_id !== message.user_id) && !isDeleted && (
-                          <div className="flex items-center text-xs mb-1">
-                            {message.user_id === user?.id ? (
-                              <span className={`${uiConfig.font.weight.medium} text-scout-accent-100`}>
-                                You
-                              </span>
-                            ) : message.user_id === 'scout' ? (
-                              <span className={`${uiConfig.font.weight.medium} text-blue-100`}>
-                                {message.user_name}
-                              </span>
-                            ) : (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedUser({
-                                    id: message.user_id,
-                                    name: message.user_name
-                                  });
-                                }}
-                                className={`${uiConfig.font.weight.medium} ${uiConfig.colors.hint} hover:underline cursor-pointer active:opacity-70 transition-opacity`}
-                              >
-                                {message.user_name}
-                              </button>
-                            )}
-                            <span className={`ml-2 ${
-                              message.user_id === user?.id
-                                ? 'text-scout-accent-200'
-                                : message.user_id === 'scout'
-                                ? 'text-blue-200'
-                                : uiConfig.colors.muted
-                            }`}>
-                              {formatMessageDate(message.created_at)}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Message content or deleted placeholder */}
-                        {isDeleted ? (
-                          <div className="flex items-center gap-2">
-                            <Trash2 className="w-3 h-3" />
-                            <span>This message was deleted</span>
-                          </div>
-                        ) : (
-                          <div className="whitespace-pre-wrap">{displaySafeContent(message.message)}</div>
-                        )}
-
-                        {/* Delete button (visible on mobile, hover-only on desktop) */}
-                        {canDelete && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (window.confirm('Delete this message? This cannot be undone.')) {
-                                deleteMessage(message.id);
-                              }
-                            }}
-                            className="absolute -top-2 -right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full md:opacity-0 md:group-hover:opacity-100 transition-opacity shadow-lg z-10"
-                            title="Delete message"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        )}
-
-                        {/* Pin button (group chats only) */}
-                        {canPin && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePinMessage(message.id, !message.is_pinned);
-                            }}
-                            className={`absolute -top-2 ${canDelete ? '-right-12' : '-right-2'} p-1.5 ${
-                              message.is_pinned
-                                ? 'bg-amber-500 hover:bg-amber-600'
-                                : 'bg-scout-accent-500 hover:bg-scout-accent-600'
-                            } text-white rounded-full md:opacity-0 md:group-hover:opacity-100 transition-opacity shadow-lg z-10`}
-                            title={message.is_pinned ? "Unpin message" : "Pin message"}
-                          >
-                            <Pin className={`w-3 h-3 ${message.is_pinned ? 'fill-current' : ''}`} />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                          );
-                        })}
-                  {isTyping && chatType === 'scout' && (
-                    <div className="flex justify-start">
-                      <div className={`bg-blue-600 text-white ${uiConfig.layout.radius.lg} px-4 py-2`}>
-                        <div className="flex items-center space-x-2">
-                          <div className="flex space-x-1">
-                            <div className={`w-2 h-2 bg-white ${uiConfig.layout.radius.full} animate-bounce`} style={{ animationDelay: '0ms' }}></div>
-                            <div className={`w-2 h-2 bg-white ${uiConfig.layout.radius.full} animate-bounce`} style={{ animationDelay: '150ms' }}></div>
-                            <div className={`w-2 h-2 bg-white ${uiConfig.layout.radius.full} animate-bounce`} style={{ animationDelay: '300ms' }}></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                      </>
-                    )}
-                  </>
-                );
-              })()}
-              <div ref={messagesEndRef} />
-            </div>
-            
-            {/* Message input */}
-            <div className={`border-t ${uiConfig.colors.borderLight} p-4`}>
-              <form onSubmit={handleSendMessage} className="space-y-2">
-                <div className="flex space-x-2">
-                  <input
-                    type="text"
-                    value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
-                    maxLength={MAX_LENGTHS.CHAT_MESSAGE}
-                    placeholder={`Message ${
-                      chatType === 'town' && activeTown 
-                        ? activeTown.name + ' chat' 
-                        : chatType === 'lounge'
-                        ? 'the retirement lounge'
-                        : chatType === 'friends' && activeFriend
-                        ? activeFriend.friend.username || 'friend'
-                        : 'the community'
-                    }...`}
-                    className={`flex-1 ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} py-2 px-4 ${uiConfig.colors.input} ${uiConfig.colors.body} ${uiConfig.colors.focusRing} focus:border-transparent`}
-                  />
-                <button
-                  type="submit"
-                  disabled={!messageInput.trim()}
-                  className={`bg-scout-accent-600 hover:bg-scout-accent-700 text-white p-2 ${uiConfig.layout.radius.lg} ${uiConfig.states.disabled} ${uiConfig.animation.transition}`}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                  </svg>
-                </button>
-                </div>
-                {messageInput.length > 0 && (
-                  <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} text-right`}>
-                    {messageInput.length} / {MAX_LENGTHS.CHAT_MESSAGE}
-                  </div>
-                )}
-              </form>
-            </div>
-          </div>
+            <ChatArea
+              chatType={chatType}
+              activeGroupChat={activeGroupChat}
+              messages={messages}
+              user={user}
+              isTyping={isTyping}
+              activeTown={activeTown}
+              activeFriend={activeFriend}
+              messageInput={messageInput}
+              setMessageInput={setMessageInput}
+              mutedUsers={mutedUsers}
+              blockedUsers={blockedUsers}
+              showMutedMessages={showMutedMessages}
+              setShowMutedMessages={setShowMutedMessages}
+              messagesEndRef={messagesEndRef}
+              setShowGroupEditModal={setShowGroupEditModal}
+              onSendMessage={handleSendMessage}
+              onDeleteMessage={deleteMessage}
+              onPinMessage={handlePinMessage}
+              setSelectedUser={setSelectedUser}
+              formatMessageDate={formatMessageDate}
+            />
           )}
         </div>
         </main>
@@ -3418,7 +2221,7 @@ export default function Chat() {
         onSendInvite={sendInviteByEmail}
         onCancelInvitation={cancelSentInvitation}
       />
-      
+
       {/* Companions Modal */}
       <CompanionsModal
         isOpen={showCompanionsModal}
