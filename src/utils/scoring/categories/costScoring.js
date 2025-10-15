@@ -1,6 +1,6 @@
 /**
  * COST SCORING - Category 6 of 6
- * Weight: 20% of total match score
+ * Weight: 19% of total match score (updated 2025-10-15: was 20%)
  *
  * Scores how well a town's cost of living matches user's budget:
  * - Overall Budget: Town cost vs user's total monthly budget
@@ -8,11 +8,21 @@
  * - Healthcare Budget: Medical insurance/costs
  * - Tax Considerations: Income, property, sales tax sensitivity
  *
+ * ADAPTIVE SCORING (added 2025-10-15):
+ * - Simple users (only total budget): Overall budget worth 85 points
+ * - Power users (budget + rent + healthcare): Overall budget worth 40 points
+ * This ensures budget-conscious users see meaningful differentiation!
+ *
  * Scoring Breakdown (100 points total):
+ * Simple User Path:
+ * - Overall Budget Fit: 85 points (ADAPTIVE)
+ * - Tax Scoring: 15 points
+ *
+ * Power User Path:
  * - Overall Budget Fit: 40 points
  * - Rent Budget: 30 points
  * - Healthcare Budget: 20 points
- * - Tax Scoring: 15 points (comprehensive tax evaluation)
+ * - Tax Scoring: 15 points
  */
 
 import { parsePreferences } from '../helpers/preferenceParser.js';
@@ -208,45 +218,60 @@ export function calculateCostScore(preferences, town) {
   }
   
   const budgetRatio = userBudget / townCost
-  
+
+  // ADAPTIVE SCORING: Check which budget fields user actually set
+  const userRentBudget = parsed.cost.maxMonthlyRent
+  const userHealthcareBudget = parsed.cost.monthlyHealthcareBudget
+  const budgetFieldsSet = [userBudget, userRentBudget, userHealthcareBudget].filter(Boolean).length
+
+  // If user ONLY set total budget (most common case), make it worth more points
+  // Simple user (only total budget): 85 points max
+  // Power user (multiple budget fields): 40 points max (rest from rent/healthcare)
+  const isSimpleBudgetUser = budgetFieldsSet === 1 && userBudget
+
   if (budgetRatio >= 2.0) {
     // User budget is 2x or more than cost - excellent value
-    score += 40
-    factors.push({ factor: `Excellent value (budget $${userBudget} vs cost $${townCost})`, score: 40 })
+    const points = isSimpleBudgetUser ? 85 : 40
+    score += points
+    factors.push({ factor: `Excellent value (budget $${userBudget} vs cost $${townCost})`, score: points })
   } else if (budgetRatio >= 1.5) {
     // User budget is 1.5x cost - comfortable margin
-    score += 35
-    factors.push({ factor: `Comfortable budget margin (budget $${userBudget} vs cost $${townCost})`, score: 35 })
+    const points = isSimpleBudgetUser ? 75 : 35
+    score += points
+    factors.push({ factor: `Comfortable budget margin (budget $${userBudget} vs cost $${townCost})`, score: points })
   } else if (budgetRatio >= 1.2) {
     // User budget is 1.2x cost - good fit
-    score += 30
-    factors.push({ factor: `Good budget fit (budget $${userBudget} vs cost $${townCost})`, score: 30 })
+    const points = isSimpleBudgetUser ? 65 : 30
+    score += points
+    factors.push({ factor: `Good budget fit (budget $${userBudget} vs cost $${townCost})`, score: points })
   } else if (budgetRatio >= 1.0) {
     // User budget meets cost - adequate
-    score += 25
-    factors.push({ factor: `Budget adequate (budget $${userBudget} vs cost $${townCost})`, score: 25 })
+    const points = isSimpleBudgetUser ? 55 : 25
+    score += points
+    factors.push({ factor: `Budget adequate (budget $${userBudget} vs cost $${townCost})`, score: points })
   } else if (budgetRatio >= 0.9) {
     // User budget is 90% of cost - slightly tight
-    score += 20
-    factors.push({ factor: `Budget slightly tight (budget $${userBudget} vs cost $${townCost})`, score: 20 })
+    const points = isSimpleBudgetUser ? 40 : 20
+    score += points
+    factors.push({ factor: `Budget slightly tight (budget $${userBudget} vs cost $${townCost})`, score: points })
   } else if (budgetRatio >= 0.8) {
     // User budget is 80% of cost - challenging but possible
-    score += 15
-    factors.push({ factor: `Budget challenging (budget $${userBudget} vs cost $${townCost})`, score: 15 })
+    const points = isSimpleBudgetUser ? 25 : 15
+    score += points
+    factors.push({ factor: `Budget challenging (budget $${userBudget} vs cost $${townCost})`, score: points })
   } else if (budgetRatio >= 0.7) {
     // User budget is 70% of cost - very tight
-    score += 10
-    factors.push({ factor: `Budget very tight (budget $${userBudget} vs cost $${townCost})`, score: 10 })
+    const points = isSimpleBudgetUser ? 12 : 10
+    score += points
+    factors.push({ factor: `Budget very tight (budget $${userBudget} vs cost $${townCost})`, score: points })
   } else {
     // Budget too low
-    score += 5
-    factors.push({ factor: `Over budget (budget $${userBudget} vs cost $${townCost})`, score: 5 })
+    const points = 5
+    score += points
+    factors.push({ factor: `Over budget (budget $${userBudget} vs cost $${townCost})`, score: points })
   }
-  
-  // Rent budget match (30 points)
-  // Parser already extracts max from arrays, so this is a number
-  const userRentBudget = parsed.cost.maxMonthlyRent
-    
+
+  // Rent budget match (30 points) - ONLY if user set it
   if (userRentBudget && town.typical_rent_1bed) {
     if (userRentBudget >= town.typical_rent_1bed) {
       score += 30
@@ -256,11 +281,8 @@ export function calculateCostScore(preferences, town) {
       factors.push({ factor: 'Rent slightly over budget', score: 15 })
     }
   }
-  
-  // Healthcare budget match (20 points)
-  // Parser already extracts max from arrays, so this is a number
-  const userHealthcareBudget = parsed.cost.monthlyHealthcareBudget
-    
+
+  // Healthcare budget match (20 points) - ONLY if user set it
   if (userHealthcareBudget && town.healthcare_cost_monthly) {
     if (userHealthcareBudget >= town.healthcare_cost_monthly) {
       score += 20
