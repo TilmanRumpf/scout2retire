@@ -1,12 +1,31 @@
-# 🟢 LATEST CHECKPOINT - October 10, 2025 19:06 PST
+# 🟢 LATEST CHECKPOINT - October 15, 2025 21:17 PST
 
-## 🔧 PRE-REFACTOR CHECKPOINT - Chat System Stable Before Architecture Changes
+## 💰 CANADIAN CURRENCY FIX - Nova Scotia Now Affordable!
+
+**Full Details:** [docs/project-history/CHECKPOINT_2025-10-15_CANADIAN_CURRENCY_FIX.md](docs/project-history/CHECKPOINT_2025-10-15_CANADIAN_CURRENCY_FIX.md)
+
+**Critical Bug Fixed:**
+- All 20 Canadian towns had costs in CAD mislabeled as USD
+- Converted to true USD values (0.71 exchange rate)
+- Nova Scotia matches improved from 0/11 to 6/11 towns for $2,000 budget
+- Average cost score improved 166% (17.9 → 47.7 out of 100)
+
+**Restoration:**
+```bash
+node restore-database-snapshot.js 2025-10-15T21-17-25
+```
+
+---
+
+## 📋 PREVIOUS CHECKPOINT - October 10, 2025 19:06 PST
+
+### 🔧 PRE-REFACTOR CHECKPOINT - Chat System Stable Before Architecture Changes
 
 **Full Details:** [docs/project-history/CHECKPOINT-2025-10-10-CHAT-REFACTOR.md](docs/project-history/CHECKPOINT-2025-10-10-CHAT-REFACTOR.md)
 
 ---
 
-## 📋 PREVIOUS CHECKPOINT - October 8, 2025 20:55 PST
+## 📋 CHECKPOINT - October 8, 2025 20:55 PST
 
 ### ⚡ PERFORMANCE OPTIMIZATION - Chat Load Time 79% Faster!
 
