@@ -2,7 +2,9 @@
 
 /* CSS Custom Properties for flexibility */
 :root {
-  --header-height: 44px;
+  /* INCREASED: 56px minimum for proper touch targets and breathing room */
+  --header-height: 56px;
+  --header-padding-y: 12px;
   --safe-top: env(safe-area-inset-top);
   --safe-bottom: env(safe-area-inset-bottom);
   --safe-left: env(safe-area-inset-left);
@@ -82,9 +84,12 @@
 
 /* Header content wrapper */
 .ios-header-content {
-  height: var(--header-height);
+  min-height: var(--header-height);
+  padding-top: var(--header-padding-y);
+  padding-bottom: var(--header-padding-y);
   display: flex;
   align-items: center;
+  gap: 0.75rem; /* 12px spacing between elements */
 }
 
 /* Prevent tap highlight on iOS - but allow touch events to pass through */
@@ -135,25 +140,23 @@
   }
 }
 
-/* Fixed height constraint - never more than 10% of viewport */
-.ios-header {
-  max-height: 10vh;
-  max-height: 10dvh; /* Dynamic viewport height */
-}
+/* REMOVED ridiculous 10vh max-height - headers need proper space on mobile!
+   Headers can expand based on content (single row vs second row) */
 
 /* Header spacer - needed for ALL platforms now that header is fixed */
 .ios-header-spacer {
-  height: calc(var(--header-height) + var(--safe-top));
+  /* Base header: 56px + top padding (12px) + bottom padding (12px) = 80px + safe area */
+  height: calc(80px + var(--safe-top));
+  min-height: calc(80px + var(--safe-top));
   width: 100%;
   flex-shrink: 0;
 }
 
 /* Header spacer when filters are present (two rows) */
 .ios-header-spacer-with-filters {
-  /* Mobile needs MORE space for safe areas and mobile filter layout */
-  height: 100px;
-  min-height: 100px;
-  
+  /* Mobile: Base header (80px) + second row (~56px) + safe area = 136px + safe area */
+  height: calc(136px + var(--safe-top));
+  min-height: calc(136px + var(--safe-top));
   width: 100%;
   flex-shrink: 0;
   display: block;
@@ -174,26 +177,32 @@
 
 /* Special spacer ONLY for Compare page with tabs */
 .compare-page-spacer {
-  /* Mobile needs extra space for tabs */
-  height: 110px;
-  min-height: 110px;
+  /* Mobile: Same as filters - base header (80px) + second row (56px) + safe area */
+  height: calc(136px + var(--safe-top));
+  min-height: calc(136px + var(--safe-top));
   width: 100%;
   flex-shrink: 0;
   display: block;
   visibility: hidden;
 }
 
-/* Desktop: LESS space because no safe areas and compact filters */
+/* Desktop: Tighter spacing, no safe areas */
 @media (min-width: 768px) {
-  .ios-header-spacer-with-filters {
-    /* Desktop only needs 84px */
-    height: 84px;
-    min-height: 84px;
+  .ios-header-spacer {
+    /* Desktop: Just the header height + padding */
+    height: 80px;
+    min-height: 80px;
   }
-  
+
+  .ios-header-spacer-with-filters {
+    /* Desktop: Base (80px) + second row (56px) = 136px */
+    height: 136px;
+    min-height: 136px;
+  }
+
   .compare-page-spacer {
-    /* Desktop also needs 84px like other pages with second row */
-    height: 84px;
-    min-height: 84px;
+    /* Desktop: Same as with-filters */
+    height: 136px;
+    min-height: 136px;
   }
 }

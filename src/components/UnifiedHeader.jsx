@@ -181,10 +181,10 @@ export default function UnifiedHeader({
   return (
     <>
       <header className="ios-header fixed top-0 left-0 right-0 w-full pt-safe">
-        <div className={`${maxWidth} mx-auto px-4`}>
+        <div className={`${maxWidth} mx-auto px-4 sm:px-6`}>
           <div className="ios-header-content">
               {/* Logo with company name - hidden on mobile phones */}
-              <div className="hidden md:flex items-center gap-2 mr-4 mt-1">
+              <div className="hidden md:flex items-center gap-2 flex-shrink-0">
                 <Logo
                   variant="symbol"
                   className="h-7 lg:h-10"
@@ -194,22 +194,22 @@ export default function UnifiedHeader({
                   Scout<span className={uiConfig.colors.accent}>2</span>Retire
                 </span>
               </div>
-              
+
               {/* Title - always visible */}
               <div className="flex-1 min-w-0">
-                <h1 className={`text-base font-medium ${uiConfig.colors.heading}`}>
+                <h1 className={`text-lg sm:text-xl font-semibold ${uiConfig.colors.heading} truncate`}>
                   <span className={`${title.includes("brings your future home") ? 'handwritten-tagline' : ''}`}>
                     {title}
                   </span>
                   {/* Count - hidden on narrow screens */}
                   {totalCount !== undefined && (
-                    <span className={`ml-1.5 text-sm font-normal ${uiConfig.colors.subtitle} hidden md:inline`}>
+                    <span className={`ml-2 text-sm font-normal ${uiConfig.colors.subtitle} hidden md:inline`}>
                       ({filteredCount} of {totalCount})
                     </span>
                   )}
                   {/* Step context for onboarding */}
                   {steps.length > 0 && currentStepNum > 0 && (
-                    <span className={`ml-1.5 text-sm font-normal ${uiConfig.colors.subtitle}`}>
+                    <span className={`ml-2 text-sm font-normal ${uiConfig.colors.subtitle}`}>
                       {currentStepNum} of {steps.length}
                     </span>
                   )}
@@ -221,29 +221,29 @@ export default function UnifiedHeader({
               {secondRowType === 'filters' && (
                 <button
                   onClick={() => setIsMobileFiltersOpen(true)}
-                  className={`relative p-1.5 hover:${uiConfig.colors.secondary} rounded-lg transition-colors lg:hidden`}
+                  className={`relative p-2.5 ${uiConfig.colors.hoverBg} rounded-lg transition-colors lg:hidden flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center`}
                   aria-label="Filters"
                 >
-                  <SlidersHorizontal className={`w-5 h-5 ${uiConfig.colors.heading}`} />
+                  <SlidersHorizontal className={`w-6 h-6 ${uiConfig.colors.heading}`} />
                   {filterProps.filterCount > 0 && (
-                    <span className={`absolute -top-1 -right-1 ${uiConfig.colors.accent} text-xs rounded-full h-4 w-4 flex items-center justify-center`}>
+                    <span className={`absolute -top-0.5 -right-0.5 bg-scout-accent-500 text-white text-[10px] font-semibold rounded-full h-5 w-5 flex items-center justify-center`}>
                       {filterProps.filterCount}
                     </span>
                   )}
                 </button>
               )}
-              
+
               {/* Notification Bell */}
               <NotificationBell />
 
               {/* Menu button - always visible */}
               <button
                 onClick={handleMenuClick}
-                className={`p-1.5 hover:${uiConfig.colors.secondary} rounded-lg transition-colors`}
+                className={`p-2.5 ${uiConfig.colors.hoverBg} rounded-lg transition-colors flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center`}
                 aria-label="Open navigation menu"
                 type="button"
               >
-                <Menu className={`w-5 h-5 ${uiConfig.colors.heading}`} />
+                <Menu className={`w-6 h-6 ${uiConfig.colors.heading}`} />
               </button>
             </div>
             
@@ -270,7 +270,7 @@ export default function UnifiedHeader({
                             ref={isActive ? activeStepRef : null}
                             onClick={async (e) => {
                               e.preventDefault();
-                              
+
                               // Auto-center the clicked button
                               const button = e.currentTarget;
                               const container = scrollContainerRef.current;
@@ -280,28 +280,28 @@ export default function UnifiedHeader({
                                 const buttonCenter = buttonRect.left + (buttonRect.width / 2) - containerRect.left;
                                 const containerCenter = containerRect.width / 2;
                                 const scrollPosition = container.scrollLeft + (buttonCenter - containerCenter);
-                                
+
                                 container.scrollTo({
                                   left: Math.max(0, scrollPosition),
                                   behavior: 'smooth'
                                 });
                               }
-                              
+
                               if (onStepNavigate) {
                                 await onStepNavigate(step.path);
                               }
                             }}
-                            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm whitespace-nowrap transition-all duration-200 ${
-                              isActive 
-                                ? `${uiConfig.colors.accentSecondary} font-medium ${uiConfig.colors.accent}` 
+                            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+                              isActive
+                                ? `${uiConfig.colors.accentSecondary} ${uiConfig.colors.accent}`
                                 : isCompleted
-                                ? `hover:${uiConfig.colors.secondary} ${uiConfig.colors.heading}`
-                                : `hover:${uiConfig.colors.secondary} ${uiConfig.colors.subtitle}`
+                                ? `${uiConfig.colors.hoverBg} ${uiConfig.colors.heading}`
+                                : `${uiConfig.colors.hoverBg} ${uiConfig.colors.subtitle}`
                             }`}
                           >
-                            <Icon className={`w-4 h-4 transition-colors duration-200 ${
-                              isActive 
-                                ? uiConfig.colors.accent 
+                            <Icon className={`w-5 h-5 transition-colors duration-200 ${
+                              isActive
+                                ? uiConfig.colors.accent
                                 : isCompleted
                                 ? uiConfig.colors.body
                                 : uiConfig.colors.subtitle
@@ -343,24 +343,24 @@ export default function UnifiedHeader({
                                 const buttonCenter = buttonRect.left + (buttonRect.width / 2) - containerRect.left;
                                 const containerCenter = containerRect.width / 2;
                                 const scrollPosition = container.scrollLeft + (buttonCenter - containerCenter);
-                                
+
                                 container.scrollTo({
                                   left: Math.max(0, scrollPosition),
                                   behavior: 'smooth'
                                 });
                               }
-                              
+
                               tab.onClick();
                             }}
-                            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm whitespace-nowrap transition-all duration-200 ${
-                              tab.isActive 
-                                ? `${uiConfig.colors.accentSecondary} font-medium ${uiConfig.colors.accent}` 
-                                : `hover:${uiConfig.colors.secondary} ${uiConfig.colors.body}`
+                            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+                              tab.isActive
+                                ? `${uiConfig.colors.accentSecondary} ${uiConfig.colors.accent}`
+                                : `${uiConfig.colors.hoverBg} ${uiConfig.colors.body}`
                             }`}
                           >
-                            <Icon className={`w-4 h-4 transition-colors duration-200 ${
-                              tab.isActive 
-                                ? uiConfig.colors.accent 
+                            <Icon className={`w-5 h-5 transition-colors duration-200 ${
+                              tab.isActive
+                                ? uiConfig.colors.accent
                                 : uiConfig.colors.subtitle
                             }`} />
                             <span>{tab.label}</span>
@@ -459,7 +459,7 @@ export default function UnifiedHeader({
                 <h2 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>Filters</h2>
                 <button
                   onClick={() => setIsMobileFiltersOpen(false)}
-                  className={`p-2 hover:${uiConfig.colors.secondary} rounded-lg transition-colors`}
+                  className={`p-2 ${uiConfig.colors.hoverBg} rounded-lg transition-colors`}
                   aria-label="Close filters"
                 >
                   <X className={`w-5 h-5 ${uiConfig.colors.subtitle}`} />
@@ -476,7 +476,7 @@ export default function UnifiedHeader({
             <div className={`sticky bottom-0 ${uiConfig.colors.card} border-t ${uiConfig.colors.border} p-4`}>
               <button
                 onClick={() => setIsMobileFiltersOpen(false)}
-                className={`w-full py-3 ${uiConfig.colors.btnPrimary} rounded-lg font-medium hover:${uiConfig.colors.btnPrimaryHover} transition-colors`}
+                className={`w-full py-3 ${uiConfig.colors.btnPrimary} rounded-lg font-medium transition-colors`}
               >
                 Apply Filters
               </button>

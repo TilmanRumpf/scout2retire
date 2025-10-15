@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import { askConsultant } from '../../anthropic-api/anthropic-client.js';
 import { getUserContext, formatContextForPrompt } from '../utils/scottyContext';
+import { enhanceScottyWithGeographicKnowledge } from '../utils/scottyGeographicKnowledge';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchFavorites } from '../utils/townUtils.jsx';
 import UnifiedHeader from './UnifiedHeader';
@@ -601,10 +602,23 @@ What would you like to know about ${name}?`;
     setMessages(newMessages);
     setMessage('');
     setLoading(true);
-    
+
     // Build personalized Scotty persona with user context
     const userInfo = userContext ? formatContextForPrompt(userContext) : '';
     console.log('Sending context to Scotty:', userInfo);
+
+    // 🌍 ENHANCED: Check if this is a geographic query (e.g., "I like Nova Scotia")
+    let geographicContext = '';
+    const geoKnowledge = await enhanceScottyWithGeographicKnowledge(message, userContext);
+    if (geoKnowledge && geoKnowledge.hasTowns) {
+      console.log('🌍 Geographic query detected:', geoKnowledge.geographicInfo);
+      geographicContext = `\n\n${geoKnowledge.contextString}\n`;
+
+      // If user asks about a region, we can auto-set it as the active topic
+      if (!activeTown && geoKnowledge.geographicInfo) {
+        console.log(`🎯 Setting active topic to: ${geoKnowledge.geographicInfo.name}`);
+      }
+    }
 
     // Add town context if discussing a specific town
     const townContext = activeTown ? `\n\nCURRENT TOPIC: The user is asking about ${activeTown.name}, ${activeTown.country}. IMPORTANT: Keep the conversation focused on ${activeTown.name} unless the user explicitly asks about a different location.` : '';
@@ -634,6 +648,7 @@ CRITICAL RULE: Do NOT suggest towns like San Sebastián, Split, Trieste, or any 
     You help people explore retirement options in a conversational, approachable way.
 
     ${userInfo ? `USER CONTEXT:\n${userInfo}\n\nALWAYS consider the above user information when providing advice. Make your responses highly personalized based on their citizenship, budget, preferences, and situation.\n` : ''}
+    ${geographicContext}
     ${townContext}
     ${recentContext}
     ${availableTownsContext}

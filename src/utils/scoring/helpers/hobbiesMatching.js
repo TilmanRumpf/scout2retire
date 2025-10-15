@@ -1,5 +1,5 @@
 import supabase from '../../supabaseClient.js';
-import { inferHobbyAvailability, calculateHobbyScore as inferenceScore } from '../geographicInference.js';
+import { inferHobbyAvailability, calculateHobbyScore as inferenceScore } from './hobbiesInference.js';
 
 /**
  * Enhanced hobbies matching using Geographic Inference System

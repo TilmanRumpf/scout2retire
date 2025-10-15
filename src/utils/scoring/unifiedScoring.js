@@ -3,7 +3,7 @@
  * Single source of truth for scoring towns against user preferences
  */
 
-import { calculateEnhancedMatch } from './enhancedMatchingAlgorithm.js';
+import { calculateEnhancedMatch } from './core/calculateMatch.js';
 
 /**
  * Simple implementations of insight generation functions
