@@ -70,54 +70,6 @@ function calculateGradualAdminScore(actualScore, userPref, maxPoints) {
   return { score: Math.round(maxPoints * 0.5), description: 'standard quality' }
 }
 
-/**
- * Calculate gradual healthcare/safety scoring based on user preference level
- * @param {number} actualScore - Town's actual score (0-10)
- * @param {string} userPref - User's preference level ('basic', 'functional', 'good')
- * @param {number} maxPoints - Maximum points for this category
- * @returns {Object} Score and description
- */
-function calculateGradualAdminScore(actualScore, userPref, maxPoints) {
-  if (!actualScore || !userPref) return { score: 0, description: null }
-  
-  // Define scoring tiers based on user preference
-  if (userPref === 'good') {
-    // User wants good quality (target ≥7.0)
-    if (actualScore >= 7.0) {
-      return { score: maxPoints, description: 'meets good requirements' }
-    } else if (actualScore >= 6.0) {
-      return { score: Math.round(maxPoints * 0.85), description: 'almost good quality' }
-    } else if (actualScore >= 5.0) {
-      return { score: Math.round(maxPoints * 0.65), description: 'functional quality' }
-    } else if (actualScore >= 4.0) {
-      return { score: Math.round(maxPoints * 0.4), description: 'basic quality' }
-    } else {
-      return { score: Math.round(maxPoints * 0.15), description: 'below basic quality' }
-    }
-  } else if (userPref === 'functional') {
-    // User wants functional quality - LINEAR GRADUAL SCORING for real differentiation
-    // Score linearly from 0-10 to create actual variation
-    const percentage = actualScore / 10.0  // Convert 0-10 score to 0-1 percentage
-    return { 
-      score: Math.round(maxPoints * percentage), 
-      description: `${Math.round(actualScore * 10)}/100 rating` 
-    }
-  } else if (userPref === 'basic') {
-    // User wants basic quality (target ≥4.0)
-    if (actualScore >= 4.0) {
-      return { score: maxPoints, description: 'meets basic requirements' }
-    } else if (actualScore >= 3.0) {
-      return { score: Math.round(maxPoints * 0.7), description: 'almost basic' }
-    } else if (actualScore >= 2.0) {
-      return { score: Math.round(maxPoints * 0.4), description: 'below basic' }
-    } else {
-      return { score: Math.round(maxPoints * 0.15), description: 'lowest baseline' }
-    }
-  }
-  
-  // Fallback for unknown preference
-  return { score: Math.round(maxPoints * 0.5), description: 'standard quality' }
-}
 
 /**
  * Calculate comprehensive tax scoring based on user's tax sensitivity

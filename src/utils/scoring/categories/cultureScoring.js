@@ -44,35 +44,6 @@ const CULTURE_ADJACENCY = {
   }
 }
 
-// 3. CULTURE MATCHING (20% of total) - NEW ALGORITHM
-// Total: 100 pts distributed as:
-// - Living Environment: 20 pts
-// - Pace of Life: 20 pts  
-// - Language Preference: 20 pts
-// - Expat Community: 10 pts
-// - Dining & Nightlife: 10 pts
-// - Events & Concerts: 10 pts
-// - Museums & Arts: 10 pts
-
-// Adjacency maps for gradual scoring
-const CULTURE_ADJACENCY = {
-  urban_rural_preference: {
-    'urban': ['suburban'],
-    'suburban': ['urban', 'rural'],
-    'rural': ['suburban']
-  },
-  pace_of_life_preference: {
-    'fast': ['moderate'],
-    'moderate': ['fast', 'relaxed'],
-    'relaxed': ['moderate']
-  },
-  expat_community: {
-    'large': ['moderate'],
-    'moderate': ['large', 'small'],
-    'small': ['moderate']
-  }
-}
-
 export function calculateCultureScore(preferences, town) {
   let score = 0
   let factors = []
