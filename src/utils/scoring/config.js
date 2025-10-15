@@ -8,13 +8,16 @@
 // ============================================
 // CATEGORY WEIGHTS (must add up to 100)
 // ============================================
+// UPDATED 2025-10-15: Increased region weight to make country selection more impactful
+// Old: region: 20%, climate: 15%, culture: 15%, hobbies: 10%, admin: 20%, cost: 20%
+// New: region: 30% (increased), others proportionally adjusted
 export const CATEGORY_WEIGHTS = {
-  region: 20,         // Geographic location match
-  climate: 15,        // Weather preferences
-  culture: 15,        // Language, pace of life, expat community
-  hobbies: 10,        // Activities & interests
-  administration: 20, // Healthcare, safety, visa
-  cost: 20            // Cost of living match
+  region: 30,         // Geographic location match (INCREASED from 20%)
+  climate: 13,        // Weather preferences (reduced from 15%)
+  culture: 12,        // Language, pace of life, expat community (reduced from 15%)
+  hobbies: 8,         // Activities & interests (reduced from 10%)
+  administration: 18, // Healthcare, safety, visa (reduced from 20%)
+  cost: 19            // Cost of living match (reduced from 20%)
 };
 
 // Verify weights add up to 100 (safety check)
@@ -39,9 +42,10 @@ export const MATCH_QUALITY = {
 // ============================================
 
 // Region Scoring Settings
+// UPDATED 2025-10-15: Country match now worth full 90 points (was 40)
 export const REGION_SETTINGS = {
   // Points for different match levels
-  EXACT_COUNTRY_MATCH: 40,
+  EXACT_COUNTRY_MATCH: 90,  // INCREASED from 40 - country match = 100% region score
   REGION_MATCH: 30,
   GEOGRAPHIC_FEATURE_MATCH: 30,
   VEGETATION_MATCH: 20,

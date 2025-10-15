@@ -1,6 +1,6 @@
 /**
  * REGION SCORING - Category 1 of 6
- * Weight: 20% of total match score
+ * Weight: 30% of total match score (UPDATED 2025-10-15: was 20%)
  *
  * Scores how well a town matches user's geographic preferences:
  * - Regions (max 2): Mediterranean, Caribbean, etc.
@@ -10,13 +10,14 @@
  * - Vegetation: Mediterranean, tropical, forest, etc.
  *
  * Scoring Breakdown (90 points total → converted to 0-100%):
- * - Country/Region Match: 40 points (exact country > region match)
+ * - Country/Region Match: 90 points (UPDATED: was 40, now gives 100% for country match)
  * - Geographic Features: 30 points (with partial credit for related features)
  * - Vegetation Type: 20 points (with partial credit for related types)
  */
 
 import { parsePreferences } from '../helpers/preferenceParser.js';
 import { compareIgnoreCase, includesIgnoreCase, normalize, arrayIncludesIgnoreCase } from '../helpers/stringUtils.js';
+import { REGION_SETTINGS } from '../config.js';
 
 // Helper function to calculate array overlap score
 function calculateArrayOverlap(userArray, townArray, maxScore = 100) {
@@ -96,13 +97,13 @@ export function calculateRegionScore(preferences, town) {
       for (const country of parsed.region.countries) {
         // Check if it's a US state
         if (US_STATES.has(country) && town.country === 'United States' && town.region === country) {
-          regionCountryScore = 40
-          factors.push({ factor: `State match (${country})`, score: 40 })
+          regionCountryScore = REGION_SETTINGS.EXACT_COUNTRY_MATCH
+          factors.push({ factor: `State match (${country})`, score: REGION_SETTINGS.EXACT_COUNTRY_MATCH })
           countryMatched = true
           break
         } else if (country === town.country) {
-          regionCountryScore = 40
-          factors.push({ factor: 'Country match', score: 40 })
+          regionCountryScore = REGION_SETTINGS.EXACT_COUNTRY_MATCH
+          factors.push({ factor: 'Country match', score: REGION_SETTINGS.EXACT_COUNTRY_MATCH })
           countryMatched = true
           break
         }
@@ -115,8 +116,8 @@ export function calculateRegionScore(preferences, town) {
       const userRegionsLower = parsed.region.regions.map(r => normalize(r))
 
       if (town.regions?.some(region => arrayIncludesIgnoreCase(userRegionsLower, region))) {
-        regionCountryScore = 30
-        factors.push({ factor: 'Region match only', score: 30 })
+        regionCountryScore = REGION_SETTINGS.REGION_MATCH
+        factors.push({ factor: 'Region match only', score: REGION_SETTINGS.REGION_MATCH })
       }
       // Also check geo_region for broader matches (now comma-separated)
       else if (town.geo_region) {
@@ -126,8 +127,8 @@ export function calculateRegionScore(preferences, town) {
           : [normalize(town.geo_region)]
 
         if (geoRegions.some(gr => userRegionsLower.includes(gr))) {
-          regionCountryScore = 30
-          factors.push({ factor: `Region match only (${town.geo_region})`, score: 30 })
+          regionCountryScore = REGION_SETTINGS.REGION_MATCH
+          factors.push({ factor: `Region match only (${town.geo_region})`, score: REGION_SETTINGS.REGION_MATCH })
         }
       }
     }
