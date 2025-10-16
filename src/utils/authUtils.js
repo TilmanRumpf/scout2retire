@@ -94,7 +94,8 @@ export const signUp = async (email, password, fullName, retirementDate, hometown
             onboarding_completed: false,
             hometown: hometown || null,
             username: username ? username.toLowerCase() : null,
-            avatar_url: avatarUrl || null
+            avatar_url: avatarUrl || null,
+            account_tier: 'free'  // Auto-assign free tier to new users
           }
         ])
         .select()

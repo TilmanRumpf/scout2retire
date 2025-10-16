@@ -10,7 +10,7 @@
  * - Vegetation: Mediterranean, tropical, forest, etc.
  *
  * Scoring Breakdown (90 points total → converted to 0-100%):
- * - Country/Region Match: 90 points (UPDATED: was 40, now gives 100% for country match)
+ * - Country/Region Match: 40 points (country alone = 44%, all three = 100%)
  * - Geographic Features: 30 points (with partial credit for related features)
  * - Vegetation Type: 20 points (with partial credit for related types)
  */

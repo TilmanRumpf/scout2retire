@@ -42,10 +42,10 @@ export const MATCH_QUALITY = {
 // ============================================
 
 // Region Scoring Settings
-// UPDATED 2025-10-15: Country match now worth full 90 points (was 40)
+// MATH CORRECTED 2025-10-15: Total must equal 90 points (country + geo + veg)
 export const REGION_SETTINGS = {
   // Points for different match levels
-  EXACT_COUNTRY_MATCH: 90,  // INCREASED from 40 - country match = 100% region score
+  EXACT_COUNTRY_MATCH: 40,  // Country match alone = 44%, all three = 100%
   REGION_MATCH: 30,
   GEOGRAPHIC_FEATURE_MATCH: 30,
   VEGETATION_MATCH: 20,

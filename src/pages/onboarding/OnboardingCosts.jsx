@@ -179,40 +179,40 @@ export default function OnboardingCosts() {
   // Enable auto-save for this page
   const autoSave = useOnboardingAutoSave(formData, 'costs');
 
-  // Budget tier options
+  // Budget tier options - values represent UPPER bound (max user can afford)
   const budgetTiers = [
-    { value: 1500, label: '$1,500-2,000', description: 'Budget' },
-    { value: 2000, label: '$2,000-3,000', description: 'Moderate' },
-    { value: 3000, label: '$3,000-4,000', description: 'Comfortable' },
-    { value: 4000, label: '$4,000-5,000', description: 'Premium' },
-    { value: 5000, label: '$5,000+', description: 'Luxury' }
+    { value: 2000, label: '$1,500-2,000', description: 'Budget' },
+    { value: 3000, label: '$2,000-3,000', description: 'Moderate' },
+    { value: 4000, label: '$3,000-4,000', description: 'Comfortable' },
+    { value: 5000, label: '$4,000-5,000', description: 'Premium' },
+    { value: 6000, label: '$5,000+', description: 'Luxury' }
   ];
 
-  // Rent tier options
+  // Rent tier options - values represent UPPER bound (max user can afford)
   const rentTiers = [
-    { value: 500, label: '$500-750', description: 'Budget' },
-    { value: 750, label: '$750-1,000', description: 'Moderate' },
-    { value: 1000, label: '$1,000-1,500', description: 'Comfortable' },
-    { value: 1500, label: '$1,500-2,000', description: 'Premium' },
-    { value: 2000, label: '$2,000+', description: 'Luxury' }
+    { value: 750, label: '$500-750', description: 'Budget' },
+    { value: 1000, label: '$750-1,000', description: 'Moderate' },
+    { value: 1500, label: '$1,000-1,500', description: 'Comfortable' },
+    { value: 2000, label: '$1,500-2,000', description: 'Premium' },
+    { value: 2500, label: '$2,000+', description: 'Luxury' }
   ];
 
-  // Home price tier options
+  // Home price tier options - values represent UPPER bound (max user can afford)
   const homePriceTiers = [
-    { value: 100000, label: '$100k-200k', description: 'Budget' },
-    { value: 200000, label: '$200k-300k', description: 'Moderate' },
-    { value: 300000, label: '$300k-400k', description: 'Comfortable' },
-    { value: 400000, label: '$400k-500k', description: 'Premium' },
-    { value: 500000, label: '$500k+', description: 'Luxury' }
+    { value: 200000, label: '$100k-200k', description: 'Budget' },
+    { value: 300000, label: '$200k-300k', description: 'Moderate' },
+    { value: 400000, label: '$300k-400k', description: 'Comfortable' },
+    { value: 500000, label: '$400k-500k', description: 'Premium' },
+    { value: 600000, label: '$500k+', description: 'Luxury' }
   ];
 
-  // Healthcare budget tier options
+  // Healthcare budget tier options - values represent UPPER bound (max user can afford)
   const healthcareTiers = [
-    { value: 500, label: '$500-750', description: 'Basic' },
-    { value: 750, label: '$750-1,000', description: 'Standard' },
-    { value: 1000, label: '$1,000-1,250', description: 'Enhanced' },
-    { value: 1250, label: '$1,250-1,500', description: 'Comprehensive' },
-    { value: 1500, label: '$1,500+', description: 'Premium' }
+    { value: 750, label: '$500-750', description: 'Basic' },
+    { value: 1000, label: '$750-1,000', description: 'Standard' },
+    { value: 1250, label: '$1,000-1,250', description: 'Enhanced' },
+    { value: 1500, label: '$1,250-1,500', description: 'Comprehensive' },
+    { value: 2000, label: '$1,500+', description: 'Premium' }
   ];
 
   // Local Mobility options
