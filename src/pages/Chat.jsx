@@ -761,6 +761,7 @@ export default function Chat() {
                 onSwitchToLoungeChat={switchToLoungeChat}
                 onSwitchToCountryLoungeChat={switchToCountryLoungeChat}
                 onToggleFavoriteChat={toggleFavoriteChat}
+                onSwitchToTab={setActiveTab}
                 chatType={chatType}
                 activeThread={activeThread}
               />

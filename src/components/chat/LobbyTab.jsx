@@ -18,6 +18,7 @@ export default function LobbyTab({
   onSwitchToLoungeChat,
   onSwitchToCountryLoungeChat,
   onToggleFavoriteChat,
+  onSwitchToTab,
   chatType,
   activeThread
 }) {
@@ -47,7 +48,41 @@ export default function LobbyTab({
 
   return (
     <div className="space-y-4">
-      {/* Favorites Section - MOST IMPORTANT */}
+      {/* Your Community - FIRST - CLICKABLE */}
+      <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4`}>
+        <h3 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-3`}>Your Community</h3>
+        <div className="grid grid-cols-3 gap-3">
+          <button
+            onClick={() => onSwitchToTab('friends')}
+            className={`text-center p-3 ${uiConfig.layout.radius.lg} ${uiConfig.states.hover} transition-all`}
+          >
+            <div className={`text-2xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>
+              {friends.length}
+            </div>
+            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>Friends</div>
+          </button>
+          <button
+            onClick={() => onSwitchToTab('groups')}
+            className={`text-center p-3 ${uiConfig.layout.radius.lg} ${uiConfig.states.hover} transition-all`}
+          >
+            <div className={`text-2xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>
+              {groupChats.length}
+            </div>
+            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>Groups</div>
+          </button>
+          <button
+            onClick={() => onSwitchToTab('lounges')}
+            className={`text-center p-3 ${uiConfig.layout.radius.lg} ${uiConfig.states.hover} transition-all`}
+          >
+            <div className={`text-2xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>
+              {favoritedTowns.length}
+            </div>
+            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>Favorite Towns</div>
+          </button>
+        </div>
+      </div>
+
+      {/* Favorites Section */}
       <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
         <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
           <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} flex items-center gap-2`}>
@@ -106,30 +141,36 @@ export default function LobbyTab({
               ))}
 
               {/* Favorited Town Lounges */}
-              {favoritedTowns.map(town => (
-                <div
-                  key={`town-${town.id}`}
-                  className={`flex items-center justify-between p-3 border-b ${uiConfig.colors.borderLight} last:border-0`}
-                >
-                  <button
-                    onClick={() => onSwitchToTownChat(town)}
-                    className={`flex-1 text-left flex items-center gap-3 ${uiConfig.states.hover} ${uiConfig.layout.radius.lg} p-2 -m-2 transition-all`}
+              {favoritedTowns.map(fav => {
+                // favorites structure: { id, town_id, user_id, towns: { id, name, country, ... } }
+                const town = fav.towns;
+                if (!town) return null;
+
+                return (
+                  <div
+                    key={`town-${fav.id}`}
+                    className={`flex items-center justify-between p-3 border-b ${uiConfig.colors.borderLight} last:border-0`}
                   >
-                    <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0`}>
-                      <Home className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} truncate`}>
-                        {town.name}
+                    <button
+                      onClick={() => onSwitchToTownChat(town)}
+                      className={`flex-1 text-left flex items-center gap-3 ${uiConfig.states.hover} ${uiConfig.layout.radius.lg} p-2 -m-2 transition-all`}
+                    >
+                      <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0`}>
+                        <Home className="h-5 w-5" />
                       </div>
-                      <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
-                        {town.country} • Town lounge
+                      <div className="flex-1 min-w-0">
+                        <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} truncate`}>
+                          {town.name}
+                        </div>
+                        <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+                          {town.country} • Town lounge
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                  <Star className="h-5 w-5 text-yellow-500 fill-yellow-500 flex-shrink-0" />
-                </div>
-              ))}
+                    </button>
+                    <Star className="h-5 w-5 text-yellow-500 fill-yellow-500 flex-shrink-0" />
+                  </div>
+                );
+              })}
             </>
           )}
         </div>
@@ -202,30 +243,6 @@ export default function LobbyTab({
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4`}>
-        <h3 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-3`}>Your Community</h3>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="text-center">
-            <div className={`text-2xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>
-              {friends.length}
-            </div>
-            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>Friends</div>
-          </div>
-          <div className="text-center">
-            <div className={`text-2xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>
-              {groupChats.length}
-            </div>
-            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>Groups</div>
-          </div>
-          <div className="text-center">
-            <div className={`text-2xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>
-              {favoritedTowns.length}
-            </div>
-            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>Favorite Towns</div>
-          </div>
-        </div>
-      </div>
 
       {/* Getting Started Tips */}
       <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.sm} p-4`}>
