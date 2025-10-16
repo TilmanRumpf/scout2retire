@@ -14,6 +14,7 @@ export default function LobbyTab({
   onSwitchToFriendChat,
   onSwitchToGroupChat,
   onSwitchToTownChat,
+  onSwitchToLoungeChat,
   onSwitchToCountryLoungeChat,
   onToggleFavoriteChat,
   chatType,
@@ -102,12 +103,7 @@ export default function LobbyTab({
         <div className="p-3 space-y-2">
           {/* Retirement Lounge */}
           <button
-            onClick={() => {
-              // Switch to general retirement lounge
-              const loungeThread = { id: null, topic: 'Lounge', town_id: null };
-              // This would need to be wired up properly
-              toast.success('Opening Retirement Lounge');
-            }}
+            onClick={onSwitchToLoungeChat}
             className={`w-full flex items-center gap-3 p-3 ${uiConfig.layout.radius.lg} ${
               chatType === 'lounge' && activeThread?.topic === 'Lounge'
                 ? uiConfig.colors.badge
