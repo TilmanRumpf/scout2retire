@@ -753,10 +753,12 @@ export default function Chat() {
                 friends={friends}
                 groupChats={groupChats}
                 allTowns={allTowns}
+                chatFavorites={chatFavorites}
                 onSwitchToFriendChat={switchToFriendChat}
                 onSwitchToGroupChat={switchToGroupChat}
                 onSwitchToTownChat={switchToTownChat}
                 onSwitchToCountryLoungeChat={switchToCountryLoungeChat}
+                onToggleFavoriteChat={toggleFavoriteChat}
                 chatType={chatType}
                 activeThread={activeThread}
               />
