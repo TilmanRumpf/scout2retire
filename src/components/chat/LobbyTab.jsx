@@ -22,8 +22,87 @@ export default function LobbyTab({
   chatType,
   activeThread
 }) {
-  // Popular countries for quick access
-  const popularCountries = ['United States', 'Canada', 'Mexico', 'Portugal', 'Spain', 'Costa Rica', 'Italy', 'France'];
+  // Popular countries for quick access with flags
+  const popularCountries = [
+    { name: 'United States', flag: '🇺🇸' },
+    { name: 'Canada', flag: '🇨🇦' },
+    { name: 'Mexico', flag: '🇲🇽' },
+    { name: 'Portugal', flag: '🇵🇹' },
+    { name: 'Spain', flag: '🇪🇸' },
+    { name: 'Costa Rica', flag: '🇨🇷' },
+    { name: 'Italy', flag: '🇮🇹' },
+    { name: 'France', flag: '🇫🇷' }
+  ];
+
+  // Country to flag emoji mapping
+  const getCountryFlag = (countryName) => {
+    const flagMap = {
+      'United States': '🇺🇸',
+      'Canada': '🇨🇦',
+      'Mexico': '🇲🇽',
+      'Portugal': '🇵🇹',
+      'Spain': '🇪🇸',
+      'Costa Rica': '🇨🇷',
+      'Italy': '🇮🇹',
+      'France': '🇫🇷',
+      'Netherlands': '🇳🇱',
+      'Germany': '🇩🇪',
+      'UK': '🇬🇧',
+      'United Kingdom': '🇬🇧',
+      'Greece': '🇬🇷',
+      'Thailand': '🇹🇭',
+      'Vietnam': '🇻🇳',
+      'Colombia': '🇨🇴',
+      'Ecuador': '🇪🇨',
+      'Panama': '🇵🇦',
+      'Malaysia': '🇲🇾',
+      'Croatia': '🇭🇷',
+      'Czech Republic': '🇨🇿',
+      'Poland': '🇵🇱',
+      'Hungary': '🇭🇺',
+      'Bulgaria': '🇧🇬',
+      'Romania': '🇷🇴',
+      'Albania': '🇦🇱',
+      'Montenegro': '🇲🇪',
+      'Slovenia': '🇸🇮',
+      'Slovakia': '🇸🇰',
+      'Austria': '🇦🇹',
+      'Switzerland': '🇨🇭',
+      'Belgium': '🇧🇪',
+      'Ireland': '🇮🇪',
+      'Denmark': '🇩🇰',
+      'Sweden': '🇸🇪',
+      'Norway': '🇳🇴',
+      'Finland': '🇫🇮',
+      'Iceland': '🇮🇸',
+      'Turkey': '🇹🇷',
+      'Morocco': '🇲🇦',
+      'Tunisia': '🇹🇳',
+      'Egypt': '🇪🇬',
+      'South Africa': '🇿🇦',
+      'Australia': '🇦🇺',
+      'New Zealand': '🇳🇿',
+      'Japan': '🇯🇵',
+      'South Korea': '🇰🇷',
+      'Taiwan': '🇹🇼',
+      'Singapore': '🇸🇬',
+      'Philippines': '🇵🇭',
+      'Indonesia': '🇮🇩',
+      'Brazil': '🇧🇷',
+      'Argentina': '🇦🇷',
+      'Chile': '🇨🇱',
+      'Uruguay': '🇺🇾',
+      'Peru': '🇵🇪',
+      'Belize': '🇧🇿',
+      'Nicaragua': '🇳🇮',
+      'Guatemala': '🇬🇹',
+      'Honduras': '🇭🇳',
+      'El Salvador': '🇸🇻',
+      'Dominican Republic': '🇩🇴',
+      'Puerto Rico': '🇵🇷'
+    };
+    return flagMap[countryName] || '🌍';
+  };
 
   const handleFavoriteClick = (fav) => {
     if (fav.chat_type === 'friend') {
@@ -155,8 +234,8 @@ export default function LobbyTab({
                       onClick={() => onSwitchToTownChat(town)}
                       className={`flex-1 text-left flex items-center gap-3 ${uiConfig.states.hover} ${uiConfig.layout.radius.lg} p-2 -m-2 transition-all`}
                     >
-                      <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0`}>
-                        <Home className="h-5 w-5" />
+                      <div className={`w-10 h-10 ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0 text-2xl`}>
+                        {getCountryFlag(town.country)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} truncate`}>
@@ -219,20 +298,20 @@ export default function LobbyTab({
 
         <div className="p-3 grid grid-cols-1 gap-2 max-h-96 overflow-y-auto">
           {popularCountries.map(country => {
-            const isActive = chatType === 'lounge' && activeThread?.topic === country;
+            const isActive = chatType === 'lounge' && activeThread?.topic === country.name;
             return (
               <button
-                key={country}
-                onClick={() => onSwitchToCountryLoungeChat(country)}
+                key={country.name}
+                onClick={() => onSwitchToCountryLoungeChat(country.name)}
                 className={`flex items-center gap-3 p-3 ${uiConfig.layout.radius.lg} ${
                   isActive ? uiConfig.colors.badge : uiConfig.states.hover
                 } transition-all`}
               >
-                <div className={`w-10 h-10 ${isActive ? 'bg-scout-accent-500' : 'bg-blue-100 dark:bg-blue-900/30'} ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0`}>
-                  <MapPin className={`h-5 w-5 ${isActive ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`} />
+                <div className={`w-10 h-10 ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0 text-2xl`}>
+                  {country.flag}
                 </div>
                 <div className="flex-1 text-left">
-                  <div className={uiConfig.font.weight.medium}>{country}</div>
+                  <div className={uiConfig.font.weight.medium}>{country.name}</div>
                   <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
                     Country lounge
                   </div>
