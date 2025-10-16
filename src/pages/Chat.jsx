@@ -579,7 +579,7 @@ export default function Chat() {
   }, []);
 
   // Use chat actions hook
-  const { switchToTownChat, switchToLoungeChat, switchToGroupChat, switchToFriendChat, handleSendMessage } = useChatActions({
+  const { switchToTownChat, switchToLoungeChat, switchToCountryLoungeChat, switchToGroupChat, switchToFriendChat, handleSendMessage } = useChatActions({
     user,
     threads,
     setThreads,
@@ -793,6 +793,7 @@ export default function Chat() {
                 setSelectedCountry={setSelectedCountry}
                 setFavorites={setFavorites}
                 onSwitchToLoungeChat={switchToLoungeChat}
+                onSwitchToCountryLoungeChat={switchToCountryLoungeChat}
                 onSwitchToTownChat={switchToTownChat}
                 onToggleCountryLike={toggleCountryLike}
               />

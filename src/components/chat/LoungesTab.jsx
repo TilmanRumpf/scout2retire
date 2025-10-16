@@ -36,6 +36,7 @@ export default function LoungesTab({
   setSelectedCountry,
   setFavorites,
   onSwitchToLoungeChat,
+  onSwitchToCountryLoungeChat,
   onSwitchToTownChat,
   onToggleCountryLike
 }) {
@@ -130,8 +131,7 @@ export default function LoungesTab({
                     >
                       <button
                         onClick={() => {
-                          setSelectedCountry(country);
-                          toast.success(`Opening ${country} lounge`);
+                          onSwitchToCountryLoungeChat(country);
                         }}
                         className="flex-1 text-left"
                       >
@@ -255,8 +255,7 @@ export default function LoungesTab({
                   >
                     <button
                       onClick={() => {
-                        setSelectedCountry(country);
-                        toast.success(`Opening ${country} lounge`);
+                        onSwitchToCountryLoungeChat(country);
                       }}
                       className="flex-1 text-left"
                     >

@@ -87,7 +87,7 @@ export function useChatActions({
       let loungeThread = threads.find(thread => thread.town_id === null && thread.topic === 'Lounge');
 
       if (!loungeThread) {
-        const { data: newThread, error: createError } = await supabase
+        const { data: newThread, error: createError} = await supabase
           .from('chat_threads')
           .insert([{
             town_id: null,
@@ -112,6 +112,50 @@ export function useChatActions({
     } catch (err) {
       console.error("Error switching to lounge chat:", err);
       toast.error("Failed to load lounge chat");
+    }
+  };
+
+  // Switch to country lounge chat
+  const switchToCountryLoungeChat = async (countryName) => {
+    try {
+      setActiveTown(null);
+      setChatType('lounge');
+      setMessages([]);
+
+      if (isMobile) {
+        setShowChatList(false);
+      }
+
+      // Find or create thread for this specific country
+      let countryThread = threads.find(thread => thread.town_id === null && thread.topic === countryName);
+
+      if (!countryThread) {
+        const { data: newThread, error: createError } = await supabase
+          .from('chat_threads')
+          .insert([{
+            town_id: null,
+            topic: countryName,
+            created_by: user.id
+          }])
+          .select();
+
+        if (createError) {
+          console.error("Create country lounge error:", createError);
+          toast.error(`Failed to create ${countryName} lounge chat`);
+          return;
+        }
+
+        countryThread = newThread[0];
+        setThreads(prev => [countryThread, ...prev]);
+      }
+
+      setActiveThread(countryThread);
+      navigate('/chat', { replace: true });
+      await loadMessages(countryThread.id);
+      toast.success(`Opened ${countryName} lounge`);
+    } catch (err) {
+      console.error("Error switching to country lounge chat:", err);
+      toast.error(`Failed to load ${countryName} lounge chat`);
     }
   };
 
@@ -266,6 +310,7 @@ export function useChatActions({
   return {
     switchToTownChat,
     switchToLoungeChat,
+    switchToCountryLoungeChat,
     switchToGroupChat,
     switchToFriendChat,
     handleSendMessage
