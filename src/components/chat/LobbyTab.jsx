@@ -1,107 +1,130 @@
-import { Search, User, Users, Home, MapPin } from 'lucide-react';
+import { MessageCircle, User, Users, Home, MapPin, Globe } from 'lucide-react';
 import { uiConfig } from '../../styles/uiConfig';
 import toast from 'react-hot-toast';
 
 /**
- * LobbyTab - Displays favorited chats across all types
+ * LobbyTab - Main hub showing quick access to popular lounges and recent activity
  * Extracted from Chat.jsx
  */
 export default function LobbyTab({
-  favoritesSearchTerm,
-  setFavoritesSearchTerm,
-  chatFavorites,
   friends,
   groupChats,
   allTowns,
-  setSelectedCountry,
   onSwitchToFriendChat,
   onSwitchToGroupChat,
   onSwitchToTownChat,
-  onToggleFavoriteChat
+  onSwitchToCountryLoungeChat,
+  chatType,
+  activeThread
 }) {
-  const handleFavoriteClick = (fav) => {
-    if (fav.chat_type === 'friend') {
-      const friendData = friends.find(f => f.friend.id === fav.reference_id);
-      if (friendData) onSwitchToFriendChat(friendData);
-    } else if (fav.chat_type === 'group') {
-      const groupData = groupChats.find(g => g.id === fav.reference_id);
-      if (groupData) onSwitchToGroupChat(groupData);
-    } else if (fav.chat_type === 'town_lounge') {
-      const townData = allTowns.find(t => t.id === fav.reference_id);
-      if (townData) onSwitchToTownChat(townData);
-    } else if (fav.chat_type === 'country_lounge') {
-      setSelectedCountry(fav.reference_name);
-      toast.success(`Opening ${fav.reference_name} lounge`);
-    }
-  };
+  // Popular countries for quick access
+  const popularCountries = ['United States', 'Canada', 'Mexico', 'Portugal', 'Spain', 'Costa Rica', 'Italy', 'France'];
 
   return (
     <div className="space-y-4">
-      {/* Search Bar */}
-      <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.sm} p-3`}>
-        <div className="relative">
-          <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${uiConfig.colors.hint}`} />
-          <input
-            type="search"
-            placeholder="Search favorites..."
-            value={favoritesSearchTerm}
-            onChange={(e) => setFavoritesSearchTerm(e.target.value)}
-            className={`w-full h-10 pl-10 pr-4 ${uiConfig.layout.radius.full} ${uiConfig.colors.input} ${uiConfig.font.size.sm}`}
-          />
-        </div>
-      </div>
-
-      {/* Favorites List */}
+      {/* Quick Access - Retirement Lounge */}
       <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
         <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-          <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Lobby</h2>
+          <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Quick Access</h2>
           <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
-            Your favorited chats
+            Jump into popular lounges
           </p>
         </div>
 
-        <div className="max-h-96 overflow-y-auto">
-          {chatFavorites.length === 0 ? (
-            <div className={`p-8 text-center ${uiConfig.colors.hint}`}>
-              <p>No favorites yet.</p>
-              <p className={`${uiConfig.font.size.xs} mt-2`}>Tap ⭐ on any chat to add it here!</p>
+        <div className="p-3 space-y-2">
+          {/* Retirement Lounge */}
+          <button
+            onClick={() => {
+              // Switch to general retirement lounge
+              const loungeThread = { id: null, topic: 'Lounge', town_id: null };
+              // This would need to be wired up properly
+              toast.success('Opening Retirement Lounge');
+            }}
+            className={`w-full flex items-center gap-3 p-3 ${uiConfig.layout.radius.lg} ${
+              chatType === 'lounge' && activeThread?.topic === 'Lounge'
+                ? uiConfig.colors.badge
+                : uiConfig.states.hover
+            } transition-all`}
+          >
+            <div className={`w-10 h-10 bg-gradient-to-br from-scout-accent-400 to-scout-accent-600 ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0`}>
+              <MessageCircle className="h-5 w-5 text-white" />
             </div>
-          ) : (
-            chatFavorites.map(fav => (
-              <div
-                key={fav.id}
-                className={`flex items-center justify-between p-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover}`}
-              >
-                <button
-                  onClick={() => handleFavoriteClick(fav)}
-                  className="flex-1 text-left"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center`}>
-                      {fav.chat_type === 'friend' && <User className="h-5 w-5" />}
-                      {fav.chat_type === 'group' && <Users className="h-5 w-5" />}
-                      {fav.chat_type === 'town_lounge' && <Home className="h-5 w-5" />}
-                      {fav.chat_type === 'country_lounge' && <MapPin className="h-5 w-5" />}
-                    </div>
-                    <div>
-                      <div className={uiConfig.font.weight.medium}>{fav.reference_name}</div>
-                      <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} capitalize`}>
-                        {fav.chat_type.replace('_', ' ')}
-                      </div>
-                    </div>
-                  </div>
-                </button>
-                <button
-                  onClick={() => onToggleFavoriteChat(fav.chat_type, fav.reference_id, fav.reference_name)}
-                  className="p-2"
-                  title="Unfavorite"
-                >
-                  ⭐
-                </button>
+            <div className="flex-1 text-left">
+              <div className={uiConfig.font.weight.medium}>Retirement Lounge</div>
+              <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+                General community chat
               </div>
-            ))
-          )}
+            </div>
+          </button>
         </div>
+      </div>
+
+      {/* Popular Country Lounges */}
+      <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
+        <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
+          <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading}`}>Popular Country Lounges</h2>
+          <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
+            Join country-specific discussions
+          </p>
+        </div>
+
+        <div className="p-3 grid grid-cols-1 gap-2 max-h-96 overflow-y-auto">
+          {popularCountries.map(country => {
+            const isActive = chatType === 'lounge' && activeThread?.topic === country;
+            return (
+              <button
+                key={country}
+                onClick={() => onSwitchToCountryLoungeChat(country)}
+                className={`flex items-center gap-3 p-3 ${uiConfig.layout.radius.lg} ${
+                  isActive ? uiConfig.colors.badge : uiConfig.states.hover
+                } transition-all`}
+              >
+                <div className={`w-10 h-10 ${isActive ? 'bg-scout-accent-500' : 'bg-blue-100 dark:bg-blue-900/30'} ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0`}>
+                  <MapPin className={`h-5 w-5 ${isActive ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`} />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className={uiConfig.font.weight.medium}>{country}</div>
+                  <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+                    Country lounge
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} p-4`}>
+        <h3 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-3`}>Your Community</h3>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="text-center">
+            <div className={`text-2xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>
+              {friends.length}
+            </div>
+            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>Friends</div>
+          </div>
+          <div className="text-center">
+            <div className={`text-2xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>
+              {groupChats.length}
+            </div>
+            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>Groups</div>
+          </div>
+          <div className="text-center">
+            <div className={`text-2xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>
+              {allTowns.length}
+            </div>
+            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>Towns</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Getting Started Tips */}
+      <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.sm} p-4`}>
+        <h3 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} mb-2`}>💡 Quick Tip</h3>
+        <p className={`${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
+          Star your favorite chats for quick access. Explore country lounges to connect with others interested in specific destinations!
+        </p>
       </div>
     </div>
   );

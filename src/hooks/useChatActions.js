@@ -117,6 +117,7 @@ export function useChatActions({
 
   // Switch to country lounge chat
   const switchToCountryLoungeChat = async (countryName) => {
+    console.log('🌍 switchToCountryLoungeChat called with:', countryName);
     try {
       setActiveTown(null);
       setChatType('lounge');
@@ -128,6 +129,7 @@ export function useChatActions({
 
       // Find or create thread for this specific country
       let countryThread = threads.find(thread => thread.town_id === null && thread.topic === countryName);
+      console.log('🔍 Found/creating thread:', { countryName, topic: countryThread?.topic });
 
       if (!countryThread) {
         const { data: newThread, error: createError } = await supabase
@@ -150,6 +152,7 @@ export function useChatActions({
       }
 
       setActiveThread(countryThread);
+      console.log('✅ Set active thread:', { id: countryThread.id, topic: countryThread.topic });
       navigate('/chat', { replace: true });
       await loadMessages(countryThread.id);
       toast.success(`Opened ${countryName} lounge`);

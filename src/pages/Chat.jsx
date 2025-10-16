@@ -750,17 +750,15 @@ export default function Chat() {
             {/* ========== LOBBY TAB ========== */}
             {activeTab === 'lobby' && (
               <LobbyTab
-                favoritesSearchTerm={favoritesSearchTerm}
-                setFavoritesSearchTerm={setFavoritesSearchTerm}
-                chatFavorites={chatFavorites}
                 friends={friends}
                 groupChats={groupChats}
                 allTowns={allTowns}
-                setSelectedCountry={setSelectedCountry}
                 onSwitchToFriendChat={switchToFriendChat}
                 onSwitchToGroupChat={switchToGroupChat}
                 onSwitchToTownChat={switchToTownChat}
-                onToggleFavoriteChat={toggleFavoriteChat}
+                onSwitchToCountryLoungeChat={switchToCountryLoungeChat}
+                chatType={chatType}
+                activeThread={activeThread}
               />
             )}
             {/* ========== END LOBBY TAB ========== */}
@@ -1036,24 +1034,28 @@ export default function Chat() {
         onSendFriendRequest={sendFriendRequest}
       />
 
-      {/* Group Chat Modal */}
-      <GroupChatModal
-        isOpen={showGroupChatModal}
-        onClose={() => setShowGroupChatModal(false)}
-        friends={friends}
-        onCreateGroup={handleCreateGroup}
-        currentUser={user}
-      />
+      {/* Group Chat Modal - Only render when open */}
+      {showGroupChatModal && (
+        <GroupChatModal
+          isOpen={showGroupChatModal}
+          onClose={() => setShowGroupChatModal(false)}
+          friends={friends}
+          onCreateGroup={handleCreateGroup}
+          currentUser={user}
+        />
+      )}
 
-      {/* Group Chat Edit Modal */}
-      <GroupChatEditModal
-        isOpen={showGroupEditModal}
-        onClose={() => setShowGroupEditModal(false)}
-        groupChat={activeGroupChat}
-        currentUser={user}
-        friends={friends}
-        onUpdate={() => user && loadGroupChats(user.id)}
-      />
+      {/* Group Chat Edit Modal - Only render when open */}
+      {showGroupEditModal && (
+        <GroupChatEditModal
+          isOpen={showGroupEditModal}
+          onClose={() => setShowGroupEditModal(false)}
+          groupChat={activeGroupChat}
+          currentUser={user}
+          friends={friends}
+          onUpdate={() => user && loadGroupChats(user.id)}
+        />
+      )}
     </div>
   );
 }
