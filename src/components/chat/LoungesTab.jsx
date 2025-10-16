@@ -12,6 +12,8 @@ export default function LoungesTab({
   loungeView,
   setLoungeView,
   chatType,
+  activeThread,
+  activeTown,
   unreadByType,
   countryLikes,
   favorites,
@@ -124,10 +126,11 @@ export default function LoungesTab({
                 </div>
                 {countryLikes.map(countryLike => {
                   const country = countryLike.country_name;
+                  const isActive = chatType === 'lounge' && activeThread?.topic === country;
                   return (
                     <div
                       key={`liked-${country}`}
-                      className={`flex items-center justify-between px-4 py-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
+                      className={`flex items-center justify-between px-4 py-3 border-b ${uiConfig.colors.borderLight} ${isActive ? uiConfig.colors.badge : uiConfig.states.hover} ${uiConfig.animation.transition}`}
                     >
                       <button
                         onClick={() => {
@@ -248,10 +251,11 @@ export default function LoungesTab({
                 (loungesSearchTerm === '' || country.toLowerCase().includes(loungesSearchTerm.toLowerCase()))
               )
               .map(country => {
+                const isActive = chatType === 'lounge' && activeThread?.topic === country;
                 return (
                   <div
                     key={country}
-                    className={`flex items-center justify-between px-4 py-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
+                    className={`flex items-center justify-between px-4 py-3 border-b ${uiConfig.colors.borderLight} ${isActive ? uiConfig.colors.badge : uiConfig.states.hover} ${uiConfig.animation.transition}`}
                   >
                     <button
                       onClick={() => {
@@ -297,18 +301,20 @@ export default function LoungesTab({
                   .map(f => allTowns.find(t => t.id === f.town_id))
                   .filter(Boolean)
                   .sort((a, b) => a.name.localeCompare(b.name))
-                  .map(town => (
-                    <div
-                      key={`fav-${town.id}`}
-                      className={`flex items-center justify-between px-4 py-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
-                    >
-                      <button
-                        onClick={() => onSwitchToTownChat(town)}
-                        className="flex-1 text-left"
+                  .map(town => {
+                    const isActive = chatType === 'town' && activeTown?.id === town.id;
+                    return (
+                      <div
+                        key={`fav-${town.id}`}
+                        className={`flex items-center justify-between px-4 py-3 border-b ${uiConfig.colors.borderLight} ${isActive ? uiConfig.colors.badge : uiConfig.states.hover} ${uiConfig.animation.transition}`}
                       >
-                        <div className={uiConfig.font.weight.medium}>{town.name}</div>
-                        <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>{town.country}</div>
-                      </button>
+                        <button
+                          onClick={() => onSwitchToTownChat(town)}
+                          className="flex-1 text-left"
+                        >
+                          <div className={uiConfig.font.weight.medium}>{town.name}</div>
+                          <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>{town.country}</div>
+                        </button>
                       <button
                         onClick={async (e) => {
                           e.stopPropagation();
@@ -329,7 +335,8 @@ export default function LoungesTab({
                         </svg>
                       </button>
                     </div>
-                  ))}
+                  );
+                  })}
               </>
             )}
 
@@ -425,18 +432,20 @@ export default function LoungesTab({
                   town.name.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()) ||
                   town.country.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()))
               )
-              .map(town => (
-                <div
-                  key={town.id}
-                  className={`flex items-center justify-between px-4 py-3 border-b ${uiConfig.colors.borderLight} ${uiConfig.states.hover} ${uiConfig.animation.transition}`}
-                >
-                  <button
-                    onClick={() => onSwitchToTownChat(town)}
-                    className="flex-1 text-left"
+              .map(town => {
+                const isActive = chatType === 'town' && activeTown?.id === town.id;
+                return (
+                  <div
+                    key={town.id}
+                    className={`flex items-center justify-between px-4 py-3 border-b ${uiConfig.colors.borderLight} ${isActive ? uiConfig.colors.badge : uiConfig.states.hover} ${uiConfig.animation.transition}`}
                   >
-                    <div className={uiConfig.font.weight.medium}>{town.name}</div>
-                    <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>{town.country}</div>
-                  </button>
+                    <button
+                      onClick={() => onSwitchToTownChat(town)}
+                      className="flex-1 text-left"
+                    >
+                      <div className={uiConfig.font.weight.medium}>{town.name}</div>
+                      <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>{town.country}</div>
+                    </button>
                   <button
                     onClick={async (e) => {
                       e.stopPropagation();
@@ -457,7 +466,8 @@ export default function LoungesTab({
                     </svg>
                   </button>
                 </div>
-              ))}
+              );
+              })}
           </div>
         </div>
       )}

@@ -9,6 +9,7 @@ export default function MessageInput({
   messageInput,
   setMessageInput,
   chatType,
+  activeThread,
   activeTown,
   activeFriend,
   onSubmit
@@ -17,6 +18,10 @@ export default function MessageInput({
     if (chatType === 'town' && activeTown) {
       return `Message ${activeTown.name} chat...`;
     } else if (chatType === 'lounge') {
+      // Check if it's a country-specific lounge or general retirement lounge
+      if (activeThread && activeThread.topic && activeThread.topic !== 'Lounge') {
+        return `Message ${activeThread.topic} chat...`;
+      }
       return 'Message the retirement lounge...';
     } else if (chatType === 'friends' && activeFriend) {
       return `Message ${activeFriend.friend.username || 'friend'}...`;

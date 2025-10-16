@@ -769,6 +769,8 @@ export default function Chat() {
                 loungeView={loungeView}
                 setLoungeView={setLoungeView}
                 chatType={chatType}
+                activeThread={activeThread}
+                activeTown={activeTown}
                 unreadByType={unreadByType}
                 countryLikes={countryLikes}
                 favorites={favorites}
@@ -859,6 +861,7 @@ export default function Chat() {
             <ChatArea
               chatType={chatType}
               activeGroupChat={activeGroupChat}
+              activeThread={activeThread}
               messages={messages}
               user={user}
               isTyping={isTyping}

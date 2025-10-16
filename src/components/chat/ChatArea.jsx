@@ -11,6 +11,7 @@ export default function ChatArea({
   // Chat state
   chatType,
   activeGroupChat,
+  activeThread,
   messages,
   user,
   isTyping,
@@ -76,6 +77,7 @@ export default function ChatArea({
         messageInput={messageInput}
         setMessageInput={setMessageInput}
         chatType={chatType}
+        activeThread={activeThread}
         activeTown={activeTown}
         activeFriend={activeFriend}
         onSubmit={onSendMessage}
