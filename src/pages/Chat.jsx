@@ -753,6 +753,7 @@ export default function Chat() {
                 friends={friends}
                 groupChats={groupChats}
                 allTowns={allTowns}
+                favorites={favorites}
                 chatFavorites={chatFavorites}
                 onSwitchToFriendChat={switchToFriendChat}
                 onSwitchToGroupChat={switchToGroupChat}

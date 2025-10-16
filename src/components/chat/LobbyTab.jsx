@@ -10,6 +10,7 @@ export default function LobbyTab({
   friends,
   groupChats,
   allTowns,
+  favorites,
   chatFavorites,
   onSwitchToFriendChat,
   onSwitchToGroupChat,
@@ -38,8 +39,8 @@ export default function LobbyTab({
     }
   };
 
-  // Get favorited towns from allTowns (towns with hearts)
-  const favoritedTowns = allTowns.filter(town => town.is_favorited);
+  // Use favorites prop which contains user's favorited towns (already loaded from favorites table)
+  const favoritedTowns = favorites || [];
 
   // Combine chat favorites and favorited towns
   const hasFavorites = (chatFavorites && chatFavorites.length > 0) || favoritedTowns.length > 0;
@@ -219,9 +220,9 @@ export default function LobbyTab({
           </div>
           <div className="text-center">
             <div className={`text-2xl ${uiConfig.font.weight.bold} ${uiConfig.colors.heading}`}>
-              {allTowns.filter(t => t.photos && t.photos.length > 0).length}
+              {favoritedTowns.length}
             </div>
-            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>Towns</div>
+            <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>Favorite Towns</div>
           </div>
         </div>
       </div>
