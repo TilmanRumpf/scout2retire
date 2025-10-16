@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import supabase from '../utils/supabaseClient';
 import { fetchTowns, fetchFavorites } from '../utils/townUtils.jsx';
 import toast from 'react-hot-toast';
+import { cancelInvitation } from '../utils/companionUtils';
+import { sanitizeChatMessage } from '../utils/sanitizeUtils';
+import { sendInvitationEmailViaAuth } from '../utils/emailUtils';
 
 /**
  * useChatOperations - All chat operation handlers
  * Extracted from Chat.jsx to reduce file size
  */
-export function useChatOperations(chatState, user, navigate) {
+export function useChatOperations(chatState, user, navigate, isMobile) {
   const {
     setFriends, setGroupChats, setBlockedUsers, setPendingInvitations,
     setCompanions, setAllCountries, setUserCountries, setAllTowns,
@@ -17,7 +20,12 @@ export function useChatOperations(chatState, user, navigate) {
     setFavorites, setSelectedCountry, setMessageInput, messagesEndRef,
     activeThread, threads, chatFavorites, messages, activeTown, chatType,
     messageInput, activeGroupChat, activeFriend, friends, groupChats,
-    allTowns, userHomeTown, isInitialMount
+    allTowns, userHomeTown, isInitialMount, countryLikes, likedMembers,
+    countrySearchRef, setShowCountryAutocomplete, townSearchRef, setShowTownAutocomplete,
+    setThreads, setShowChatList, blockedUsers, mutedUsers, pendingInvitations,
+    selectedUser, setFriendsTabActive, setInviteEmail, setInviteLoading,
+    setInviteMessage, setIsTyping, setMutedUsers, setShowCompanionsModal,
+    setShowInviteModal, setShowReportModal, setUserToReport, inviteMessage
   } = chatState;
 
   // Helper function to format message timestamps
