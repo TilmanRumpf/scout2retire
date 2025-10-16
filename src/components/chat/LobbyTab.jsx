@@ -38,58 +38,101 @@ export default function LobbyTab({
     }
   };
 
+  // Get favorited towns from allTowns (towns with hearts)
+  const favoritedTowns = allTowns.filter(town => town.is_favorited);
+
+  // Combine chat favorites and favorited towns
+  const hasFavorites = (chatFavorites && chatFavorites.length > 0) || favoritedTowns.length > 0;
+
   return (
     <div className="space-y-4">
       {/* Favorites Section - MOST IMPORTANT */}
-      {chatFavorites && chatFavorites.length > 0 && (
-        <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
-          <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
-            <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} flex items-center gap-2`}>
-              <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-              Your Favorites
-            </h2>
-            <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
-              Quick access to your starred chats
-            </p>
-          </div>
-
-          <div className="max-h-64 overflow-y-auto">
-            {chatFavorites.map(fav => (
-              <div
-                key={fav.id}
-                className={`flex items-center justify-between p-3 border-b ${uiConfig.colors.borderLight} last:border-0`}
-              >
-                <button
-                  onClick={() => handleFavoriteClick(fav)}
-                  className={`flex-1 text-left flex items-center gap-3 ${uiConfig.states.hover} ${uiConfig.layout.radius.lg} p-2 -m-2 transition-all`}
-                >
-                  <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0`}>
-                    {fav.chat_type === 'friend' && <User className="h-5 w-5" />}
-                    {fav.chat_type === 'group' && <Users className="h-5 w-5" />}
-                    {fav.chat_type === 'town_lounge' && <Home className="h-5 w-5" />}
-                    {fav.chat_type === 'country_lounge' && <MapPin className="h-5 w-5" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} truncate`}>
-                      {fav.reference_name}
-                    </div>
-                    <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} capitalize`}>
-                      {fav.chat_type.replace('_', ' ')}
-                    </div>
-                  </div>
-                </button>
-                <button
-                  onClick={() => onToggleFavoriteChat(fav.chat_type, fav.reference_id, fav.reference_name)}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                  title="Unfavorite"
-                >
-                  <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                </button>
-              </div>
-            ))}
-          </div>
+      <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
+        <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
+          <h2 className={`${uiConfig.font.weight.semibold} ${uiConfig.colors.heading} flex items-center gap-2`}>
+            <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+            Your Favorites
+          </h2>
+          <p className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} mt-1`}>
+            Quick access to your starred chats and towns
+          </p>
         </div>
-      )}
+
+        <div className="max-h-64 overflow-y-auto">
+          {!hasFavorites ? (
+            <div className={`p-8 text-center ${uiConfig.colors.hint}`}>
+              <Star className="h-12 w-12 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">No favorites yet</p>
+              <p className={`${uiConfig.font.size.xs} mt-2`}>
+                Star towns, chats, and groups to see them here
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Chat Favorites */}
+              {chatFavorites && chatFavorites.map(fav => (
+                <div
+                  key={`chat-${fav.id}`}
+                  className={`flex items-center justify-between p-3 border-b ${uiConfig.colors.borderLight}`}
+                >
+                  <button
+                    onClick={() => handleFavoriteClick(fav)}
+                    className={`flex-1 text-left flex items-center gap-3 ${uiConfig.states.hover} ${uiConfig.layout.radius.lg} p-2 -m-2 transition-all`}
+                  >
+                    <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0`}>
+                      {fav.chat_type === 'friend' && <User className="h-5 w-5" />}
+                      {fav.chat_type === 'group' && <Users className="h-5 w-5" />}
+                      {fav.chat_type === 'town_lounge' && <Home className="h-5 w-5" />}
+                      {fav.chat_type === 'country_lounge' && <MapPin className="h-5 w-5" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} truncate`}>
+                        {fav.reference_name}
+                      </div>
+                      <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} capitalize`}>
+                        {fav.chat_type.replace('_', ' ')}
+                      </div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => onToggleFavoriteChat(fav.chat_type, fav.reference_id, fav.reference_name)}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                    title="Unfavorite"
+                  >
+                    <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                  </button>
+                </div>
+              ))}
+
+              {/* Favorited Town Lounges */}
+              {favoritedTowns.map(town => (
+                <div
+                  key={`town-${town.id}`}
+                  className={`flex items-center justify-between p-3 border-b ${uiConfig.colors.borderLight} last:border-0`}
+                >
+                  <button
+                    onClick={() => onSwitchToTownChat(town)}
+                    className={`flex-1 text-left flex items-center gap-3 ${uiConfig.states.hover} ${uiConfig.layout.radius.lg} p-2 -m-2 transition-all`}
+                  >
+                    <div className={`w-10 h-10 ${uiConfig.colors.badge} ${uiConfig.layout.radius.full} flex items-center justify-center flex-shrink-0`}>
+                      <Home className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} truncate`}>
+                        {town.name}
+                      </div>
+                      <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
+                        {town.country} • Town lounge
+                      </div>
+                    </div>
+                  </button>
+                  <Star className="h-5 w-5 text-yellow-500 fill-yellow-500 flex-shrink-0" />
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      </div>
 
       {/* Quick Access - Retirement Lounge */}
       <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden`}>
