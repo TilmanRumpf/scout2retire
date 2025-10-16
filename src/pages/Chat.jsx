@@ -501,34 +501,37 @@ export default function Chat() {
           }
         } else {
           // Default to lounge chat if no town or group specified
-          setChatType('lounge');
+          // BUT: Don't override if user already has an active thread (e.g., country lounge)
+          if (!activeThread || activeThread.town_id !== null) {
+            setChatType('lounge');
 
-          // Find or create lounge thread
-          let loungeThread = threadData?.find(thread => thread.town_id === null && thread.topic === 'Lounge');
+            // Find or create lounge thread
+            let loungeThread = threadData?.find(thread => thread.town_id === null && thread.topic === 'Lounge');
 
-          if (!loungeThread) {
-            // Create lounge thread
-            const { data: newThread, error: createError } = await supabase
-              .from('chat_threads')
-              .insert([{
-                town_id: null,
-                topic: 'Lounge',
-                created_by: currentUser.id
-              }])
-              .select();
+            if (!loungeThread) {
+              // Create lounge thread
+              const { data: newThread, error: createError } = await supabase
+                .from('chat_threads')
+                .insert([{
+                  town_id: null,
+                  topic: 'Lounge',
+                  created_by: currentUser.id
+                }])
+                .select();
 
-            if (createError) {
-              console.error("Create lounge error:", createError);
-              toast.error("Failed to create lounge chat");
-            } else {
-              loungeThread = newThread[0];
-              setThreads(prev => [loungeThread, ...prev]);
+              if (createError) {
+                console.error("Create lounge error:", createError);
+                toast.error("Failed to create lounge chat");
+              } else {
+                loungeThread = newThread[0];
+                setThreads(prev => [loungeThread, ...prev]);
+              }
             }
-          }
 
-          if (loungeThread) {
-            setActiveThread(loungeThread);
-            await loadMessages(loungeThread.id);
+            if (loungeThread) {
+              setActiveThread(loungeThread);
+              await loadMessages(loungeThread.id);
+            }
           }
         }
       } catch (err) {
