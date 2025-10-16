@@ -198,8 +198,8 @@ export default function UnifiedHeader({
               {/* Title - always visible */}
               <div className="flex-1 min-w-0">
                 <h1 className={`text-lg sm:text-xl font-semibold ${uiConfig.colors.heading} truncate`}>
-                  <span className={`${title.includes("brings your future home") ? 'handwritten-tagline' : ''}`}>
-                    {title}
+                  <span className={`${title?.includes("brings your future home") ? 'handwritten-tagline' : ''}`}>
+                    {title || ''}
                   </span>
                   {/* Count - hidden on narrow screens */}
                   {totalCount !== undefined && (
