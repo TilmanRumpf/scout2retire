@@ -192,29 +192,42 @@ function parseCostPreferences(prefs) {
 /**
  * Normalize value to array, handling null/undefined/string/array
  * This eliminates the 15+ duplicate instances of this pattern
+ *
+ * CRITICAL FIX (2025-10-16): Added .toLowerCase() to prevent case sensitivity bugs
+ * - Matches August 24, 2025 40-hour disaster: "Coastal" !== "coastal"
+ * - Affects climate, culture, admin scoring across entire platform
  */
 function normalizeArray(value) {
   if (!value) return [];
-  if (Array.isArray(value)) return value.filter(Boolean);
-  return [value].filter(Boolean);
+  if (Array.isArray(value)) {
+    return value
+      .filter(Boolean)
+      .map(v => typeof v === 'string' ? v.toLowerCase().trim() : v);
+  }
+  const val = typeof value === 'string' ? value.toLowerCase().trim() : value;
+  return [val].filter(Boolean);
 }
 
 /**
  * Special handling for climate preferences (array or string)
  * Converts to array and filters out empty values
+ *
+ * CRITICAL FIX (2025-10-16): Added .toLowerCase() for consistency
  */
 function normalizeClimatePreference(value) {
   if (!value) return [];
 
   const arr = Array.isArray(value) ? value : [value];
 
-  // Filter out empty/invalid values
-  return arr.filter(v =>
-    v &&
-    v !== '' &&
-    v !== 'Optional' &&
-    v !== 'Select Preference'
-  );
+  // Filter out empty/invalid values and lowercase strings
+  return arr
+    .filter(v =>
+      v &&
+      v !== '' &&
+      v !== 'Optional' &&
+      v !== 'Select Preference'
+    )
+    .map(v => typeof v === 'string' ? v.toLowerCase().trim() : v);
 }
 
 /**

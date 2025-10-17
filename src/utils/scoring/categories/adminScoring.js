@@ -325,9 +325,12 @@ export function calculateAdminScore(preferences, town) {
   
   if ((visaPref === 'good' || visaPref === 'functional') && parsed.admin.stayDuration) {
     // Check visa requirements based on user citizenship
-    const citizenship = parsed.citizenship || preferences.current_status?.citizenship || 'USA'
-    if (town.visa_on_arrival_countries?.includes(citizenship) ||
-        town.easy_residency_countries?.includes(citizenship)) {
+    // CRITICAL FIX (2025-10-16): Case-insensitive citizenship matching
+    const citizenship = (parsed.citizenship || preferences.current_status?.citizenship || 'USA').toLowerCase()
+    const visaCountries = (town.visa_on_arrival_countries || []).map(c => c.toLowerCase())
+    const residencyCountries = (town.easy_residency_countries || []).map(c => c.toLowerCase())
+
+    if (visaCountries.includes(citizenship) || residencyCountries.includes(citizenship)) {
       score += 10
       factors.push({ factor: 'Easy visa/residency access', score: 10 })
     } else if (town.retirement_visa_available) {
