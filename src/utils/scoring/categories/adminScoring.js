@@ -326,9 +326,10 @@ export function calculateAdminScore(preferences, town) {
   if ((visaPref === 'good' || visaPref === 'functional') && parsed.admin.stayDuration) {
     // Check visa requirements based on user citizenship
     // CRITICAL FIX (2025-10-16): Case-insensitive citizenship matching
-    const citizenship = (parsed.citizenship || preferences.current_status?.citizenship || 'USA').toLowerCase()
-    const visaCountries = (town.visa_on_arrival_countries || []).map(c => c.toLowerCase())
-    const residencyCountries = (town.easy_residency_countries || []).map(c => c.toLowerCase())
+    const citizenshipRaw = parsed.citizenship || preferences.current_status?.citizenship || 'USA'
+    const citizenship = String(citizenshipRaw).toLowerCase()
+    const visaCountries = (town.visa_on_arrival_countries || []).map(c => String(c).toLowerCase())
+    const residencyCountries = (town.easy_residency_countries || []).map(c => String(c).toLowerCase())
 
     if (visaCountries.includes(citizenship) || residencyCountries.includes(citizenship)) {
       score += 10
