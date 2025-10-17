@@ -20,6 +20,7 @@
  */
 
 import { parsePreferences } from '../helpers/preferenceParser.js';
+import { calculateHealthcareScore } from '../helpers/calculateHealthcareScore.js';
 
 /**
  * Calculate gradual healthcare/safety scoring based on user preference level
@@ -256,16 +257,20 @@ export function calculateAdminScore(preferences, town) {
   // Always score healthcare if town has data, even if no preference
   if (town.healthcare_score) {
     const prefToUse = healthcarePref || 'functional' // Default to functional if no preference
+
+    // DYNAMIC CALCULATION: Admin base + auto bonuses
+    const calculatedScore = calculateHealthcareScore(town);
+
     const healthcareResult = calculateGradualAdminScore(
-      town.healthcare_score, 
-      prefToUse, 
+      calculatedScore,  // Use calculated score instead of static field
+      prefToUse,
       30
     )
-    
+
     score += healthcareResult.score
-    factors.push({ 
-      factor: `Healthcare ${healthcareResult.description} (score: ${town.healthcare_score})`, 
-      score: healthcareResult.score 
+    factors.push({
+      factor: `Healthcare ${healthcareResult.description} (score: ${calculatedScore})`,
+      score: healthcareResult.score
     })
   } else {
     // No healthcare data - penalize for missing critical data
