@@ -22,18 +22,30 @@ const PAGES_REQUIRING_NAV = [
 // Valid navigation components
 const NAVIGATION_COMPONENTS = [
   'QuickNav',
-  'HamburgerMenu',
-  'AuthenticatedLayout',
-  'AppLayout'
+  'UnifiedHeader',        // Primary navigation - includes QuickNav
+  'AuthenticatedLayout'
+  // Removed: 'HamburgerMenu' (doesn't exist)
+  // Removed: 'AppLayout' (doesn't exist)
 ];
 
-// Check if file is a page component
+// Check if file is a page component that requires navigation
 function isPageComponent(filePath) {
-  const fileName = path.basename(filePath, path.extname(filePath));
-  return PAGES_REQUIRING_NAV.some(page => 
-    fileName.includes(page) || 
-    filePath.includes(`pages/${page}`)
-  );
+  // Only check actual page files in src/pages/ folder
+  if (!filePath.includes('src/pages/') && !filePath.includes('src\\pages\\')) {
+    return false;
+  }
+
+  // Exclude pages that don't need navigation
+  const excludedPages = [
+    'Login.jsx',
+    'Signup',
+    'Welcome.jsx',
+    'ResetPassword.jsx',
+    'HeaderMockup.jsx',  // Test/mockup page
+    'onboarding/',        // Onboarding has its own layout (OnboardingLayout)
+  ];
+
+  return !excludedPages.some(excluded => filePath.includes(excluded));
 }
 
 // Check if file has navigation
@@ -50,14 +62,14 @@ function hasDuplicateNavigation(content) {
   const navMatches = NAVIGATION_COMPONENTS.map(nav => {
     const importMatch = new RegExp(`import.*${nav}`, 'g');
     const usageMatch = new RegExp(`<${nav}`, 'g');
-    
+
     const imports = (content.match(importMatch) || []).length;
     const usages = (content.match(usageMatch) || []).length;
-    
+
     return { component: nav, imports, usages };
   }).filter(m => m.imports > 0 || m.usages > 0);
-  
-  // Check if multiple navigation components are used
+
+  // Check if multiple DIFFERENT navigation components are used (real problem)
   const activeNavs = navMatches.filter(m => m.usages > 0);
   if (activeNavs.length > 1) {
     return {
@@ -65,9 +77,10 @@ function hasDuplicateNavigation(content) {
       components: activeNavs.map(m => m.component)
     };
   }
-  
-  // Check if same navigation is used multiple times
-  const duplicateUsage = navMatches.find(m => m.usages > 1);
+
+  // Multiple uses of SAME component is OK (loading states, conditional rendering)
+  // Only flag if > 2 (which would be unusual)
+  const duplicateUsage = navMatches.find(m => m.usages > 2);
   if (duplicateUsage) {
     return {
       duplicate: true,
@@ -75,7 +88,7 @@ function hasDuplicateNavigation(content) {
       count: duplicateUsage.usages
     };
   }
-  
+
   return { duplicate: false };
 }
 
@@ -184,7 +197,8 @@ function main() {
     }
     
     console.log('\n💡 Tips:');
-    console.log('   - Main app pages should use QuickNav or HamburgerMenu');
+    console.log('   - Main app pages should use UnifiedHeader or QuickNav');
+    console.log('   - UnifiedHeader includes QuickNav navigation automatically');
     console.log('   - Avoid wrapping pages in multiple layout components');
     console.log('   - Check AuthenticatedLayout usage to prevent duplicate navigation\n');
     
