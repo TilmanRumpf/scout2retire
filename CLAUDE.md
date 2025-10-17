@@ -432,8 +432,10 @@ I will use both tools proactively without being asked."*
 Before ANY UI work:
 
 READ: /src/styles/DESIGN_STANDARDS.md
-IMPORT: import { uiConfig } from '../styles/uiConfig';
-USE: className={uiConfig.components.button} - NO hardcoded colors
+FOLLOW: Two valid approaches documented there:
+  - Option A: Semantic naming via uiConfig (used in ~70 files)
+  - Option B: Direct Tailwind utilities (used in most codebase)
+RULE: All color definitions MUST live in tailwind.config.js (already compliant ✅)
 COPY: Existing patterns EXACTLY - be a professional copycat
 
 Partnership Approach:

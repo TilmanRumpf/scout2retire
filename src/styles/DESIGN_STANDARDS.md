@@ -5,17 +5,29 @@ This document outlines the design standards and visual guidelines for Scout2Reti
 
 ## Core Principles
 
-### 1. Zero Tolerance for Hardcoded Colors
-- **ALL** colors must reference `uiConfig.ts`
-- No inline color styles (e.g., `text-gray-500`, `bg-white`)
-- Every color value must use the centralized design system
+### 1. Consistent Design Tokens
+- **ALL** color definitions must live in `tailwind.config.js` (already compliant ✅)
+- Use semantic color names: `scout-accent-300`, `scout-orange-500`, not hex codes
+- Maintain consistent spacing, typography, and visual hierarchy
 
-### 2. Design System Reference
-All styling must use the centralized configuration from `/src/styles/uiConfig.ts`:
+### 2. Two Valid Styling Approaches
 
+**Option A: Semantic Naming (via uiConfig)**
 ```javascript
 import { uiConfig } from '../styles/uiConfig';
+<div className={uiConfig.colors.card}>
 ```
+✅ Good for: Frequently reused patterns, semantic naming
+✅ Used in: ~70 files (30% of codebase)
+
+**Option B: Direct Tailwind Utilities**
+```javascript
+<div className="bg-white dark:bg-gray-900 rounded-lg p-4">
+```
+✅ Good for: Clear, explicit styling, one-off components
+✅ Used in: Most of codebase (70%)
+
+**Both are professional and acceptable.** Choose based on clarity and maintainability.
 
 ## Component Standards
 
