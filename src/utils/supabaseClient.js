@@ -5,11 +5,6 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Debug logging (only in development)
-if (import.meta.env.DEV) {
-  console.log('Supabase URL from env:', supabaseUrl)
-  console.log('Supabase Key exists:', !!supabaseAnonKey)
-}
 
 // Validate environment variables
 if (!supabaseUrl) {
@@ -181,50 +176,7 @@ async function discoverTables() {
   return foundTables
 }
 
-// Run connection tests on initialization (only in development)
-if (import.meta.env.DEV) {
-  // Run tests after a short delay to ensure everything is initialized
-  setTimeout(async () => {
-    console.log('🚀 Running Supabase diagnostics...')
-    
-    const connected = await testSupabaseConnection()
-    
-    if (connected) {
-      // Test table access with scout2retire table names
-      const commonTables = ['users', 'towns', 'favorites', 'journal_entries']
-      let foundAnyTable = false
-      
-      for (const tableName of commonTables) {
-        const hasAccess = await testTableAccess(tableName)
-        if (hasAccess) {
-          foundAnyTable = true
-          break // Found at least one accessible table
-        }
-      }
-      
-      if (!foundAnyTable) {
-        // Discover what tables are available
-        await discoverTables()
-      }
-      
-      console.log('🎉 Supabase diagnostics completed!')
-    } else {
-      console.log('❌ Supabase diagnostics failed - check your configuration')
-    }
-  }, 1500)
-}
 
-// Auth state change listener
-supabase.auth.onAuthStateChange((event, session) => {
-  if (import.meta.env.DEV) {
-    console.log('Auth state changed:', event)
-    if (session) {
-      console.log('User authenticated:', session.user.email)
-    } else {
-      console.log('User signed out')
-    }
-  }
-})
 
 // Utility functions for common operations
 

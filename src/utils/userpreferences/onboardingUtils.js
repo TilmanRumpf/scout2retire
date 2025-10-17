@@ -175,16 +175,6 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
       .eq('user_id', userId)
       .single();
     
-    // DEBUG: What's actually in the database?
-    if (data && DEBUG_CONFIG.DEBUG_USER_ID && userId === DEBUG_CONFIG.DEBUG_USER_ID) {
-      console.log('📊 DEBUG USER PREFERENCES FROM DB:', {
-        healthcare: data.healthcare_quality,
-        safety: data.safety_importance,
-        government: data.government_efficiency,
-        political: data.political_stability,
-        emergency: data.emergency_services
-      });
-    }
     
     // Define the expected steps - Updated 19JUN25: Using 'costs' to match database
     const steps = [

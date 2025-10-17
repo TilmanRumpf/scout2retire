@@ -137,7 +137,6 @@ const PaywallManager = () => {
 
     setLoadingUsers(true);
     try {
-      console.log('🔍 Searching users with query:', query);
 
       const { data, error } = await supabase
         .from('users')

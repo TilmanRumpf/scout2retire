@@ -128,17 +128,6 @@ export default function LoungesTab({
                   const country = countryLike.country_name;
                   const isActive = chatType === 'lounge' && activeThread?.topic === country;
 
-                  // Debug logging
-                  if (country === 'Canada') {
-                    console.log('🔍 Canada Debugging:', {
-                      country,
-                      chatType,
-                      activeThreadTopic: activeThread?.topic,
-                      isActive,
-                      match: activeThread?.topic === country
-                    });
-                  }
-
                   return (
                     <div
                       key={`liked-${country}`}

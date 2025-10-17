@@ -458,9 +458,8 @@ export const getTownOfTheDay = async (userId) => {
       }
       
       const { data: tier1Towns } = await tier1Query;
-      
+
       if (tier1Towns && tier1Towns.length > 0) {
-        console.log(`Daily town: Found ${tier1Towns.length} towns in Tier 1 (exact country match)`);
         const randomIndex = Math.floor(Math.random() * tier1Towns.length);
         let selectedTown = tier1Towns[randomIndex];
         
@@ -491,9 +490,8 @@ export const getTownOfTheDay = async (userId) => {
       }
       
       const { data: tier2Towns } = await tier2Query;
-      
+
       if (tier2Towns && tier2Towns.length > 0) {
-        console.log(`Daily town: Found ${tier2Towns.length} towns in Tier 2 (neighbor countries)`);
         const randomIndex = Math.floor(Math.random() * tier2Towns.length);
         let selectedTown = tier2Towns[randomIndex];
         
@@ -532,9 +530,8 @@ export const getTownOfTheDay = async (userId) => {
         }
         
         const { data: tier3Towns } = await tier3Query;
-        
+
         if (tier3Towns && tier3Towns.length > 0) {
-          console.log(`Daily town: Found ${tier3Towns.length} towns in Tier 3 (same continent)`);
           const randomIndex = Math.floor(Math.random() * tier3Towns.length);
           let selectedTown = tier3Towns[randomIndex];
           
@@ -553,7 +550,6 @@ export const getTownOfTheDay = async (userId) => {
     }
     
     // TIER 4: Random fallback (any town)
-    console.log("Daily town: No geographic matches, falling back to random selection");
     let tier4Query = supabase
       .from('towns')
       .select(TOWN_SELECT_COLUMNS)

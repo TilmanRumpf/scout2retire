@@ -128,10 +128,16 @@ export default function TownDiscovery() {
   useEffect(() => {
     const loadTowns = async () => {
       setTownsLoading(true);
-      const result = await fetchTowns({ 
+
+      // Check if URL has a specific town ID - if so, force-include it
+      const params = new URLSearchParams(location.search);
+      const requestedTownId = params.get('town');
+
+      const result = await fetchTowns({
         component: 'TownDiscovery',
         userId: user?.id,
-        usePersonalization: !!user?.id
+        usePersonalization: !!user?.id,
+        townIds: requestedTownId ? [requestedTownId] : undefined // Force-include requested town
       });
       if (result.success) {
         setTowns(result.towns);
@@ -140,7 +146,7 @@ export default function TownDiscovery() {
       setTownsLoading(false);
     };
     loadTowns();
-  }, [user]);
+  }, [user, location.search]); // Add location.search as dependency
   
   // Parse URL parameters and handle town selection
   useEffect(() => {
@@ -152,7 +158,8 @@ export default function TownDiscovery() {
 
     if (townId) {
       // User came from a specific town card - show that town
-      setSelectedTown(townId);
+      // CRITICAL: Only set once, don't override when towns reload
+      setSelectedTown(prev => prev || townId);
     } else {
       // No URL param - ALWAYS pick a fresh random town with 80%+ match
       const highMatchTowns = towns.filter(t => (t.matchScore || 0) >= 80);

@@ -129,7 +129,6 @@ export function useChatActions({
 
       // Find or create thread for this specific country
       let countryThread = threads.find(thread => thread.town_id === null && thread.topic === countryName);
-      console.log('🔍 Found/creating thread:', { countryName, topic: countryThread?.topic });
 
       if (!countryThread) {
         const { data: newThread, error: createError } = await supabase

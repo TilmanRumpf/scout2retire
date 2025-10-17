@@ -139,19 +139,6 @@ export function calculateClimateScore(preferences, town) {
   // Parse and normalize preferences using centralized parser
   const parsed = parsePreferences(preferences)
 
-  // DEBUG: Log what we're receiving
-  if (town.name === 'Castro Urdiales' || town.name === 'Puerto de la Cruz' || town.name === 'Granada') {
-    console.log(`🔍 CLIMATE DEBUG for ${town.name}:`);
-    console.log('Preferences received:', preferences);
-    console.log('Parsed climate:', parsed.climate);
-    console.log('Town climate data:', {
-      summer: town.summer_climate_actual,
-      winter: town.winter_climate_actual,
-      humidity: town.humidity_level_actual,
-      avgSummer: town.avg_temp_summer,
-      avgWinter: town.avg_temp_winter
-    });
-  }
 
   // If preferences is empty object or undefined, return 0 (not 100!)
   if (!preferences || Object.keys(preferences).length === 0) {
