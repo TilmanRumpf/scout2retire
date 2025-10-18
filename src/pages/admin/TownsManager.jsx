@@ -1437,52 +1437,7 @@ const TownsManager = () => {
                 <div className="p-4 lg:p-6">
                   {activeCategory === 'Admin' ? (
                     // Special handling for Admin tab with score breakdown panel
-                    <div>
-                      {/* SCORE BREAKDOWN PANEL - Shows complete calculation transparency */}
-                      <ScoreBreakdownPanel town={selectedTown} />
-
-                      {/* Show admin fields below the breakdown */}
-                      <div className="mt-8">
-                        <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-3`}>
-                          Admin Fields & Data
-                        </h3>
-                        {Object.entries(COLUMN_CATEGORIES[activeCategory].subcategories).map(([subcategoryName, subcategory]) => {
-                          const hasUsedFields = subcategory.used.length > 0;
-                          const hasUnusedFields = subcategory.unused.length > 0;
-
-                          if (!hasUsedFields && !hasUnusedFields) return null;
-
-                          return (
-                            <div key={subcategoryName} className="mb-8">
-                              {/* Subcategory Title */}
-                              <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-3 border-b pb-1`}>
-                                {subcategoryName}
-                              </h3>
-
-                              {/* Used Fields (Towns Data for Matching) */}
-                              {hasUsedFields && (
-                                <div className="mb-4">
-                                  <h4 className={`text-sm font-medium ${uiConfig.colors.body} mb-2`}>Towns Data for Matching</h4>
-                                  <div className="space-y-1 pl-4">
-                                    {subcategory.used.map(column => renderFieldRow(column, selectedTown))}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Unused Fields (Towns Data for Context) */}
-                              {hasUnusedFields && (
-                                <div className="opacity-60">
-                                  <h4 className={`text-sm font-medium ${uiConfig.colors.body} mb-2`}>Towns Data for Context</h4>
-                                  <div className="space-y-1 pl-4">
-                                    {subcategory.unused.map(column => renderFieldRow(column, selectedTown))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    <ScoreBreakdownPanel town={selectedTown} />
                   ) : activeCategory === 'Hobbies' ? (
                     // Special handling for Hobbies tab with enhanced display
                     <div>

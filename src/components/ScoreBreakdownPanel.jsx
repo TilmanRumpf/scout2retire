@@ -89,7 +89,7 @@ export default function ScoreBreakdownPanel({ town }) {
           <DataField label="Hospital Count" value={town.hospital_count} field="hospital_count" />
           <DataField label="Nearest Hospital (km)" value={town.nearest_major_hospital_km} field="nearest_major_hospital_km" />
           <DataField label="Emergency Services Quality" value={town.emergency_services_quality} field="emergency_services_quality" />
-          <DataField label="English Speaking Doctors" value={town.english_speaking_doctors_available} field="english_speaking_doctors_available" />
+          <DataField label="English Speaking Doctors" value={town.english_speaking_doctors} field="english_speaking_doctors" />
           <DataField label="Insurance Availability" value={town.insurance_availability_rating} field="insurance_availability_rating" />
           <DataField label="Healthcare Cost" value={town.healthcare_cost} field="healthcare_cost" />
         </ScoreSection>
@@ -125,12 +125,9 @@ export default function ScoreBreakdownPanel({ town }) {
           onToggle={() => toggleSection('infrastructure')}
           onAddAdjustment={() => setShowAdjustmentModal({ category: 'infrastructure', subcategory: 'Infrastructure' })}
         >
-          <DataField label="Walkability Score" value={town.walkability_score} field="walkability_score" />
-          <DataField label="Public Transport Rating" value={town.public_transport_rating} field="public_transport_rating" />
-          <DataField label="Airport Distance (km)" value={town.airport_distance_km} field="airport_distance_km" />
-          <DataField label="Internet Speed (Mbps)" value={town.internet_speed_mbps} field="internet_speed_mbps" />
+          <DataField label="Walkability" value={town.walkability} field="walkability" />
           <DataField label="Air Quality Index" value={town.air_quality_index} field="air_quality_index" />
-          <DataField label="Local Mobility Options" value={town.local_mobility_options} field="local_mobility_options" />
+          <DataField label="Airport Distance" value={town.airport_distance} field="airport_distance" />
         </ScoreSection>
 
         {/* LEGAL & ADMIN (10 points) */}
@@ -151,7 +148,6 @@ export default function ScoreBreakdownPanel({ town }) {
           <DataField label="Retirement Visa Available" value={town.retirement_visa_available} field="retirement_visa_available" />
           <DataField label="Tax Treaty US" value={town.tax_treaty_us} field="tax_treaty_us" />
           <DataField label="Tax Haven Status" value={town.tax_haven_status} field="tax_haven_status" />
-          <DataField label="Bureaucracy Score" value={town.bureaucracy_score} field="bureaucracy_score" />
         </ScoreSection>
 
         {/* ENVIRONMENTAL (15 points - conditional) */}
