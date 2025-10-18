@@ -85,8 +85,9 @@ export default function ClimatePanel({ town, onTownUpdate }) {
               field="summer_climate_actual"
               value={town.summer_climate_actual}
               label="Summer Climate"
-              type="string"
-              description="Description of summer climate conditions"
+              type="select"
+              range={['mild', 'warm', 'hot']}
+              description="Summer climate conditions"
             />
           </div>
         )}
@@ -118,8 +119,9 @@ export default function ClimatePanel({ town, onTownUpdate }) {
               field="winter_climate_actual"
               value={town.winter_climate_actual}
               label="Winter Climate"
-              type="string"
-              description="Description of winter climate conditions"
+              type="select"
+              range={['cold', 'cool', 'mild', 'hot']}
+              description="Winter climate conditions"
             />
           </div>
         )}
@@ -192,7 +194,7 @@ export default function ClimatePanel({ town, onTownUpdate }) {
               value={town.humidity_level_actual}
               label="Humidity Level"
               type="select"
-              range={['low', 'moderate', 'high']}
+              range={['dry', 'balanced', 'humid']}
               description="General humidity level throughout the year"
             />
             <EditableField

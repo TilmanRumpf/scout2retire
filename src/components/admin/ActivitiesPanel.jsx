@@ -89,14 +89,6 @@ export default function ActivitiesPanel({ town, onTownUpdate }) {
               description="Number of tennis courts available"
             />
             <EditableField
-              field="sports_facilities"
-              value={town.sports_facilities}
-              label="Sports Facilities"
-              type="select"
-              range={['very_limited', 'limited', 'moderate', 'good', 'excellent']}
-              description="Overall availability and quality of sports facilities"
-            />
-            <EditableField
               field="dog_parks_count"
               value={town.dog_parks_count}
               label="Dog Parks Count"
@@ -139,14 +131,6 @@ export default function ActivitiesPanel({ town, onTownUpdate }) {
               description="Number of ski resorts within 100km radius"
             />
             <EditableField
-              field="mountain_activities"
-              value={town.mountain_activities}
-              label="Mountain Activities"
-              type="select"
-              range={['none', 'limited', 'moderate', 'good', 'excellent']}
-              description="Availability of mountain activities (skiing, climbing, hiking)"
-            />
-            <EditableField
               field="outdoor_rating"
               value={town.outdoor_rating}
               label="Outdoor Rating"
@@ -155,20 +139,12 @@ export default function ActivitiesPanel({ town, onTownUpdate }) {
               description="Overall outdoor activities rating (1-10 scale)"
             />
             <EditableField
-              field="parks_per_capita"
-              value={town.parks_per_capita}
-              label="Parks Per Capita"
+              field="outdoor_activities_rating"
+              value={town.outdoor_activities_rating}
+              label="Outdoor Activities Rating"
               type="number"
-              range="0-100"
-              description="Number of parks per 100,000 residents"
-            />
-            <EditableField
-              field="recreation_centers"
-              value={town.recreation_centers}
-              label="Recreation Centers Count"
-              type="number"
-              range="0-100"
-              description="Number of public recreation centers"
+              range="1-10"
+              description="Alternative outdoor activities rating (1-10 scale)"
             />
           </div>
         )}
@@ -192,38 +168,28 @@ export default function ActivitiesPanel({ town, onTownUpdate }) {
               field="beaches_nearby"
               value={town.beaches_nearby}
               label="Beaches Nearby"
-              type="select"
-              range={['none', 'limited', 'several', 'many', 'abundant']}
-              description="Availability of beaches within reasonable distance"
+              type="boolean"
+              description="Whether there are beaches within reasonable distance"
             />
             <EditableField
-              field="water_sports_available"
-              value={town.water_sports_available}
-              label="Water Sports Available"
-              type="select"
-              range={['none', 'limited', 'moderate', 'good', 'excellent']}
-              description="Availability of water sports (surfing, sailing, kayaking, etc.)"
-            />
-            <EditableField
-              field="marinas_count"
-              value={town.marinas_count}
-              label="Marinas Count"
-              type="number"
-              range="0-50"
-              description="Number of marinas and boat harbors"
+              field="water_bodies"
+              value={town.water_bodies}
+              label="Water Bodies"
+              type="string"
+              description="Names of nearby water bodies (oceans, lakes, rivers)"
             />
           </div>
         )}
       </div>
 
-      {/* Cultural Activities */}
+      {/* Activities Available */}
       <div>
         <button
           onClick={() => toggleSection('cultural')}
           className="w-full flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-lg mb-3 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
         >
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            🎭 Cultural Activities
+            🎭 Activities Available
           </h3>
           <span className="text-gray-500">{expandedSections.cultural ? '▼' : '▶'}</span>
         </button>
@@ -231,20 +197,11 @@ export default function ActivitiesPanel({ town, onTownUpdate }) {
         {expandedSections.cultural && (
           <div className="space-y-2 pl-4">
             <EditableField
-              field="cultural_activities"
-              value={town.cultural_activities}
-              label="Cultural Activities"
-              type="select"
-              range={['very_limited', 'limited', 'moderate', 'good', 'excellent']}
-              description="Availability of cultural activities (theaters, concerts, museums)"
-            />
-            <EditableField
-              field="farmers_markets"
-              value={town.farmers_markets}
-              label="Farmers Markets Count"
-              type="number"
-              range="0-50"
-              description="Number of farmers markets and local food markets"
+              field="activities_available"
+              value={town.activities_available}
+              label="Activities Available"
+              type="text"
+              description="Comma-separated list of available activities in the area"
             />
           </div>
         )}

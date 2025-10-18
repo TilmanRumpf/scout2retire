@@ -81,22 +81,6 @@ export default function InfrastructurePanel({ town, onTownUpdate }) {
               description="Average internet download speed in Mbps"
             />
             <EditableField
-              field="internet_reliability"
-              value={town.internet_reliability}
-              label="Internet Reliability"
-              type="select"
-              range={['poor', 'fair', 'good', 'very_good', 'excellent']}
-              description="Reliability and consistency of internet service"
-            />
-            <EditableField
-              field="mobile_coverage"
-              value={town.mobile_coverage}
-              label="Mobile Coverage"
-              type="select"
-              range={['poor', 'fair', 'good', 'excellent']}
-              description="Quality of mobile phone coverage"
-            />
-            <EditableField
               field="coworking_spaces_count"
               value={town.coworking_spaces_count}
               label="Coworking Spaces Count"
@@ -105,12 +89,11 @@ export default function InfrastructurePanel({ town, onTownUpdate }) {
               description="Number of coworking spaces available"
             />
             <EditableField
-              field="digital_services_availability"
-              value={town.digital_services_availability}
-              label="Digital Services Availability"
-              type="select"
-              range={['very_low', 'low', 'moderate', 'high', 'very_high']}
-              description="Availability of government and public digital services"
+              field="digital_nomad_visa"
+              value={town.digital_nomad_visa}
+              label="Digital Nomad Visa Available"
+              type="boolean"
+              description="Whether the country offers a digital nomad visa"
             />
           </div>
         )}
@@ -134,46 +117,43 @@ export default function InfrastructurePanel({ town, onTownUpdate }) {
               field="public_transport_quality"
               value={town.public_transport_quality}
               label="Public Transport Quality"
-              type="select"
-              range={['very_poor', 'poor', 'fair', 'good', 'excellent']}
-              description="Overall quality and coverage of public transportation"
+              type="number"
+              range="1-5"
+              description="Overall quality of public transportation (1=very poor, 5=excellent)"
             />
             <EditableField
               field="airport_distance"
               value={town.airport_distance}
               label="Airport Distance (km)"
-              type="number"
-              range="0-500"
-              description="Distance to nearest airport in kilometers"
+              type="string"
+              description="Distance to nearest airport (e.g., '40' or '40-60')"
             />
             <EditableField
               field="international_airport_distance"
               value={town.international_airport_distance}
               label="International Airport Distance (km)"
-              type="number"
-              range="0-1000"
-              description="Distance to nearest international airport in kilometers"
+              type="string"
+              description="Distance to nearest international airport"
             />
             <EditableField
               field="regional_airport_distance"
               value={town.regional_airport_distance}
               label="Regional Airport Distance (km)"
-              type="number"
-              range="0-300"
-              description="Distance to nearest regional/domestic airport in kilometers"
+              type="string"
+              description="Distance to nearest regional/domestic airport"
             />
           </div>
         )}
       </div>
 
-      {/* Walkability & Mobility */}
+      {/* Walkability & Infrastructure */}
       <div>
         <button
           onClick={() => toggleSection('mobility')}
           className="w-full flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-lg mb-3 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
         >
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            🚶 Walkability & Mobility
+            🚶 Walkability & Infrastructure
           </h3>
           <span className="text-gray-500">{expandedSections.mobility ? '▼' : '▶'}</span>
         </button>
@@ -185,40 +165,15 @@ export default function InfrastructurePanel({ town, onTownUpdate }) {
               value={town.walkability}
               label="Walkability Score"
               type="number"
-              range="0-100"
-              description="Walkability score (0-100 scale, higher is better)"
+              range="1-10"
+              description="Walkability rating (1=car dependent, 10=very walkable)"
             />
             <EditableField
-              field="bike_infrastructure"
-              value={town.bike_infrastructure}
-              label="Bike Infrastructure"
-              type="select"
-              range={['very_poor', 'poor', 'fair', 'good', 'excellent']}
-              description="Quality of bicycle lanes and bike-friendly infrastructure"
-            />
-            <EditableField
-              field="road_quality"
-              value={town.road_quality}
-              label="Road Quality"
-              type="select"
-              range={['very_poor', 'poor', 'fair', 'good', 'excellent']}
-              description="Overall quality and maintenance of roads"
-            />
-            <EditableField
-              field="traffic_congestion"
-              value={town.traffic_congestion}
-              label="Traffic Congestion"
-              type="select"
-              range={['minimal', 'low', 'moderate', 'high', 'severe']}
-              description="Level of traffic congestion during peak hours"
-            />
-            <EditableField
-              field="parking_availability"
-              value={town.parking_availability}
-              label="Parking Availability"
-              type="select"
-              range={['very_poor', 'poor', 'fair', 'good', 'excellent']}
-              description="Availability and ease of finding parking"
+              field="infrastructure_description"
+              value={town.infrastructure_description}
+              label="Infrastructure Description"
+              type="string"
+              description="Overall description of local infrastructure"
             />
           </div>
         )}
@@ -243,16 +198,8 @@ export default function InfrastructurePanel({ town, onTownUpdate }) {
               value={town.government_efficiency_rating}
               label="Government Efficiency Rating"
               type="number"
-              range="1-10"
-              description="Efficiency of government services and bureaucracy (1-10 scale)"
-            />
-            <EditableField
-              field="banking_infrastructure"
-              value={town.banking_infrastructure}
-              label="Banking Infrastructure"
-              type="select"
-              range={['very_poor', 'poor', 'fair', 'good', 'excellent']}
-              description="Quality and availability of banking services"
+              range="1-100"
+              description="Efficiency of government services and bureaucracy (1-100 scale)"
             />
           </div>
         )}
