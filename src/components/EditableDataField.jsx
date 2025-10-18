@@ -32,8 +32,32 @@ const EditableDataField = ({
   const [saveState, setSaveState] = useState('idle'); // idle | saving | success | error
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [saveAsTemplate, setSaveAsTemplate] = useState(false);
   const inputRef = useRef(null);
   const searchInputRef = useRef(null);
+
+  // Load saved query templates from localStorage
+  const getQueryTemplate = (fieldName) => {
+    try {
+      const templates = JSON.parse(localStorage.getItem('searchQueryTemplates') || '{}');
+      return templates[fieldName] || null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Save query template to localStorage
+  const saveQueryTemplate = (fieldName, template) => {
+    try {
+      const templates = JSON.parse(localStorage.getItem('searchQueryTemplates') || '{}');
+      templates[fieldName] = template;
+      localStorage.setItem('searchQueryTemplates', JSON.stringify(templates));
+      toast.success(`Query template saved for ${label}!`);
+    } catch (error) {
+      console.error('Error saving template:', error);
+      toast.error('Failed to save query template');
+    }
+  };
 
   // Update editValue when value prop changes
   useEffect(() => {
@@ -221,13 +245,36 @@ const EditableDataField = ({
 
   // Open search modal with suggested query
   const handleGoogleSearch = () => {
-    const suggestedQuery = generateSmartQuery();
+    // Check if there's a saved template for this field
+    const savedTemplate = getQueryTemplate(field);
+
+    let suggestedQuery;
+    if (savedTemplate) {
+      // Use saved template and replace {town} and {country} placeholders
+      suggestedQuery = savedTemplate
+        .replace(/\{town\}/g, townName)
+        .replace(/\{country\}/g, countryName);
+    } else {
+      // Use auto-generated query
+      suggestedQuery = generateSmartQuery();
+    }
+
     setSearchQuery(suggestedQuery);
+    setSaveAsTemplate(false);
     setShowSearchModal(true);
   };
 
   // Execute the search with current query
   const executeSearch = () => {
+    // If "Save as template" is checked, save the query pattern
+    if (saveAsTemplate) {
+      // Replace actual town/country names with placeholders
+      const template = searchQuery
+        .replace(new RegExp(townName, 'g'), '{town}')
+        .replace(new RegExp(countryName, 'g'), '{country}');
+      saveQueryTemplate(field, template);
+    }
+
     const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
     window.open(googleSearchUrl, '_blank');
     setShowSearchModal(false);
@@ -489,6 +536,24 @@ const EditableDataField = ({
                   <span className="font-semibold">For {townName}:</span> {label}
                   {range && <span className="text-blue-600 dark:text-blue-400"> (Range: {typeof range === 'string' ? range : range.join(', ')})</span>}
                 </p>
+              </div>
+
+              {/* Save as Template Checkbox */}
+              <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                <input
+                  type="checkbox"
+                  id="saveAsTemplate"
+                  checked={saveAsTemplate}
+                  onChange={(e) => setSaveAsTemplate(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                />
+                <label htmlFor="saveAsTemplate" className="flex-1 text-sm text-amber-800 dark:text-amber-300 cursor-pointer">
+                  <span className="font-semibold">💾 Save as template for all towns</span>
+                  <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
+                    Your edited query will be used for <strong>all future searches</strong> of "{label}" (replacing {'{town}'} and {'{country}'} with actual names).
+                    This ensures <strong>data normalization</strong> across all 343+ towns.
+                  </p>
+                </label>
               </div>
             </div>
 
