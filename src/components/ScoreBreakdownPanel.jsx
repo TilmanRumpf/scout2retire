@@ -1,20 +1,58 @@
 /**
- * ADMIN SCORE BREAKDOWN PANEL - SIMPLIFIED
+ * ADMIN SCORE BREAKDOWN PANEL - WITH INLINE EDITING
  *
- * Shows admin score data from towns table with manual adjustment capability
- * NO complex calculations - just displays what's already in the database
+ * Shows admin score data with INLINE EDITING capability
+ * All fields editable with instant database updates
+ * Shows value bandwidth/range for each field
  *
  * Created: 2025-10-17
+ * Updated: 2025-10-18 - Added inline editing + field metadata
  */
 
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
+import EditableDataField from './EditableDataField';
+import { ADMIN_FIELD_METADATA } from '../utils/admin/adminFieldMetadata';
 
-export default function ScoreBreakdownPanel({ town }) {
-  const [expandedSections, setExpandedSections] = useState({});
+export default function ScoreBreakdownPanel({ town, onTownUpdate }) {
+  // AUTO-EXPAND all sections by default
+  const [expandedSections, setExpandedSections] = useState({
+    healthcare: true,
+    safety: true,
+    infrastructure: true,
+    legal: true,
+    environmental: true
+  });
   const [adjustments, setAdjustments] = useState({});
   const [showAdjustmentModal, setShowAdjustmentModal] = useState(null);
+
+  // Helper component to use EditableDataField with metadata
+  const EditableField = ({ field, value, townId }) => {
+    const metadata = ADMIN_FIELD_METADATA[field];
+    if (!metadata) {
+      console.warn(`No metadata found for field: ${field}`);
+      return null;
+    }
+
+    return (
+      <EditableDataField
+        label={metadata.label}
+        value={value}
+        field={field}
+        townId={townId}
+        type={metadata.type}
+        range={metadata.range}
+        description={metadata.description}
+        onUpdate={(field, newValue) => {
+          // Callback to refresh parent component if needed
+          if (onTownUpdate) {
+            onTownUpdate(field, newValue);
+          }
+        }}
+      />
+    );
+  };
 
   // Load existing adjustments from database
   useEffect(() => {
@@ -85,13 +123,13 @@ export default function ScoreBreakdownPanel({ town }) {
           onToggle={() => toggleSection('healthcare')}
           onAddAdjustment={() => setShowAdjustmentModal({ category: 'healthcare', subcategory: 'Healthcare' })}
         >
-          <DataField label="Healthcare Score" value={town.healthcare_score} field="healthcare_score" />
-          <DataField label="Hospital Count" value={town.hospital_count} field="hospital_count" />
-          <DataField label="Nearest Hospital (km)" value={town.nearest_major_hospital_km} field="nearest_major_hospital_km" />
-          <DataField label="Emergency Services Quality" value={town.emergency_services_quality} field="emergency_services_quality" />
-          <DataField label="English Speaking Doctors" value={town.english_speaking_doctors} field="english_speaking_doctors" />
-          <DataField label="Insurance Availability" value={town.insurance_availability_rating} field="insurance_availability_rating" />
-          <DataField label="Healthcare Cost" value={town.healthcare_cost} field="healthcare_cost" />
+          <EditableField field="healthcare_score" value={town.healthcare_score} townId={town.id} />
+          <EditableField field="hospital_count" value={town.hospital_count} townId={town.id} />
+          <EditableField field="nearest_major_hospital_km" value={town.nearest_major_hospital_km} townId={town.id} />
+          <EditableField field="emergency_services_quality" value={town.emergency_services_quality} townId={town.id} />
+          <EditableField field="english_speaking_doctors" value={town.english_speaking_doctors} townId={town.id} />
+          <EditableField field="insurance_availability_rating" value={town.insurance_availability_rating} townId={town.id} />
+          <EditableField field="healthcare_cost" value={town.healthcare_cost} townId={town.id} />
         </ScoreSection>
 
         {/* SAFETY (25 points) */}
@@ -106,11 +144,11 @@ export default function ScoreBreakdownPanel({ town }) {
           onToggle={() => toggleSection('safety')}
           onAddAdjustment={() => setShowAdjustmentModal({ category: 'safety', subcategory: 'Safety' })}
         >
-          <DataField label="Safety Score" value={town.safety_score} field="safety_score" />
-          <DataField label="Crime Rate" value={town.crime_rate} field="crime_rate" />
-          <DataField label="Environmental Health Rating" value={town.environmental_health_rating} field="environmental_health_rating" />
-          <DataField label="Natural Disaster Risk" value={town.natural_disaster_risk} field="natural_disaster_risk" />
-          <DataField label="Political Stability Rating" value={town.political_stability_rating} field="political_stability_rating" />
+          <EditableField field="safety_score" value={town.safety_score} townId={town.id} />
+          <EditableField field="crime_rate" value={town.crime_rate} townId={town.id} />
+          <EditableField field="environmental_health_rating" value={town.environmental_health_rating} townId={town.id} />
+          <EditableField field="natural_disaster_risk" value={town.natural_disaster_risk} townId={town.id} />
+          <EditableField field="political_stability_rating" value={town.political_stability_rating} townId={town.id} />
         </ScoreSection>
 
         {/* INFRASTRUCTURE (15 points) */}
@@ -125,9 +163,11 @@ export default function ScoreBreakdownPanel({ town }) {
           onToggle={() => toggleSection('infrastructure')}
           onAddAdjustment={() => setShowAdjustmentModal({ category: 'infrastructure', subcategory: 'Infrastructure' })}
         >
-          <DataField label="Walkability" value={town.walkability} field="walkability" />
-          <DataField label="Air Quality Index" value={town.air_quality_index} field="air_quality_index" />
-          <DataField label="Airport Distance" value={town.airport_distance} field="airport_distance" />
+          <EditableField field="walkability" value={town.walkability} townId={town.id} />
+          <EditableField field="air_quality_index" value={town.air_quality_index} townId={town.id} />
+          <EditableField field="regional_airport_distance" value={town.regional_airport_distance} townId={town.id} />
+          <EditableField field="international_airport_distance" value={town.international_airport_distance} townId={town.id} />
+          <EditableField field="airport_distance" value={town.airport_distance} townId={town.id} />
         </ScoreSection>
 
         {/* LEGAL & ADMIN (10 points) */}
@@ -142,12 +182,11 @@ export default function ScoreBreakdownPanel({ town }) {
           onToggle={() => toggleSection('legal')}
           onAddAdjustment={() => setShowAdjustmentModal({ category: 'legal', subcategory: 'Legal & Admin' })}
         >
-          <DataField label="Government Efficiency Rating" value={town.government_efficiency_rating} field="government_efficiency_rating" />
-          <DataField label="Visa Requirements" value={town.visa_requirements} field="visa_requirements" />
-          <DataField label="Visa on Arrival Countries" value={town.visa_on_arrival_countries?.join(', ')} field="visa_on_arrival_countries" />
-          <DataField label="Retirement Visa Available" value={town.retirement_visa_available} field="retirement_visa_available" />
-          <DataField label="Tax Treaty US" value={town.tax_treaty_us} field="tax_treaty_us" />
-          <DataField label="Tax Haven Status" value={town.tax_haven_status} field="tax_haven_status" />
+          <EditableField field="government_efficiency_rating" value={town.government_efficiency_rating} townId={town.id} />
+          <EditableField field="visa_requirements" value={town.visa_requirements} townId={town.id} />
+          <EditableField field="retirement_visa_available" value={town.retirement_visa_available} townId={town.id} />
+          <EditableField field="tax_treaty_us" value={town.tax_treaty_us} townId={town.id} />
+          <EditableField field="tax_haven_status" value={town.tax_haven_status} townId={town.id} />
         </ScoreSection>
 
         {/* ENVIRONMENTAL (15 points - conditional) */}
@@ -162,10 +201,10 @@ export default function ScoreBreakdownPanel({ town }) {
           onToggle={() => toggleSection('environmental')}
           onAddAdjustment={() => setShowAdjustmentModal({ category: 'environmental', subcategory: 'Environmental' })}
         >
-          <DataField label="Environmental Health Rating" value={town.environmental_health_rating} field="environmental_health_rating" />
-          <DataField label="Air Quality Index" value={town.air_quality_index} field="air_quality_index" />
+          <EditableField field="environmental_health_rating" value={town.environmental_health_rating} townId={town.id} />
+          <EditableField field="air_quality_index" value={town.air_quality_index} townId={town.id} />
           <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded mt-2">
-            Only awarded if user marks environmental health as 'sensitive' in preferences
+            ⚠️ Only awarded if user marks environmental health as 'sensitive' in preferences
           </p>
         </ScoreSection>
 
