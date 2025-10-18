@@ -145,9 +145,53 @@ const EditableDataField = ({
 
   // Open Google search for this town + field
   const handleGoogleSearch = () => {
-    // Create search query: "Town Name, Country + Field Label"
-    // Example: "Bubaque Guinea-Bissau healthcare score"
-    const searchQuery = `${townName} ${label}`;
+    // Create smart search query based on field type
+    // Examples:
+    // - "Bubaque distance to nearest airport"
+    // - "Valencia Spain walkability score"
+    // - "Adelaide Australia number of hospitals"
+
+    let searchQuery = townName;
+
+    // Smart query generation based on field label
+    const labelLower = label.toLowerCase();
+
+    if (labelLower.includes('distance')) {
+      // For distance fields, search "town distance to X"
+      if (labelLower.includes('airport')) {
+        if (labelLower.includes('regional')) {
+          searchQuery = `${townName} distance to nearest regional airport`;
+        } else if (labelLower.includes('international')) {
+          searchQuery = `${townName} distance to nearest international airport`;
+        } else {
+          searchQuery = `${townName} distance to nearest airport`;
+        }
+      } else if (labelLower.includes('hospital')) {
+        searchQuery = `${townName} distance to nearest hospital`;
+      } else {
+        searchQuery = `${townName} ${label}`;
+      }
+    } else if (labelLower.includes('count')) {
+      // For count fields, search "how many X in town"
+      if (labelLower.includes('hospital')) {
+        searchQuery = `how many hospitals in ${townName}`;
+      } else {
+        searchQuery = `${townName} number of ${label.replace(' count', '').toLowerCase()}`;
+      }
+    } else if (labelLower.includes('score') || labelLower.includes('rating') || labelLower.includes('index')) {
+      // For scores/ratings, keep label
+      searchQuery = `${townName} ${label.toLowerCase()}`;
+    } else if (labelLower.includes('quality')) {
+      // For quality fields
+      searchQuery = `${townName} ${label.toLowerCase()}`;
+    } else if (labelLower.includes('available') || labelLower.includes('visa') || labelLower.includes('tax')) {
+      // For yes/no or legal fields
+      searchQuery = `${townName} ${label.toLowerCase()}`;
+    } else {
+      // Default: town + field label
+      searchQuery = `${townName} ${label.toLowerCase()}`;
+    }
+
     const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
     window.open(googleSearchUrl, '_blank');
   };
