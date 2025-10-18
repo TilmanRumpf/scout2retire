@@ -14,8 +14,19 @@ import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import EditableDataField from './EditableDataField';
 import { ADMIN_FIELD_METADATA } from '../utils/admin/adminFieldMetadata';
+import { checkAdminAccess } from '../utils/paywallUtils';
 
 export default function ScoreBreakdownPanel({ town, onTownUpdate }) {
+  const [isExecutiveAdmin, setIsExecutiveAdmin] = useState(false);
+
+  // Check if user is executive admin
+  useEffect(() => {
+    const checkExecAdmin = async () => {
+      const hasAccess = await checkAdminAccess('executive_admin');
+      setIsExecutiveAdmin(hasAccess);
+    };
+    checkExecAdmin();
+  }, []);
   // AUTO-EXPAND all sections by default
   const [expandedSections, setExpandedSections] = useState({
     healthcare: true,
@@ -46,6 +57,7 @@ export default function ScoreBreakdownPanel({ town, onTownUpdate }) {
         type={metadata.type}
         range={metadata.range}
         description={metadata.description}
+        isExecutiveAdmin={isExecutiveAdmin}
         onUpdate={(field, newValue) => {
           // Callback to refresh parent component if needed
           if (onTownUpdate) {

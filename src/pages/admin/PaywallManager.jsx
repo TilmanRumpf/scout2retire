@@ -24,6 +24,7 @@ const PaywallManager = () => {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [editingLimit, setEditingLimit] = useState(null);
   const [editValue, setEditValue] = useState('');
+  const [customValue, setCustomValue] = useState('');
   const [editingPrice, setEditingPrice] = useState(null); // { tierId, field: 'monthly' | 'yearly' }
   const [priceValue, setPriceValue] = useState('');
   const [showAddTierModal, setShowAddTierModal] = useState(false);
@@ -207,7 +208,7 @@ const PaywallManager = () => {
 
   const startEditLimit = (categoryId, featureId, currentValue) => {
     setEditingLimit({ categoryId, featureId });
-    setEditValue(currentValue === null ? '' : currentValue.toString());
+    setEditValue(currentValue === null || currentValue === undefined ? '' : currentValue.toString());
   };
 
   const cancelEdit = () => {
@@ -218,13 +219,24 @@ const PaywallManager = () => {
   const saveLimit = async () => {
     if (!editingLimit) return;
 
-    const newValue = editValue === '' ? null : parseInt(editValue);
+    let newValue;
+    if (editValue === '') {
+      newValue = null; // Unlimited
+    } else if (editValue === 'custom') {
+      newValue = customValue === '' ? null : parseInt(customValue);
+    } else {
+      newValue = parseInt(editValue);
+    }
 
     const { error } = await supabase
       .from('category_limits')
-      .update({ limit_value: newValue })
-      .eq('category_id', editingLimit.categoryId)
-      .eq('feature_id', editingLimit.featureId);
+      .upsert({
+        category_id: editingLimit.categoryId,
+        feature_id: editingLimit.featureId,
+        limit_value: newValue
+      }, {
+        onConflict: 'category_id,feature_id'
+      });
 
     if (error) {
       toast.error('Failed to update limit');
@@ -234,6 +246,7 @@ const PaywallManager = () => {
       await loadLimits();
       setEditingLimit(null);
       setEditValue('');
+      setCustomValue('');
     }
   };
 
@@ -633,28 +646,122 @@ const PaywallManager = () => {
                           <td key={tier.id} className="px-6 py-4 text-center">
                             {isEditing ? (
                               <div className="flex items-center justify-center gap-2">
-                                <input
-                                  type="text"
-                                  value={editValue}
-                                  onChange={(e) => setEditValue(e.target.value)}
-                                  placeholder="∞"
-                                  className={`w-20 px-2 py-1 ${uiConfig.colors.input} border-2 border-scout-accent-500 rounded text-center`}
+                                <select
+                                  value={
+                                    editValue === '' ? 'null' :
+                                    ['0', '1', '2', '3', '5', '10', '20', '25', '30', '50', '100'].includes(editValue) ? editValue :
+                                    'custom'
+                                  }
+                                  onChange={async (e) => {
+                                    if (e.target.value === 'custom') {
+                                      setEditValue('custom');
+                                    } else {
+                                      // Save immediately on selection
+                                      let newValue;
+                                      if (e.target.value === 'null') {
+                                        newValue = null;
+                                      } else {
+                                        newValue = parseInt(e.target.value);
+                                      }
+
+                                      const { error } = await supabase
+                                        .from('category_limits')
+                                        .upsert({
+                                          category_id: editingLimit.categoryId,
+                                          feature_id: editingLimit.featureId,
+                                          limit_value: newValue
+                                        }, {
+                                          onConflict: 'category_id,feature_id'
+                                        });
+
+                                      if (error) {
+                                        toast.error('Failed to update limit');
+                                        console.error(error);
+                                      } else {
+                                        toast.success('Saved!');
+                                        await loadLimits();
+                                        setEditingLimit(null);
+                                        setEditValue('');
+                                        setCustomValue('');
+                                      }
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    if (editValue !== 'custom') {
+                                      setEditingLimit(null);
+                                      setEditValue('');
+                                    }
+                                  }}
+                                  className={`w-32 px-3 py-2 ${uiConfig.colors.input} border-2 border-scout-accent-500 rounded text-center font-semibold text-base`}
                                   autoFocus
-                                />
-                                <button onClick={saveLimit} className="text-green-500 hover:text-green-600">
-                                  <Check className="w-4 h-4" />
-                                </button>
-                                <button onClick={cancelEdit} className="text-red-500 hover:text-red-600">
-                                  <X className="w-4 h-4" />
-                                </button>
+                                >
+                                  <option value="null">∞ Unlimited</option>
+                                  <option value="0">❌ Disabled</option>
+                                  <option value="1">1</option>
+                                  <option value="2">2</option>
+                                  <option value="3">3</option>
+                                  <option value="5">5</option>
+                                  <option value="10">10</option>
+                                  <option value="20">20</option>
+                                  <option value="25">25</option>
+                                  <option value="30">30</option>
+                                  <option value="50">50</option>
+                                  <option value="100">100</option>
+                                  <option value="custom">Custom...</option>
+                                </select>
+                                {editValue === 'custom' && (
+                                  <>
+                                    <input
+                                      type="number"
+                                      value={customValue}
+                                      onChange={(e) => setCustomValue(e.target.value)}
+                                      onKeyDown={async (e) => {
+                                        if (e.key === 'Enter') {
+                                          const newValue = customValue === '' ? null : parseInt(customValue);
+                                          const { error } = await supabase
+                                            .from('category_limits')
+                                            .upsert({
+                                              category_id: editingLimit.categoryId,
+                                              feature_id: editingLimit.featureId,
+                                              limit_value: newValue
+                                            }, {
+                                              onConflict: 'category_id,feature_id'
+                                            });
+
+                                          if (error) {
+                                            toast.error('Failed to update limit');
+                                            console.error(error);
+                                          } else {
+                                            toast.success('Saved!');
+                                            await loadLimits();
+                                            setEditingLimit(null);
+                                            setEditValue('');
+                                            setCustomValue('');
+                                          }
+                                        } else if (e.key === 'Escape') {
+                                          setEditingLimit(null);
+                                          setEditValue('');
+                                          setCustomValue('');
+                                        }
+                                      }}
+                                      placeholder="Enter number"
+                                      className={`w-24 px-2 py-1 ${uiConfig.colors.input} border-2 border-scout-accent-500 rounded text-center`}
+                                      autoFocus
+                                      min="0"
+                                    />
+                                    <span className="text-xs text-gray-500">Press Enter</span>
+                                  </>
+                                )}
                               </div>
                             ) : (
                               <button
                                 onClick={() => startEditLimit(tier.id, feature.id, limit?.limit_value)}
-                                className="group flex items-center justify-center gap-2 mx-auto hover:text-scout-accent-500"
+                                className="w-full h-full min-h-[48px] flex items-center justify-center gap-2 hover:bg-scout-accent-100 dark:hover:bg-scout-accent-900/20 rounded transition-colors group"
                               >
-                                <span className="text-lg font-semibold">{formatLimit(limit?.limit_value)}</span>
-                                <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <span className="text-lg font-semibold group-hover:text-scout-accent-600 dark:group-hover:text-scout-accent-400 transition-colors">
+                                  {formatLimit(limit?.limit_value)}
+                                </span>
+                                <Edit2 className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-scout-accent-500" />
                               </button>
                             )}
                           </td>
@@ -946,6 +1053,25 @@ const PaywallManager = () => {
             ) : null}
           </div>
         )}
+
+        {/* Role Limitation Notice for Query Template Feature */}
+        <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2 flex items-center gap-2">
+              <span className="text-base">👑</span>
+              Executive Admin Feature: Query Template Management
+            </h3>
+            <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
+              Executive admins have access to advanced query template management for admin fields.
+              Navigate to <strong>Admin → Towns → [select any town] → Admin tab</strong> and use the <strong>🤔✏️ button</strong>
+              next to any field to create, update, and manage search query templates. These templates automatically apply
+              to all 343+ towns, ensuring consistent data normalization across the entire database.
+            </p>
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 italic">
+              To enable this feature for a user, set their Admin Role to "Executive Admin" in the Users tab above.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Add Tier Modal */}
