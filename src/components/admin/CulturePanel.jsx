@@ -26,7 +26,9 @@ export default function CulturePanel({ town, onTownUpdate }) {
   const [expandedSections, setExpandedSections] = useState({
     language: true,
     lifestyle: true,
-    community: true
+    community: true,
+    ratings: true,
+    landmarks: true
   });
 
   const toggleSection = (section) => {
@@ -176,6 +178,119 @@ export default function CulturePanel({ town, onTownUpdate }) {
               label="Local Festivals"
               type="text"
               description="Names or descriptions of local festivals and celebrations"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Culture Ratings */}
+      <div>
+        <button
+          onClick={() => toggleSection('ratings')}
+          className="w-full flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-lg mb-3 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        >
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            ⭐ Culture Ratings (1-10 Scale)
+          </h3>
+          <span className="text-gray-500">{expandedSections.ratings ? '▼' : '▶'}</span>
+        </button>
+
+        {expandedSections.ratings && (
+          <div className="space-y-2 pl-4">
+            <EditableField
+              field="cultural_events_rating"
+              value={town.cultural_events_rating}
+              label="Cultural Events Rating"
+              type="number"
+              range="1-10"
+              description="Quality and frequency of cultural events (1-10 scale)"
+            />
+            <EditableField
+              field="nightlife_rating"
+              value={town.nightlife_rating}
+              label="Nightlife Rating"
+              type="number"
+              range="1-10"
+              description="Quality and variety of nightlife options (1-10 scale)"
+            />
+            <EditableField
+              field="restaurants_rating"
+              value={town.restaurants_rating}
+              label="Restaurants Rating"
+              type="number"
+              range="1-10"
+              description="Quality and variety of dining options (1-10 scale)"
+            />
+            <EditableField
+              field="museums_rating"
+              value={town.museums_rating}
+              label="Museums Rating"
+              type="number"
+              range="1-10"
+              description="Quality and variety of museums and galleries (1-10 scale)"
+            />
+            <EditableField
+              field="shopping_rating"
+              value={town.shopping_rating}
+              label="Shopping Rating"
+              type="number"
+              range="1-10"
+              description="Quality and variety of shopping options (1-10 scale)"
+            />
+            <EditableField
+              field="outdoor_rating"
+              value={town.outdoor_rating}
+              label="Outdoor Activities Rating"
+              type="number"
+              range="1-10"
+              description="Quality and variety of outdoor activities (1-10 scale)"
+            />
+            <EditableField
+              field="overall_culture_score"
+              value={town.overall_culture_score}
+              label="Overall Culture Score"
+              type="number"
+              range="0-100"
+              description="Overall cultural score (0-100 scale)"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Cultural Landmarks */}
+      <div>
+        <button
+          onClick={() => toggleSection('landmarks')}
+          className="w-full flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-lg mb-3 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        >
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            🏛️ Cultural Landmarks
+          </h3>
+          <span className="text-gray-500">{expandedSections.landmarks ? '▼' : '▶'}</span>
+        </button>
+
+        {expandedSections.landmarks && (
+          <div className="space-y-2 pl-4">
+            <EditableField
+              field="cultural_landmark_1"
+              value={town.cultural_landmark_1}
+              label="Cultural Landmark 1"
+              type="string"
+              description="First notable cultural landmark or attraction"
+            />
+            <EditableField
+              field="cultural_landmark_2"
+              value={town.cultural_landmark_2}
+              label="Cultural Landmark 2"
+              type="string"
+              description="Second notable cultural landmark or attraction"
+            />
+            <EditableField
+              field="cultural_landmark_3"
+              value={town.cultural_landmark_3}
+              label="Cultural Landmark 3"
+              type="string"
+              description="Third notable cultural landmark or attraction"
             />
           </div>
         )}

@@ -12,10 +12,15 @@ import WikipediaPanel from '../../components/WikipediaPanel';
 import DataQualityPanel from '../../components/DataQualityPanel';
 import HobbiesDisplay from '../../components/admin/HobbiesDisplay';
 import ScoreBreakdownPanel from '../../components/ScoreBreakdownPanel';
+import OverviewPanel from '../../components/admin/OverviewPanel';
 import RegionPanel from '../../components/admin/RegionPanel';
 import ClimatePanel from '../../components/admin/ClimatePanel';
 import CulturePanel from '../../components/admin/CulturePanel';
+import HealthcarePanel from '../../components/admin/HealthcarePanel';
+import SafetyPanel from '../../components/admin/SafetyPanel';
 import CostsPanel from '../../components/admin/CostsPanel';
+import InfrastructurePanel from '../../components/admin/InfrastructurePanel';
+import ActivitiesPanel from '../../components/admin/ActivitiesPanel';
 import LegacyFieldsSection from '../../components/admin/LegacyFieldsSection';
 import { getFieldOptions, isMultiSelectField } from '../../utils/townDataOptions';
 import { useFieldDefinitions } from '../../hooks/useFieldDefinitions';
@@ -23,6 +28,9 @@ import { uiConfig } from '../../styles/uiConfig';
 
 // Column mappings organized by category and subcategory to match onboarding structure
 const COLUMN_CATEGORIES = {
+  Overview: {
+    subcategories: {}  // Overview uses custom OverviewPanel component
+  },
   Region: {
     subcategories: {
       'Countries & Regions': {
@@ -82,6 +90,18 @@ const COLUMN_CATEGORIES = {
         unused: ['cultural_events', 'local_cuisine', 'religious_diversity', 'arts_scene', 'music_scene']
       }
     }
+  },
+  Healthcare: {
+    subcategories: {}  // Healthcare uses custom HealthcarePanel component
+  },
+  Safety: {
+    subcategories: {}  // Safety uses custom SafetyPanel component
+  },
+  Infrastructure: {
+    subcategories: {}  // Infrastructure uses custom InfrastructurePanel component
+  },
+  Activities: {
+    subcategories: {}  // Activities uses custom ActivitiesPanel component
   },
   Hobbies: {
     subcategories: {
@@ -147,7 +167,7 @@ const TownsManager = () => {
   const [towns, setTowns] = useState([]);
   const [filteredTowns, setFilteredTowns] = useState([]);
   const [selectedTown, setSelectedTown] = useState(null);
-  const [activeCategory, setActiveCategory] = useState('Region');
+  const [activeCategory, setActiveCategory] = useState('Overview');
   const [editingCell, setEditingCell] = useState(null);
   const [editValue, setEditValue] = useState('');
 
@@ -1573,7 +1593,10 @@ const TownsManager = () => {
 
                 {/* Category Content with Subcategories */}
                 <div className="p-4 lg:p-6">
-                  {activeCategory === 'Admin' ? (
+                  {activeCategory === 'Overview' ? (
+                    // Special handling for Overview tab with photos and descriptions
+                    <OverviewPanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                  ) : activeCategory === 'Admin' ? (
                     // Special handling for Admin tab with score breakdown panel
                     <ScoreBreakdownPanel town={selectedTown} onTownUpdate={handleTownUpdate} />
                   ) : activeCategory === 'Region' ? (
@@ -1585,6 +1608,18 @@ const TownsManager = () => {
                   ) : activeCategory === 'Culture' ? (
                     // Special handling for Culture tab with inline editing panel
                     <CulturePanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                  ) : activeCategory === 'Healthcare' ? (
+                    // Special handling for Healthcare tab with inline editing panel
+                    <HealthcarePanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                  ) : activeCategory === 'Safety' ? (
+                    // Special handling for Safety tab with inline editing panel
+                    <SafetyPanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                  ) : activeCategory === 'Infrastructure' ? (
+                    // Special handling for Infrastructure tab with inline editing panel
+                    <InfrastructurePanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                  ) : activeCategory === 'Activities' ? (
+                    // Special handling for Activities tab with inline editing panel
+                    <ActivitiesPanel town={selectedTown} onTownUpdate={handleTownUpdate} />
                   ) : activeCategory === 'Hobbies' ? (
                     // Special handling for Hobbies tab with enhanced display
                     <div>

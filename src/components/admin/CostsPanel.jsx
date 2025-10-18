@@ -25,7 +25,8 @@ export default function CostsPanel({ town, onTownUpdate }) {
   const [expandedSections, setExpandedSections] = useState({
     living: true,
     housing: true,
-    daily: true
+    daily: true,
+    taxes: true
   });
 
   const toggleSection = (section) => {
@@ -77,6 +78,14 @@ export default function CostsPanel({ town, onTownUpdate }) {
               type="number"
               range="0-10000"
               description="Overall cost of living in USD per month"
+            />
+            <EditableField
+              field="cost_of_living_index"
+              value={town.cost_of_living_index}
+              label="Cost of Living Index"
+              type="number"
+              range="0-200"
+              description="Cost of living index (100 = average, higher = more expensive)"
             />
             <EditableField
               field="typical_monthly_living_cost"
@@ -155,6 +164,14 @@ export default function CostsPanel({ town, onTownUpdate }) {
               description="Monthly utilities (electricity, water, gas, internet)"
             />
             <EditableField
+              field="groceries_cost"
+              value={town.groceries_cost}
+              label="Groceries Cost (USD)"
+              type="number"
+              range="0-2000"
+              description="Typical monthly groceries cost in USD"
+            />
+            <EditableField
               field="groceries_index"
               value={town.groceries_index}
               label="Groceries Index"
@@ -163,12 +180,76 @@ export default function CostsPanel({ town, onTownUpdate }) {
               description="Grocery price index (100 = average)"
             />
             <EditableField
+              field="meal_cost"
+              value={town.meal_cost}
+              label="Average Meal Cost (USD)"
+              type="number"
+              range="0-100"
+              description="Average cost of a meal at a restaurant in USD"
+            />
+            <EditableField
               field="restaurant_price_index"
               value={town.restaurant_price_index}
               label="Restaurant Price Index"
               type="number"
               range="0-200"
               description="Restaurant price index (100 = average)"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Taxes & Fiscal */}
+      <div>
+        <button
+          onClick={() => toggleSection('taxes')}
+          className="w-full flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-lg mb-3 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        >
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            💼 Taxes & Fiscal
+          </h3>
+          <span className="text-gray-500">{expandedSections.taxes ? '▼' : '▶'}</span>
+        </button>
+
+        {expandedSections.taxes && (
+          <div className="space-y-2 pl-4">
+            <EditableField
+              field="income_tax_rate_pct"
+              value={town.income_tax_rate_pct}
+              label="Income Tax Rate (%)"
+              type="number"
+              range="0-100"
+              description="Personal income tax rate percentage"
+            />
+            <EditableField
+              field="property_tax_rate_pct"
+              value={town.property_tax_rate_pct}
+              label="Property Tax Rate (%)"
+              type="number"
+              range="0-10"
+              description="Property tax rate percentage (annual)"
+            />
+            <EditableField
+              field="sales_tax_rate_pct"
+              value={town.sales_tax_rate_pct}
+              label="Sales Tax Rate (%)"
+              type="number"
+              range="0-30"
+              description="Sales/VAT tax rate percentage"
+            />
+            <EditableField
+              field="tax_haven_status"
+              value={town.tax_haven_status}
+              label="Tax Haven Status"
+              type="boolean"
+              description="Whether the location is considered a tax haven"
+            />
+            <EditableField
+              field="foreign_income_taxed"
+              value={town.foreign_income_taxed}
+              label="Foreign Income Taxed"
+              type="boolean"
+              description="Whether foreign income is subject to local taxation"
             />
           </div>
         )}

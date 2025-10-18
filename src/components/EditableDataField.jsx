@@ -369,13 +369,22 @@ const EditableDataField = ({
     }
   };
 
-  // Auto-focus search input when modal opens
+  // Auto-focus search input ONLY when modal first opens
   useEffect(() => {
-    if (showCombinedModal && searchInputRef.current) {
-      searchInputRef.current.focus();
-      searchInputRef.current.select();
+    if (showCombinedModal) {
+      if (searchInputRef.current) {
+        searchInputRef.current.focus();
+        searchInputRef.current.select();
+      }
+      // Auto-resize textarea if it contains existing text - with slight delay for DOM to be ready
+      setTimeout(() => {
+        if (editInputRef.current && type === 'string') {
+          editInputRef.current.style.height = 'auto';
+          editInputRef.current.style.height = editInputRef.current.scrollHeight + 'px';
+        }
+      }, 50);
     }
-  }, [showCombinedModal]);
+  }, [showCombinedModal]); // Removed editValue and type from dependencies to prevent re-focusing
 
   // Render input based on type (for inline editing)
   const renderInput = () => {
@@ -511,13 +520,47 @@ const EditableDataField = ({
 
       default: // string
         return (
-          <input
+          <textarea
             ref={editInputRef}
-            type="text"
             value={editValue ?? ''}
-            onChange={(e) => setEditValue(e.target.value)}
-            className={baseClasses}
+            onChange={(e) => {
+              const newValue = e.target.value;
+              setEditValue(newValue);
+              // Auto-resize the textarea after value change
+              const target = e.target;
+              setTimeout(() => {
+                target.style.height = 'auto';
+                target.style.height = target.scrollHeight + 'px';
+              }, 0);
+            }}
+            onKeyDown={(e) => {
+              // Allow Ctrl/Cmd+Enter to save, Escape to close
+              if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                handleSaveFromModal();
+              } else if (e.key === 'Escape') {
+                setShowCombinedModal(false);
+              }
+            }}
+            onFocus={(e) => {
+              // Trigger resize on focus to ensure proper height
+              const target = e.target;
+              setTimeout(() => {
+                target.style.height = 'auto';
+                target.style.height = target.scrollHeight + 'px';
+              }, 0);
+            }}
+            className={`${baseClasses} resize-none overflow-y-auto`}
             placeholder="Enter value from Google"
+            rows={3}
+            readOnly={false}
+            disabled={false}
+            style={{
+              minHeight: '80px',
+              lineHeight: '1.5',
+              fontFamily: 'inherit',
+              cursor: 'text'
+            }}
           />
         );
     }
