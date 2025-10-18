@@ -1,34 +1,20 @@
 /**
- * SCORE BREAKDOWN PANEL - V2 with Manual Adjustments & Algorithm Editing
+ * ADMIN SCORE BREAKDOWN PANEL - SIMPLIFIED
  *
- * Provides complete transparency into admin score calculation
- * Shows: raw data → components → subcategory scores → final admin match score
- * Allows: manual adjustments (basis points) + algorithm formula editing
+ * Shows admin score data from towns table with manual adjustment capability
+ * NO complex calculations - just displays what's already in the database
  *
  * Created: 2025-10-17
- * Enhanced: 2025-10-17 - Added adjustment controls + algorithm editing
  */
 
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
-import { calculateHealthcareScore, getHealthcareBonusBreakdown } from '../utils/scoring/helpers/calculateHealthcareScore';
-import { calculateSafetyScore, getSafetyScoreBreakdown } from '../utils/scoring/helpers/calculateSafetyScore';
-import { uiConfig } from '../styles/uiConfig';
 
 export default function ScoreBreakdownPanel({ town }) {
-  const [expandedSections, setExpandedSections] = useState({
-    healthcare: false,
-    safety: false,
-    government: false,
-    visa: false,
-    environmental: false,
-    political: false
-  });
-
+  const [expandedSections, setExpandedSections] = useState({});
   const [adjustments, setAdjustments] = useState({});
   const [showAdjustmentModal, setShowAdjustmentModal] = useState(null);
-  const [showAlgorithmEditor, setShowAlgorithmEditor] = useState(null);
 
   // Load existing adjustments from database
   useEffect(() => {
@@ -37,7 +23,6 @@ export default function ScoreBreakdownPanel({ town }) {
 
   const loadAdjustments = async () => {
     try {
-      // Query adjustments for this town
       const { data, error } = await supabase
         .from('admin_score_adjustments')
         .select('*')
@@ -45,317 +30,165 @@ export default function ScoreBreakdownPanel({ town }) {
         .eq('active', true)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error loading adjustments:', error);
-        toast.error('Failed to load adjustments');
-        return;
-      }
+      if (error) throw error;
 
-      // Group adjustments by category
-      const grouped = {
-        healthcare: [],
-        safety: [],
-        government: [],
-        visa: [],
-        environmental: [],
-        political: []
-      };
-
+      // Group by category
+      const grouped = {};
       data?.forEach(adj => {
-        if (grouped[adj.category]) {
-          grouped[adj.category].push({
-            id: adj.id,
-            value: parseFloat(adj.adjustment_value),
-            reason: adj.reason,
-            appliesTo: adj.applies_to,
-            createdBy: adj.created_by,
-            createdAt: adj.created_at
-          });
-        }
+        if (!grouped[adj.category]) grouped[adj.category] = [];
+        grouped[adj.category].push({
+          id: adj.id,
+          value: parseFloat(adj.adjustment_value),
+          reason: adj.reason,
+          createdBy: adj.created_by,
+          createdAt: adj.created_at
+        });
       });
 
       setAdjustments(grouped);
     } catch (err) {
-      console.error('Error in loadAdjustments:', err);
+      console.error('Error loading adjustments:', err);
     }
   };
 
   const toggleSection = (section) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // Calculate component-based scores
-  const healthcareScore = calculateHealthcareScore(town);
-  const healthcareBreakdown = getHealthcareBonusBreakdown(town);
-
-  const safetyScore = calculateSafetyScore(town);
-  const safetyBreakdown = getSafetyScoreBreakdown(town);
-
-  // Calculate static conversion scores
-  const governmentScore = town.government_efficiency_rating
-    ? (town.government_efficiency_rating / 10)
-    : null;
-
-  const politicalStabilityScore = town.political_stability_rating
-    ? (town.political_stability_rating / 10)
-    : null;
-
-  // Environmental health (conditional)
-  const environmentalScore = town.environmental_health_rating || null;
-
-  // Calculate adjusted scores (base + manual adjustments)
   const getAdjustedScore = (baseScore, category) => {
-    const categoryAdjustments = adjustments[category] || [];
-    const totalAdjustment = categoryAdjustments.reduce((sum, adj) => sum + adj.value, 0);
-    return baseScore + totalAdjustment;
+    const categoryAdjs = adjustments[category] || [];
+    const total = categoryAdjs.reduce((sum, adj) => sum + adj.value, 0);
+    return baseScore + total;
   };
 
   return (
     <div className="mb-8 bg-white border border-gray-200 rounded-lg shadow-sm">
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">
-              Admin Score Calculation Breakdown
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Complete transparency: raw data → components → adjustments → final score
-            </p>
-          </div>
-          <button
-            onClick={() => setShowAlgorithmEditor('global')}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-            </svg>
-            Edit Algorithms
-          </button>
-        </div>
+        <h2 className="text-xl font-bold text-gray-900">Admin Score Data</h2>
+        <p className="text-sm text-gray-600 mt-1">
+          View and adjust scoring data for {town.name}
+        </p>
       </div>
 
       <div className="p-6 space-y-4">
 
-        {/* HEALTHCARE QUALITY (30 points) */}
+        {/* HEALTHCARE (30 points) */}
         <ScoreSection
-          title="Healthcare Quality"
+          title="Healthcare"
+          icon="🏥"
           maxPoints={30}
-          score={healthcareScore}
-          adjustedScore={getAdjustedScore(healthcareScore, 'healthcare')}
+          score={town.healthcare_score}
+          adjustedScore={getAdjustedScore(town.healthcare_score || 0, 'healthcare')}
           adjustments={adjustments.healthcare}
           isExpanded={expandedSections.healthcare}
           onToggle={() => toggleSection('healthcare')}
-          onAddAdjustment={() => setShowAdjustmentModal({ category: 'healthcare', subcategory: 'Healthcare Quality' })}
-          onEditAlgorithm={() => setShowAlgorithmEditor('healthcare')}
-          icon="🏥"
+          onAddAdjustment={() => setShowAdjustmentModal({ category: 'healthcare', subcategory: 'Healthcare' })}
         >
-          {/* Quality Component */}
-          <ComponentBreakdown
-            title="Quality Score"
-            score={healthcareBreakdown.quality}
-            maxScore={4.0}
-            description="Admin baseline + hospital infrastructure"
-            onEditFormula={() => setShowAlgorithmEditor('healthcare-quality')}
-          >
-            <SubField
-              label="Admin Baseline"
-              value={healthcareBreakdown.components.quality.adminBase}
-              rawField="healthcare_score"
-              rawValue={town.healthcare_score}
-              formula="(healthcare_score / 10) × 3.0"
-            />
-            <SubField
-              label="Hospital Count Bonus"
-              value={healthcareBreakdown.components.quality.hospitalBonus}
-              rawField="hospital_count"
-              rawValue={town.hospital_count}
-              formula="0.3-1.0 based on count"
-            />
-          </ComponentBreakdown>
-
-          {/* Accessibility Component */}
-          <ComponentBreakdown
-            title="Accessibility Score"
-            score={healthcareBreakdown.accessibility}
-            maxScore={3.0}
-            description="Physical + language + emergency access"
-            onEditFormula={() => setShowAlgorithmEditor('healthcare-accessibility')}
-          >
-            <SubField
-              label="Distance Score"
-              value={healthcareBreakdown.components.accessibility.distanceScore}
-              rawField="nearest_major_hospital_km"
-              rawValue={town.nearest_major_hospital_km}
-              formula="0-1.5 based on distance"
-            />
-            <SubField
-              label="Emergency Services"
-              value={healthcareBreakdown.components.accessibility.emergencyScore}
-              rawField="emergency_services_quality"
-              rawValue={town.emergency_services_quality}
-              formula="0-1.0 based on quality (0-10)"
-            />
-            <SubField
-              label="English Language Bonus"
-              value={healthcareBreakdown.components.accessibility.englishBonus}
-              rawField="english_speaking_doctors_available"
-              rawValue={town.english_speaking_doctors_available}
-              formula="0.5 if true, 0 if false"
-            />
-          </ComponentBreakdown>
-
-          {/* Cost Component */}
-          <ComponentBreakdown
-            title="Cost Score"
-            score={healthcareBreakdown.cost}
-            maxScore={3.0}
-            description="Insurance coverage + affordability"
-            onEditFormula={() => setShowAlgorithmEditor('healthcare-cost')}
-          >
-            <SubField
-              label="Insurance Acceptance"
-              value={healthcareBreakdown.components.cost.insuranceScore}
-              rawField="insurance_availability_rating"
-              rawValue={town.insurance_availability_rating}
-              formula="(rating / 10) × 1.5"
-            />
-            <SubField
-              label="Affordability"
-              value={healthcareBreakdown.components.cost.affordabilityScore}
-              rawField="healthcare_cost"
-              rawValue={town.healthcare_cost}
-              formula="0-1.5 based on USD/month"
-            />
-          </ComponentBreakdown>
-
-          <ScoreSummary
-            calculated={healthcareScore}
-            adjusted={getAdjustedScore(healthcareScore, 'healthcare')}
-            maxScore={10.0}
-            maxPoints={30}
-            adjustments={adjustments.healthcare}
-          />
+          <DataField label="Healthcare Score" value={town.healthcare_score} field="healthcare_score" />
+          <DataField label="Hospital Count" value={town.hospital_count} field="hospital_count" />
+          <DataField label="Nearest Hospital (km)" value={town.nearest_major_hospital_km} field="nearest_major_hospital_km" />
+          <DataField label="Emergency Services Quality" value={town.emergency_services_quality} field="emergency_services_quality" />
+          <DataField label="English Speaking Doctors" value={town.english_speaking_doctors_available} field="english_speaking_doctors_available" />
+          <DataField label="Insurance Availability" value={town.insurance_availability_rating} field="insurance_availability_rating" />
+          <DataField label="Healthcare Cost" value={town.healthcare_cost} field="healthcare_cost" />
         </ScoreSection>
 
         {/* SAFETY (25 points) */}
         <ScoreSection
           title="Safety"
+          icon="🛡️"
           maxPoints={25}
-          score={safetyScore}
-          adjustedScore={getAdjustedScore(safetyScore, 'safety')}
+          score={town.safety_score}
+          adjustedScore={getAdjustedScore(town.safety_score || 0, 'safety')}
           adjustments={adjustments.safety}
           isExpanded={expandedSections.safety}
           onToggle={() => toggleSection('safety')}
           onAddAdjustment={() => setShowAdjustmentModal({ category: 'safety', subcategory: 'Safety' })}
-          onEditAlgorithm={() => setShowAlgorithmEditor('safety')}
-          icon="🛡️"
         >
-          {/* Base Safety Component */}
-          <ComponentBreakdown
-            title="Base Safety"
-            score={safetyBreakdown.baseSafety}
-            maxScore={7.0}
-            description="Admin baseline rating (capped at 7.0)"
-            onEditFormula={() => setShowAlgorithmEditor('safety-base')}
-          >
-            <SubField
-              label="Admin Rating"
-              value={safetyBreakdown.components.base.adminRating}
-              rawField="safety_score"
-              rawValue={town.safety_score}
-              formula="Capped at 7.0 max"
-            />
-          </ComponentBreakdown>
-
-          {/* Crime Impact Component */}
-          <ComponentBreakdown
-            title="Crime Impact"
-            score={safetyBreakdown.crimeImpact}
-            maxScore={2.0}
-            minScore={-1.0}
-            description={safetyBreakdown.components.crime.description}
-            onEditFormula={() => setShowAlgorithmEditor('safety-crime')}
-          >
-            <SubField
-              label="Crime Rate"
-              value={safetyBreakdown.crimeImpact}
-              rawField="crime_rate"
-              rawValue={safetyBreakdown.components.crime.crimeRate}
-              formula="0-20: +2.0, 21-40: +1.0, 41-60: 0, 61-80: -0.5, 81-100: -1.0"
-            />
-          </ComponentBreakdown>
-
-          {/* Environmental Safety Component */}
-          <ComponentBreakdown
-            title="Environmental Safety"
-            score={safetyBreakdown.environmental}
-            maxScore={1.0}
-            description="Environmental health + disaster risk"
-            onEditFormula={() => setShowAlgorithmEditor('safety-environmental')}
-          >
-            <SubField
-              label="Environmental Health"
-              value={safetyBreakdown.components.environmental.healthRating !== null
-                ? ((safetyBreakdown.components.environmental.healthRating / 10) * 0.6).toFixed(1)
-                : 0.3}
-              rawField="environmental_health_rating"
-              rawValue={safetyBreakdown.components.environmental.healthRating}
-              formula="(rating / 10) × 0.6"
-            />
-            <SubField
-              label="Natural Disaster Risk"
-              value={safetyBreakdown.environmental - (safetyBreakdown.components.environmental.healthRating !== null
-                ? ((safetyBreakdown.components.environmental.healthRating / 10) * 0.6)
-                : 0.3)}
-              rawField="natural_disaster_risk"
-              rawValue={safetyBreakdown.components.environmental.disasterRisk}
-              formula="low: 0.4, moderate: 0.2, high: 0.0"
-            />
-          </ComponentBreakdown>
-
-          <ScoreSummary
-            calculated={safetyScore}
-            adjusted={getAdjustedScore(safetyScore, 'safety')}
-            maxScore={10.0}
-            maxPoints={25}
-            adjustments={adjustments.safety}
-          />
+          <DataField label="Safety Score" value={town.safety_score} field="safety_score" />
+          <DataField label="Crime Rate" value={town.crime_rate} field="crime_rate" />
+          <DataField label="Environmental Health Rating" value={town.environmental_health_rating} field="environmental_health_rating" />
+          <DataField label="Natural Disaster Risk" value={town.natural_disaster_risk} field="natural_disaster_risk" />
+          <DataField label="Political Stability Rating" value={town.political_stability_rating} field="political_stability_rating" />
         </ScoreSection>
 
-        {/* OTHER CATEGORIES... (Government, Visa, Environmental, Political) */}
-        {/* Simplified for brevity - same pattern */}
+        {/* INFRASTRUCTURE (15 points) */}
+        <ScoreSection
+          title="Infrastructure"
+          icon="🏗️"
+          maxPoints={15}
+          score={town.government_efficiency_rating ? town.government_efficiency_rating / 10 : null}
+          adjustedScore={getAdjustedScore(town.government_efficiency_rating ? town.government_efficiency_rating / 10 : 0, 'infrastructure')}
+          adjustments={adjustments.infrastructure}
+          isExpanded={expandedSections.infrastructure}
+          onToggle={() => toggleSection('infrastructure')}
+          onAddAdjustment={() => setShowAdjustmentModal({ category: 'infrastructure', subcategory: 'Infrastructure' })}
+        >
+          <DataField label="Walkability Score" value={town.walkability_score} field="walkability_score" />
+          <DataField label="Public Transport Rating" value={town.public_transport_rating} field="public_transport_rating" />
+          <DataField label="Airport Distance (km)" value={town.airport_distance_km} field="airport_distance_km" />
+          <DataField label="Internet Speed (Mbps)" value={town.internet_speed_mbps} field="internet_speed_mbps" />
+          <DataField label="Air Quality Index" value={town.air_quality_index} field="air_quality_index" />
+          <DataField label="Local Mobility Options" value={town.local_mobility_options} field="local_mobility_options" />
+        </ScoreSection>
+
+        {/* LEGAL & ADMIN (10 points) */}
+        <ScoreSection
+          title="Legal & Admin"
+          icon="📋"
+          maxPoints={10}
+          score={null}
+          adjustedScore={getAdjustedScore(0, 'legal')}
+          adjustments={adjustments.legal}
+          isExpanded={expandedSections.legal}
+          onToggle={() => toggleSection('legal')}
+          onAddAdjustment={() => setShowAdjustmentModal({ category: 'legal', subcategory: 'Legal & Admin' })}
+        >
+          <DataField label="Government Efficiency Rating" value={town.government_efficiency_rating} field="government_efficiency_rating" />
+          <DataField label="Visa Requirements" value={town.visa_requirements} field="visa_requirements" />
+          <DataField label="Visa on Arrival Countries" value={town.visa_on_arrival_countries?.join(', ')} field="visa_on_arrival_countries" />
+          <DataField label="Retirement Visa Available" value={town.retirement_visa_available} field="retirement_visa_available" />
+          <DataField label="Tax Treaty US" value={town.tax_treaty_us} field="tax_treaty_us" />
+          <DataField label="Tax Haven Status" value={town.tax_haven_status} field="tax_haven_status" />
+          <DataField label="Bureaucracy Score" value={town.bureaucracy_score} field="bureaucracy_score" />
+        </ScoreSection>
+
+        {/* ENVIRONMENTAL (15 points - conditional) */}
+        <ScoreSection
+          title="Environmental Health (Conditional)"
+          icon="🌿"
+          maxPoints={15}
+          score={town.environmental_health_rating}
+          adjustedScore={getAdjustedScore(town.environmental_health_rating || 0, 'environmental')}
+          adjustments={adjustments.environmental}
+          isExpanded={expandedSections.environmental}
+          onToggle={() => toggleSection('environmental')}
+          onAddAdjustment={() => setShowAdjustmentModal({ category: 'environmental', subcategory: 'Environmental' })}
+        >
+          <DataField label="Environmental Health Rating" value={town.environmental_health_rating} field="environmental_health_rating" />
+          <DataField label="Air Quality Index" value={town.air_quality_index} field="air_quality_index" />
+          <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded mt-2">
+            Only awarded if user marks environmental health as 'sensitive' in preferences
+          </p>
+        </ScoreSection>
 
         {/* SUMMARY */}
         <div className="mt-6 pt-6 border-t-2 border-gray-300 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg">
           <h3 className="text-lg font-bold text-gray-900 mb-3">Admin Score Summary</h3>
           <div className="space-y-2 text-sm">
-            <SummaryRow
-              label="Healthcare (calculated)"
-              calculated={healthcareScore}
-              adjusted={getAdjustedScore(healthcareScore, 'healthcare')}
-              pointRange="0-30 pts"
-            />
-            <SummaryRow
-              label="Safety (calculated)"
-              calculated={safetyScore}
-              adjusted={getAdjustedScore(safetyScore, 'safety')}
-              pointRange="0-25 pts"
-            />
-            <div className="flex justify-between">
-              <span>Government Efficiency:</span>
-              <span className="font-mono">{governmentScore?.toFixed(1) || 'N/A'}/10.0 → 0-15 pts</span>
-            </div>
+            <SummaryRow label="Healthcare" score={town.healthcare_score} category="healthcare" adjustments={adjustments.healthcare} maxPoints={30} />
+            <SummaryRow label="Safety" score={town.safety_score} category="safety" adjustments={adjustments.safety} maxPoints={25} />
+            <SummaryRow label="Infrastructure" score={town.government_efficiency_rating ? town.government_efficiency_rating / 10 : null} category="infrastructure" adjustments={adjustments.infrastructure} maxPoints={15} />
+            <SummaryRow label="Legal & Admin" score={null} category="legal" adjustments={adjustments.legal} maxPoints={10} />
+            <SummaryRow label="Environmental (conditional)" score={town.environmental_health_rating} category="environmental" adjustments={adjustments.environmental} maxPoints={15} />
+
             <div className="mt-4 pt-3 border-t border-gray-300 flex justify-between font-bold text-base">
-              <span>TOTAL ADMIN CATEGORY:</span>
-              <span className="text-blue-600">0-100 points (varies by user preferences)</span>
+              <span>TOTAL ADMIN SCORE:</span>
+              <span className="text-blue-600">Calculated based on user preferences (0-100 pts)</span>
             </div>
           </div>
         </div>
-
       </div>
 
       {/* MODAL: Add Manual Adjustment */}
@@ -368,7 +201,6 @@ export default function ScoreBreakdownPanel({ town }) {
           onClose={() => setShowAdjustmentModal(null)}
           onSave={async (adjustment) => {
             try {
-              // Save to database
               const { data, error } = await supabase
                 .from('admin_score_adjustments')
                 .insert({
@@ -384,44 +216,25 @@ export default function ScoreBreakdownPanel({ town }) {
                 .select()
                 .single();
 
-              if (error) {
-                console.error('Error saving adjustment:', error);
-                toast.error('Failed to save adjustment');
-                return;
-              }
+              if (error) throw error;
 
-              // Update local state
               setAdjustments(prev => ({
                 ...prev,
                 [showAdjustmentModal.category]: [...(prev[showAdjustmentModal.category] || []), {
                   id: data.id,
                   value: parseFloat(data.adjustment_value),
                   reason: data.reason,
-                  appliesTo: data.applies_to,
                   createdBy: data.created_by,
                   createdAt: data.created_at
                 }]
               }));
 
               setShowAdjustmentModal(null);
-              toast.success('Manual adjustment saved successfully!');
+              toast.success('Adjustment saved!');
             } catch (err) {
-              console.error('Error in onSave:', err);
-              toast.error('Unexpected error saving adjustment');
+              console.error(err);
+              toast.error('Failed to save adjustment');
             }
-          }}
-        />
-      )}
-
-      {/* MODAL: Edit Algorithm */}
-      {showAlgorithmEditor && (
-        <AlgorithmEditorModal
-          algorithmId={showAlgorithmEditor}
-          onClose={() => setShowAlgorithmEditor(null)}
-          onSave={(updatedFormula) => {
-            // TODO: Save updated formula to configuration
-            setShowAlgorithmEditor(null);
-            toast.success('Algorithm updated - will take effect after page refresh');
           }}
         />
       )}
@@ -431,7 +244,7 @@ export default function ScoreBreakdownPanel({ town }) {
 
 /* SUB-COMPONENTS */
 
-function ScoreSection({ title, maxPoints, score, adjustedScore, adjustments, isExpanded, onToggle, onAddAdjustment, onEditAlgorithm, icon, children }) {
+function ScoreSection({ title, icon, maxPoints, score, adjustedScore, adjustments, isExpanded, onToggle, onAddAdjustment, children }) {
   const hasAdjustments = adjustments && adjustments.length > 0;
   const adjustmentTotal = adjustments?.reduce((sum, adj) => sum + adj.value, 0) || 0;
 
@@ -449,10 +262,10 @@ function ScoreSection({ title, maxPoints, score, adjustedScore, adjustments, isE
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {score !== null && (
+          {score !== null && score !== undefined && (
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-mono">
-                {score.toFixed(1)}/10.0
+                {typeof score === 'number' ? score.toFixed(1) : score}/10.0
               </span>
               {hasAdjustments && (
                 <>
@@ -466,12 +279,7 @@ function ScoreSection({ title, maxPoints, score, adjustedScore, adjustments, isE
               )}
             </div>
           )}
-          <svg
-            className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </div>
@@ -479,177 +287,92 @@ function ScoreSection({ title, maxPoints, score, adjustedScore, adjustments, isE
 
       {isExpanded && (
         <div className="p-4 bg-white border-t border-gray-200">
-          {/* Action Buttons */}
-          <div className="mb-4 flex gap-2">
-            <button
-              onClick={onAddAdjustment}
-              className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium transition-colors flex items-center gap-1.5"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Add Manual Adjustment
-            </button>
-            <button
-              onClick={onEditAlgorithm}
-              className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm font-medium transition-colors flex items-center gap-1.5"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-              </svg>
-              Edit Algorithm
-            </button>
-          </div>
+          <button
+            onClick={onAddAdjustment}
+            className="mb-4 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium transition-colors"
+          >
+            + Add Manual Adjustment
+          </button>
 
-          {/* Show existing adjustments */}
           {hasAdjustments && (
             <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded">
-              <h4 className="text-sm font-semibold text-amber-900 mb-2">Active Manual Adjustments:</h4>
-              <div className="space-y-1">
-                {adjustments.map((adj, idx) => (
-                  <div key={idx} className="text-xs text-amber-800 flex items-center justify-between">
-                    <span>• {adj.reason}</span>
-                    <span className={`font-mono font-semibold ${adj.value > 0 ? 'text-green-700' : 'text-red-700'}`}>
-                      {adj.value > 0 ? '+' : ''}{adj.value.toFixed(2)}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <h4 className="text-sm font-semibold text-amber-900 mb-2">Active Adjustments:</h4>
+              {adjustments.map((adj, idx) => (
+                <div key={idx} className="text-xs text-amber-800 flex justify-between">
+                  <span>• {adj.reason}</span>
+                  <span className={`font-mono ${adj.value > 0 ? 'text-green-700' : 'text-red-700'}`}>
+                    {adj.value > 0 ? '+' : ''}{adj.value.toFixed(2)}
+                  </span>
+                </div>
+              ))}
             </div>
           )}
 
-          {children}
+          <div className="space-y-2">
+            {children}
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-function ComponentBreakdown({ title, score, maxScore, minScore, description, onEditFormula, children }) {
-  const scoreColor = score < 0 ? 'text-red-600' : 'text-green-600';
+function DataField({ label, value, field }) {
+  const displayValue = value !== null && value !== undefined
+    ? (typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value)
+    : '(empty)';
+
+  const valueColor = value !== null && value !== undefined ? 'text-gray-900' : 'text-red-600';
 
   return (
-    <div className="mb-4 pb-4 border-b border-gray-100 last:border-0">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h4 className="font-medium text-gray-900">{title}</h4>
-            <button
-              onClick={onEditFormula}
-              className="text-xs text-purple-600 hover:text-purple-700 underline"
-              title="Edit formula thresholds"
-            >
-              edit formula
-            </button>
-          </div>
-          <p className="text-xs text-gray-500">{description}</p>
-        </div>
-        <span className={`font-mono font-semibold ${scoreColor}`}>
-          {score.toFixed(1)} / {maxScore.toFixed(1)}
-          {minScore !== undefined && ` (min: ${minScore.toFixed(1)})`}
-        </span>
+    <div className="flex items-center justify-between py-1.5 px-3 hover:bg-gray-50 rounded">
+      <div className="flex-1">
+        <span className="text-sm font-medium text-gray-700">{label}</span>
+        <span className="text-xs text-gray-400 ml-2">({field})</span>
       </div>
-      <div className="ml-4 space-y-2">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function SubField({ label, value, rawField, rawValue, formula }) {
-  const displayValue = rawValue !== null && rawValue !== undefined
-    ? (typeof rawValue === 'boolean' ? (rawValue ? 'Yes' : 'No') : rawValue)
-    : '(missing)';
-
-  const valueColor = rawValue !== null && rawValue !== undefined
-    ? 'text-gray-900'
-    : 'text-amber-600';
-
-  return (
-    <div className="text-sm">
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-gray-700">{label}:</span>
-        <span className="font-mono font-medium text-blue-600">
-          {typeof value === 'number' ? value.toFixed(1) : value}
-        </span>
-      </div>
-      <div className="ml-4 text-xs space-y-1">
-        <div className="flex items-start gap-2">
-          <span className="text-gray-400 shrink-0">Raw field:</span>
-          <span className="font-mono text-gray-600">{rawField}</span>
-        </div>
-        <div className="flex items-start gap-2">
-          <span className="text-gray-400 shrink-0">Value:</span>
-          <span className={`font-mono ${valueColor}`}>{displayValue}</span>
-        </div>
-        <div className="flex items-start gap-2">
-          <span className="text-gray-400 shrink-0">Formula:</span>
-          <span className="text-gray-500 italic">{formula}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ScoreSummary({ calculated, adjusted, maxScore, maxPoints, adjustments }) {
-  const hasAdjustments = adjustments && adjustments.length > 0;
-
-  return (
-    <div className="mt-4 pt-4 border-t border-gray-200">
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <span className="text-gray-700">Calculated Score:</span>
-          <span className="text-lg text-blue-600 font-mono">
-            {calculated.toFixed(1)} / {maxScore.toFixed(1)}
-          </span>
-        </div>
-        {hasAdjustments && (
-          <div className="flex justify-between items-center">
-            <span className="text-gray-700">After Manual Adjustments:</span>
-            <span className="text-lg text-green-600 font-mono font-semibold">
-              {adjusted.toFixed(1)} / {maxScore.toFixed(1)} ✏️
-            </span>
-          </div>
-        )}
-        <p className="text-xs text-gray-500 mt-2">
-          This score converts to 0-{maxPoints} admin points based on user preference
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function SummaryRow({ label, calculated, adjusted, pointRange }) {
-  const hasAdjustment = calculated !== adjusted;
-
-  return (
-    <div className="flex justify-between">
-      <span>{label}:</span>
-      <span className="font-mono">
-        {hasAdjustment ? (
-          <>
-            <span className="line-through text-gray-400">{calculated.toFixed(1)}</span>
-            {' → '}
-            <span className="text-green-600 font-semibold">{adjusted.toFixed(1)}</span>
-          </>
-        ) : (
-          calculated.toFixed(1)
-        )}
-        /10.0 → {pointRange}
+      <span className={`text-sm font-mono ${valueColor}`}>
+        {displayValue}
       </span>
     </div>
   );
 }
 
-/* MODALS */
+function SummaryRow({ label, score, category, adjustments, maxPoints }) {
+  const hasAdjustments = adjustments && adjustments.length > 0;
+  const adjustmentTotal = adjustments?.reduce((sum, adj) => sum + adj.value, 0) || 0;
+  const adjusted = (score || 0) + adjustmentTotal;
+
+  return (
+    <div className="flex justify-between">
+      <span>{label}:</span>
+      <span className="font-mono">
+        {score !== null && score !== undefined ? (
+          hasAdjustments ? (
+            <>
+              <span className="line-through text-gray-400">{score.toFixed(1)}</span>
+              {' → '}
+              <span className="text-green-600 font-semibold">{adjusted.toFixed(1)}</span>
+            </>
+          ) : (
+            score.toFixed(1)
+          )
+        ) : (
+          'N/A'
+        )}
+        /10.0 → {maxPoints} pts max
+      </span>
+    </div>
+  );
+}
+
+/* MODAL */
 
 function AdjustmentModal({ category, subcategory, townId, townName, onClose, onSave }) {
-  const [adjustmentValue, setAdjustmentValue] = useState('');
+  const [value, setValue] = useState('');
   const [reason, setReason] = useState('');
-  const [appliesTo, setAppliesTo] = useState('this_town'); // 'this_town' | 'all_islands' | 'all_towns'
+  const [appliesTo, setAppliesTo] = useState('this_town');
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Get current user
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -659,270 +382,69 @@ function AdjustmentModal({ category, subcategory, townId, townName, onClose, onS
   }, []);
 
   const handleSave = () => {
-    const value = parseFloat(adjustmentValue);
-    if (isNaN(value)) {
-      toast.error('Please enter a valid number');
-      return;
-    }
-    if (!reason.trim()) {
-      toast.error('Please provide a reason for this adjustment');
-      return;
-    }
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) return toast.error('Enter a valid number');
+    if (!reason.trim()) return toast.error('Enter a reason');
 
     onSave({
-      value,
+      value: numValue,
       reason: reason.trim(),
       appliesTo,
-      createdAt: new Date().toISOString(),
       createdBy: currentUser?.email || 'unknown@user.com'
     });
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50">
-          <h3 className="text-lg font-bold text-gray-900">Add Manual Adjustment</h3>
-          <p className="text-sm text-gray-600 mt-1">
-            {subcategory} - {townName}
-          </p>
+      <div className="bg-white rounded-lg max-w-xl w-full">
+        <div className="px-6 py-4 border-b bg-green-50">
+          <h3 className="text-lg font-bold">Add Manual Adjustment</h3>
+          <p className="text-sm text-gray-600">{subcategory} - {townName}</p>
         </div>
 
-        {/* Body */}
         <div className="p-6 space-y-4">
-          {/* Adjustment Value */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Adjustment Value (basis points)
-            </label>
+            <label className="block text-sm font-medium mb-2">Adjustment Value</label>
             <input
               type="number"
-              step="0.01"
-              value={adjustmentValue}
-              onChange={(e) => setAdjustmentValue(e.target.value)}
+              step="0.1"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
               placeholder="e.g., -0.5 or +0.3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border rounded-lg"
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Positive values increase score, negative values decrease. Scale: -5.0 to +5.0
-            </p>
           </div>
 
-          {/* Reason */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Reason for Adjustment *
-            </label>
+            <label className="block text-sm font-medium mb-2">Reason *</label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="e.g., Island accessibility penalty - ferry-dependent healthcare access adds 2+ hours to emergency response"
+              placeholder="e.g., Island ferry penalty"
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border rounded-lg"
             />
           </div>
 
-          {/* Applies To */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Apply To
-            </label>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  value="this_town"
-                  checked={appliesTo === 'this_town'}
-                  onChange={(e) => setAppliesTo(e.target.value)}
-                  className="text-blue-600"
-                />
-                <span className="text-sm">This town only ({townName})</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  value="all_islands"
-                  checked={appliesTo === 'all_islands'}
-                  onChange={(e) => setAppliesTo(e.target.value)}
-                  className="text-blue-600"
-                />
-                <span className="text-sm">All island towns</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  value="custom_filter"
-                  checked={appliesTo === 'custom_filter'}
-                  onChange={(e) => setAppliesTo(e.target.value)}
-                  className="text-blue-600"
-                />
-                <span className="text-sm">Custom filter (advanced)</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Preview */}
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded">
-            <h4 className="text-sm font-semibold text-blue-900 mb-1">Preview:</h4>
-            <p className="text-sm text-blue-800">
-              {adjustmentValue && reason
-                ? `${subcategory} will be adjusted by ${adjustmentValue > 0 ? '+' : ''}${adjustmentValue} points. Reason: "${reason}"`
-                : 'Enter values above to see preview'}
-            </p>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-          >
-            Save Adjustment
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AlgorithmEditorModal({ algorithmId, onClose, onSave }) {
-  const [formulas, setFormulas] = useState({
-    // Healthcare Quality thresholds
-    'healthcare-quality': {
-      description: 'Healthcare Quality Component',
-      adminBaseMultiplier: 3.0,
-      hospitalBonuses: {
-        '>=10': 1.0,
-        '>=5': 0.7,
-        '>=2': 0.5,
-        '=1': 0.3,
-        '=0': 0.0
-      }
-    },
-    // Add more algorithm configurations
-  });
-
-  const currentFormula = formulas[algorithmId];
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50">
-          <h3 className="text-lg font-bold text-gray-900">Edit Scoring Algorithm</h3>
-          <p className="text-sm text-gray-600 mt-1">
-            Modify calculation formulas and thresholds
-          </p>
-        </div>
-
-        {/* Body */}
-        <div className="p-6">
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-            <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 text-amber-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-              <div>
-                <h4 className="font-semibold text-amber-900">⚠️ Warning: System-Wide Changes</h4>
-                <p className="text-sm text-amber-800 mt-1">
-                  Editing algorithms affects ALL towns. Changes take effect immediately and will recalculate all scores.
-                  Create a backup checkpoint before making major changes.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Algorithm Selector */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Algorithm to Edit
-            </label>
-            <select className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-              <option value="healthcare-quality">Healthcare: Quality Component</option>
-              <option value="healthcare-accessibility">Healthcare: Accessibility Component</option>
-              <option value="healthcare-cost">Healthcare: Cost Component</option>
-              <option value="safety-base">Safety: Base Safety</option>
-              <option value="safety-crime">Safety: Crime Impact</option>
-              <option value="safety-environmental">Safety: Environmental Safety</option>
+            <label className="block text-sm font-medium mb-2">Apply To</label>
+            <select value={appliesTo} onChange={(e) => setAppliesTo(e.target.value)} className="w-full px-3 py-2 border rounded-lg">
+              <option value="this_town">This town only</option>
+              <option value="all_islands">All island towns</option>
+              <option value="custom_filter">Custom filter</option>
             </select>
           </div>
-
-          {/* Formula Editor */}
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-medium text-gray-900 mb-3">Hospital Count Bonus Thresholds</h4>
-              <div className="space-y-2">
-                <FormulaRow label="10+ hospitals" defaultValue="1.0" />
-                <FormulaRow label="5-9 hospitals" defaultValue="0.7" />
-                <FormulaRow label="2-4 hospitals" defaultValue="0.5" />
-                <FormulaRow label="1 hospital" defaultValue="0.3" />
-                <FormulaRow label="0 hospitals" defaultValue="0.0" />
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-medium text-gray-900 mb-3">Admin Base Score Multiplier</h4>
-              <FormulaRow
-                label="(healthcare_score / 10) ×"
-                defaultValue="3.0"
-                description="Converts 0-10 admin score to 0-3.0 component score"
-              />
-            </div>
-          </div>
-
-          {/* File Location Reference */}
-          <div className="mt-6 p-3 bg-gray-100 border border-gray-300 rounded">
-            <h4 className="text-xs font-semibold text-gray-700 mb-1">File Location:</h4>
-            <p className="text-xs font-mono text-gray-600">
-              src/utils/scoring/helpers/calculateHealthcareScore.js:42-53
-            </p>
-            <button className="text-xs text-purple-600 hover:text-purple-700 underline mt-1">
-              Open in code editor
-            </button>
-          </div>
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-          >
+        <div className="px-6 py-4 border-t bg-gray-50 flex justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2 border rounded-lg hover:bg-gray-100">
             Cancel
           </button>
-          <button
-            onClick={() => {
-              onSave(formulas[algorithmId]);
-            }}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-          >
-            Save & Recalculate All Scores
+          <button onClick={handleSave} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+            Save
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function FormulaRow({ label, defaultValue, description }) {
-  return (
-    <div className="flex items-center gap-3">
-      <span className="text-sm text-gray-700 w-40">{label}:</span>
-      <input
-        type="number"
-        step="0.1"
-        defaultValue={defaultValue}
-        className="w-24 px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
-      />
-      {description && <span className="text-xs text-gray-500">{description}</span>}
     </div>
   );
 }
