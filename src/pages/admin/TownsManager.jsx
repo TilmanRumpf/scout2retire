@@ -12,6 +12,10 @@ import WikipediaPanel from '../../components/WikipediaPanel';
 import DataQualityPanel from '../../components/DataQualityPanel';
 import HobbiesDisplay from '../../components/admin/HobbiesDisplay';
 import ScoreBreakdownPanel from '../../components/ScoreBreakdownPanel';
+import RegionPanel from '../../components/admin/RegionPanel';
+import ClimatePanel from '../../components/admin/ClimatePanel';
+import CulturePanel from '../../components/admin/CulturePanel';
+import CostsPanel from '../../components/admin/CostsPanel';
 import { getFieldOptions, isMultiSelectField } from '../../utils/townDataOptions';
 import { useFieldDefinitions } from '../../hooks/useFieldDefinitions';
 import { uiConfig } from '../../styles/uiConfig';
@@ -686,7 +690,32 @@ const TownsManager = () => {
       setShowAuditDialog(null);
     }
   };
-  
+
+  // Handle town updates from inline editing panels
+  const handleTownUpdate = (field, newValue) => {
+    if (!selectedTown) return;
+
+    // Update the selected town state with the new field value
+    setSelectedTown(prev => ({
+      ...prev,
+      [field]: newValue
+    }));
+
+    // Also update the towns list to keep data in sync
+    setTowns(prev => prev.map(town =>
+      town.id === selectedTown.id
+        ? { ...town, [field]: newValue }
+        : town
+    ));
+
+    // Update filtered towns as well
+    setFilteredTowns(prev => prev.map(town =>
+      town.id === selectedTown.id
+        ? { ...town, [field]: newValue }
+        : town
+    ));
+  };
+
   const isFieldAudited = (townId, fieldName) => {
     const key = `${townId}-${fieldName}`;
     return auditedFields[key]?.approved;
@@ -1437,7 +1466,16 @@ const TownsManager = () => {
                 <div className="p-4 lg:p-6">
                   {activeCategory === 'Admin' ? (
                     // Special handling for Admin tab with score breakdown panel
-                    <ScoreBreakdownPanel town={selectedTown} />
+                    <ScoreBreakdownPanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                  ) : activeCategory === 'Region' ? (
+                    // Special handling for Region tab with inline editing panel
+                    <RegionPanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                  ) : activeCategory === 'Climate' ? (
+                    // Special handling for Climate tab with inline editing panel
+                    <ClimatePanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                  ) : activeCategory === 'Culture' ? (
+                    // Special handling for Culture tab with inline editing panel
+                    <CulturePanel town={selectedTown} onTownUpdate={handleTownUpdate} />
                   ) : activeCategory === 'Hobbies' ? (
                     // Special handling for Hobbies tab with enhanced display
                     <div>
@@ -1461,6 +1499,9 @@ const TownsManager = () => {
                         </div>
                       </div>
                     </div>
+                  ) : activeCategory === 'Costs' ? (
+                    // Special handling for Costs tab with inline editing panel
+                    <CostsPanel town={selectedTown} onTownUpdate={handleTownUpdate} />
                   ) : (
                     // Default rendering for other categories
                     Object.entries(COLUMN_CATEGORIES[activeCategory].subcategories).map(([subcategoryName, subcategory]) => {
