@@ -21,6 +21,7 @@
 
 import { parsePreferences } from '../helpers/preferenceParser.js';
 import { calculateHealthcareScore } from '../helpers/calculateHealthcareScore.js';
+import { calculateSafetyScore } from '../helpers/calculateSafetyScore.js';
 
 /**
  * Calculate gradual healthcare/safety scoring based on user preference level
@@ -278,23 +279,27 @@ export function calculateAdminScore(preferences, town) {
     factors.push({ factor: 'Healthcare data not available', score: 5 })
   }
   
-  // Safety match (25 points) - now with gradual scoring
+  // Safety match (25 points) - now with dynamic calculation and gradual scoring
   const safetyArray = parsed.admin.safety || []
   const safetyPref = Array.isArray(safetyArray) ? safetyArray[0] : safetyArray
-  
+
   // Always score safety if town has data, even if no preference
-  if (town.safety_score) {
+  if (town.safety_score || town.crime_rate !== null || town.crime_rate !== undefined) {
     const prefToUse = safetyPref || 'functional' // Default to functional if no preference
+
+    // DYNAMIC CALCULATION: Base safety + crime impact + environmental
+    const calculatedScore = calculateSafetyScore(town);
+
     const safetyResult = calculateGradualAdminScore(
-      town.safety_score, 
-      prefToUse, 
+      calculatedScore,  // Use calculated score instead of static field
+      prefToUse,
       25
     )
-    
+
     score += safetyResult.score
-    factors.push({ 
-      factor: `Safety ${safetyResult.description} (score: ${town.safety_score})`, 
-      score: safetyResult.score 
+    factors.push({
+      factor: `Safety ${safetyResult.description} (score: ${calculatedScore})`,
+      score: safetyResult.score
     })
   } else {
     // No safety data - penalize for missing critical data
