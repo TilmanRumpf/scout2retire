@@ -21,6 +21,7 @@ const EditableDataField = ({
   field,
   townId,
   townName,
+  countryName,
   type = 'string',
   range,
   description,
@@ -151,65 +152,68 @@ const EditableDataField = ({
     const labelLower = label.toLowerCase();
     let query = '';
 
+    // Format: "(Exact Town Name, Country)" to ensure correct spelling
+    const exactLocation = `("${townName}", ${countryName})`;
+
     // Distance fields - include unit (km) and natural phrasing
     if (labelLower.includes('distance')) {
       if (labelLower.includes('airport')) {
         if (labelLower.includes('regional')) {
-          query = `how far (in km) is the nearest domestic airport in ${townName}`;
+          query = `how far (in km) is the nearest domestic airport in ${exactLocation}`;
         } else if (labelLower.includes('international')) {
-          query = `how far (in km) is the nearest international airport in ${townName}`;
+          query = `how far (in km) is the nearest international airport in ${exactLocation}`;
         } else {
-          query = `how far (in km) is the nearest airport in ${townName}`;
+          query = `how far (in km) is the nearest airport in ${exactLocation}`;
         }
       } else if (labelLower.includes('hospital')) {
-        query = `how far (in km) is the nearest major hospital in ${townName}`;
+        query = `how far (in km) is the nearest major hospital in ${exactLocation}`;
       } else {
-        query = `${townName} ${label.toLowerCase()} in kilometers`;
+        query = `${exactLocation} ${label.toLowerCase()} in kilometers`;
       }
     }
     // Count fields - "how many X"
     else if (labelLower.includes('count')) {
       if (labelLower.includes('hospital')) {
-        query = `how many hospitals are in ${townName}`;
+        query = `how many hospitals are in ${exactLocation}`;
       } else {
         const itemName = label.replace(/count/i, '').trim().toLowerCase();
-        query = `how many ${itemName} are in ${townName}`;
+        query = `how many ${itemName} are in ${exactLocation}`;
       }
     }
     // Score/Rating/Index fields - include scale/range
     else if (labelLower.includes('score') || labelLower.includes('rating')) {
       if (range && typeof range === 'string') {
         // Include the scale in the query
-        query = `${townName} ${label.toLowerCase()} (${range} scale)`;
+        query = `${exactLocation} ${label.toLowerCase()} (${range} scale)`;
       } else {
-        query = `${townName} ${label.toLowerCase()}`;
+        query = `${exactLocation} ${label.toLowerCase()}`;
       }
     }
     // Air Quality Index - include AQI standard
     else if (labelLower.includes('air quality')) {
-      query = `${townName} air quality index AQI 0-500`;
+      query = `${exactLocation} air quality index AQI 0-500`;
     }
     // Walkability - include 0-100 scale
     else if (labelLower.includes('walkability')) {
-      query = `${townName} walkability score 0-100`;
+      query = `${exactLocation} walkability score 0-100`;
     }
     // Boolean fields - yes/no questions
     else if (type === 'boolean') {
       if (labelLower.includes('available') || labelLower.includes('visa')) {
-        query = `is ${label.toLowerCase()} in ${townName}`;
+        query = `is ${label.toLowerCase()} in ${exactLocation}`;
       } else if (labelLower.includes('doctors') && labelLower.includes('english')) {
-        query = `are there English-speaking doctors in ${townName}`;
+        query = `are there English-speaking doctors in ${exactLocation}`;
       } else {
-        query = `does ${townName} have ${label.toLowerCase()}`;
+        query = `does ${exactLocation} have ${label.toLowerCase()}`;
       }
     }
     // Quality fields - "how good is X"
     else if (labelLower.includes('quality')) {
-      query = `${townName} ${label.toLowerCase()} rating`;
+      query = `${exactLocation} ${label.toLowerCase()} rating`;
     }
     // Default
     else {
-      query = `${townName} ${label.toLowerCase()}`;
+      query = `${exactLocation} ${label.toLowerCase()}`;
     }
 
     return query;
