@@ -152,68 +152,68 @@ const EditableDataField = ({
     const labelLower = label.toLowerCase();
     let query = '';
 
-    // Format: "(Exact Town Name, Country)" to ensure correct spelling
-    const exactLocation = `("${townName}", ${countryName})`;
+    // Simple format: Town Name Country - natural for Google
+    const location = `${townName} ${countryName}`;
 
     // Distance fields - include unit (km) and natural phrasing
     if (labelLower.includes('distance')) {
       if (labelLower.includes('airport')) {
         if (labelLower.includes('regional')) {
-          query = `how far (in km) is the nearest domestic airport in ${exactLocation}`;
+          query = `${location} distance to nearest domestic airport in km`;
         } else if (labelLower.includes('international')) {
-          query = `how far (in km) is the nearest international airport in ${exactLocation}`;
+          query = `${location} distance to nearest international airport in km`;
         } else {
-          query = `how far (in km) is the nearest airport in ${exactLocation}`;
+          query = `${location} distance to nearest airport in km`;
         }
       } else if (labelLower.includes('hospital')) {
-        query = `how far (in km) is the nearest major hospital in ${exactLocation}`;
+        query = `${location} distance to nearest major hospital in km`;
       } else {
-        query = `${exactLocation} ${label.toLowerCase()} in kilometers`;
+        query = `${location} ${label.toLowerCase()} kilometers`;
       }
     }
     // Count fields - "how many X"
     else if (labelLower.includes('count')) {
       if (labelLower.includes('hospital')) {
-        query = `how many hospitals are in ${exactLocation}`;
+        query = `${location} how many hospitals`;
       } else {
         const itemName = label.replace(/count/i, '').trim().toLowerCase();
-        query = `how many ${itemName} are in ${exactLocation}`;
+        query = `${location} how many ${itemName}`;
       }
     }
     // Score/Rating/Index fields - include scale/range
     else if (labelLower.includes('score') || labelLower.includes('rating')) {
       if (range && typeof range === 'string') {
         // Include the scale in the query
-        query = `${exactLocation} ${label.toLowerCase()} (${range} scale)`;
+        query = `${location} ${label.toLowerCase()} ${range}`;
       } else {
-        query = `${exactLocation} ${label.toLowerCase()}`;
+        query = `${location} ${label.toLowerCase()}`;
       }
     }
     // Air Quality Index - include AQI standard
     else if (labelLower.includes('air quality')) {
-      query = `${exactLocation} air quality index AQI 0-500`;
+      query = `${location} air quality index AQI`;
     }
     // Walkability - include 0-100 scale
     else if (labelLower.includes('walkability')) {
-      query = `${exactLocation} walkability score 0-100`;
+      query = `${location} walkability score`;
     }
     // Boolean fields - yes/no questions
     else if (type === 'boolean') {
       if (labelLower.includes('available') || labelLower.includes('visa')) {
-        query = `is ${label.toLowerCase()} in ${exactLocation}`;
+        query = `${location} ${label.toLowerCase()}`;
       } else if (labelLower.includes('doctors') && labelLower.includes('english')) {
-        query = `are there English-speaking doctors in ${exactLocation}`;
+        query = `${location} English speaking doctors`;
       } else {
-        query = `does ${exactLocation} have ${label.toLowerCase()}`;
+        query = `${location} ${label.toLowerCase()}`;
       }
     }
-    // Quality fields - "how good is X"
+    // Quality fields
     else if (labelLower.includes('quality')) {
-      query = `${exactLocation} ${label.toLowerCase()} rating`;
+      query = `${location} ${label.toLowerCase()}`;
     }
     // Default
     else {
-      query = `${exactLocation} ${label.toLowerCase()}`;
+      query = `${location} ${label.toLowerCase()}`;
     }
 
     return query;
