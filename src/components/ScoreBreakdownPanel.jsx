@@ -13,6 +13,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import supabase from '../utils/supabaseClient';
 import EditableDataField from './EditableDataField';
+import LegacyFieldsSection from './admin/LegacyFieldsSection';
 import { ADMIN_FIELD_METADATA } from '../utils/admin/adminFieldMetadata';
 import { checkAdminAccess } from '../utils/paywallUtils';
 
@@ -238,6 +239,13 @@ export default function ScoreBreakdownPanel({ town, onTownUpdate }) {
             </div>
           </div>
         </div>
+
+        {/* Legacy Fields */}
+        <LegacyFieldsSection
+          fields={['emergency_response_time', 'political_stability_score', 'government_efficiency_score', 'tax_treaty']}
+          town={town}
+          onTownUpdate={onTownUpdate}
+        />
       </div>
 
       {/* MODAL: Add Manual Adjustment */}

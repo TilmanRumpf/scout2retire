@@ -9,6 +9,7 @@
 
 import React, { useState, useEffect } from 'react';
 import EditableDataField from '../EditableDataField';
+import LegacyFieldsSection from './LegacyFieldsSection';
 import { checkAdminAccess } from '../../utils/paywallUtils';
 
 export default function ClimatePanel({ town, onTownUpdate }) {
@@ -71,28 +72,19 @@ export default function ClimatePanel({ town, onTownUpdate }) {
         {expandedSections.summer && (
           <div className="space-y-2 pl-4">
             <EditableField
-              field="avg_summer_temp_c"
-              value={town.avg_summer_temp_c}
+              field="avg_temp_summer"
+              value={town.avg_temp_summer}
               label="Average Summer Temperature (°C)"
               type="number"
               range="-50 to 50"
               description="Average temperature during summer months in Celsius"
             />
             <EditableField
-              field="summer_high_temp_c"
-              value={town.summer_high_temp_c}
-              label="Summer High Temperature (°C)"
-              type="number"
-              range="-50 to 60"
-              description="Typical high temperature in summer"
-            />
-            <EditableField
-              field="summer_low_temp_c"
-              value={town.summer_low_temp_c}
-              label="Summer Low Temperature (°C)"
-              type="number"
-              range="-50 to 40"
-              description="Typical low temperature in summer"
+              field="summer_climate_actual"
+              value={town.summer_climate_actual}
+              label="Summer Climate"
+              type="string"
+              description="Description of summer climate conditions"
             />
           </div>
         )}
@@ -113,28 +105,19 @@ export default function ClimatePanel({ town, onTownUpdate }) {
         {expandedSections.winter && (
           <div className="space-y-2 pl-4">
             <EditableField
-              field="avg_winter_temp_c"
-              value={town.avg_winter_temp_c}
+              field="avg_temp_winter"
+              value={town.avg_temp_winter}
               label="Average Winter Temperature (°C)"
               type="number"
               range="-50 to 30"
               description="Average temperature during winter months in Celsius"
             />
             <EditableField
-              field="winter_high_temp_c"
-              value={town.winter_high_temp_c}
-              label="Winter High Temperature (°C)"
-              type="number"
-              range="-50 to 40"
-              description="Typical high temperature in winter"
-            />
-            <EditableField
-              field="winter_low_temp_c"
-              value={town.winter_low_temp_c}
-              label="Winter Low Temperature (°C)"
-              type="number"
-              range="-60 to 20"
-              description="Typical low temperature in winter"
+              field="winter_climate_actual"
+              value={town.winter_climate_actual}
+              label="Winter Climate"
+              type="string"
+              description="Description of winter climate conditions"
             />
           </div>
         )}
@@ -163,12 +146,28 @@ export default function ClimatePanel({ town, onTownUpdate }) {
               description="Amount of sunshine throughout the year"
             />
             <EditableField
+              field="sunshine_hours"
+              value={town.sunshine_hours}
+              label="Annual Sunshine Hours"
+              type="number"
+              range="0-4500"
+              description="Total sunshine hours per year"
+            />
+            <EditableField
               field="precipitation_level_actual"
               value={town.precipitation_level_actual}
               label="Precipitation Level"
               type="select"
               range={['low', 'mostly_dry', 'balanced', 'high', 'less_dry']}
               description="Amount of rainfall/precipitation"
+            />
+            <EditableField
+              field="annual_rainfall"
+              value={town.annual_rainfall}
+              label="Annual Rainfall (mm)"
+              type="number"
+              range="0-10000"
+              description="Total annual rainfall in millimeters"
             />
             <EditableField
               field="seasonal_variation_actual"
@@ -179,32 +178,38 @@ export default function ClimatePanel({ town, onTownUpdate }) {
               description="How much climate varies between seasons"
             />
             <EditableField
-              field="avg_annual_temp_c"
-              value={town.avg_annual_temp_c}
-              label="Average Annual Temperature (°C)"
-              type="number"
-              range="-50 to 40"
-              description="Average temperature across the entire year"
-            />
-            <EditableField
-              field="avg_annual_rainfall_mm"
-              value={town.avg_annual_rainfall_mm}
-              label="Average Annual Rainfall (mm)"
-              type="number"
-              range="0-10000"
-              description="Total annual rainfall in millimeters"
-            />
-            <EditableField
-              field="humidity_level"
-              value={town.humidity_level}
+              field="humidity_level_actual"
+              value={town.humidity_level_actual}
               label="Humidity Level"
               type="select"
               range={['low', 'moderate', 'high']}
               description="General humidity level throughout the year"
             />
+            <EditableField
+              field="humidity_average"
+              value={town.humidity_average}
+              label="Average Humidity (%)"
+              type="number"
+              range="0-100"
+              description="Average humidity percentage"
+            />
+            <EditableField
+              field="climate_description"
+              value={town.climate_description}
+              label="Climate Description"
+              type="text"
+              description="General description of the climate"
+            />
           </div>
         )}
       </div>
+
+      {/* Legacy Fields */}
+      <LegacyFieldsSection
+        fields={['avg_temp_spring', 'avg_temp_fall', 'snow_days', 'uv_index', 'storm_frequency']}
+        town={town}
+        onTownUpdate={onTownUpdate}
+      />
     </div>
   );
 }

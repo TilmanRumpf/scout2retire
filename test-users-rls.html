@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Users RLS</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <h1>Testing Users Table RLS</h1>
+  <div id="results"></div>
+
+  <script type="module">
+    const { createClient } = supabase;
+
+    const SUPABASE_URL = 'https://axlruvvsjepsulcbqlho.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4bHJ1dnZzamVwc3VsY2JxbGhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc4MTY2ODMsImV4cCI6MjA0MzM5MjY4M30.bPU0Vwi93B3fqRa8rGEU3K3J4JOqrHGlxqCfphfVJ2M';
+
+    const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const results = document.getElementById('results');
+
+    async function test() {
+      results.innerHTML = '<p>Testing...</p>';
+
+      // Get auth state
+      const { data: { user }, error: authError } = await client.auth.getUser();
+      results.innerHTML += `<h2>Auth State</h2><pre>${JSON.stringify({ user: user?.email, authError }, null, 2)}</pre>`;
+
+      // Test 1: Simple SELECT
+      results.innerHTML += '<h2>Test 1: SELECT id, email only</h2>';
+      const { data: data1, error: error1 } = await client
+        .from('users')
+        .select('id, email')
+        .limit(5);
+
+      results.innerHTML += `<pre>${JSON.stringify({ data: data1, error: error1 }, null, 2)}</pre>`;
+
+      // Test 2: SELECT with category join
+      results.innerHTML += '<h2>Test 2: SELECT with category join</h2>';
+      const { data: data2, error: error2 } = await client
+        .from('users')
+        .select(`
+          id,
+          email,
+          full_name,
+          category_id,
+          admin_role,
+          category:user_categories(category_code, display_name)
+        `)
+        .limit(5);
+
+      results.innerHTML += `<pre>${JSON.stringify({ data: data2, error: error2 }, null, 2)}</pre>`;
+    }
+
+    test();
+  </script>
+</body>
+</html>

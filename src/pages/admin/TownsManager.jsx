@@ -1,6 +1,6 @@
 // src/pages/admin/TownsManager.jsx - Reorganized with onboarding subcategories
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import supabase from '../../utils/supabaseClient';
 import SmartFieldEditor from '../../components/SmartFieldEditor';
@@ -16,6 +16,7 @@ import RegionPanel from '../../components/admin/RegionPanel';
 import ClimatePanel from '../../components/admin/ClimatePanel';
 import CulturePanel from '../../components/admin/CulturePanel';
 import CostsPanel from '../../components/admin/CostsPanel';
+import LegacyFieldsSection from '../../components/admin/LegacyFieldsSection';
 import { getFieldOptions, isMultiSelectField } from '../../utils/townDataOptions';
 import { useFieldDefinitions } from '../../hooks/useFieldDefinitions';
 import { uiConfig } from '../../styles/uiConfig';
@@ -141,6 +142,7 @@ const OTHER_COLUMNS = {
 
 const TownsManager = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [towns, setTowns] = useState([]);
   const [filteredTowns, setFilteredTowns] = useState([]);
@@ -148,11 +150,15 @@ const TownsManager = () => {
   const [activeCategory, setActiveCategory] = useState('Region');
   const [editingCell, setEditingCell] = useState(null);
   const [editValue, setEditValue] = useState('');
-  
+
   // Audit state - tracks which fields have been audited
   const [auditedFields, setAuditedFields] = useState({});
   const [showAuditDialog, setShowAuditDialog] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+
+  // Town access control
+  const [userTownAccess, setUserTownAccess] = useState({}); // Map of town_id -> access_level
+  const [isAdmin, setIsAdmin] = useState(false);
   
   // Filters
   const [filters, setFilters] = useState({
@@ -162,6 +168,7 @@ const TownsManager = () => {
     country: 'all',
     geo_region: 'all',
     townSearch: '',
+    myTowns: false,  // NEW: Show only user's accessible towns
     sortBy: 'abc', // 'abc', 'completion-high', 'completion-low'
     sortDirection: 'asc' // 'asc', 'desc'
   });
@@ -271,10 +278,55 @@ const TownsManager = () => {
       }
 
       setCurrentUser(user); // Store the current user with updated metadata
+
+      // Load user's town access
+      await loadUserTownAccess(user.id, userData);
+
       setIsLoading(false);
     };
     checkAuth();
   }, [navigate]);
+
+  // Load user's town access permissions
+  const loadUserTownAccess = async (userId, userData) => {
+    try {
+      // Check if user is executive or assistant admin
+      const isAdminUser = userData?.admin_role === 'executive_admin' ||
+                         userData?.admin_role === 'assistant_admin' ||
+                         userData?.is_admin === true;
+
+      setIsAdmin(isAdminUser);
+
+      if (isAdminUser) {
+        // Admins have full access to all towns
+        setUserTownAccess({});
+        return;
+      }
+
+      // Load specific town access for non-admin users
+      const { data: accessData, error } = await supabase
+        .from('user_town_access')
+        .select('town_id, access_level')
+        .eq('user_id', userId)
+        .eq('active', true)
+        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
+
+      if (error) {
+        console.error('Error loading town access:', error);
+        return;
+      }
+
+      // Convert to map for easy lookup
+      const accessMap = {};
+      accessData?.forEach(access => {
+        accessMap[access.town_id] = access.access_level;
+      });
+
+      setUserTownAccess(accessMap);
+    } catch (error) {
+      console.error('Error in loadUserTownAccess:', error);
+    }
+  };
 
   // Load towns data
   useEffect(() => {
@@ -317,10 +369,40 @@ const TownsManager = () => {
     }
   }, [currentUser]);
 
+  // Auto-select town from URL parameter
+  useEffect(() => {
+    if (towns.length === 0) return; // Wait for towns to load
+
+    const params = new URLSearchParams(location.search);
+    const townId = params.get('town');
+
+    if (townId && !selectedTown) {
+      // Find the town by ID
+      const town = towns.find(t => t.id === townId);
+      if (town) {
+        console.log('🔥 Auto-selecting town from URL:', town.name);
+        setSelectedTown(town);
+      } else {
+        console.warn('⚠️ Town ID from URL not found:', townId);
+      }
+    }
+  }, [towns, location.search, selectedTown]);
+
   // Apply filters
   useEffect(() => {
     let filtered = [...towns];
-    
+
+    // Town access control filter - applies FIRST for non-admins
+    if (!isAdmin && Object.keys(userTownAccess).length > 0) {
+      // Non-admin users can only see towns they have access to
+      filtered = filtered.filter(t => userTownAccess[t.id]);
+    }
+
+    // "My Towns" filter - show only accessible towns
+    if (filters.myTowns && !isAdmin) {
+      filtered = filtered.filter(t => userTownAccess[t.id]);
+    }
+
     // Photo filter
     if (filters.hasPhoto === 'yes') {
       filtered = filtered.filter(t => t.image_url_1 && t.image_url_1 !== 'NULL');
@@ -418,9 +500,9 @@ const TownsManager = () => {
     } else if (filters.sortBy === 'completion-low') {
       filtered.sort((a, b) => a._completion - b._completion);
     }
-    
+
     setFilteredTowns(filtered);
-  }, [filters, towns]);
+  }, [filters, towns, userTownAccess, isAdmin]);
 
   // Error detection
   const detectErrors = (town) => {
@@ -1188,9 +1270,24 @@ const TownsManager = () => {
                 </div>
               )}
             </div>
-            
+
+            {/* My Towns Toggle - only show for non-admins with town access */}
+            {!isAdmin && Object.keys(userTownAccess).length > 0 && (
+              <button
+                onClick={() => setFilters({...filters, myTowns: !filters.myTowns})}
+                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                  filters.myTowns
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                }`}
+                title={`Show only your ${Object.keys(userTownAccess).length} assigned town${Object.keys(userTownAccess).length !== 1 ? 's' : ''}`}
+              >
+                📍 My Towns ({Object.keys(userTownAccess).length})
+              </button>
+            )}
+
             {/* Has Photos */}
-            <select 
+            <select
               value={filters.hasPhoto} 
               onChange={(e) => setFilters({...filters, hasPhoto: e.target.value})}
               className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm w-full sm:w-auto sm:max-w-[110px] ${uiConfig.colors.input}`}
@@ -1368,6 +1465,18 @@ const TownsManager = () => {
                           {town._errors.length} error{town._errors.length > 1 ? 's' : ''}
                         </span>
                       )}
+                      {/* Access Level Badge - show for non-admins */}
+                      {!isAdmin && userTownAccess[town.id] && (
+                        <span className={`text-xs px-2 py-1 rounded font-medium ${
+                          userTownAccess[town.id] === 'view'
+                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                            : userTownAccess[town.id] === 'edit'
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                            : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+                        }`} title={`You have ${userTownAccess[town.id]} access`}>
+                          {userTownAccess[town.id] === 'view' ? '👁️' : userTownAccess[town.id] === 'edit' ? '✏️' : '🔓'} {userTownAccess[town.id]}
+                        </span>
+                      )}
                       {!town.image_url_1 && (
                         <span className="text-xs px-2 py-1 rounded bg-orange-100 text-orange-700 flex items-center gap-1">
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1484,20 +1593,12 @@ const TownsManager = () => {
                         townName={selectedTown.name}
                       />
 
-                      {/* Show legacy fields for reference */}
-                      <div className="mt-8 pt-6 border-t">
-                        <h3 className={`text-lg font-semibold ${uiConfig.colors.heading} mb-3 border-b pb-1`}>
-                          Legacy Data (for reference)
-                        </h3>
-                        <div className="opacity-60">
-                          <h4 className={`text-sm font-medium ${uiConfig.colors.body} mb-2`}>Old JSON format (being phased out)</h4>
-                          <div className="space-y-1 pl-4">
-                            {['outdoor_activities', 'hiking_trails', 'beaches_nearby', 'golf_courses', 'ski_resorts_nearby', 'cultural_attractions'].map(column =>
-                              renderFieldRow(column, selectedTown)
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                      {/* Legacy Fields */}
+                      <LegacyFieldsSection
+                        fields={['outdoor_activities', 'hiking_trails', 'beaches_nearby', 'golf_courses', 'ski_resorts_nearby', 'cultural_attractions']}
+                        town={selectedTown}
+                        onTownUpdate={handleTownUpdate}
+                      />
                     </div>
                   ) : activeCategory === 'Costs' ? (
                     // Special handling for Costs tab with inline editing panel

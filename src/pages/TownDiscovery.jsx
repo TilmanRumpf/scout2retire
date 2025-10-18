@@ -641,14 +641,14 @@ export default function TownDiscovery() {
                                 : selectedTownData.geographic_features
                             }</div>
                           )}
-                          {selectedTownData.elevation_meters && <div>Elevation: {selectedTownData.elevation_meters}m</div>}
-                          {selectedTownData.distance_to_ocean_km && <div>Ocean distance: {selectedTownData.distance_to_ocean_km}km</div>}
-                          {selectedTownData.latitude && selectedTownData.longitude && (
+                          {selectedTownData.elevation_meters != null && <div>Elevation: {selectedTownData.elevation_meters}m</div>}
+                          {selectedTownData.distance_to_ocean_km != null && <div>Ocean distance: {selectedTownData.distance_to_ocean_km}km</div>}
+                          {selectedTownData.latitude != null && selectedTownData.longitude != null && (
                             <div>Coordinates: {selectedTownData.latitude.toFixed(2)}°, {selectedTownData.longitude.toFixed(2)}°</div>
                           )}
                           {selectedTownData.nearest_airport && <div>Airport: {selectedTownData.nearest_airport}</div>}
-                          {selectedTownData.airport_distance && <div>Airport distance: {selectedTownData.airport_distance}km</div>}
-                          {selectedTownData.population && <div>Population: {selectedTownData.population.toLocaleString()}</div>}
+                          {selectedTownData.airport_distance != null && <div>Airport distance: {selectedTownData.airport_distance}km</div>}
+                          {selectedTownData.population != null && <div>Population: {selectedTownData.population.toLocaleString()}</div>}
                           {selectedTownData.urban_rural_character && <div>Character: {selectedTownData.urban_rural_character}</div>}
                         </div>
                       </div>
@@ -670,17 +670,17 @@ export default function TownDiscovery() {
                         </div>
                         <div className={`space-y-0.5 text-xs ${uiConfig.colors.hint}`}>
                           {selectedTownData.climate && <div>Climate type: {selectedTownData.climate}</div>}
-                          {selectedTownData.avg_temp_summer && <div>Summer temp: {selectedTownData.avg_temp_summer}°C</div>}
-                          {selectedTownData.avg_temp_winter && <div>Winter temp: {selectedTownData.avg_temp_winter}°C</div>}
+                          {selectedTownData.avg_temp_summer != null && <div>Summer temp: {selectedTownData.avg_temp_summer}°C</div>}
+                          {selectedTownData.avg_temp_winter != null && <div>Winter temp: {selectedTownData.avg_temp_winter}°C</div>}
                           {selectedTownData.summer_climate_actual && <div>Summer feel: {selectedTownData.summer_climate_actual}</div>}
                           {selectedTownData.winter_climate_actual && <div>Winter feel: {selectedTownData.winter_climate_actual}</div>}
-                          {selectedTownData.sunshine_hours && <div>Sunshine: {selectedTownData.sunshine_hours} hrs/year</div>}
+                          {selectedTownData.sunshine_hours != null && <div>Sunshine: {selectedTownData.sunshine_hours} hrs/year</div>}
                           {selectedTownData.sunshine_level_actual && <div>Sunshine level: {selectedTownData.sunshine_level_actual}</div>}
-                          {selectedTownData.annual_rainfall && <div>Annual rainfall: {selectedTownData.annual_rainfall}mm</div>}
-                          {selectedTownData.humidity_average && <div>Avg humidity: {selectedTownData.humidity_average}%</div>}
+                          {selectedTownData.annual_rainfall != null && <div>Annual rainfall: {selectedTownData.annual_rainfall}mm</div>}
+                          {selectedTownData.humidity_average != null && <div>Avg humidity: {selectedTownData.humidity_average}%</div>}
                           {selectedTownData.humidity_level_actual && <div>Humidity feel: {selectedTownData.humidity_level_actual}</div>}
                           {selectedTownData.seasonal_variation_actual && <div>Seasonal variation: {selectedTownData.seasonal_variation_actual}</div>}
-                          {selectedTownData.air_quality_index && <div>Air quality index: {selectedTownData.air_quality_index}</div>}
+                          {selectedTownData.air_quality_index != null && <div>Air quality index: {selectedTownData.air_quality_index}</div>}
                         </div>
                       </div>
 
@@ -703,11 +703,11 @@ export default function TownDiscovery() {
                           {selectedTownData.primary_language && <div>Primary language: {selectedTownData.primary_language}</div>}
                           {selectedTownData.english_proficiency_level && <div>English level: {selectedTownData.english_proficiency_level}</div>}
                           {selectedTownData.expat_community_size && <div>Expat community: {selectedTownData.expat_community_size}</div>}
-                          {selectedTownData.cultural_events_rating && <div>Cultural events: {selectedTownData.cultural_events_rating}/10</div>}
-                          {selectedTownData.nightlife_rating && <div>Nightlife: {selectedTownData.nightlife_rating}/10</div>}
-                          {selectedTownData.restaurants_rating && <div>Restaurants: {selectedTownData.restaurants_rating}/10</div>}
-                          {selectedTownData.museums_rating && <div>Museums: {selectedTownData.museums_rating}/10</div>}
-                          {selectedTownData.shopping_rating && <div>Shopping: {selectedTownData.shopping_rating}/10</div>}
+                          {selectedTownData.cultural_events_rating != null && <div>Cultural events: {selectedTownData.cultural_events_rating}/10</div>}
+                          {selectedTownData.nightlife_rating != null && <div>Nightlife: {selectedTownData.nightlife_rating}/10</div>}
+                          {selectedTownData.restaurants_rating != null && <div>Restaurants: {selectedTownData.restaurants_rating}/10</div>}
+                          {selectedTownData.museums_rating != null && <div>Museums: {selectedTownData.museums_rating}/10</div>}
+                          {selectedTownData.shopping_rating != null && <div>Shopping: {selectedTownData.shopping_rating}/10</div>}
                           {selectedTownData.pace_of_life_actual && <div>Pace of life: {selectedTownData.pace_of_life_actual}</div>}
                           {selectedTownData.cultural_landmark_1 && <div>Landmark: {selectedTownData.cultural_landmark_1}</div>}
                           {selectedTownData.social_atmosphere && <div>Social vibe: {selectedTownData.social_atmosphere}</div>}
@@ -730,16 +730,16 @@ export default function TownDiscovery() {
                           </span>
                         </div>
                         <div className={`space-y-0.5 text-xs ${uiConfig.colors.hint}`}>
-                          {selectedTownData.outdoor_rating && <div>Outdoor rating: {selectedTownData.outdoor_rating}/10</div>}
-                          {selectedTownData.outdoor_activities_rating && <div>Outdoor activities: {selectedTownData.outdoor_activities_rating}/10</div>}
-                          {selectedTownData.walkability && <div>Walkability: {selectedTownData.walkability}/10</div>}
+                          {selectedTownData.outdoor_rating != null && <div>Outdoor rating: {selectedTownData.outdoor_rating}/10</div>}
+                          {selectedTownData.outdoor_activities_rating != null && <div>Outdoor activities: {selectedTownData.outdoor_activities_rating}/10</div>}
+                          {selectedTownData.walkability != null && <div>Walkability: {selectedTownData.walkability}/10</div>}
                           {selectedTownData.beaches_nearby !== null && <div>Beaches: {selectedTownData.beaches_nearby ? 'Yes' : 'No'}</div>}
-                          {selectedTownData.golf_courses_count > 0 && <div>Golf courses: {selectedTownData.golf_courses_count}</div>}
-                          {selectedTownData.hiking_trails_km && <div>Hiking trails: {selectedTownData.hiking_trails_km}km</div>}
-                          {selectedTownData.tennis_courts_count > 0 && <div>Tennis courts: {selectedTownData.tennis_courts_count}</div>}
-                          {selectedTownData.marinas_count > 0 && <div>Marinas: {selectedTownData.marinas_count}</div>}
-                          {selectedTownData.ski_resorts_within_100km > 0 && <div>Ski resorts nearby: {selectedTownData.ski_resorts_within_100km}</div>}
-                          {selectedTownData.dog_parks_count > 0 && <div>Dog parks: {selectedTownData.dog_parks_count}</div>}
+                          {selectedTownData.golf_courses_count != null && selectedTownData.golf_courses_count > 0 && <div>Golf courses: {selectedTownData.golf_courses_count}</div>}
+                          {selectedTownData.hiking_trails_km != null && <div>Hiking trails: {selectedTownData.hiking_trails_km}km</div>}
+                          {selectedTownData.tennis_courts_count != null && selectedTownData.tennis_courts_count > 0 && <div>Tennis courts: {selectedTownData.tennis_courts_count}</div>}
+                          {selectedTownData.marinas_count != null && selectedTownData.marinas_count > 0 && <div>Marinas: {selectedTownData.marinas_count}</div>}
+                          {selectedTownData.ski_resorts_within_100km != null && selectedTownData.ski_resorts_within_100km > 0 && <div>Ski resorts nearby: {selectedTownData.ski_resorts_within_100km}</div>}
+                          {selectedTownData.dog_parks_count != null && selectedTownData.dog_parks_count > 0 && <div>Dog parks: {selectedTownData.dog_parks_count}</div>}
                           {selectedTownData.farmers_markets !== null && <div>Farmers markets: {selectedTownData.farmers_markets ? 'Yes' : 'No'}</div>}
                           {selectedTownData.water_bodies && <div>Water: {typeof selectedTownData.water_bodies === 'string' ? selectedTownData.water_bodies.split(',').map(w => w.trim()).join(', ') : selectedTownData.water_bodies}</div>}
                         </div>
@@ -761,18 +761,24 @@ export default function TownDiscovery() {
                           </span>
                         </div>
                         <div className={`space-y-0.5 text-xs ${uiConfig.colors.hint}`}>
-                          {selectedTownData.healthcare_score && <div>Healthcare score: {selectedTownData.healthcare_score}/10</div>}
-                          {selectedTownData.safety_score && <div>Safety score: {selectedTownData.safety_score}/10</div>}
-                          {selectedTownData.healthcare_cost_monthly && <div>Healthcare cost: ${selectedTownData.healthcare_cost_monthly}/mo</div>}
+                          {selectedTownData.healthcare_score != null && <div>Healthcare score: {selectedTownData.healthcare_score}/10</div>}
+                          {selectedTownData.safety_score != null && <div>Safety score: {selectedTownData.safety_score}/10</div>}
+                          {selectedTownData.healthcare_cost_monthly != null && <div>Healthcare cost: ${selectedTownData.healthcare_cost_monthly}/mo</div>}
                           {selectedTownData.hospital_count !== null && <div>Hospitals: {selectedTownData.hospital_count}</div>}
-                          {selectedTownData.nearest_major_hospital_km && <div>Major hospital: {selectedTownData.nearest_major_hospital_km}km</div>}
+                          {selectedTownData.nearest_major_hospital_km != null && <div>Major hospital: {selectedTownData.nearest_major_hospital_km}km</div>}
                           {selectedTownData.english_speaking_doctors !== null && <div>English doctors: {selectedTownData.english_speaking_doctors ? 'Yes' : 'No'}</div>}
                           {selectedTownData.visa_on_arrival_countries && <div>Visa on arrival: Yes</div>}
                           {selectedTownData.retirement_visa_available !== null && <div>Retirement visa: {selectedTownData.retirement_visa_available ? 'Yes' : 'No'}</div>}
                           {selectedTownData.digital_nomad_visa !== null && <div>Digital nomad visa: {selectedTownData.digital_nomad_visa ? 'Yes' : 'No'}</div>}
-                          {selectedTownData.crime_rate && <div>Crime: {selectedTownData.crime_rate.substring(0, 30)}...</div>}
+                          {selectedTownData.crime_rate != null && (
+                            <div>Crime: {
+                              typeof selectedTownData.crime_rate === 'string'
+                                ? selectedTownData.crime_rate.substring(0, 30) + (selectedTownData.crime_rate.length > 30 ? '...' : '')
+                                : selectedTownData.crime_rate
+                            }</div>
+                          )}
                           {selectedTownData.natural_disaster_risk !== null && <div>Disaster risk: {selectedTownData.natural_disaster_risk}/10</div>}
-                          {selectedTownData.internet_speed && <div>Internet: {selectedTownData.internet_speed} Mbps</div>}
+                          {selectedTownData.internet_speed != null && <div>Internet: {selectedTownData.internet_speed} Mbps</div>}
                         </div>
                       </div>
 
@@ -792,13 +798,13 @@ export default function TownDiscovery() {
                           </span>
                         </div>
                         <div className={`space-y-0.5 text-xs ${uiConfig.colors.hint}`}>
-                          {selectedTownData.cost_of_living_usd && <div>Monthly living: ${selectedTownData.cost_of_living_usd}</div>}
-                          {selectedTownData.cost_index && <div>Cost index: {selectedTownData.cost_index}</div>}
-                          {selectedTownData.rent_1bed && <div>1-bed rent: ${selectedTownData.rent_1bed}</div>}
-                          {selectedTownData.rent_2bed_usd && <div>2-bed rent: ${selectedTownData.rent_2bed_usd}</div>}
-                          {selectedTownData.groceries_cost && <div>Groceries: ${selectedTownData.groceries_cost}</div>}
-                          {selectedTownData.meal_cost && <div>Meal out: ${selectedTownData.meal_cost}</div>}
-                          {selectedTownData.utilities_cost && <div>Utilities: ${selectedTownData.utilities_cost}</div>}
+                          {selectedTownData.cost_of_living_usd != null && <div>Monthly living: ${selectedTownData.cost_of_living_usd}</div>}
+                          {selectedTownData.cost_index != null && <div>Cost index: {selectedTownData.cost_index}</div>}
+                          {selectedTownData.rent_1bed != null && <div>1-bed rent: ${selectedTownData.rent_1bed}</div>}
+                          {selectedTownData.rent_2bed_usd != null && <div>2-bed rent: ${selectedTownData.rent_2bed_usd}</div>}
+                          {selectedTownData.groceries_cost != null && <div>Groceries: ${selectedTownData.groceries_cost}</div>}
+                          {selectedTownData.meal_cost != null && <div>Meal out: ${selectedTownData.meal_cost}</div>}
+                          {selectedTownData.utilities_cost != null && <div>Utilities: ${selectedTownData.utilities_cost}</div>}
                           {(selectedTownData.income_tax_rate_pct !== undefined && selectedTownData.income_tax_rate_pct !== null) && <div>Income tax: {selectedTownData.income_tax_rate_pct}%</div>}
                           {(selectedTownData.sales_tax_rate_pct !== undefined && selectedTownData.sales_tax_rate_pct !== null) && <div>Sales tax: {selectedTownData.sales_tax_rate_pct}%</div>}
                           {(selectedTownData.property_tax_rate_pct !== undefined && selectedTownData.property_tax_rate_pct !== null) && <div>Property tax: {selectedTownData.property_tax_rate_pct}%</div>}

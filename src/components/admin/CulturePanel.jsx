@@ -9,6 +9,7 @@
 
 import React, { useState, useEffect } from 'react';
 import EditableDataField from '../EditableDataField';
+import LegacyFieldsSection from './LegacyFieldsSection';
 import { checkAdminAccess } from '../../utils/paywallUtils';
 
 export default function CulturePanel({ town, onTownUpdate }) {
@@ -166,7 +167,7 @@ export default function CulturePanel({ town, onTownUpdate }) {
               value={town.cultural_events_frequency}
               label="Cultural Events Frequency"
               type="select"
-              range={['rare', 'occasional', 'monthly', 'frequent', 'weekly', 'constant', 'daily']}
+              range={['rare', 'occasional', 'monthly', 'frequent', 'weekly']}
               description="How often cultural events and festivals occur"
             />
             <EditableField
@@ -179,6 +180,13 @@ export default function CulturePanel({ town, onTownUpdate }) {
           </div>
         )}
       </div>
+
+      {/* Legacy Fields */}
+      <LegacyFieldsSection
+        fields={['cultural_events', 'local_cuisine', 'religious_diversity', 'arts_scene', 'music_scene']}
+        town={town}
+        onTownUpdate={onTownUpdate}
+      />
     </div>
   );
 }

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Shield, Users, Settings, TrendingUp, Lock, Crown, Building2, DollarSign, Edit2, Save, X, Check, ArrowUp, ArrowDown, Plus } from 'lucide-react';
+import { Shield, Users, Settings, TrendingUp, Lock, Crown, Building2, DollarSign, Edit2, Save, X, Check, ArrowUp, ArrowDown, Plus, MapPin } from 'lucide-react';
 import supabase from '../../utils/supabaseClient';
 import { checkAdminAccess } from '../../utils/paywallUtils';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 import UnifiedHeader from '../../components/UnifiedHeader';
 import HeaderSpacer from '../../components/HeaderSpacer';
+import TownAccessManager from '../../components/admin/TownAccessManager';
 
 const PaywallManager = () => {
   const [loading, setLoading] = useState(true);
@@ -566,6 +567,17 @@ const PaywallManager = () => {
             <Users className="w-4 h-4 inline mr-2" />
             Users
           </button>
+          <button
+            onClick={() => setActiveTab('town_access')}
+            className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
+              activeTab === 'town_access'
+                ? 'text-scout-accent-600 dark:text-scout-accent-400 border-b-2 border-scout-accent-600'
+                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            <MapPin className="w-4 h-4 inline mr-2" />
+            Town Access
+          </button>
         </div>
 
         {/* Overview Tab */}
@@ -1072,6 +1084,11 @@ const PaywallManager = () => {
             </p>
           </div>
         </div>
+
+        {/* Town Access Tab */}
+        {activeTab === 'town_access' && (
+          <TownAccessManager />
+        )}
       </div>
 
       {/* Add Tier Modal */}

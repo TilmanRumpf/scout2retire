@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign, SlidersHorizontal, X } from 'lucide-react';
+import { Menu, MapPin, Globe, CloudSun, Users, SmilePlus, HousePlus, DollarSign, SlidersHorizontal, X, Settings } from 'lucide-react';
 import QuickNav from './QuickNav';
 import FilterBarV3 from './FilterBarV3';
 import Logo from './Logo';
 import NotificationBell from './NotificationBell';
 import { uiConfig } from '../styles/uiConfig';
+import supabase from '../utils/supabaseClient';
 
 /*
 === UNIFIED HEADER - Single Source of Truth ===
@@ -85,13 +86,39 @@ export default function UnifiedHeader({
   const [isQuickNavOpen, setIsQuickNavOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [currentTownId, setCurrentTownId] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Refs for auto-scrolling
   const scrollContainerRef = useRef(null);
   const activeStepRef = useRef(null);
   const activeTabRef = useRef(null);
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: userData } = await supabase
+        .from('users')
+        .select('admin_role')
+        .eq('id', user.id)
+        .single();
+
+      setIsAdmin(userData?.admin_role === 'executive_admin' || userData?.admin_role === 'assistant_admin');
+    };
+    checkAdmin();
+  }, []);
+
+  // Extract town ID from URL when on discover page
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const townId = params.get('town');
+    setCurrentTownId(townId);
+  }, [location.search]);
 
   // Close menu when route changes
   useEffect(() => {
@@ -235,6 +262,18 @@ export default function UnifiedHeader({
 
               {/* Notification Bell */}
               <NotificationBell />
+
+              {/* Admin Gear Icon - only visible to admins when viewing a town */}
+              {isAdmin && currentTownId && (
+                <Link
+                  to={`/admin/towns-manager?town=${currentTownId}`}
+                  className={`p-2.5 ${uiConfig.colors.hoverBg} rounded-lg transition-colors flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center`}
+                  aria-label="Open Towns Manager for this town"
+                  title="Edit this town in Towns Manager"
+                >
+                  <Settings className="w-6 h-6 text-red-600 dark:text-red-500" />
+                </Link>
+              )}
 
               {/* Menu button - always visible */}
               <button

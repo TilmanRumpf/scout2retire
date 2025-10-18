@@ -9,6 +9,7 @@
 
 import React, { useState, useEffect } from 'react';
 import EditableDataField from '../EditableDataField';
+import LegacyFieldsSection from './LegacyFieldsSection';
 import { checkAdminAccess } from '../../utils/paywallUtils';
 
 export default function RegionPanel({ town, onTownUpdate }) {
@@ -161,6 +162,13 @@ export default function RegionPanel({ town, onTownUpdate }) {
           </div>
         )}
       </div>
+
+      {/* Legacy Fields */}
+      <LegacyFieldsSection
+        fields={['distance_to_ocean_km', 'water_bodies']}
+        town={town}
+        onTownUpdate={onTownUpdate}
+      />
     </div>
   );
 }
