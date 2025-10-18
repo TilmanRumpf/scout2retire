@@ -29,7 +29,10 @@ const EditableDataField = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const [saveState, setSaveState] = useState('idle'); // idle | saving | success | error
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const inputRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   // Update editValue when value prop changes
   useEffect(() => {
@@ -143,58 +146,96 @@ const EditableDataField = ({
     setSaveState('idle');
   };
 
-  // Open Google search for this town + field
-  const handleGoogleSearch = () => {
-    // Create smart search query based on field type
-    // Examples:
-    // - "Bubaque distance to nearest airport"
-    // - "Valencia Spain walkability score"
-    // - "Adelaide Australia number of hospitals"
-
-    let searchQuery = townName;
-
-    // Smart query generation based on field label
+  // Generate smart search query with units and context
+  const generateSmartQuery = () => {
     const labelLower = label.toLowerCase();
+    let query = '';
 
+    // Distance fields - include unit (km) and natural phrasing
     if (labelLower.includes('distance')) {
-      // For distance fields, search "town distance to X"
       if (labelLower.includes('airport')) {
         if (labelLower.includes('regional')) {
-          searchQuery = `${townName} distance to nearest regional airport`;
+          query = `how far (in km) is the nearest domestic airport in ${townName}`;
         } else if (labelLower.includes('international')) {
-          searchQuery = `${townName} distance to nearest international airport`;
+          query = `how far (in km) is the nearest international airport in ${townName}`;
         } else {
-          searchQuery = `${townName} distance to nearest airport`;
+          query = `how far (in km) is the nearest airport in ${townName}`;
         }
       } else if (labelLower.includes('hospital')) {
-        searchQuery = `${townName} distance to nearest hospital`;
+        query = `how far (in km) is the nearest major hospital in ${townName}`;
       } else {
-        searchQuery = `${townName} ${label}`;
+        query = `${townName} ${label.toLowerCase()} in kilometers`;
       }
-    } else if (labelLower.includes('count')) {
-      // For count fields, search "how many X in town"
+    }
+    // Count fields - "how many X"
+    else if (labelLower.includes('count')) {
       if (labelLower.includes('hospital')) {
-        searchQuery = `how many hospitals in ${townName}`;
+        query = `how many hospitals are in ${townName}`;
       } else {
-        searchQuery = `${townName} number of ${label.replace(' count', '').toLowerCase()}`;
+        const itemName = label.replace(/count/i, '').trim().toLowerCase();
+        query = `how many ${itemName} are in ${townName}`;
       }
-    } else if (labelLower.includes('score') || labelLower.includes('rating') || labelLower.includes('index')) {
-      // For scores/ratings, keep label
-      searchQuery = `${townName} ${label.toLowerCase()}`;
-    } else if (labelLower.includes('quality')) {
-      // For quality fields
-      searchQuery = `${townName} ${label.toLowerCase()}`;
-    } else if (labelLower.includes('available') || labelLower.includes('visa') || labelLower.includes('tax')) {
-      // For yes/no or legal fields
-      searchQuery = `${townName} ${label.toLowerCase()}`;
-    } else {
-      // Default: town + field label
-      searchQuery = `${townName} ${label.toLowerCase()}`;
+    }
+    // Score/Rating/Index fields - include scale/range
+    else if (labelLower.includes('score') || labelLower.includes('rating')) {
+      if (range && typeof range === 'string') {
+        // Include the scale in the query
+        query = `${townName} ${label.toLowerCase()} (${range} scale)`;
+      } else {
+        query = `${townName} ${label.toLowerCase()}`;
+      }
+    }
+    // Air Quality Index - include AQI standard
+    else if (labelLower.includes('air quality')) {
+      query = `${townName} air quality index AQI 0-500`;
+    }
+    // Walkability - include 0-100 scale
+    else if (labelLower.includes('walkability')) {
+      query = `${townName} walkability score 0-100`;
+    }
+    // Boolean fields - yes/no questions
+    else if (type === 'boolean') {
+      if (labelLower.includes('available') || labelLower.includes('visa')) {
+        query = `is ${label.toLowerCase()} in ${townName}`;
+      } else if (labelLower.includes('doctors') && labelLower.includes('english')) {
+        query = `are there English-speaking doctors in ${townName}`;
+      } else {
+        query = `does ${townName} have ${label.toLowerCase()}`;
+      }
+    }
+    // Quality fields - "how good is X"
+    else if (labelLower.includes('quality')) {
+      query = `${townName} ${label.toLowerCase()} rating`;
+    }
+    // Default
+    else {
+      query = `${townName} ${label.toLowerCase()}`;
     }
 
+    return query;
+  };
+
+  // Open search modal with suggested query
+  const handleGoogleSearch = () => {
+    const suggestedQuery = generateSmartQuery();
+    setSearchQuery(suggestedQuery);
+    setShowSearchModal(true);
+  };
+
+  // Execute the search with current query
+  const executeSearch = () => {
     const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
     window.open(googleSearchUrl, '_blank');
+    setShowSearchModal(false);
   };
+
+  // Auto-focus search input when modal opens
+  useEffect(() => {
+    if (showSearchModal && searchInputRef.current) {
+      searchInputRef.current.focus();
+      searchInputRef.current.select();
+    }
+  }, [showSearchModal]);
 
   // Render input based on type
   const renderInput = () => {
@@ -395,6 +436,75 @@ const EditableDataField = ({
       {saveState === 'error' && !isEditing && (
         <div className="text-xs text-red-600 dark:text-red-400">
           Failed to save. Click to try again.
+        </div>
+      )}
+
+      {/* Google Search Modal */}
+      {showSearchModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full shadow-2xl">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-t-lg">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <span className="text-xl">🤔</span>
+                Google Search Query
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Review and edit the search query before searching
+              </p>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Search Query <span className="text-gray-500">(editable)</span>
+                </label>
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      executeSearch();
+                    } else if (e.key === 'Escape') {
+                      setShowSearchModal(false);
+                    }
+                  }}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  placeholder="Enter your search query..."
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  💡 Tip: Include units (km, %, count) and ranges (0-10) for better results
+                </p>
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                <p className="text-sm text-blue-800 dark:text-blue-300">
+                  <span className="font-semibold">For {townName}:</span> {label}
+                  {range && <span className="text-blue-600 dark:text-blue-400"> (Range: {typeof range === 'string' ? range : range.join(', ')})</span>}
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 rounded-b-lg flex justify-end gap-3">
+              <button
+                onClick={() => setShowSearchModal(false)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={executeSearch}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+              >
+                <span>Search Google</span>
+                <span>🔍</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
