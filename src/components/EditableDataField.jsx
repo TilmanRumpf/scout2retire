@@ -20,6 +20,7 @@ const EditableDataField = ({
   value,
   field,
   townId,
+  townName,
   type = 'string',
   range,
   description,
@@ -142,6 +143,15 @@ const EditableDataField = ({
     setSaveState('idle');
   };
 
+  // Open Google search for this town + field
+  const handleGoogleSearch = () => {
+    // Create search query: "Town Name, Country + Field Label"
+    // Example: "Bubaque Guinea-Bissau healthcare score"
+    const searchQuery = `${townName} ${label}`;
+    const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+    window.open(googleSearchUrl, '_blank');
+  };
+
   // Render input based on type
   const renderInput = () => {
     const baseClasses = `w-full px-2 py-1 border rounded transition-colors ${
@@ -243,15 +253,27 @@ const EditableDataField = ({
           </div>
         </div>
 
-        {/* Edit button (only show when not editing) */}
+        {/* Action buttons (only show when not editing) */}
         {!isEditing && (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-            title="Edit field"
-          >
-            <Edit2 size={16} />
-          </button>
+          <div className="flex items-center gap-1">
+            {/* Google Search button */}
+            <button
+              onClick={handleGoogleSearch}
+              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+              title={`Google search: ${townName} ${label}`}
+            >
+              <span className="text-base">🤔</span>
+            </button>
+
+            {/* Edit button */}
+            <button
+              onClick={() => setIsEditing(true)}
+              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+              title="Edit field"
+            >
+              <Edit2 size={16} />
+            </button>
+          </div>
         )}
       </div>
 
