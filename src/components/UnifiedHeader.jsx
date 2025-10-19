@@ -217,7 +217,7 @@ export default function UnifiedHeader({
                   className="h-7 lg:h-10"
                   navigateTo="/daily"
                 />
-                <span className={`text-sm font-semibold lg:hidden ${uiConfig.colors.heading}`}>
+                <span className={`text-sm font-semibold hidden ${uiConfig.colors.heading}`}>
                   Scout<span className={uiConfig.colors.accent}>2</span>Retire
                 </span>
               </div>

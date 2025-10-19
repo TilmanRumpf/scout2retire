@@ -11,6 +11,7 @@ import React, { useState, useEffect } from 'react';
 import EditableDataField from '../EditableDataField';
 import LegacyFieldsSection from './LegacyFieldsSection';
 import { checkAdminAccess } from '../../utils/paywallUtils';
+import { VALID_CATEGORICAL_VALUES } from '../../utils/validation/categoricalValues';
 
 export default function HealthcarePanel({ town, onTownUpdate }) {
   const [isExecutiveAdmin, setIsExecutiveAdmin] = useState(false);
@@ -153,7 +154,7 @@ export default function HealthcarePanel({ town, onTownUpdate }) {
               value={town.emergency_services_quality}
               label="Emergency Services Quality"
               type="select"
-              range={['poor', 'fair', 'good', 'very_good', 'excellent']}
+              range={VALID_CATEGORICAL_VALUES.emergency_services_quality}
               description="Quality of emergency medical services"
             />
             <EditableField
@@ -161,7 +162,7 @@ export default function HealthcarePanel({ town, onTownUpdate }) {
               value={town.english_speaking_doctors}
               label="English Speaking Doctors"
               type="select"
-              range={['rare', 'limited', 'moderate', 'common', 'widespread']}
+              range={VALID_CATEGORICAL_VALUES.english_speaking_doctors}
               description="Availability of English-speaking medical professionals"
             />
             <EditableField
@@ -194,7 +195,7 @@ export default function HealthcarePanel({ town, onTownUpdate }) {
               value={town.healthcare_cost}
               label="Healthcare Cost"
               type="select"
-              range={['very_low', 'low', 'moderate', 'high', 'very_high']}
+              range={VALID_CATEGORICAL_VALUES.healthcare_cost}
               description="General healthcare cost level"
             />
             <EditableField

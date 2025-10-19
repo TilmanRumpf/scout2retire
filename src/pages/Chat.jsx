@@ -755,12 +755,14 @@ export default function Chat() {
                 allTowns={allTowns}
                 favorites={favorites}
                 chatFavorites={chatFavorites}
+                countryLikes={countryLikes}
                 onSwitchToFriendChat={switchToFriendChat}
                 onSwitchToGroupChat={switchToGroupChat}
                 onSwitchToTownChat={switchToTownChat}
                 onSwitchToLoungeChat={switchToLoungeChat}
                 onSwitchToCountryLoungeChat={switchToCountryLoungeChat}
                 onToggleFavoriteChat={toggleFavoriteChat}
+                onToggleCountryLike={toggleCountryLike}
                 onSwitchToTab={setActiveTab}
                 chatType={chatType}
                 activeThread={activeThread}

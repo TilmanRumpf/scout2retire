@@ -1,0 +1,148 @@
+CULTURE VALUES - QUICK REFERENCE TABLE
+======================================
+
+FIELD 1: pace_of_life_actual
+==========================
+DATABASE:   slow, relaxed, moderate, fast (4 values)
+ADMIN UI:   relaxed, moderate, fast (3 values)
+USER INPUT: relaxed, moderate, fast (3 values)
+STATUS:     ❌ MISSING: slow
+COVERAGE:   75%
+
+FIELD 2: social_atmosphere
+==========================
+DATABASE:   reserved, quiet, moderate, friendly, vibrant, very friendly (6 values)
+ADMIN UI:   quiet, moderate, friendly, vibrant (4 values)
+USER INPUT: (not used in onboarding)
+STATUS:     ❌ MISSING: reserved, very friendly
+COVERAGE:   67%
+
+FIELD 3: traditional_progressive_lean
+=====================================
+DATABASE:   traditional, moderate, balanced, progressive (4 values)
+ADMIN UI:   traditional, moderate, balanced, progressive (4 values)
+USER INPUT: (not used in onboarding)
+STATUS:     ✅ PERFECT MATCH
+COVERAGE:   100%
+
+FIELD 4: expat_community_size
+=============================
+DATABASE:   small, moderate, large (3 values)
+ADMIN UI:   small, moderate, large (3 values)
+USER INPUT: small, moderate, large (3 values)
+STATUS:     ✅ PERFECT MATCH
+COVERAGE:   100%
+
+FIELD 5: retirement_community_presence
+=======================================
+DATABASE:   none, minimal, limited, moderate, strong, extensive, very_strong (7 values)
+ADMIN UI:   none, minimal, limited, moderate, strong, very_strong (6 values)
+USER INPUT: (not used in onboarding)
+STATUS:     ❌ MISSING: extensive
+COVERAGE:   86%
+
+FIELD 6: cultural_events_frequency
+===================================
+DATABASE:   rare, occasional, monthly, frequent, weekly, constant, daily (7 values)
+ADMIN UI:   monthly, weekly, daily (3 values)
+USER INPUT: (not used - user selects importance 1/3/5 instead)
+STATUS:     ❌ MISSING: rare, occasional, frequent, constant
+COVERAGE:   43% ⚠️ WORST
+
+FIELD 7: english_proficiency_level
+===================================
+DATABASE:   low, moderate, high, very high, widespread, native (6 values)
+ADMIN UI:   low, high (2 values)
+USER INPUT: (not used - user selects preference categories instead)
+STATUS:     ❌ MISSING: moderate, very high, widespread, native
+COVERAGE:   33% ⚠️ SECOND WORST
+
+---
+
+LEGEND
+======
+✅ PERFECT MATCH - Database matches UI exactly
+❌ MISSING - Values exist in database but not in UI dropdown
+⚠️ WORST/SECOND WORST - Coverage below 50%
+
+IMPACT: 12 total values missing from UI across 5 fields
+SEVERITY: HIGH - Data integrity at risk, admins cannot edit valid database values
+
+---
+
+EXAMPLE IMPACT SCENARIOS
+========================
+
+Scenario 1: A town is in the database with pace_of_life_actual='slow'
+  Admin tries to edit the town's culture data
+  Expected: Can see and modify pace_of_life_actual
+  Actual: ❌ Cannot select 'slow' from dropdown (missing)
+  
+Scenario 2: A town has cultural_events_frequency='rare'
+  Admin needs to update this field
+  Expected: Can select from 7 frequency options
+  Actual: ❌ Can only select from 3 options (monthly, weekly, daily)
+  
+Scenario 3: A town has english_proficiency_level='widespread'
+  Admin needs to verify/update language proficiency
+  Expected: Can select from 6 language levels
+  Actual: ❌ Can only choose between 'low' or 'high'
+
+---
+
+HARDCODING LOCATION: CulturePanel.jsx
+=====================================
+
+Line 88:    range={['low', 'high']}
+Line 114:   range={['relaxed', 'moderate', 'fast']}
+Line 122:   range={['quiet', 'moderate', 'friendly', 'vibrant']}
+Line 130:   range={['traditional', 'moderate', 'balanced', 'progressive']}
+Line 156:   range={['small', 'moderate', 'large']}
+Line 164:   range={['none', 'minimal', 'limited', 'moderate', 'strong', 'very_strong']}
+Line 172:   range={['monthly', 'weekly', 'daily']}
+
+ALL SHOULD USE: getValidValues('field_name')
+
+---
+
+QUICK FIX TEMPLATE
+==================
+
+BEFORE (wrong):
+  <EditableField
+    field="pace_of_life_actual"
+    value={town.pace_of_life_actual}
+    label="Pace of Life"
+    type="select"
+    range={['relaxed', 'moderate', 'fast']}
+    description="General pace of daily life"
+  />
+
+AFTER (correct):
+  <EditableField
+    field="pace_of_life_actual"
+    value={town.pace_of_life_actual}
+    label="Pace of Life"
+    type="select"
+    range={getValidValues('pace_of_life_actual')}
+    description="General pace of daily life"
+  />
+
+Plus add to imports:
+  import { getValidValues } from '../../utils/validation/categoricalValues';
+
+---
+
+VERIFICATION CHECKLIST
+======================
+After fix, verify:
+☐ pace_of_life_actual shows 4 values
+☐ social_atmosphere shows 6 values
+☐ traditional_progressive_lean shows 4 values
+☐ expat_community_size shows 3 values
+☐ retirement_community_presence shows 7 values
+☐ cultural_events_frequency shows 7 values
+☐ english_proficiency_level shows 6 values
+
+All dropdowns should now be DYNAMIC from categoricalValues.js
+

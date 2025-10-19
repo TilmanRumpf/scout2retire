@@ -18,7 +18,8 @@ import { getFeatureLimit } from '../utils/paywallUtils.js';
 import {
   MapPin, TrendingUp, DollarSign, Cloud, Users,
   Heart, Compass, Book, MessageSquare, Calendar,
-  ArrowRight, RefreshCw, Bell, Sparkles, Trophy
+  ArrowRight, RefreshCw, Bell, Sparkles, Trophy,
+  ChevronDown, ChevronUp
 } from 'lucide-react';
 
 export default function Daily() {
@@ -43,6 +44,7 @@ export default function Daily() {
   const [showMapModal, setShowMapModal] = useState(false);
   const [mapMarkersData, setMapMarkersData] = useState([]);
   const [mapCenter, setMapCenter] = useState({ lat: 0, lng: 0 });
+  const [topMatchesExpanded, setTopMatchesExpanded] = useState(false);
   const navigate = useNavigate();
 
   // Smooth page fade-in
@@ -599,18 +601,32 @@ export default function Daily() {
         <HeaderSpacer hasFilters={false} />
 
         <main className="max-w-7xl mx-auto px-4 py-6 space-y-8">
-          {/* Your Top Matches - 2 rows of 5 towns */}
+          {/* Your Top Matches - Collapsible on mobile/tablet, limit 5 towns */}
           {topMatches.length > 0 && (
             <section className="transition-opacity duration-500 opacity-100">
-              <div className="mb-4">
+              <div className="mb-4 flex items-center justify-between">
                 <h2 className={`text-xl font-semibold ${uiConfig.colors.heading}`}>
                   Your Top Matches
                 </h2>
+                {/* Toggle button - only visible on mobile/tablet */}
+                <button
+                  onClick={() => setTopMatchesExpanded(!topMatchesExpanded)}
+                  className={`lg:hidden flex items-center gap-1 text-sm ${uiConfig.colors.accent} hover:opacity-80 transition-opacity`}
+                  aria-label={topMatchesExpanded ? "Collapse matches" : "Expand matches"}
+                >
+                  <span>{topMatchesExpanded ? 'Hide' : 'Show'}</span>
+                  {topMatchesExpanded ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </button>
               </div>
 
-              <div className="space-y-3">
-                {/* First row - towns 0-4 */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+              {/* Content - collapsible on mobile/tablet, always visible on desktop */}
+              <div className={`space-y-3 ${topMatchesExpanded ? 'block' : 'hidden'} lg:block`}>
+                {/* Mobile/Tablet: Single row of 5 towns */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 lg:hidden">
                   {topMatches.slice(0, 5).map((town) => (
                     <button
                       key={town.id}
@@ -624,46 +640,72 @@ export default function Daily() {
                       className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer text-left"
                       style={{ position: 'relative', zIndex: 10 }}
                     >
-                      <div className="mb-2">
-                        <span className={`font-medium ${uiConfig.colors.heading} text-sm block`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={`font-medium ${uiConfig.colors.heading} text-sm`}>
                           {town.name}, {town.country}
                         </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs px-2 py-1 ${uiConfig.layout.radius.full} font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300`}>
-                          {town.matchScore}% match
+                        <span className={`text-xs px-2 py-1 ${uiConfig.layout.radius.full} font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 flex-shrink-0`}>
+                          {town.matchScore}%
                         </span>
                       </div>
                     </button>
                   ))}
                 </div>
 
-                {/* Second row - towns 5-9 */}
-                {topMatches.length > 5 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                    {topMatches.slice(5, 10).map((town) => (
+                {/* Desktop: 2 rows of 5 towns each (up to 10 total) */}
+                <div className="hidden lg:block space-y-3">
+                  {/* First row - towns 0-4 */}
+                  <div className="grid grid-cols-5 gap-3">
+                    {topMatches.slice(0, 5).map((town) => (
                       <button
                         key={town.id}
-                        onClick={() => {
-                          console.log('Clicked top match (row 2):', town.name, 'ID:', town.id);
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Clicked top match:', town.name, 'ID:', town.id);
                           navigate(`/town/${town.id}`);
                         }}
-                        className={`p-3 ${uiConfig.colors.card} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.states.hover} ${uiConfig.animation.transition} transform hover:scale-105 text-left`}
+                        className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer text-left"
+                        style={{ position: 'relative', zIndex: 10 }}
                       >
-                        <div className="mb-2">
-                          <span className={`font-medium ${uiConfig.colors.heading} text-sm block`}>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className={`font-medium ${uiConfig.colors.heading} text-sm`}>
                             {town.name}, {town.country}
                           </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-xs px-2 py-1 ${uiConfig.layout.radius.full} font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300`}>
-                            {town.matchScore}% match
+                          <span className={`text-xs px-2 py-1 ${uiConfig.layout.radius.full} font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 flex-shrink-0`}>
+                            {town.matchScore}%
                           </span>
                         </div>
                       </button>
                     ))}
                   </div>
-                )}
+
+                  {/* Second row - towns 5-9 */}
+                  {topMatches.length > 5 && (
+                    <div className="grid grid-cols-5 gap-3">
+                      {topMatches.slice(5, 10).map((town) => (
+                        <button
+                          key={town.id}
+                          onClick={() => {
+                            console.log('Clicked top match (row 2):', town.name, 'ID:', town.id);
+                            navigate(`/town/${town.id}`);
+                          }}
+                          className={`p-3 ${uiConfig.colors.card} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.states.hover} ${uiConfig.animation.transition} transform hover:scale-105 text-left`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className={`font-medium ${uiConfig.colors.heading} text-sm`}>
+                              {town.name}, {town.country}
+                            </span>
+                            <span className={`text-xs px-2 py-1 ${uiConfig.layout.radius.full} font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 flex-shrink-0`}>
+                              {town.matchScore}%
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </section>
           )}

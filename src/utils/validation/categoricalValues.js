@@ -168,6 +168,51 @@ export const VALID_CATEGORICAL_VALUES = {
     'arid',
     'oceanic',
     'polar'
+  ],
+
+  // Crime rate levels
+  crime_rate: [
+    'very_low',
+    'low',
+    'moderate',
+    'high',
+    'very_high'
+  ],
+
+  // Natural disaster risk levels (for SafetyPanel select dropdown)
+  natural_disaster_risk_level: [
+    'minimal',
+    'low',
+    'moderate',
+    'high',
+    'very_high'
+  ],
+
+  // Emergency services quality
+  emergency_services_quality: [
+    'poor',
+    'fair',
+    'good',
+    'very_good',
+    'excellent'
+  ],
+
+  // English speaking doctors availability
+  english_speaking_doctors: [
+    'rare',
+    'limited',
+    'moderate',
+    'common',
+    'widespread'
+  ],
+
+  // Healthcare cost levels
+  healthcare_cost: [
+    'very_low',
+    'low',
+    'moderate',
+    'high',
+    'very_high'
   ]
 };
 

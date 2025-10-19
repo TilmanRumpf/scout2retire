@@ -1,0 +1,527 @@
+{
+  "timestamp": "2025-10-19T03:10:32.474Z",
+  "issues": {
+    "nonExistentFields": [
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "climate_type"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "jan_temp"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "feb_temp"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "mar_temp"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "apr_temp"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "may_temp"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "jun_temp"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "jul_temp"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "aug_temp"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "sep_temp"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "oct_temp"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "nov_temp"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "dec_temp"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "jan_rainfall"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "feb_rainfall"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "mar_rainfall"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "apr_rainfall"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "may_rainfall"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "jun_rainfall"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "jul_rainfall"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "aug_rainfall"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "sep_rainfall"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "oct_rainfall"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "nov_rainfall"
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "dec_rainfall"
+      },
+      {
+        "panel": "CostsPanel.jsx",
+        "field": "cost_of_living_index"
+      },
+      {
+        "panel": "CostsPanel.jsx",
+        "field": "rent_2bed"
+      },
+      {
+        "panel": "CostsPanel.jsx",
+        "field": "home_price_sqm"
+      },
+      {
+        "panel": "CostsPanel.jsx",
+        "field": "groceries_index"
+      },
+      {
+        "panel": "CostsPanel.jsx",
+        "field": "restaurant_price_index"
+      },
+      {
+        "panel": "RegionPanel.jsx",
+        "field": "state_code"
+      },
+      {
+        "panel": "RegionPanel.jsx",
+        "field": "nearest_major_city"
+      },
+      {
+        "panel": "RegionPanel.jsx",
+        "field": "timezone"
+      },
+      {
+        "panel": "RegionPanel.jsx",
+        "field": "coastline_access"
+      },
+      {
+        "panel": "RegionPanel.jsx",
+        "field": "mountain_access"
+      },
+      {
+        "panel": "RegionPanel.jsx",
+        "field": "lake_river_access"
+      }
+    ],
+    "incorrectTypes": [
+      {
+        "panel": "RegionPanel.jsx",
+        "field": "geographic_features_actual",
+        "issue": "Should be a dropdown but is free text"
+      },
+      {
+        "panel": "RegionPanel.jsx",
+        "field": "vegetation_type_actual",
+        "issue": "Should be a dropdown but is free text"
+      }
+    ],
+    "missingDropdownOptions": [
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "summer_climate_actual",
+        "missing": [
+          "warm"
+        ],
+        "hasInPanel": [
+          "cold",
+          "cool",
+          "mild",
+          "hot"
+        ],
+        "shouldHave": [
+          "mild",
+          "warm",
+          "hot"
+        ]
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "winter_climate_actual",
+        "missing": [
+          "cold",
+          "cool",
+          "mild",
+          "hot"
+        ],
+        "hasInPanel": [
+          "alpine",
+          "arctic",
+          "atlantic maritime",
+          "continental",
+          "desert",
+          "highland",
+          "highland tropical",
+          "humid subtropical",
+          "maritime",
+          "mediterranean",
+          "monsoon",
+          "oceanic",
+          "savanna",
+          "semi-arid",
+          "subtropical",
+          "temperate",
+          "tropical"
+        ],
+        "shouldHave": [
+          "cold",
+          "cool",
+          "mild",
+          "hot"
+        ]
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "sunshine_level_actual",
+        "missing": [
+          "less_sunny",
+          "often_sunny"
+        ],
+        "hasInPanel": [
+          "low",
+          "mostly_dry",
+          "balanced",
+          "high",
+          "less_dry"
+        ],
+        "shouldHave": [
+          "low",
+          "less_sunny",
+          "balanced",
+          "high",
+          "often_sunny"
+        ]
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "precipitation_level_actual",
+        "missing": [
+          "mostly_dry",
+          "balanced",
+          "less_dry"
+        ],
+        "hasInPanel": [
+          "low",
+          "minimal",
+          "moderate",
+          "distinct_seasons",
+          "high",
+          "extreme"
+        ],
+        "shouldHave": [
+          "low",
+          "mostly_dry",
+          "balanced",
+          "high",
+          "less_dry"
+        ]
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "seasonal_variation_actual",
+        "missing": [
+          "low",
+          "minimal",
+          "moderate",
+          "distinct_seasons",
+          "high",
+          "extreme"
+        ],
+        "hasInPanel": [
+          "dry",
+          "balanced",
+          "humid"
+        ],
+        "shouldHave": [
+          "low",
+          "minimal",
+          "moderate",
+          "distinct_seasons",
+          "high",
+          "extreme"
+        ]
+      },
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "humidity_level_actual",
+        "missing": [
+          "dry",
+          "balanced",
+          "humid"
+        ],
+        "hasInPanel": [
+          "very low",
+          "low",
+          "moderate",
+          "high",
+          "very high"
+        ],
+        "shouldHave": [
+          "dry",
+          "balanced",
+          "humid"
+        ]
+      },
+      {
+        "panel": "CulturePanel.jsx",
+        "field": "english_proficiency_level",
+        "missing": [
+          "low",
+          "high",
+          "very high",
+          "widespread",
+          "native"
+        ],
+        "hasInPanel": [
+          "slow",
+          "relaxed",
+          "moderate",
+          "fast"
+        ],
+        "shouldHave": [
+          "low",
+          "moderate",
+          "high",
+          "very high",
+          "widespread",
+          "native"
+        ]
+      },
+      {
+        "panel": "CulturePanel.jsx",
+        "field": "pace_of_life_actual",
+        "missing": [
+          "slow",
+          "relaxed",
+          "fast"
+        ],
+        "hasInPanel": [
+          "reserved",
+          "quiet",
+          "moderate",
+          "friendly",
+          "vibrant",
+          "very friendly"
+        ],
+        "shouldHave": [
+          "slow",
+          "relaxed",
+          "moderate",
+          "fast"
+        ]
+      },
+      {
+        "panel": "CulturePanel.jsx",
+        "field": "social_atmosphere",
+        "missing": [
+          "reserved",
+          "quiet",
+          "friendly",
+          "vibrant",
+          "very friendly"
+        ],
+        "hasInPanel": [
+          "traditional",
+          "moderate",
+          "balanced",
+          "progressive"
+        ],
+        "shouldHave": [
+          "reserved",
+          "quiet",
+          "moderate",
+          "friendly",
+          "vibrant",
+          "very friendly"
+        ]
+      },
+      {
+        "panel": "CulturePanel.jsx",
+        "field": "traditional_progressive_lean",
+        "missing": [
+          "traditional",
+          "balanced",
+          "progressive"
+        ],
+        "hasInPanel": [
+          "small",
+          "moderate",
+          "large"
+        ],
+        "shouldHave": [
+          "traditional",
+          "moderate",
+          "balanced",
+          "progressive"
+        ]
+      },
+      {
+        "panel": "CulturePanel.jsx",
+        "field": "expat_community_size",
+        "missing": [
+          "small",
+          "large"
+        ],
+        "hasInPanel": [
+          "none",
+          "minimal",
+          "limited",
+          "moderate",
+          "strong",
+          "extensive",
+          "very_strong"
+        ],
+        "shouldHave": [
+          "small",
+          "moderate",
+          "large"
+        ]
+      },
+      {
+        "panel": "CulturePanel.jsx",
+        "field": "retirement_community_presence",
+        "missing": [
+          "none",
+          "minimal",
+          "limited",
+          "moderate",
+          "strong",
+          "extensive",
+          "very_strong"
+        ],
+        "hasInPanel": [
+          "rare",
+          "occasional",
+          "monthly",
+          "frequent",
+          "weekly",
+          "constant",
+          "daily"
+        ],
+        "shouldHave": [
+          "none",
+          "minimal",
+          "limited",
+          "moderate",
+          "strong",
+          "extensive",
+          "very_strong"
+        ]
+      },
+      {
+        "panel": "RegionPanel.jsx",
+        "field": "geographic_features_actual",
+        "missing": [
+          "coastal",
+          "island",
+          "river",
+          "desert",
+          "plains",
+          "mountain",
+          "lake",
+          "valley",
+          "forest"
+        ],
+        "hasInPanel": [
+          "rural",
+          "suburban",
+          "urban"
+        ],
+        "shouldHave": [
+          "coastal",
+          "island",
+          "river",
+          "desert",
+          "plains",
+          "mountain",
+          "lake",
+          "valley",
+          "forest"
+        ]
+      },
+      {
+        "panel": "RegionPanel.jsx",
+        "field": "vegetation_type_actual",
+        "missing": [
+          "tropical",
+          "subtropical",
+          "mediterranean",
+          "forest",
+          "grassland",
+          "desert"
+        ],
+        "hasInPanel": [
+          "rural",
+          "suburban",
+          "urban"
+        ],
+        "shouldHave": [
+          "tropical",
+          "subtropical",
+          "mediterranean",
+          "forest",
+          "grassland",
+          "desert"
+        ]
+      }
+    ],
+    "numericRangeIssues": [
+      {
+        "panel": "ClimatePanel.jsx",
+        "field": "natural_disaster_risk",
+        "issue": "Numeric field set as select dropdown"
+      }
+    ],
+    "onboardingMisalignment": []
+  },
+  "summary": {
+    "nonExistentFields": 36,
+    "incorrectTypes": 2,
+    "missingDropdownOptions": 14,
+    "numericRangeIssues": 1,
+    "total": 53
+  }
+}

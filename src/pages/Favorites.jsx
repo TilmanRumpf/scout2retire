@@ -359,8 +359,6 @@ export default function Favorites() {
       <UnifiedHeader
         variant="compact"
         title={isSelectionMode ? "Select Towns to Compare" : "Favorites"}
-        totalCount={searchTerm ? allTowns.length : favorites.length}
-        filteredCount={sortedTowns.length}
         showFilters={!isSelectionMode} // Show filters when not in selection mode
         filterProps={{
           variant: "integrated",

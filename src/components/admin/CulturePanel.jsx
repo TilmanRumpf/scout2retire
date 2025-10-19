@@ -11,6 +11,7 @@ import React, { useState, useEffect } from 'react';
 import EditableDataField from '../EditableDataField';
 import LegacyFieldsSection from './LegacyFieldsSection';
 import { checkAdminAccess } from '../../utils/paywallUtils';
+import { VALID_CATEGORICAL_VALUES } from '../../utils/validation/categoricalValues';
 
 export default function CulturePanel({ town, onTownUpdate }) {
   const [isExecutiveAdmin, setIsExecutiveAdmin] = useState(false);
@@ -85,7 +86,7 @@ export default function CulturePanel({ town, onTownUpdate }) {
               value={town.english_proficiency_level}
               label="English Proficiency Level"
               type="select"
-              range={['low', 'moderate', 'high', 'very high', 'widespread', 'native']}
+              range={VALID_CATEGORICAL_VALUES.english_proficiency_level}
               description="How widely English is spoken"
             />
           </div>
@@ -111,7 +112,7 @@ export default function CulturePanel({ town, onTownUpdate }) {
               value={town.pace_of_life_actual}
               label="Pace of Life"
               type="select"
-              range={['slow', 'relaxed', 'moderate', 'fast']}
+              range={VALID_CATEGORICAL_VALUES.pace_of_life_actual}
               description="General pace of daily life"
             />
             <EditableField
@@ -119,7 +120,7 @@ export default function CulturePanel({ town, onTownUpdate }) {
               value={town.social_atmosphere}
               label="Social Atmosphere"
               type="select"
-              range={['reserved', 'quiet', 'moderate', 'friendly', 'vibrant', 'very friendly']}
+              range={VALID_CATEGORICAL_VALUES.social_atmosphere}
               description="How social and welcoming the community is"
             />
             <EditableField
@@ -127,7 +128,7 @@ export default function CulturePanel({ town, onTownUpdate }) {
               value={town.traditional_progressive_lean}
               label="Traditional vs Progressive"
               type="select"
-              range={['traditional', 'moderate', 'balanced', 'progressive']}
+              range={VALID_CATEGORICAL_VALUES.traditional_progressive_lean}
               description="Cultural attitude towards tradition vs progress"
             />
           </div>
@@ -153,7 +154,7 @@ export default function CulturePanel({ town, onTownUpdate }) {
               value={town.expat_community_size}
               label="Expat Community Size"
               type="select"
-              range={['small', 'moderate', 'large']}
+              range={VALID_CATEGORICAL_VALUES.expat_community_size}
               description="Size of the expatriate community"
             />
             <EditableField
@@ -161,7 +162,7 @@ export default function CulturePanel({ town, onTownUpdate }) {
               value={town.retirement_community_presence}
               label="Retirement Community Presence"
               type="select"
-              range={['none', 'minimal', 'limited', 'moderate', 'strong', 'extensive', 'very_strong']}
+              range={VALID_CATEGORICAL_VALUES.retirement_community_presence}
               description="Presence of retirement-focused communities"
             />
             <EditableField
@@ -169,7 +170,7 @@ export default function CulturePanel({ town, onTownUpdate }) {
               value={town.cultural_events_frequency}
               label="Cultural Events Frequency"
               type="select"
-              range={['rare', 'occasional', 'monthly', 'frequent', 'weekly', 'constant', 'daily']}
+              range={VALID_CATEGORICAL_VALUES.cultural_events_frequency}
               description="How often cultural events and festivals occur"
             />
           </div>

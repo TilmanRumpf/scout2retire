@@ -11,6 +11,7 @@ import React, { useState, useEffect } from 'react';
 import EditableDataField from '../EditableDataField';
 import LegacyFieldsSection from './LegacyFieldsSection';
 import { checkAdminAccess } from '../../utils/paywallUtils';
+import { VALID_CATEGORICAL_VALUES } from '../../utils/validation/categoricalValues';
 
 export default function RegionPanel({ town, onTownUpdate }) {
   const [isExecutiveAdmin, setIsExecutiveAdmin] = useState(false);
@@ -79,13 +80,6 @@ export default function RegionPanel({ town, onTownUpdate }) {
               label="Country"
               type="string"
               description="Country where the town is located"
-            />
-            <EditableField
-              field="state_code"
-              value={town.state_code}
-              label="State/Province Code"
-              type="string"
-              description="State or province code (if applicable)"
             />
             <EditableField
               field="geo_region"
@@ -163,43 +157,8 @@ export default function RegionPanel({ town, onTownUpdate }) {
               value={town.urban_rural_character}
               label="Urban/Rural Character"
               type="select"
-              range={['rural', 'suburban', 'urban']}
+              range={VALID_CATEGORICAL_VALUES.urban_rural_character}
               description="Character of the area: rural, suburban, or urban"
-            />
-            <EditableField
-              field="nearest_major_city"
-              value={town.nearest_major_city}
-              label="Nearest Major City"
-              type="string"
-              description="Name of the nearest major city"
-            />
-            <EditableField
-              field="timezone"
-              value={town.timezone}
-              label="Timezone"
-              type="string"
-              description="Timezone (e.g., UTC+1, EST, PST)"
-            />
-            <EditableField
-              field="coastline_access"
-              value={town.coastline_access}
-              label="Coastline Access"
-              type="boolean"
-              description="Whether the town has direct access to coastline"
-            />
-            <EditableField
-              field="mountain_access"
-              value={town.mountain_access}
-              label="Mountain Access"
-              type="boolean"
-              description="Whether the town has access to mountains"
-            />
-            <EditableField
-              field="lake_river_access"
-              value={town.lake_river_access}
-              label="Lake/River Access"
-              type="boolean"
-              description="Whether the town has access to lakes or rivers"
             />
           </div>
         )}

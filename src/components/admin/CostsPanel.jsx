@@ -80,14 +80,6 @@ export default function CostsPanel({ town, onTownUpdate }) {
               description="Overall cost of living in USD per month"
             />
             <EditableField
-              field="cost_of_living_index"
-              value={town.cost_of_living_index}
-              label="Cost of Living Index"
-              type="number"
-              range="0-200"
-              description="Cost of living index (100 = average, higher = more expensive)"
-            />
-            <EditableField
               field="typical_monthly_living_cost"
               value={town.typical_monthly_living_cost}
               label="Typical Monthly Living Cost"
@@ -120,22 +112,6 @@ export default function CostsPanel({ town, onTownUpdate }) {
               type="number"
               range="0-10000"
               description="Monthly rent for 1-bedroom apartment in city center"
-            />
-            <EditableField
-              field="rent_2bed"
-              value={town.rent_2bed}
-              label="Rent - 2 Bedroom"
-              type="number"
-              range="0-15000"
-              description="Monthly rent for 2-bedroom apartment in city center"
-            />
-            <EditableField
-              field="home_price_sqm"
-              value={town.home_price_sqm}
-              label="Home Price per m²"
-              type="number"
-              range="0-50000"
-              description="Average price per square meter for buying property"
             />
           </div>
         )}
@@ -172,28 +148,12 @@ export default function CostsPanel({ town, onTownUpdate }) {
               description="Typical monthly groceries cost in USD"
             />
             <EditableField
-              field="groceries_index"
-              value={town.groceries_index}
-              label="Groceries Index"
-              type="number"
-              range="0-200"
-              description="Grocery price index (100 = average)"
-            />
-            <EditableField
               field="meal_cost"
               value={town.meal_cost}
               label="Average Meal Cost (USD)"
               type="number"
               range="0-100"
               description="Average cost of a meal at a restaurant in USD"
-            />
-            <EditableField
-              field="restaurant_price_index"
-              value={town.restaurant_price_index}
-              label="Restaurant Price Index"
-              type="number"
-              range="0-200"
-              description="Restaurant price index (100 = average)"
             />
           </div>
         )}

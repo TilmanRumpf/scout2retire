@@ -10,6 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import EditableDataField from '../EditableDataField';
 import { checkAdminAccess } from '../../utils/paywallUtils';
+import { VALID_CATEGORICAL_VALUES } from '../../utils/validation/categoricalValues';
 
 export default function SafetyPanel({ town, onTownUpdate }) {
   const [isExecutiveAdmin, setIsExecutiveAdmin] = useState(false);
@@ -109,7 +110,7 @@ export default function SafetyPanel({ town, onTownUpdate }) {
               value={town.crime_rate}
               label="Crime Rate"
               type="select"
-              range={['very_low', 'low', 'moderate', 'high', 'very_high']}
+              range={VALID_CATEGORICAL_VALUES.crime_rate}
               description="Overall crime rate level"
             />
           </div>
@@ -161,7 +162,7 @@ export default function SafetyPanel({ town, onTownUpdate }) {
               value={town.natural_disaster_risk}
               label="Natural Disaster Risk"
               type="select"
-              range={['minimal', 'low', 'moderate', 'high', 'very_high']}
+              range={VALID_CATEGORICAL_VALUES.natural_disaster_risk_level}
               description="Overall natural disaster risk level"
             />
             <EditableField
