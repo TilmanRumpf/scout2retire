@@ -1,0 +1,704 @@
+{
+  "generatedAt": "2025-10-18T21:19:19.499Z",
+  "summary": {
+    "english_proficiency_level": {
+      "status": "VALID",
+      "native_count": 85,
+      "null_count": 0,
+      "action": "No action needed - field is complete and valid"
+    },
+    "missing_fields": {
+      "fields": [
+        "overall_culture_score",
+        "local_festivals"
+      ],
+      "action": "Search codebase for references to these fields and remove or replace them"
+    },
+    "social_atmosphere": {
+      "null_count": 272,
+      "null_percent": 77.3,
+      "top_countries_affected": [
+        {
+          "country": "United States",
+          "count": 40
+        },
+        {
+          "country": "France",
+          "count": 15
+        },
+        {
+          "country": "Australia",
+          "count": 13
+        },
+        {
+          "country": "Portugal",
+          "count": 12
+        },
+        {
+          "country": "Mexico",
+          "count": 12
+        },
+        {
+          "country": "Spain",
+          "count": 10
+        },
+        {
+          "country": "Italy",
+          "count": 9
+        },
+        {
+          "country": "New Zealand",
+          "count": 8
+        },
+        {
+          "country": "Greece",
+          "count": 8
+        },
+        {
+          "country": "Netherlands",
+          "count": 7
+        }
+      ]
+    },
+    "traditional_progressive_lean": {
+      "null_count": 272,
+      "null_percent": 77.3,
+      "top_countries_affected": [
+        {
+          "country": "United States",
+          "count": 40
+        },
+        {
+          "country": "France",
+          "count": 15
+        },
+        {
+          "country": "Australia",
+          "count": 13
+        },
+        {
+          "country": "Portugal",
+          "count": 12
+        },
+        {
+          "country": "Mexico",
+          "count": 12
+        },
+        {
+          "country": "Spain",
+          "count": 10
+        },
+        {
+          "country": "Italy",
+          "count": 9
+        },
+        {
+          "country": "New Zealand",
+          "count": 8
+        },
+        {
+          "country": "Greece",
+          "count": 8
+        },
+        {
+          "country": "Netherlands",
+          "count": 7
+        }
+      ]
+    },
+    "cultural_events_frequency": {
+      "null_count": 297,
+      "null_percent": 84.4,
+      "top_countries_affected": [
+        {
+          "country": "United States",
+          "count": 41
+        },
+        {
+          "country": "France",
+          "count": 18
+        },
+        {
+          "country": "Portugal",
+          "count": 15
+        },
+        {
+          "country": "Mexico",
+          "count": 15
+        },
+        {
+          "country": "Australia",
+          "count": 13
+        },
+        {
+          "country": "Spain",
+          "count": 12
+        },
+        {
+          "country": "Italy",
+          "count": 10
+        },
+        {
+          "country": "Netherlands",
+          "count": 8
+        },
+        {
+          "country": "New Zealand",
+          "count": 8
+        },
+        {
+          "country": "Greece",
+          "count": 8
+        }
+      ]
+    }
+  },
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "issue": "Code references non-existent database fields",
+      "fields": [
+        "overall_culture_score",
+        "local_festivals"
+      ],
+      "action": "Search codebase and remove/replace references to: overall_culture_score, local_festivals",
+      "commands": [
+        "grep -r \"overall_culture_score\" src/",
+        "grep -r \"local_festivals\" src/"
+      ]
+    },
+    {
+      "priority": "CRITICAL",
+      "issue": "77-84% of towns missing cultural data",
+      "fields": [
+        "social_atmosphere",
+        "traditional_progressive_lean",
+        "cultural_events_frequency"
+      ],
+      "impact": "These fields affect matching quality and user experience",
+      "action": "Manually research and populate cultural data for top 50 towns (sorted by avg score)",
+      "note": "Start with high-scoring towns (healthcare+safety) to maximize impact"
+    },
+    {
+      "priority": "MEDIUM",
+      "issue": "Fields referenced in code may not exist in database",
+      "fields": [
+        "overall_culture_score",
+        "local_festivals"
+      ],
+      "action": "Audit codebase for references to overall_culture_score and local_festivals",
+      "commands": [
+        "grep -r \"overall_culture_score\" src/",
+        "grep -r \"local_festivals\" src/"
+      ]
+    },
+    {
+      "priority": "LOW",
+      "issue": "Consider adding batch import feature",
+      "action": "Create admin UI for batch-importing cultural data from CSV",
+      "benefit": "Would allow faster population of missing fields"
+    }
+  ],
+  "townsNeedingAttention": [
+    {
+      "id": "db909d84-255e-450d-8af7-a08fa2eea33c",
+      "name": "Lugano",
+      "country": "Switzerland",
+      "region": "Ticino",
+      "avg_score": 9.5,
+      "healthcare_score": 9,
+      "safety_score": 10,
+      "priority": "LOW"
+    },
+    {
+      "id": "0021d026-3148-46c2-8670-af89bf83e605",
+      "name": "Singapore",
+      "country": "Singapore",
+      "region": "Central Singapore",
+      "avg_score": 9.5,
+      "healthcare_score": 9,
+      "safety_score": 10,
+      "priority": "LOW"
+    },
+    {
+      "id": "6165bf5b-abb7-4db5-a7f5-0b8e02b75a52",
+      "name": "Braga",
+      "country": "Portugal",
+      "region": "Norte",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "4523ea1a-0f14-4085-b35b-db73cf102959",
+      "name": "Bruges",
+      "country": "Belgium",
+      "region": "West Flanders",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "73fd11f9-a91e-40f6-b8f1-df2040907128",
+      "name": "Funchal (Madeira)",
+      "country": "Portugal",
+      "region": "Madeira",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "3092a154-56c7-4a36-bb70-c20dc174d246",
+      "name": "Vienna",
+      "country": "Austria",
+      "region": "Vienna",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "ef894dd0-b4f8-4dfd-999e-996e439190e9",
+      "name": "Tervuren",
+      "country": "Belgium",
+      "region": "Flemish Brabant",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "3a4c7e21-7d32-4b36-ba86-b3f087413475",
+      "name": "Cascais",
+      "country": "Portugal",
+      "region": "Lisbon District",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "c2921d0e-b7fe-41fd-9758-ca1a2ce41a22",
+      "name": "Nelson",
+      "country": "New Zealand",
+      "region": "Tasman / Nelson Region",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "f2a02453-8b67-47f7-87f2-7e484dbb8d72",
+      "name": "Lindau",
+      "country": "Germany",
+      "region": "Bavaria",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "d7870c87-08cf-4555-b2af-47bdfcbc2965",
+      "name": "Wellington",
+      "country": "New Zealand",
+      "region": "Wellington",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "b77f8f60-0013-49df-a565-8995f1b77c93",
+      "name": "Edinburgh",
+      "country": "United Kingdom",
+      "region": "Scotland",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "8d2b23f9-d927-4cb2-b257-534afcd3ee1e",
+      "name": "Wanaka",
+      "country": "New Zealand",
+      "region": "Otago",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "5e47fdf0-01c4-438f-9cbb-b17ff70164c7",
+      "name": "Evora",
+      "country": "Portugal",
+      "region": "Alentejo",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "c87dc388-4823-449e-8352-e4325ccac92a",
+      "name": "Castro Urdiales",
+      "country": "Spain",
+      "region": "Cantabria",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "44d32b89-d7c4-406d-9a62-d11e6a73a4c4",
+      "name": "Leuven",
+      "country": "Belgium",
+      "region": "Flemish Brabant",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "0768eb6d-0f7f-4b1b-ae13-2d8717078aca",
+      "name": "Palma de Mallorca",
+      "country": "Spain",
+      "region": "Balearic Islands",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "38f1f0ac-e33b-4949-9b67-b116d6bfde15",
+      "name": "Bath",
+      "country": "United Kingdom",
+      "region": "South West England",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "c7a9a50f-131e-45af-9dbc-46a8be7db12f",
+      "name": "Viseu",
+      "country": "Portugal",
+      "region": "Centro",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "b7fb6472-faa3-4c5f-bd2c-d996da727958",
+      "name": "Tallinn",
+      "country": "Estonia",
+      "region": "Harju County",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "338993f9-bd57-4187-81ee-20776925fdd9",
+      "name": "Baiona",
+      "country": "Spain",
+      "region": "Galicia",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "6e333880-db74-49e3-a894-593a05e24228",
+      "name": "Comillas",
+      "country": "Spain",
+      "region": "Cantabria",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "37e01d35-adb9-4adc-8ee2-125eceb7fa63",
+      "name": "Christchurch",
+      "country": "New Zealand",
+      "region": "Canterbury",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "ebbd22f6-aaa5-4328-b1c8-611200682f1c",
+      "name": "Queenstown",
+      "country": "New Zealand",
+      "region": "Otago",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "272bf1fa-8ec1-4233-bc65-4c2179aae9e2",
+      "name": "Napier",
+      "country": "New Zealand",
+      "region": "Hawke's Bay",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "d9d1ce36-c60f-43d0-8621-968f9f7175e0",
+      "name": "Barcelona",
+      "country": "Spain",
+      "region": "Catalonia",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "68e0b7f2-f360-41b5-a8e6-849bf507911f",
+      "name": "Ghent",
+      "country": "Belgium",
+      "region": "East Flanders",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "cfb3f427-f414-4c2e-9afd-68b39fcf2e1f",
+      "name": "Orvieto",
+      "country": "Italy",
+      "region": "Umbria",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "d763328d-62a5-4369-9920-82ae2fe7a910",
+      "name": "Annecy",
+      "country": "France",
+      "region": "Auvergne-Rhone-Alpes",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "51777725-e9b4-47bc-9ab8-b0552ff00fcd",
+      "name": "Eckernförde",
+      "country": "Germany",
+      "region": "Schleswig-Holstein",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "332a4211-0b1c-4cf0-9718-375a22ddc74c",
+      "name": "Reykjavik",
+      "country": "Iceland",
+      "region": "Ticino",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "c594631e-e2c5-46e7-b935-e1fc183f3828",
+      "name": "Tauranga",
+      "country": "New Zealand",
+      "region": "Bay of Plenty",
+      "avg_score": 9,
+      "healthcare_score": 9,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "288aaf3b-2fd3-40bc-9954-30ee613a34d4",
+      "name": "Spoleto",
+      "country": "Italy",
+      "region": "Umbria",
+      "avg_score": 8.5,
+      "healthcare_score": 8,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "166f5811-14bd-4ca2-afb7-ee03ded1610f",
+      "name": "Sanlúcar de Barrameda",
+      "country": "Spain",
+      "region": "Andalusia",
+      "avg_score": 8.5,
+      "healthcare_score": 8,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "bb27a968-60b2-4542-ad6d-b0cab8bc52ce",
+      "name": "Malaga",
+      "country": "Spain",
+      "region": "Andalusia",
+      "avg_score": 8.5,
+      "healthcare_score": 8,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "4cd58a28-d6ce-4b14-a10d-772089614fe3",
+      "name": "Coffs Harbour",
+      "country": "Australia",
+      "region": "New South Wales",
+      "avg_score": 8.5,
+      "healthcare_score": 8,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "028d241f-52a4-4c1f-b977-eaa0b29972d1",
+      "name": "Hoorn",
+      "country": "Netherlands",
+      "region": "North Holland",
+      "avg_score": 8.5,
+      "healthcare_score": 9,
+      "safety_score": 8,
+      "priority": "LOW"
+    },
+    {
+      "id": "a6b90efd-a2f1-40fc-8627-60735d64c381",
+      "name": "Chapel Hill",
+      "country": "United States",
+      "region": "North Carolina",
+      "avg_score": 8.5,
+      "healthcare_score": 9,
+      "safety_score": 8,
+      "priority": "LOW"
+    },
+    {
+      "id": "2c51af87-dc94-4382-9be6-03db8faa6097",
+      "name": "Sydney",
+      "country": "Australia",
+      "region": "New South Wales",
+      "avg_score": 8.5,
+      "healthcare_score": 9,
+      "safety_score": 8,
+      "priority": "LOW"
+    },
+    {
+      "id": "c13b3653-dbf4-4836-ba2d-ce3049293567",
+      "name": "Valletta",
+      "country": "Malta",
+      "region": "Central Malta",
+      "avg_score": 8.5,
+      "healthcare_score": 9,
+      "safety_score": 8,
+      "priority": "LOW"
+    },
+    {
+      "id": "4e134c55-9ad9-46ee-91b9-270cd4854b05",
+      "name": "Bologna",
+      "country": "Italy",
+      "region": "Emilia-Romagna",
+      "avg_score": 8.5,
+      "healthcare_score": 9,
+      "safety_score": 8,
+      "priority": "LOW"
+    },
+    {
+      "id": "569a2538-1c5f-4dbe-b390-dc51d4723b71",
+      "name": "Heidelberg",
+      "country": "Germany",
+      "region": "Baden-Württemberg",
+      "avg_score": 8.5,
+      "healthcare_score": 9,
+      "safety_score": 8,
+      "priority": "LOW"
+    },
+    {
+      "id": "fb4f2eb5-8a9c-43d1-bedc-c60bbee7bfb7",
+      "name": "Panama City",
+      "country": "Panama",
+      "region": "Panamá",
+      "avg_score": 8.5,
+      "healthcare_score": 8,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "68b11019-5fe8-4747-979b-17163a3455d1",
+      "name": "Auckland",
+      "country": "New Zealand",
+      "region": "Auckland",
+      "avg_score": 8.5,
+      "healthcare_score": 9,
+      "safety_score": 8,
+      "priority": "LOW"
+    },
+    {
+      "id": "eea34f65-2faa-4cef-b9c4-ca3fd91f4ed9",
+      "name": "Zutphen",
+      "country": "Netherlands",
+      "region": "Gelderland",
+      "avg_score": 8.5,
+      "healthcare_score": 9,
+      "safety_score": 8,
+      "priority": "LOW"
+    },
+    {
+      "id": "87431028-56cf-4a1b-8de8-4faa143181af",
+      "name": "Portimão",
+      "country": "Portugal",
+      "region": "Algarve",
+      "avg_score": 8.5,
+      "healthcare_score": 8,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "129e195b-5c1b-40f5-978b-32adb6539f31",
+      "name": "Hobart",
+      "country": "Australia",
+      "region": "Tasmania",
+      "avg_score": 8.5,
+      "healthcare_score": 8,
+      "safety_score": 9,
+      "priority": "LOW"
+    },
+    {
+      "id": "dab9a329-e235-433e-b267-0af31513a988",
+      "name": "Haarlem",
+      "country": "Netherlands",
+      "region": "North Holland",
+      "avg_score": 8.5,
+      "healthcare_score": 9,
+      "safety_score": 8,
+      "priority": "LOW"
+    },
+    {
+      "id": "44cfb4cb-a6e0-4040-a594-317eeeb510fb",
+      "name": "Boulder",
+      "country": "United States",
+      "region": "Colorado",
+      "avg_score": 8.5,
+      "healthcare_score": 9,
+      "safety_score": 8,
+      "priority": "LOW"
+    },
+    {
+      "id": "8b3bbf95-ccc3-481e-8d74-7d9e7a8caa50",
+      "name": "Menton",
+      "country": "France",
+      "region": "Provence-Alpes-Côte d'Azur",
+      "avg_score": 8.5,
+      "healthcare_score": 9,
+      "safety_score": 8,
+      "priority": "LOW"
+    }
+  ]
+}

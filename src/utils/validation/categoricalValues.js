@@ -120,6 +120,7 @@ export const VALID_CATEGORICAL_VALUES = {
     'moderate',
     'high',
     'very high',
+    'widespread',
     'native'
   ],
 

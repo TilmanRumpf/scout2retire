@@ -133,15 +133,14 @@ export default function RegionPanel({ town, onTownUpdate }) {
               value={town.geographic_features_actual}
               label="Geographic Features"
               type="array"
-              description="Actual geographic features (mountains, coastal, island, etc.)"
+              description='Geographic features as JSON array. Valid values: coastal, island, river, desert, plains, mountain, lake, valley, forest. Example: ["coastal","plains"]'
             />
             <EditableField
               field="vegetation_type_actual"
               value={town.vegetation_type_actual}
               label="Vegetation Type"
-              type="select"
-              range={['tropical', 'temperate', 'arid', 'mixed', 'alpine']}
-              description="Primary vegetation type in the area"
+              type="array"
+              description='Vegetation types as JSON array. Valid values: tropical, subtropical, mediterranean, forest, grassland, desert. Example: ["forest","mediterranean"]'
             />
             <EditableField
               field="elevation_meters"

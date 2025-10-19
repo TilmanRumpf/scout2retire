@@ -85,7 +85,7 @@ export default function CulturePanel({ town, onTownUpdate }) {
               value={town.english_proficiency_level}
               label="English Proficiency Level"
               type="select"
-              range={['minimal', 'low', 'moderate', 'high', 'widespread']}
+              range={['low', 'moderate', 'high', 'very high', 'widespread', 'native']}
               description="How widely English is spoken"
             />
           </div>
@@ -169,15 +169,8 @@ export default function CulturePanel({ town, onTownUpdate }) {
               value={town.cultural_events_frequency}
               label="Cultural Events Frequency"
               type="select"
-              range={['rare', 'occasional', 'monthly', 'frequent', 'weekly']}
+              range={['rare', 'occasional', 'monthly', 'frequent', 'weekly', 'constant', 'daily']}
               description="How often cultural events and festivals occur"
-            />
-            <EditableField
-              field="local_festivals"
-              value={town.local_festivals}
-              label="Local Festivals"
-              type="text"
-              description="Names or descriptions of local festivals and celebrations"
             />
           </div>
         )}
@@ -244,14 +237,6 @@ export default function CulturePanel({ town, onTownUpdate }) {
               type="number"
               range="1-10"
               description="Quality and variety of outdoor activities (1-10 scale)"
-            />
-            <EditableField
-              field="overall_culture_score"
-              value={town.overall_culture_score}
-              label="Overall Culture Score"
-              type="number"
-              range="0-100"
-              description="Overall cultural score (0-100 scale)"
             />
           </div>
         )}
