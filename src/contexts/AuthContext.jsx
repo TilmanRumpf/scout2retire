@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../utils/supabaseClient';
+import { updateUserDevice } from '../utils/analytics/deviceDetection';
+import { startSession, endSession, trackPageView } from '../utils/analytics/behaviorTracking';
 
 // Create the Auth Context
 const AuthContext = createContext({});
@@ -37,12 +39,26 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const { data: { session }, error } = await supabase.auth.getSession();
-      
+
       if (error) {
         console.error('Session check error:', error);
         setError(error.message);
       } else {
         setUser(session?.user ?? null);
+
+        // Track device and start session for authenticated users
+        if (session?.user?.id) {
+          try {
+            // Update device info
+            const { deviceHistoryId } = await updateUserDevice(session.user.id);
+
+            // Start analytics session if not already active
+            await startSession(session.user.id, deviceHistoryId);
+          } catch (analyticsError) {
+            console.error('Analytics tracking error:', analyticsError);
+            // Don't fail auth if analytics fails
+          }
+        }
       }
     } catch (err) {
       console.error('Session check failed:', err);
@@ -57,15 +73,30 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
-      
+
       setUser(data.user);
+
+      // Track device and start session on successful sign in
+      if (data.user?.id) {
+        try {
+          // Update device info
+          const { deviceHistoryId } = await updateUserDevice(data.user.id);
+
+          // Start analytics session
+          await startSession(data.user.id, deviceHistoryId);
+        } catch (analyticsError) {
+          console.error('Analytics tracking error:', analyticsError);
+          // Don't fail sign in if analytics fails
+        }
+      }
+
       return { success: true, user: data.user };
     } catch (err) {
       console.error('Sign in error:', err);
@@ -81,7 +112,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -91,8 +122,23 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (error) throw error;
-      
+
       setUser(data.user);
+
+      // Track device and start session for new users
+      if (data.user?.id) {
+        try {
+          // Update device info
+          const { deviceHistoryId } = await updateUserDevice(data.user.id);
+
+          // Start analytics session
+          await startSession(data.user.id, deviceHistoryId);
+        } catch (analyticsError) {
+          console.error('Analytics tracking error:', analyticsError);
+          // Don't fail sign up if analytics fails
+        }
+      }
+
       return { success: true, user: data.user };
     } catch (err) {
       console.error('Sign up error:', err);
@@ -108,11 +154,19 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
+      // End analytics session before sign out
+      try {
+        await endSession();
+      } catch (analyticsError) {
+        console.error('Error ending session:', analyticsError);
+        // Don't fail sign out if analytics fails
+      }
+
       const { error } = await supabase.auth.signOut();
-      
+
       if (error) throw error;
-      
+
       setUser(null);
       return { success: true };
     } catch (err) {
