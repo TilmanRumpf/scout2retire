@@ -1,6 +1,6 @@
 import { createContext, useContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useChatState } from '../hooks/useChatState';
+import { useChatStateOptimized as useChatState } from '../hooks/useChatStateOptimized';
 import * as dataService from '../services/chatDataService';
 import toast from 'react-hot-toast';
 

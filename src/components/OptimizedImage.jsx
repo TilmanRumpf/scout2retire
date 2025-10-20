@@ -7,7 +7,7 @@ export default function OptimizedImage({
   src, 
   alt, 
   className = '', 
-  lazy = false, // Enable lazy loading with intersection observer
+  lazy = true, // Enable lazy loading by default for performance
   fallbackIcon = MapPin,
   fallbackIconSize = 24,
   rootMargin = '50px', // For lazy loading

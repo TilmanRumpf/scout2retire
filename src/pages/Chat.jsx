@@ -24,7 +24,7 @@ import supabase from '../utils/supabaseClient';
 import { uiConfig } from '../styles/uiConfig';
 import { useModerationActions } from '../hooks/useModerationActions';
 import { useIsMobile } from '../hooks/useMobileDetection';
-import { useChatState } from '../hooks/useChatState';
+import { useChatStateOptimized as useChatState } from '../hooks/useChatStateOptimized';
 import { useChatActions } from '../hooks/useChatActions';
 import { useChatDataLoaders } from '../hooks/useChatDataLoaders';
 import { useChatSubscriptions } from '../hooks/useChatSubscriptions';

@@ -1,5 +1,5 @@
 // components/TownCard.jsx
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toggleFavorite } from '../utils/townUtils.jsx';
 import toast from 'react-hot-toast';
@@ -8,7 +8,7 @@ import { uiConfig } from '../styles/uiConfig';
 import OptimizedImage from './OptimizedImage';
 import TownImageOverlay from './TownImageOverlay';
 
-export default function TownCard({ 
+function TownCard({ 
   town, 
   userId, 
   initiallyFavorited = false,
@@ -157,3 +157,6 @@ export default function TownCard({
     </div>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders
+export default React.memo(TownCard);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
@@ -249,8 +249,8 @@ export default function TownDiscovery() {
     setSearchTerm('');
   };
 
-  // Sort and filter towns
-  const getSortedAndFilteredTowns = () => {
+  // Sort and filter towns - Memoize to prevent recalculation on every render
+  const sortedAndFilteredTowns = useMemo(() => {
     let filtered = [...towns];
     
     // Apply search filter
@@ -330,9 +330,9 @@ export default function TownDiscovery() {
         // Keep original order (personalized recommendation order)
         break;
     }
-    
+
     return filtered;
-  };
+  }, [towns, searchTerm, filterRegion, filterCountry, filterCostRange, filterMatchRange, sortBy]);
 
 
   // Render loading state
@@ -358,7 +358,7 @@ export default function TownDiscovery() {
   };
 
   const selectedTownData = getSelectedTownData();
-  const sortedAndFilteredTowns = getSortedAndFilteredTowns();
+  // Now using the memoized sortedAndFilteredTowns directly
 
   // Apply display limit for free/premium tiers
   const displayedTowns = displayLimit === null

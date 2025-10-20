@@ -9,7 +9,7 @@ import { MapPin, DollarSign, Activity, Shield, Users, Thermometer, Plane, Messag
 import { uiConfig } from '../styles/uiConfig';
 import toast from 'react-hot-toast';
 
-export default function DailyTownCard() {
+function DailyTownCard() {
   const [town, setTown] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -295,3 +295,6 @@ export default function DailyTownCard() {
     </div>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders
+export default React.memo(DailyTownCard);

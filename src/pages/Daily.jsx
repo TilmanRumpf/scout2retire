@@ -59,6 +59,8 @@ export default function Daily() {
   useEffect(() => {
     if (!showMapModal || mapMarkersData.length === 0) return;
 
+    let mapInstance = null;
+
     // Load Leaflet CSS and JS dynamically
     const loadLeaflet = async () => {
       // Check if Leaflet is already loaded
@@ -88,19 +90,19 @@ export default function Daily() {
       container.innerHTML = '<div id="leaflet-map" style="width: 100%; height: 100%;"></div>';
 
       // Initialize map
-      const map = window.L.map('leaflet-map');
+      mapInstance = window.L.map('leaflet-map');
 
       // Add OpenStreetMap tiles
       window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19
-      }).addTo(map);
+      }).addTo(mapInstance);
 
       // Add markers
       const markerObjects = [];
       mapMarkersData.forEach(markerData => {
         const marker = window.L.marker([markerData.lat, markerData.lng])
-          .addTo(map)
+          .addTo(mapInstance)
           .bindPopup(`<div style="padding: 8px; font-size: 14px;"><strong>${markerData.name}</strong></div>`);
         markerObjects.push(marker);
       });
@@ -108,16 +110,24 @@ export default function Daily() {
       // Fit bounds to show all markers
       if (markerObjects.length > 0) {
         const group = new window.L.featureGroup(markerObjects);
-        map.fitBounds(group.getBounds().pad(0.5), {
+        mapInstance.fitBounds(group.getBounds().pad(0.5), {
           maxZoom: 7,
           padding: [50, 50]
         });
       } else {
-        map.setView([mapCenter.lat, mapCenter.lng], 7);
+        mapInstance.setView([mapCenter.lat, mapCenter.lng], 7);
       }
     };
 
     loadLeaflet();
+
+    // Cleanup function to remove map instance and prevent memory leak
+    return () => {
+      if (mapInstance && window.L) {
+        mapInstance.remove();
+        mapInstance = null;
+      }
+    };
   }, [showMapModal, mapMarkersData, mapCenter]);
   
   // Load user data on mount
@@ -142,7 +152,7 @@ export default function Daily() {
       };
       loadFavorites();
     }
-  }, [authUser]);
+  }, [authUser?.id]);
 
   // Load top matches when user is loaded
   useEffect(() => {
@@ -167,7 +177,7 @@ export default function Daily() {
       };
       loadTopMatches();
     }
-  }, [authUser]);
+  }, [authUser?.id]);
   
   // Component renders
 
