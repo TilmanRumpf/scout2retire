@@ -168,14 +168,14 @@ export async function getTownsInLocation(geographicInfo) {
   try {
     let query = supabase
       .from('towns')
-      .select('id, name, country, state_code, latitude, longitude, overall_score, rent_cost_$, population');
+      .select('id, name, country, region, latitude, longitude, quality_of_life, rent_1bed, population');
 
     if (geographicInfo.type === 'country') {
       query = query.eq('country', geographicInfo.name);
     } else if (geographicInfo.type === 'province' || geographicInfo.type === 'state') {
       query = query
         .eq('country', geographicInfo.country)
-        .eq('state_code', geographicInfo.abbreviation);
+        .eq('region', geographicInfo.name);
     } else if (geographicInfo.type === 'region') {
       // For regions, we need to match by country and approximate location
       query = query.eq('country', geographicInfo.country);

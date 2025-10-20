@@ -130,16 +130,16 @@ export default function OverviewPanel({ town, onTownUpdate }) {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    State/Province
+                    Region
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
-                    state_code
+                    region
                   </div>
                 </div>
               </div>
               <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
                 <div className="text-sm text-gray-900 dark:text-gray-100">
-                  {town.state_code || <span className="text-gray-500 italic">(not applicable)</span>}
+                  {town.region || <span className="text-gray-500 italic">(not specified)</span>}
                 </div>
               </div>
             </div>

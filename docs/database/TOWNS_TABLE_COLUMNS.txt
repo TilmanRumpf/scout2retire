@@ -1,0 +1,193 @@
+Towns Table Columns (2025-10-20T01:43:05.351Z)
+Total: 190 columns
+
+  1. activities_available
+  2. activity_infrastructure
+  3. air_quality_index
+  4. airport_distance
+  5. annual_rainfall
+  6. audit_data
+  7. avg_temp_summer
+  8. avg_temp_winter
+  9. banking_infrastructure
+ 10. beaches_nearby
+ 11. bike_infrastructure
+ 12. childcare_available
+ 13. climate
+ 14. climate_description
+ 15. coastline_access
+ 16. cost_description
+ 17. cost_index
+ 18. cost_of_living_usd
+ 19. country
+ 20. coworking_spaces_count
+ 21. created_at
+ 22. crime_rate
+ 23. cultural_activities
+ 24. cultural_events_frequency
+ 25. cultural_events_rating
+ 26. cultural_landmark_1
+ 27. cultural_landmark_2
+ 28. cultural_landmark_3
+ 29. cultural_rating
+ 30. data_completeness_score
+ 31. data_sources
+ 32. description
+ 33. digital_nomad_visa
+ 34. digital_services_availability
+ 35. distance_to_ocean_km
+ 36. distance_to_urban_center
+ 37. dog_parks_count
+ 38. easy_residency_countries
+ 39. elevation_meters
+ 40. emergency_services_quality
+ 41. english_proficiency_level
+ 42. english_speaking_doctors
+ 43. environmental_factors
+ 44. environmental_health_rating
+ 45. expat_community_size
+ 46. expat_groups
+ 47. family_friendliness_rating
+ 48. farmers_markets
+ 49. foreign_income_taxed
+ 50. geo_region
+ 51. geographic_features
+ 52. geographic_features_actual
+ 53. golf_courses_count
+ 54. google_maps_link
+ 55. government_efficiency_rating
+ 56. groceries_cost
+ 57. has_public_transit
+ 58. has_uber
+ 59. health_insurance_required
+ 60. healthcare_cost
+ 61. healthcare_cost_monthly
+ 62. healthcare_description
+ 63. healthcare_score
+ 64. healthcare_specialties_available
+ 65. hiking_trails_km
+ 66. hospital_count
+ 67. humidity_average
+ 68. humidity_level_actual
+ 69. id
+ 70. image_is_fallback
+ 71. image_license
+ 72. image_photographer
+ 73. image_source
+ 74. image_url_1
+ 75. image_url_2
+ 76. image_url_3
+ 77. image_urls
+ 78. image_validated_at
+ 79. image_validation_note
+ 80. income_tax_rate_pct
+ 81. infrastructure_description
+ 82. insurance_availability_rating
+ 83. interests_supported
+ 84. international_access
+ 85. international_airport_distance
+ 86. international_flights_direct
+ 87. international_schools_available
+ 88. international_schools_count
+ 89. internet_reliability
+ 90. internet_speed
+ 91. lake_river_access
+ 92. languages_spoken
+ 93. last_ai_update
+ 94. last_verified_date
+ 95. latitude
+ 96. lgbtq_friendly_rating
+ 97. lifestyle_description
+ 98. local_mobility_options
+ 99. longitude
+100. marinas_count
+101. meal_cost
+102. medical_specialties_available
+103. medical_specialties_rating
+104. min_income_requirement_usd
+105. mobile_coverage
+106. mountain_access
+107. mountain_activities
+108. museums_rating
+109. name
+110. natural_disaster_risk
+111. natural_disaster_risk_score
+112. nearest_airport
+113. nearest_major_city
+114. nearest_major_hospital_km
+115. needs_update
+116. nightlife_rating
+117. outdoor_activities_rating
+118. outdoor_rating
+119. pace_of_life_actual
+120. parking_availability
+121. parks_per_capita
+122. pet_friendliness
+123. pet_friendly_rating
+124. political_stability_rating
+125. pollen_levels
+126. population
+127. precipitation_level_actual
+128. primary_language
+129. private_healthcare_cost_index
+130. property_appreciation_rate_pct
+131. property_tax_rate_pct
+132. public_transport_quality
+133. purchase_apartment_sqm_usd
+134. purchase_house_avg_usd
+135. quality_of_life
+136. recreation_centers
+137. region
+138. regional_airport_distance
+139. regional_connectivity
+140. regions
+141. rent_1bed
+142. rent_2bed_usd
+143. rent_house_usd
+144. requires_car
+145. residency_path_info
+146. restaurants_rating
+147. retirement_community_presence
+148. retirement_visa_available
+149. road_quality
+150. safety_description
+151. safety_score
+152. sales_tax_rate_pct
+153. search_vector
+154. seasonal_variation_actual
+155. secondary_languages
+156. senior_friendly_rating
+157. shopping_rating
+158. ski_resorts_within_100km
+159. social_atmosphere
+160. solo_living_support
+161. sports_facilities
+162. startup_ecosystem_rating
+163. summer_climate_actual
+164. sunshine_hours
+165. sunshine_level_actual
+166. swimming_facilities
+167. tax_haven_status
+168. tax_treaty_us
+169. tennis_courts_count
+170. timezone
+171. top_hobbies
+172. tourist_season_impact
+173. traditional_progressive_lean
+174. traffic_congestion
+175. train_station
+176. travel_connectivity_rating
+177. typical_home_price
+178. typical_monthly_living_cost
+179. typical_rent_1bed
+180. urban_rural_character
+181. utilities_cost
+182. vegetation_type_actual
+183. veterinary_clinics_count
+184. visa_on_arrival_countries
+185. visa_requirements
+186. walkability
+187. water_bodies
+188. water_sports_available
+189. wellness_rating
+190. winter_climate_actual

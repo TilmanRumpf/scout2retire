@@ -1819,9 +1819,6 @@ const TownsManager = () => {
             const errors = [];
             
             // Check for data inconsistencies
-            if (town.country === 'United States' && !town.state_code) {
-              errors.push('Missing state code for US town');
-            }
             if (town.coastal && (!town.water_bodies || !town.water_bodies.includes('ocean'))) {
               errors.push('Coastal town without ocean in water bodies');
             }

@@ -7,6 +7,9 @@
 /* iOS Header styles for fixed header */
 @import './styles/iosHeader.css';
 
+/* Leaflet map styles */
+@import './styles/leaflet-overrides.css';
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;

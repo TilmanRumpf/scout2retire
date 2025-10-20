@@ -6,6 +6,7 @@ import { getCurrentUser, signOut } from '../utils/authUtils';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 import '../styles/fonts.css';
+import SearchModal from './search/SearchModal';
 
 const QuickNav = React.memo(function QuickNav({ isOpen: propIsOpen, onClose }) {
   // Use props if provided, otherwise manage state internally
@@ -16,6 +17,7 @@ const QuickNav = React.memo(function QuickNav({ isOpen: propIsOpen, onClose }) {
   const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   // Auto-expand admin section when on admin pages
   const isOnAdminPage = location.pathname.startsWith('/admin');
@@ -293,6 +295,7 @@ const QuickNav = React.memo(function QuickNav({ isOpen: propIsOpen, onClose }) {
 
   // FIXED 09JUN25: Clean navigation items - NO MORE SVG ICON BULLSHIT
   const navItems = [
+    { path: 'search', label: 'Search', isModal: true, special: true },
     { path: '/daily', label: 'Today' },
     { path: '/discover', label: 'Discover' },
     { path: '/favorites', label: 'Favorites' },
@@ -366,7 +369,25 @@ const QuickNav = React.memo(function QuickNav({ isOpen: propIsOpen, onClose }) {
           <nav className="space-y-0.5 sm:space-y-1">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path && item.label !== 'Preferences';
-              
+
+              // Handle search modal
+              if (item.isModal) {
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => {
+                      setSearchModalOpen(true);
+                      handleClose();
+                    }}
+                    className={`w-full flex items-center justify-between p-2 sm:p-3 text-sm sm:text-base ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${uiConfig.colors.hoverBg} text-left`}
+                  >
+                    <span className={`font-medium ${item.special ? 'text-scout-orange-500' : ''}`}>
+                      🔍 {item.label}
+                    </span>
+                  </button>
+                );
+              }
+
               // Handle logout as a button instead of Link
               if (item.path === 'logout') {
                 return (
@@ -384,7 +405,7 @@ const QuickNav = React.memo(function QuickNav({ isOpen: propIsOpen, onClose }) {
                   </button>
                 );
               }
-              
+
               return (
                 <Link
                   key={item.path}
@@ -448,6 +469,12 @@ const QuickNav = React.memo(function QuickNav({ isOpen: propIsOpen, onClose }) {
           </div>
         </div>
       </div>
+
+      {/* Search Modal */}
+      <SearchModal
+        isOpen={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+      />
 
     </>
   );
