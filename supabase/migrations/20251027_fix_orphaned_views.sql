@@ -72,7 +72,7 @@ GRANT SELECT ON public.town_summaries TO authenticated;
 -- Based on the actual scotty_chat_usage table
 -- ============================================
 
-CREATE VIEW public.scotty_usage_analytics AS
+CREATE OR REPLACE VIEW public.scotty_usage_analytics AS
 SELECT
   month_year,
   COUNT(DISTINCT user_id) as unique_users,

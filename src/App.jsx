@@ -29,7 +29,7 @@ const Journal = React.lazy(() => import("./pages/Journal"));
 const TownsManager = React.lazy(() => import("./pages/admin/TownsManager"));
 const PaywallManager = React.lazy(() => import("./pages/admin/PaywallManager"));
 const HeaderMockup = React.lazy(() => import("./pages/HeaderMockup"));
-const ScottyGuide = React.lazy(() => import("./components/ScottyGuide"));
+const ScottyGuideEnhanced = React.lazy(() => import("./components/ScottyGuideEnhanced"));
 
 // Onboarding Flow - Lazy loaded
 const OnboardingProgress = React.lazy(() => import("./pages/onboarding/OnboardingProgress"));
@@ -279,7 +279,7 @@ const router = createBrowserRouter([
       },
       {
         path: "scotty",
-        element: <ProtectedRoute><AuthenticatedLayout><ScottyGuide /></AuthenticatedLayout></ProtectedRoute>
+        element: <ProtectedRoute><AuthenticatedLayout><ScottyGuideEnhanced /></AuthenticatedLayout></ProtectedRoute>
       },
       {
         path: "mockup",
