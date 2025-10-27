@@ -13,6 +13,7 @@
 import supabase from '../supabaseClient';
 import { getOnboardingProgress } from '../userpreferences/onboardingUtils';
 import { scoreTownsBatch } from './unifiedScoring';
+import { clearOutdatedScoringCache } from './cacheBuster';
 
 // Conversion function moved to unifiedScoring.js to avoid duplication
 
@@ -37,10 +38,13 @@ export const clearPersonalizedCache = (userId) => {
  */
 export const getPersonalizedTowns = async (userId, options = {}) => {
   try {
-    const { limit = 100, offset = 0, townIds } = options; // Default to 100 to show all towns
+    const { limit = 100, offset = 0, townIds, skipCache = false } = options; // Default to 100 to show all towns
+
+    // Clear outdated cache if needed (this runs only once per version)
+    clearOutdatedScoringCache();
 
     // Get user scoring preferences
-    
+
     // 1. Get user's onboarding preferences (skip auth check for algorithm)
     const { success: onboardingSuccess, data: userPreferences } = await getOnboardingProgress(userId, true);
     
@@ -98,6 +102,30 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
 
     // Build cache key for performance
     const cacheKey = `personalized_${userId}_${JSON.stringify(options)}`;
+
+    // Check if we have cached results (unless skipCache is true)
+    if (!options.skipCache) {
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const { data, timestamp } = JSON.parse(cached);
+          // Use cache if less than 1 hour old
+          if (Date.now() - timestamp < 3600000) {
+            console.log('[getPersonalizedTowns] Using cached results');
+            const gainesville = data.towns?.find(t => t.name?.toLowerCase().includes('gainesville'));
+            if (gainesville) {
+              console.log('[getPersonalizedTowns] Cached Gainesville score:', gainesville.matchScore + '%');
+            }
+            return data;
+          }
+        }
+      } catch (e) {
+        // If cache read fails, continue with fresh calculation
+        console.warn('Cache read failed:', e);
+      }
+    }
+
+    console.log('[getPersonalizedTowns] Calculating fresh scores (cache miss or skipCache=true)');
 
     // Build query with smart pre-filtering for performance
     // SELECT only needed columns for better performance (FIXED: removed non-existent scoring columns)
@@ -199,6 +227,13 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
 
     // 3. Score each town using the unified scoring function
     const scoredTowns = await scoreTownsBatch(allTowns, finalUserPreferences);
+
+    // Debug logging for Gainesville scoring
+    const gainesville = scoredTowns.find(t => t.name?.toLowerCase().includes('gainesville'));
+    if (gainesville) {
+      console.log('[getPersonalizedTowns] Gainesville score:', gainesville.matchScore + '%');
+      console.log('[getPersonalizedTowns] Category breakdown:', gainesville.categoryScores);
+    }
 
     // 4. Sort by match score (highest first) and paginate (unless specific townIds requested)
     let sortedTowns;

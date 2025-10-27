@@ -226,12 +226,24 @@ export const convertPreferencesToAlgorithmFormat = (userPreferences) => {
  */
 export const scoreTown = async (town, userPreferences) => {
   try {
+    // DEBUG: Log when scoring Gainesville
+    if (town.name?.toLowerCase().includes('gainesville')) {
+      console.log('[scoreTown] Starting to score Gainesville');
+      console.log('[scoreTown] User preferences passed in:', JSON.stringify(userPreferences, null, 2));
+    }
 
     // Convert preferences to algorithm format
     const convertedPreferences = convertPreferencesToAlgorithmFormat(userPreferences);
 
     // Calculate match using enhanced algorithm
     const enhancedResult = await calculateEnhancedMatch(convertedPreferences, town);
+
+    // DEBUG: Log Gainesville scoring details
+    if (town.name?.toLowerCase().includes('gainesville')) {
+      console.log('[scoreTown] Scoring Gainesville...');
+      console.log('[scoreTown] Enhanced result match_score:', enhancedResult.match_score);
+      console.log('[scoreTown] Category scores:', enhancedResult.category_scores);
+    }
 
     // Generate additional insights
     const insights = generateEnhancedInsights(town, convertedPreferences, enhancedResult.category_scores);

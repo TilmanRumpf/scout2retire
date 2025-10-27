@@ -85,7 +85,7 @@ export default function Favorites() {
           // Load town data for favorites
           if (favResult.favorites.length > 0) {
             const townIds = favResult.favorites.map(f => f.town_id);
-            const townsResult = await fetchTowns({ 
+            const townsResult = await fetchTowns({
               townIds,
               userId: user.id,
               component: 'Favorites',
@@ -93,6 +93,12 @@ export default function Favorites() {
             });
             if (townsResult.success) {
               console.log('Loaded favorite towns:', townsResult.towns.length, 'towns for', townIds.length, 'favorite IDs');
+              // DEBUG: Check Gainesville specifically
+              const gainesville = townsResult.towns.find(t => t.name?.toLowerCase().includes('gainesville'));
+              if (gainesville) {
+                console.log('[Favorites] Gainesville loaded with score:', gainesville.matchScore + '%');
+                console.log('[Favorites] Gainesville full data:', gainesville);
+              }
               setFavoriteTowns(townsResult.towns);
             }
           } else {

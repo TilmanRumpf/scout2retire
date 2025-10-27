@@ -248,15 +248,21 @@ const TownsManager = () => {
         return;
       }
 
-      // Check if user is admin using database is_admin column
+      // Check if user is admin using both old and new admin fields
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('is_admin')
+        .select('is_admin, admin_role')
         .eq('id', user.id)
         .single();
 
-      if (userError || !userData?.is_admin) {
-        console.error('❌ Not authorized - user is not admin');
+      // Check both new admin_role and legacy is_admin field
+      const hasAdminRole = userData?.admin_role === 'executive_admin' ||
+                          userData?.admin_role === 'assistant_admin';
+      const hasLegacyAdmin = userData?.is_admin === true;
+      const isUserAdmin = hasAdminRole || hasLegacyAdmin;
+
+      if (userError || !isUserAdmin) {
+        console.error('❌ Not authorized - user is not admin', { userData, userError });
         toast.error('You are not authorized to access the admin panel.');
         navigate('/');
         return;

@@ -17,6 +17,7 @@ const QuickNav = React.memo(function QuickNav({ isOpen: propIsOpen, onClose }) {
   const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isExecutiveAdmin, setIsExecutiveAdmin] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   // Auto-expand admin section when on admin pages
@@ -167,8 +168,14 @@ const QuickNav = React.memo(function QuickNav({ isOpen: propIsOpen, onClose }) {
     try {
       const { user: currentUser, profile } = await getCurrentUser();
       if (currentUser && profile) {
-        // Check if user is admin from database profile
-        setIsAdmin(profile.is_admin === true);
+        // Check if user is admin from database profile - check both old and new fields
+        const hasAdminRole = profile.admin_role === 'executive_admin' ||
+                             profile.admin_role === 'assistant_admin';
+        const hasLegacyAdmin = profile.is_admin === true;
+        setIsAdmin(hasAdminRole || hasLegacyAdmin);
+
+        // Also track if user is specifically an executive admin
+        setIsExecutiveAdmin(profile.admin_role === 'executive_admin');
 
         // Check for pending invitations
         const { data, error } = await supabase
@@ -447,6 +454,19 @@ const QuickNav = React.memo(function QuickNav({ isOpen: propIsOpen, onClose }) {
                 >
                   <span className="font-medium text-scout-orange-500">Towns-Manager</span>
                 </Link>
+                {/* Algorithm Manager - Only visible for executive admins */}
+                {isExecutiveAdmin && (
+                  <Link
+                    to="/admin/algorithm"
+                    className={`flex items-center justify-between p-2 sm:p-3 text-sm sm:text-base ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
+                      location.pathname === '/admin/algorithm'
+                        ? `${uiConfig.colors.success} ${uiConfig.colors.statusSuccess}`
+                        : `${uiConfig.colors.hoverBg}`
+                    }`}
+                  >
+                    <span className="font-medium text-scout-orange-500">🎯 Algorithm Manager</span>
+                  </Link>
+                )}
                 <Link
                   to="/admin/paywall"
                   className={`flex items-center justify-between p-2 sm:p-3 text-sm sm:text-base ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${

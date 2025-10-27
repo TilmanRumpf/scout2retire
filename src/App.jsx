@@ -27,6 +27,7 @@ const TownDiscovery = React.lazy(() => import("./pages/TownDiscovery"));
 const Chat = React.lazy(() => import("./pages/Chat"));
 const Journal = React.lazy(() => import("./pages/Journal"));
 const TownsManager = React.lazy(() => import("./pages/admin/TownsManager"));
+const AlgorithmManager = React.lazy(() => import("./pages/admin/AlgorithmManager"));
 const PaywallManager = React.lazy(() => import("./pages/admin/PaywallManager"));
 const HeaderMockup = React.lazy(() => import("./pages/HeaderMockup"));
 const ScottyGuideEnhanced = React.lazy(() => import("./components/ScottyGuideEnhanced"));
@@ -307,6 +308,10 @@ const router = createBrowserRouter([
       {
         path: "admin/towns-manager",
         element: <ProtectedRoute><AuthenticatedLayout><TownsManager /></AuthenticatedLayout></ProtectedRoute>
+      },
+      {
+        path: "admin/algorithm",
+        element: <ProtectedRoute><AuthenticatedLayout><AlgorithmManager /></AuthenticatedLayout></ProtectedRoute>
       },
       {
         path: "admin/paywall",
