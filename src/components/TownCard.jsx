@@ -1,5 +1,6 @@
 // components/TownCard.jsx
 import React, { useState } from 'react';
+import { formatTownDisplay } from '../utils/townDisplayUtils';
 import { Link } from 'react-router-dom';
 import { toggleFavorite } from '../utils/townUtils.jsx';
 import toast from 'react-hot-toast';

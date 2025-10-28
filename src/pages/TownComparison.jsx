@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { formatTownDisplay } from '../utils/townDisplayUtils';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { fetchTowns, fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
 import { getCurrentUser } from '../utils/authUtils';

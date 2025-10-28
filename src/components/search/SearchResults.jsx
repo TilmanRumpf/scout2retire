@@ -4,6 +4,7 @@ import { MapPin, Loader, AlertCircle, Search } from 'lucide-react';
 import { useTheme } from '../../contexts/useTheme';
 import TownCard from '../TownCard';
 import { formatDistance } from '../../utils/searchUtils';
+import { formatTownDisplay } from '../../utils/townDisplayUtils';
 
 export default function SearchResults({
   results,

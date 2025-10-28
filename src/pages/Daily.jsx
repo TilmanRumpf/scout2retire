@@ -15,6 +15,7 @@ import supabase from '../utils/supabaseClient';
 import { filterTownsWithImagesDebug } from '../utils/imageValidation';
 import { getPersonalizedTowns } from '../utils/scoring';
 import { getFeatureLimit } from '../utils/paywallUtils.js';
+import { formatTownDisplay } from '../utils/townDisplayUtils';
 import {
   MapPin, TrendingUp, DollarSign, Cloud, Users,
   Heart, Compass, Book, MessageSquare, Calendar,
@@ -652,7 +653,7 @@ export default function Daily() {
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className={`font-medium ${uiConfig.colors.heading} text-sm`}>
-                          {town.town_name}, {town.country}
+                          {formatTownDisplay(town)}
                         </span>
                         <span className={`text-xs px-2 py-1 ${uiConfig.layout.radius.full} font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 flex-shrink-0`}>
                           {town.matchScore}%
@@ -681,7 +682,7 @@ export default function Daily() {
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span className={`font-medium ${uiConfig.colors.heading} text-sm`}>
-                            {town.town_name}, {town.country}
+                            {formatTownDisplay(town)}
                           </span>
                           <span className={`text-xs px-2 py-1 ${uiConfig.layout.radius.full} font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 flex-shrink-0`}>
                             {town.matchScore}%
@@ -705,7 +706,7 @@ export default function Daily() {
                         >
                           <div className="flex items-center justify-between gap-2">
                             <span className={`font-medium ${uiConfig.colors.heading} text-sm`}>
-                              {town.town_name}, {town.country}
+                              {formatTownDisplay(town)}
                             </span>
                             <span className={`text-xs px-2 py-1 ${uiConfig.layout.radius.full} font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 flex-shrink-0`}>
                               {town.matchScore}%

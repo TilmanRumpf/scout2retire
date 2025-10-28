@@ -10,6 +10,7 @@ import UnifiedHeader from '../components/UnifiedHeader';
 import HeaderSpacer from '../components/HeaderSpacer';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
+import { formatTownDisplay } from '../utils/townDisplayUtils';
 
 // Predefined regions and their countries from onboarding
 const REGIONS = [
@@ -533,7 +534,7 @@ export default function Favorites() {
                         {/* Header: Town Name, Country (left) and Cost (right) */}
                         <div className="flex justify-between items-baseline mb-3">
                           <div className={`text-sm ${uiConfig.colors.heading}`}>
-                            {town.town_name}, {town.country}
+                            {formatTownDisplay(town)}
                           </div>
                           {(town.cost_of_living_usd || town.typical_monthly_living_cost) && (
                             <span className={`text-sm ${uiConfig.colors.body}`}>

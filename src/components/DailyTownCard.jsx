@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatTownDisplay } from '../utils/townDisplayUtils';
 import { useNavigate } from 'react-router-dom';
 import OptimizedImage from './OptimizedImage';
 import TownImageOverlay from './TownImageOverlay';

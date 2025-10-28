@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatTownDisplay } from '../utils/townDisplayUtils';
 import TownRadarChart from './TownRadarChart';
 import LikeButton from './LikeButton';
 import OptimizedImage from './OptimizedImage';
