@@ -86,9 +86,19 @@ export function formatTownDisplay(town, options = {}) {
 
   if (!town) return '';
 
-  const townName = town.town_name || town.name || '';
+  let townName = town.town_name || town.name || '';
   const region = town.region || '';
   const country = town.country || '';
+
+  // DEFENSIVE: Check if town_name already contains state abbreviation in parentheses
+  // Example: "Gainesville (FL)" should not become "Gainesville (FL) (FL)"
+  const hasStateInName = /\([A-Z]{2}\)/.test(townName);
+
+  if (hasStateInName) {
+    // Town name already has state abbreviation, just add country
+    const countryDisplay = abbreviateCountry ? getCountryAbbreviation(country) : country;
+    return `${townName}, ${countryDisplay}`;
+  }
 
   // Get abbreviations
   const regionAbbr = showRegion ? getRegionAbbreviation(region, country) : null;
