@@ -644,7 +644,7 @@ export default function Daily() {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        console.log('Clicked top match:', town.name, 'ID:', town.id);
+                        console.log('Clicked top match:', town.town_name, 'ID:', town.id);
                         navigate(`/town/${town.id}`);
                       }}
                       className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer text-left"
@@ -652,7 +652,7 @@ export default function Daily() {
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className={`font-medium ${uiConfig.colors.heading} text-sm`}>
-                          {town.name}, {town.country}
+                          {town.town_name}, {town.country}
                         </span>
                         <span className={`text-xs px-2 py-1 ${uiConfig.layout.radius.full} font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 flex-shrink-0`}>
                           {town.matchScore}%
@@ -673,7 +673,7 @@ export default function Daily() {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          console.log('Clicked top match:', town.name, 'ID:', town.id);
+                          console.log('Clicked top match:', town.town_name, 'ID:', town.id);
                           navigate(`/town/${town.id}`);
                         }}
                         className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer text-left"
@@ -681,7 +681,7 @@ export default function Daily() {
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span className={`font-medium ${uiConfig.colors.heading} text-sm`}>
-                            {town.name}, {town.country}
+                            {town.town_name}, {town.country}
                           </span>
                           <span className={`text-xs px-2 py-1 ${uiConfig.layout.radius.full} font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 flex-shrink-0`}>
                             {town.matchScore}%
@@ -698,14 +698,14 @@ export default function Daily() {
                         <button
                           key={town.id}
                           onClick={() => {
-                            console.log('Clicked top match (row 2):', town.name, 'ID:', town.id);
+                            console.log('Clicked top match (row 2):', town.town_name, 'ID:', town.id);
                             navigate(`/town/${town.id}`);
                           }}
                           className={`p-3 ${uiConfig.colors.card} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.states.hover} ${uiConfig.animation.transition} transform hover:scale-105 text-left`}
                         >
                           <div className="flex items-center justify-between gap-2">
                             <span className={`font-medium ${uiConfig.colors.heading} text-sm`}>
-                              {town.name}, {town.country}
+                              {town.town_name}, {town.country}
                             </span>
                             <span className={`text-xs px-2 py-1 ${uiConfig.layout.radius.full} font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 flex-shrink-0`}>
                               {town.matchScore}%
@@ -836,7 +836,7 @@ export default function Daily() {
                                 to={`/discover?town=${town.id}`}
                                 className={`text-xs px-2 py-1 ${uiConfig.colors.btnSecondary} ${uiConfig.layout.radius.md} hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors`}
                               >
-                                {town.name}
+                                {town.town_name}
                               </Link>
                             ))}
                           </div>
@@ -917,14 +917,14 @@ export default function Daily() {
                           <div className="relative w-20 h-20 flex-shrink-0">
                             <OptimizedImage
                               src={town.image_url_1}
-                              alt={town.name}
+                              alt={town.town_name}
                               className={`w-full h-full object-cover ${uiConfig.layout.radius.md}`}
                               fallbackIcon={MapPin}
                               fallbackIconSize={32}
                             />
                           </div>
                           <div className="flex-1">
-                            <p className={`font-medium ${uiConfig.colors.heading}`}>{town.name}, {town.region}</p>
+                            <p className={`font-medium ${uiConfig.colors.heading}`}>{town.town_name}, {town.region}</p>
                             <div className={`flex items-center gap-2 mt-1 ${update.update.color}`}>
                               <UpdateIcon className="w-4 h-4" />
                               <p className="text-sm">{update.update.text}</p>
@@ -953,7 +953,7 @@ export default function Daily() {
                       <div className="relative h-32">
                         <OptimizedImage
                           src={town.image_url_1}
-                          alt={town.name}
+                          alt={town.town_name}
                           className="w-full h-full object-cover"
                           fallbackIcon={MapPin}
                           fallbackIconSize={32}
@@ -965,7 +965,7 @@ export default function Daily() {
                         </div>
                       </div>
                       <div className="p-3">
-                        <p className={`font-medium ${uiConfig.colors.heading} text-sm`}>{town.name}</p>
+                        <p className={`font-medium ${uiConfig.colors.heading} text-sm`}>{town.town_name}</p>
                         <p className={`text-xs ${uiConfig.colors.body}`}>{town.region}, {town.country}</p>
                       </div>
                     </Link>

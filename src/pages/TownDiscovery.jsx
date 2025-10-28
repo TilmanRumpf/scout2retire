@@ -259,10 +259,10 @@ export default function TownDiscovery() {
       
       filtered = filtered.filter(town => {
         if (!town) return false;
-        
+
         // Search in name, region, and country
         const searchableText = [
-          town.name || '',
+          town.town_name || '',
           town.region || '',
           town.country || ''
         ].join(' ').toLowerCase();
@@ -877,14 +877,14 @@ export default function TownDiscovery() {
                 selectedTownData && String(town.id) === String(selectedTownData.id) ? `ring-2 ${uiConfig.colors.borderActive}` : ''
               }`}
             >
-              <div 
+              <div
                 className="relative h-40 cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={() => setSelectedTown(town.id)}
-                title={`View details for ${town.name}`}
+                title={`View details for ${town.town_name}`}
               >
                 <OptimizedImage
                   src={town.image_url_1}
-                  alt={town.name}
+                  alt={town.town_name}
                   className="w-full h-full object-cover"
                   fallbackIcon={MapPin}
                   fallbackIconSize={48}
@@ -897,7 +897,7 @@ export default function TownDiscovery() {
                     isFavorited={isFavorited(town.id)}
                     isUpdating={false}
                     onFavoriteClick={async () => {
-                      await handleToggleFavorite(town.id, town.name, town.country);
+                      await handleToggleFavorite(town.id, town.town_name, town.country);
                     }}
                     appealStatement={(() => {
                       if (!town.categoryScores) return null; // Will show "Analyzing..."
@@ -922,7 +922,7 @@ export default function TownDiscovery() {
                 {/* Header: Town Name, Country (left) and Price (right) */}
                 <div className="flex justify-between items-baseline mb-3">
                   <div className={`text-sm ${uiConfig.colors.heading}`}>
-                    {town.name}, {town.country}
+                    {town.town_name}, {town.country}
                   </div>
                   {(town.cost_of_living_usd || town.typical_monthly_living_cost) && (
                     <span className={`text-sm ${uiConfig.colors.body}`}>
