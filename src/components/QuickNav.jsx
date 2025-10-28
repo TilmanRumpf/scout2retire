@@ -478,7 +478,7 @@ const QuickNav = React.memo(function QuickNav({ isOpen: propIsOpen, onClose }) {
                         : `${uiConfig.colors.hoverBg}`
                     }`}
                   >
-                    <span className="font-medium text-scout-orange-500">🎯 Algorithm Manager</span>
+                    <span className="font-medium text-scout-orange-500">Algorithm Manager</span>
                   </Link>
                 )}
                 <Link
