@@ -1,37 +1,51 @@
-# LATEST CHECKPOINT - 2025-10-27 23:24
+# LATEST CHECKPOINT - 2025-10-28 03:40
 
-## 🚀 CURRENT: Algorithm Manager & Scoring System Enhancements
+## 🔒 CURRENT: Pre Schema Migration - Geographic Standardization
 
 ### Quick Restore Commands
 ```bash
 # To restore database
-node restore-database-snapshot.js 2025-10-27T23-24-25
+node restore-database-snapshot.js 2025-10-28T03-40-05
 
 # To restore code
-git reset --hard 23e457b
+git restore .
 ```
 
 ### What's Working
-- ✅ **Algorithm Manager**: New admin panel for dynamic scoring configuration
-- ✅ **Cache Busting**: Prevents users from seeing stale match results
-- ✅ **Enhanced Matching**: Fetches ALL qualifying towns (no 200 limit)
-- ✅ **Smart Pre-filtering**: 50-80% reduction in data transfer at database level
-- ✅ **Admin Panels**: TownsManager + AlgorithmManager both fully functional
-- ✅ **RLS Performance**: 136 warnings fixed, 10-25x faster queries
-- ✅ **Security**: All hardening complete (RLS + search_path + views)
-- ✅ **Data Quality**: 94% complete, 352 towns with full data
-- ✅ **Scotty AI**: Full database persistence with conversation history
+- ✅ **Algorithm Manager**: localStorage persistence (remembers last town)
+- ✅ **Scoring Synchronization**: Fixed 77% vs 80% discrepancy (v2.2.0)
+- ✅ **Database**: 352 towns, no duplicate names globally
+- ✅ **Geographic Data**: Comprehensive region field for all countries
+- ✅ **All Systems**: Fully operational and tested
 
-### Key Achievement
-**ALGORITHM MANAGEMENT SYSTEM COMPLETE**: Created new AlgorithmManager admin panel allowing dynamic configuration of scoring logic. Implemented cache busting system to invalidate stale results after algorithm updates. Enhanced personalized matching to fetch ALL qualifying towns with smart pre-filtering (50-80% data reduction). Better code organization with conversion functions consolidated in unifiedScoring.js. All admin tools functional and tested.
+### What We're About To Do
+**MAJOR SCHEMA MIGRATION - Geographic Data Standardization**
+- Rename `name` → `town_name` (AI and human friendly)
+- Add `country_code` (ISO 3166-1 alpha-2: US, AE, CA)
+- Add `subdivision_code` (ISO 3166-2: FL, AZ, ON)
+- Update ~50+ files across entire codebase
+- **HIGH RISK / HIGH REWARD**
 
-**Full Details:** [docs/recovery/CHECKPOINT_2025-10-27_SYSTEM_STATE.md](docs/recovery/CHECKPOINT_2025-10-27_SYSTEM_STATE.md)
+### Why This Migration?
+- Generic `name` column causes 10+ minute delays EVERY session
+- Need ISO standards for future growth (multiple Gainesvilles)
+- One-time pain for permanent operational efficiency
+
+**Full Details:** [docs/recovery/CHECKPOINT_2025-10-28_PRE_SCHEMA_MIGRATION.md](docs/recovery/CHECKPOINT_2025-10-28_PRE_SCHEMA_MIGRATION.md)
 
 ---
 
 ## 📚 Recent Checkpoint History
 
-### 1. **2025-10-27 23:24** - CURRENT (23e457b) 🎯 ALGORITHM MANAGER
+### 1. **2025-10-28 03:40** - CURRENT 🔒 PRE SCHEMA MIGRATION
+- localStorage persistence for Algorithm Manager
+- Fixed scoring discrepancies (v2.2.0 cache)
+- Researched ISO 3166 standards for geographic data
+- Database snapshot before major migration
+- Database: 352 towns, 14 users, 31 favorites
+- Status: 🟢 STABLE - Ready for migration
+
+### 2. **2025-10-27 23:24** - (23e457b) 🎯 ALGORITHM MANAGER
 - New AlgorithmManager admin panel for scoring configuration
 - Cache busting system for invalidating stale match results
 - Enhanced matching: fetches ALL qualifying towns (no limits)
@@ -40,7 +54,7 @@ git reset --hard 23e457b
 - Database: 352 towns, 14 users, 31 favorites
 - Status: 🟢 FULLY OPERATIONAL
 
-### 2. **2025-10-26 22:06** - (61ce0ae) 🚀 RLS OPTIMIZATION
+### 3. **2025-10-26 22:06** - (61ce0ae) 🚀 RLS OPTIMIZATION
 - Fixed 136 RLS performance warnings with helper function
 - Created get_current_user_id() for auth caching (95%+ reduction)
 - Optimized 7+ high-traffic tables with new policies
@@ -48,7 +62,7 @@ git reset --hard 23e457b
 - All security hardening complete (RLS + search_path + views)
 - Database: 352 towns, 14 users, 137 Scotty messages
 
-### 3. **2025-10-26 20:00** - (7bb45ae) 🔒 SECURITY + SCOTTY
+### 4. **2025-10-26 20:00** - (7bb45ae) 🔒 SECURITY + SCOTTY
 - Completed Scotty AI assistant with full database persistence
 - Fixed critical security issues (10 tables missing RLS)
 - Removed SECURITY DEFINER from views
@@ -57,7 +71,7 @@ git reset --hard 23e457b
 - Analytics views for usage monitoring
 - Database: 352 towns, 14 users, 31 favorites
 
-### 4. **2025-10-20 12:14** - (7bb45ae) 🚀 PERFORMANCE
+### 5. **2025-10-20 12:14** - (7bb45ae) 🚀 PERFORMANCE
 - Implemented all critical performance optimizations
 - React.memo on TownCard/DailyTownCard (99.7% fewer re-renders)
 - useMemo for TownDiscovery filtering (95% faster)
@@ -66,160 +80,37 @@ git reset --hard 23e457b
 - App now 3-5x faster with native-like performance
 - Database: 352 towns, 14 users, 31 favorites
 
-### 5. **2025-10-20 05:15** - DATA QUALITY (80baf6c)
-- Enhanced device tracking (52 properties)
-- Exact device model detection (ua-parser-js)
-- User Device Lookup troubleshooting tool
-- Full browser & OS versions
-- Screen resolution, viewport, pixel ratio
-- Touch detection, orientation, network speed
-- Display preferences (dark mode, HDR, color gamut)
-- Database: 352 towns, 14 users, 31 favorites
-
 ---
 
 ## 📊 Database State
-- **Snapshot**: database-snapshots/2025-10-27T23-24-25
+- **Snapshot**: database-snapshots/2025-10-28T03-40-05
 - **Towns**: 352 records (all with complete data)
 - **Users**: 14 active users
 - **Preferences**: 13 configured
 - **Favorites**: 31 saved
 - **Notifications**: 2 active
-- **Status**: 🟢 FULLY OPERATIONAL
+- **Status**: 🟢 READY FOR MIGRATION
 
 ---
 
-## 🎯 What Was Achieved Today
+## 🚨 CRITICAL WARNINGS
 
-### Algorithm Management System
-- **AlgorithmManager Admin Panel**
-  - Dynamic scoring configuration interface
-  - Allows real-time adjustment of matching parameters
-  - Centralized control over town matching logic
-  - Full CRUD operations for scoring rules
+**BEFORE PROCEEDING WITH MIGRATION:**
+- ✅ Database snapshot created (2025-10-28T03-40-05)
+- ⚠️  HIGH-RISK migration affecting 192-column table
+- ⚠️  Will update ~50+ files across codebase
+- ⚠️  Test thoroughly before considering complete
+- ⚠️  Do NOT drop old `name` column until fully verified
 
-- **Cache Busting System**
-  - Prevents users from seeing outdated match results
-  - Invalidates stale sessionStorage cache automatically
-  - Version-based cache invalidation strategy
-  - User-specific cache clearing capabilities
-
-- **Enhanced Personalized Matching**
-  - Fetches ALL qualifying towns (removed 200 limit)
-  - Smart pre-filtering at database level (50-80% reduction)
-  - Deal-breaker filtering (budget, healthcare, safety)
-  - Improved caching strategy with sessionStorage
-
-### Code Organization Improvements
-- **Consolidated Functions**
-  - Moved conversion functions to unifiedScoring.js (no duplication)
-  - Better separation of concerns in scoring modules
-  - Cleaner imports across codebase
-  - Enhanced maintainability
-
-- **Database Utilities Created**
-  - RLS verification scripts in database-utilities/
-  - Admin access testing tools
-  - Function qualification fixes
-  - Quality check scripts
-
-### Problems Solved
-1. ✅ Users seeing stale matches → Cache busting system
-2. ✅ Limited results (200 cap) → Fetch all qualifying towns
-3. ✅ No admin control over scoring → AlgorithmManager panel
-4. ✅ Duplicate code → Consolidated in unifiedScoring.js
-5. ✅ RLS warnings → Multiple migration fixes created
+**ABORT CRITERIA:**
+- If >10 breaking errors occur during migration
+- If core functionality breaks and can't be quickly fixed
+- If migration takes >2 hours without progress
+- User requests abort
 
 ---
 
-## 🔍 Testing Checklist
-
-```bash
-# 1. Test Algorithm Manager (Admin)
-Navigate to Admin Panel → Algorithm Manager
-Verify scoring configuration interface loads
-Test adjusting matching parameters
-Confirm changes save and persist
-
-# 2. Test Enhanced Matching
-Navigate to Find Towns
-Enter preferences
-Click "Find Matches"
-Verify results include ALL qualifying towns (not capped at 200)
-Check browser console for cache messages
-
-# 3. Test Cache Busting
-Make algorithm change in AlgorithmManager
-Return to Find Towns
-Verify cache is invalidated
-Confirm new results reflect updated algorithm
-
-# 4. Test Database Performance
-Use Supabase MCP to execute:
-SELECT id, name, country, overall_score
-FROM towns
-ORDER BY overall_score DESC
-LIMIT 20;
-
-# 5. Verify RLS Optimization Still Working
-Check no performance warnings in Supabase dashboard
-Confirm queries execute in < 100ms
-```
-
----
-
-## ⚡ Performance Metrics
-- **Page Load**: < 500ms (maintained)
-- **Matching Algorithm**: < 1s for all 352 towns
-- **Database Queries**: 10-25x faster with RLS optimization
-- **Cache Hit Rate**: ~80% for repeat searches
-- **Admin Panel Load**: < 300ms
-
----
-
-## 📁 Key Files Created/Modified
-
-### Created
-- `src/pages/admin/AlgorithmManager.jsx` - New admin panel
-- `src/utils/scoring/cacheBuster.js` - Cache invalidation system
-- `docs/recovery/CHECKPOINT_2025-10-27_SYSTEM_STATE.md` - This checkpoint
-- `database-utilities/` - Multiple RLS verification scripts
-- `docs/database/` - RLS analysis and verification docs
-- Multiple migration files for function fixes
-
-### Modified
-- `src/utils/scoring/matchingAlgorithm.js` - Enhanced pre-filtering
-- `src/utils/scoring/unifiedScoring.js` - Consolidated functions
-- `src/App.jsx` - Application updates
-- `src/components/QuickNav.jsx` - Navigation improvements
-- `src/pages/Favorites.jsx` - Favorites enhancements
-- `src/pages/admin/TownsManager.jsx` - Admin panel updates
-- `src/utils/townUtils.jsx` - Utility improvements
-
----
-
-## ⚠️ Known Issues
-- **Cleanup Needed**: Multiple debug/test files in root directory
-  - Should archive: analyze-rls-gap.js, check-*.sql files
-  - Move screenshots to docs/screenshots/
-  - Organize markdown reports into docs/ subdirs
-- **Data Gaps**:
-  - 329 towns missing photos (93%)
-  - internet_reliability field empty (6% data gap)
-- **Database Snapshot Warnings**: shared_towns, invitations, reviews tables don't exist (SAFE TO IGNORE)
-
----
-
-## 🚀 Next Steps
-1. **Archive Debug Files** - Move root-level debug scripts to archive/
-2. **Test Algorithm Manager** - Thoroughly test scoring configuration UI
-3. **Verify Cache Busting** - Confirm users get fresh results after updates
-4. **Add Photos** - Begin populating 329 missing town photos
-5. **Monitor Performance** - Track query times with new optimizations
-
----
-
-**Last Updated:** October 27, 2025 23:24 PST
-**Git Commit:** 23e457b
-**System Status:** 🟢 PRODUCTION READY
-**Breaking Changes:** None (backward compatible)
+**Last Updated:** October 28, 2025 03:40 UTC
+**Database Snapshot:** 2025-10-28T03-40-05
+**System Status:** 🟢 STABLE - READY FOR MIGRATION
+**Breaking Changes:** NONE YET (migration pending)

@@ -5,12 +5,14 @@ import { canUserPerform } from './paywallUtils.js';
 
 // SINGLE SOURCE OF TRUTH FOR TOWN COLUMNS - NEVER DUPLICATE!
 // This caused the 3-hour climate scoring disaster when duplicated
+// UPDATED (2025-10-27): Added 4 missing fields to match matchingAlgorithm.js
 const TOWN_SELECT_COLUMNS = `
   id, name, country, population, region, geo_region, regions,
   image_url_1, image_url_2, image_url_3,
   latitude, longitude, description,
   cost_of_living_usd, typical_monthly_living_cost, cost_index,
   healthcare_score, safety_score, healthcare_cost_monthly,
+  environmental_health_rating,
   avg_temp_summer, avg_temp_winter, climate, climate_description,
   summer_climate_actual, winter_climate_actual,
   sunshine_hours, sunshine_level_actual, annual_rainfall,
@@ -21,7 +23,7 @@ const TOWN_SELECT_COLUMNS = `
   walkability, expat_community_size,
   geographic_features, geographic_features_actual, vegetation_type_actual,
   urban_rural_character, pace_of_life_actual,
-  primary_language, cultural_events_rating, nightlife_rating,
+  primary_language, languages_spoken, cultural_events_rating, nightlife_rating,
   restaurants_rating, museums_rating, shopping_rating,
   cultural_landmark_1, social_atmosphere,
   outdoor_rating, outdoor_activities_rating, beaches_nearby,
@@ -30,11 +32,11 @@ const TOWN_SELECT_COLUMNS = `
   marinas_count, ski_resorts_within_100km, dog_parks_count,
   farmers_markets, water_bodies, activities_available,
   hospital_count, nearest_major_hospital_km, english_speaking_doctors,
-  visa_requirements, visa_on_arrival_countries, retirement_visa_available,
-  digital_nomad_visa, crime_rate, natural_disaster_risk, internet_speed,
+  visa_requirements, visa_on_arrival_countries, easy_residency_countries,
+  retirement_visa_available, digital_nomad_visa, crime_rate, natural_disaster_risk, internet_speed,
   rent_1bed, rent_2bed_usd, groceries_cost, meal_cost, utilities_cost,
   income_tax_rate_pct, sales_tax_rate_pct, property_tax_rate_pct,
-  tax_haven_status, foreign_income_taxed
+  tax_haven_status, tax_treaty_us, foreign_income_taxed
 `;
 
 // Town management

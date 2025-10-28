@@ -6,7 +6,9 @@
  */
 
 // Increment this version whenever scoring logic changes
-export const SCORING_CACHE_VERSION = 'v2.0.0_2025-10-27';
+// v2.1.0: Fixed missing 6 fields in matchingAlgorithm.js SELECT query
+// v2.2.0: Fixed missing 4 fields in townUtils.jsx TOWN_SELECT_COLUMNS (environmental_health_rating, tax_treaty_us, languages_spoken, easy_residency_countries)
+export const SCORING_CACHE_VERSION = 'v2.2.0_2025-10-27';
 
 /**
  * Clear all cached scoring results if they're from an older version

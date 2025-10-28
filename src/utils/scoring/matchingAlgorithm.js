@@ -128,20 +128,23 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     console.log('[getPersonalizedTowns] Calculating fresh scores (cache miss or skipCache=true)');
 
     // Build query with smart pre-filtering for performance
-    // SELECT only needed columns for better performance (FIXED: removed non-existent scoring columns)
+    // SELECT only needed columns for better performance
+    // FIXED (2025-10-27): Added 6 missing fields that caused scoring discrepancies
     const selectColumns = `
       id, name, country, population, region,
       image_url_1, image_url_2, image_url_3,
       latitude, longitude, description,
-      cost_index, cost_of_living_usd, 
+      cost_index, cost_of_living_usd, typical_monthly_living_cost,
       rent_1bed, rent_2bed_usd, meal_cost, groceries_cost, utilities_cost,
       income_tax_rate_pct, sales_tax_rate_pct, property_tax_rate_pct,
-      tax_haven_status, foreign_income_taxed,
+      tax_haven_status, tax_treaty_us, foreign_income_taxed,
       healthcare_score, safety_score, quality_of_life, healthcare_cost_monthly,
+      environmental_health_rating,
       hospital_count, nearest_major_hospital_km, english_speaking_doctors,
       climate, climate_description, avg_temp_summer, avg_temp_winter,
       summer_climate_actual, winter_climate_actual,
       annual_rainfall, sunshine_hours, sunshine_level_actual,
+      precipitation_level_actual,
       humidity_average, humidity_level_actual, seasonal_variation_actual,
       air_quality_index,
       activities_available, interests_supported,
@@ -150,12 +153,12 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
       tennis_courts_count, marinas_count, ski_resorts_within_100km,
       dog_parks_count, farmers_markets, water_bodies, walkability,
       expat_community_size, english_proficiency_level,
-      primary_language, cultural_events_rating, museums_rating,
+      primary_language, languages_spoken, cultural_events_rating, museums_rating,
       restaurants_rating, shopping_rating, cultural_landmark_1,
       social_atmosphere, pace_of_life_actual, urban_rural_character,
-      visa_requirements, visa_on_arrival_countries, residency_path_info,
-      retirement_visa_available, digital_nomad_visa, crime_rate,
-      natural_disaster_risk, internet_speed,
+      visa_requirements, visa_on_arrival_countries, easy_residency_countries,
+      residency_path_info, retirement_visa_available, digital_nomad_visa,
+      crime_rate, natural_disaster_risk, internet_speed,
       geographic_features, geographic_features_actual, vegetation_type_actual,
       elevation_meters, distance_to_ocean_km, nearest_airport,
       airport_distance, geo_region, regions, top_hobbies,

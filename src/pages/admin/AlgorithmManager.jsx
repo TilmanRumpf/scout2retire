@@ -33,10 +33,12 @@ const AlgorithmManager = () => {
   const [userPreferences, setUserPreferences] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [showTransparency, setShowTransparency] = useState(false);
-  const [showTesting, setShowTesting] = useState(false);
+  const [showTesting, setShowTesting] = useState(true); // Default to open
   const [townSearch, setTownSearch] = useState('');
   const [showTownDropdown, setShowTownDropdown] = useState(false);
   const [filteredTowns, setFilteredTowns] = useState([]);
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [isRestoringTown, setIsRestoringTown] = useState(false);
 
   // Algorithm configuration state
   const [config, setConfig] = useState({
@@ -149,6 +151,64 @@ const AlgorithmManager = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Restore last selected town from localStorage when towns are loaded
+  useEffect(() => {
+    if (towns.length === 0 || isRestoringTown) return;
+
+    try {
+      const savedTownId = localStorage.getItem('algorithmManager_lastTownId');
+      const savedTownName = localStorage.getItem('algorithmManager_lastTownName');
+
+      if (savedTownId && savedTownName) {
+        // Find the town in the loaded towns list
+        const town = towns.find(t => t.id === savedTownId);
+
+        if (town) {
+          setIsRestoringTown(true);
+          setTownSearch(town.name);
+          setSelectedTown(town);
+          console.log('[AlgorithmManager] Restored last selected town:', town.name);
+        } else {
+          // Town ID not found, try to find by name
+          const townByName = towns.find(t => t.name === savedTownName);
+          if (townByName) {
+            setIsRestoringTown(true);
+            setTownSearch(townByName.name);
+            setSelectedTown(townByName);
+            console.log('[AlgorithmManager] Restored town by name:', townByName.name);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[AlgorithmManager] Error restoring last town:', error);
+    }
+  }, [towns, isRestoringTown]);
+
+  // Reset restoration flag after restoration is complete
+  useEffect(() => {
+    if (isRestoringTown && selectedTown) {
+      // Wait for next tick to ensure restoration is complete
+      const timer = setTimeout(() => {
+        setIsRestoringTown(false);
+        console.log('[AlgorithmManager] Restoration complete, re-enabled saving');
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isRestoringTown, selectedTown]);
+
+  // Save selected town to localStorage whenever it changes
+  useEffect(() => {
+    if (selectedTown && !isRestoringTown) {
+      try {
+        localStorage.setItem('algorithmManager_lastTownId', selectedTown.id);
+        localStorage.setItem('algorithmManager_lastTownName', selectedTown.name);
+        console.log('[AlgorithmManager] Saved town to localStorage:', selectedTown.name);
+      } catch (error) {
+        console.error('[AlgorithmManager] Error saving town to localStorage:', error);
+      }
+    }
+  }, [selectedTown, isRestoringTown]);
+
   // Handle category weight change
   const handleWeightChange = (category, value) => {
     setConfig(prev => ({
@@ -220,11 +280,11 @@ const AlgorithmManager = () => {
   // Test scoring with selected town
   const handleTestScoring = async () => {
     if (!selectedTown || !userPreferences) {
-      toast.error('Select a town to test scoring');
       console.log('Missing data - selectedTown:', selectedTown, 'userPreferences:', userPreferences);
       return;
     }
 
+    setIsCalculating(true);
     try {
       // Clear any cached results to ensure fresh scoring
       const keysToRemove = [];
@@ -316,8 +376,17 @@ const AlgorithmManager = () => {
     } catch (error) {
       console.error('Error testing scoring:', error);
       toast.error('Error calculating test score');
+    } finally {
+      setIsCalculating(false);
     }
   };
+
+  // Auto-calculate when town is selected
+  useEffect(() => {
+    if (selectedTown && userPreferences) {
+      handleTestScoring();
+    }
+  }, [selectedTown]); // Only trigger when selectedTown changes
 
   if (loading) {
     return (
@@ -339,35 +408,163 @@ const AlgorithmManager = () => {
       <UnifiedHeader title="🎯 Algorithm Manager" />
       <HeaderSpacer />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Description and Actions */}
+        {/* Page Description */}
         <div className="mb-8">
-          <p className={`${uiConfig.colors.body} mb-4`}>
+          <p className={`${uiConfig.colors.body}`}>
             Configure the town matching algorithm weights and scoring parameters
           </p>
-
-          {/* Action Buttons */}
-          <div className="flex gap-4">
-            <button
-              onClick={() => setShowTransparency(!showTransparency)}
-              className={uiConfig.colors.btnPrimary}
-            >
-              {showTransparency ? '📊 Hide' : '📊 Show'} Algorithm Transparency
-            </button>
-            <button
-              onClick={() => setShowTesting(!showTesting)}
-              className={uiConfig.colors.btnPrimary}
-            >
-              {showTesting ? '🧪 Hide' : '🧪 Show'} Live Testing
-            </button>
-          </div>
         </div>
 
-        {/* Transparency Section */}
-        {showTransparency && (
-          <div className={`${uiConfig.colors.card} border ${uiConfig.colors.border} rounded-lg p-6 mb-6`}>
-            <h2 className={`text-xl font-semibold ${uiConfig.colors.heading} mb-4`}>📊 Algorithm Transparency</h2>
+        {/* Live Testing Section - Collapsible */}
+        <div className={`${uiConfig.colors.card} border ${uiConfig.colors.border} rounded-lg mb-6`}>
+          <button
+            onClick={() => setShowTesting(!showTesting)}
+            className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
+          >
+            <h2 className={`text-xl font-semibold ${uiConfig.colors.heading}`}>
+              🧪 Live Algorithm Testing
+            </h2>
+            <span className={`text-2xl transform transition-transform ${showTesting ? 'rotate-180' : ''}`}>
+              ▼
+            </span>
+          </button>
 
-            <div className="space-y-6">
+          {showTesting && (
+            <div className="px-6 pb-6 space-y-4 border-t border-gray-200">
+            <div>
+              <h3 className="text-lg font-semibold text-blue-800 mb-2 mt-4">
+                Search for a Town to Test:
+              </h3>
+              <div className="relative" ref={dropdownRef}>
+                <input
+                  type="text"
+                  value={townSearch}
+                  onChange={(e) => {
+                    setTownSearch(e.target.value);
+                    setShowTownDropdown(true);
+                  }}
+                  onFocus={() => setShowTownDropdown(true)}
+                  placeholder="Type town name..."
+                  className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary"
+                />
+
+                {showTownDropdown && filteredTowns.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {filteredTowns.map(town => (
+                      <button
+                        key={town.id}
+                        onClick={() => {
+                          setSelectedTown(town);
+                          setTownSearch(town.name);
+                          setShowTownDropdown(false);
+                          setTestResults(null);
+                        }}
+                        className="w-full text-left px-3 py-2 hover:bg-gray-100 focus:bg-gray-100 transition-colors"
+                      >
+                        <div className="font-medium">{town.name}</div>
+                        <div className="text-sm text-gray-500">
+                          {town.country}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {townSearch && filteredTowns.length === 0 && (
+                <p className={`text-sm ${uiConfig.colors.muted} mt-1`}>No towns found matching "{townSearch}"</p>
+              )}
+            </div>
+
+            {selectedTown && (
+              <div className={`${uiConfig.colors.card} rounded p-4`}>
+                <p className={`text-sm mb-2 ${uiConfig.colors.body}`}>
+                  <strong>Testing as:</strong> {currentUser?.email}
+                </p>
+                <p className={`text-sm ${uiConfig.colors.body}`}>
+                  <strong>Selected:</strong> {selectedTown.name}, {selectedTown.country}
+                </p>
+
+                {isCalculating && (
+                  <div className="mt-4 flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                    <span className={`text-sm ${uiConfig.colors.muted}`}>Calculating score...</span>
+                  </div>
+                )}
+
+                <div className={`mt-2 text-xs ${uiConfig.colors.hint}`}>
+                  <p>💡 Tip: The production UI may show cached scores from earlier calculations.</p>
+                  <p>To get fresh scores, clear your browser cache or use an incognito window.</p>
+                </div>
+              </div>
+            )}
+
+            {testResults && !isCalculating && (
+              <div className={`${uiConfig.colors.card} rounded p-4 space-y-4`}>
+                <h3 className={`font-semibold text-lg ${uiConfig.colors.accent}`}>Test Results</h3>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className={`text-sm ${uiConfig.colors.hint}`}>Overall Score</p>
+                    <p className={`text-2xl font-bold ${uiConfig.colors.accent}`}>{testResults.score}%</p>
+                    <p className={`text-sm ${uiConfig.colors.muted}`}>{testResults.quality}</p>
+                  </div>
+
+                  <div>
+                    <p className={`text-sm ${uiConfig.colors.hint}`}>Category Breakdown</p>
+                    <div className="space-y-1">
+                      {Object.entries(testResults.categoryScores || {}).map(([cat, score]) => (
+                        <div key={cat} className="flex justify-between text-sm">
+                          <span className={`capitalize ${uiConfig.colors.body}`}>{cat}:</span>
+                          <span className={`font-semibold ${uiConfig.colors.heading}`}>{score}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {testResults.factors && testResults.factors.length > 0 && (
+                  <div>
+                    <p className={`text-sm font-semibold ${uiConfig.colors.body} mb-2`}>Top Matching Factors:</p>
+                    <ul className="text-sm space-y-1">
+                      {testResults.factors.slice(0, 5).map((factor, idx) => (
+                        <li key={idx} className="flex justify-between">
+                          <span className={uiConfig.colors.body}>{factor.factor}</span>
+                          <span className={factor.score > 0 ? uiConfig.colors.accent : uiConfig.colors.error}>
+                            {factor.score > 0 ? '+' : ''}{factor.score}pts
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className={`text-xs ${uiConfig.colors.muted} mt-4`}>
+                  <p><strong>Note:</strong> This uses YOUR preferences ({currentUser?.email}) with the current algorithm weights.</p>
+                  <p>The score shows how well {selectedTown.name} matches your personal retirement preferences.</p>
+                </div>
+              </div>
+            )}
+            </div>
+          )}
+        </div>
+
+        {/* Transparency Section - Collapsible */}
+        <div className={`${uiConfig.colors.card} border ${uiConfig.colors.border} rounded-lg mb-6`}>
+          <button
+            onClick={() => setShowTransparency(!showTransparency)}
+            className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
+          >
+            <h2 className={`text-xl font-semibold ${uiConfig.colors.heading}`}>
+              📊 Algorithm Transparency
+            </h2>
+            <span className={`text-2xl transform transition-transform ${showTransparency ? 'rotate-180' : ''}`}>
+              ▼
+            </span>
+          </button>
+
+          {showTransparency && (
+            <div className="px-6 pb-6 space-y-6 border-t border-gray-200">
               <div>
                 <h3 className="text-lg font-semibold text-blue-800 mb-2">Database Architecture</h3>
                 <div className="bg-white rounded p-4">
@@ -470,132 +667,9 @@ const AlgorithmManager = () => {
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Live Testing Section */}
-        {showTesting && (
-          <div className={`${uiConfig.colors.card} border ${uiConfig.colors.border} rounded-lg p-6 mb-6`}>
-            <h2 className={`text-xl font-semibold ${uiConfig.colors.heading} mb-4`}>🧪 Live Algorithm Testing</h2>
-
-            <div className="space-y-4">
-              <div>
-                <label className={`block text-sm font-medium ${uiConfig.colors.body} mb-2`}>
-                  Search for a Town to Test:
-                </label>
-                <div className="relative" ref={dropdownRef}>
-                  <input
-                    type="text"
-                    value={townSearch}
-                    onChange={(e) => {
-                      setTownSearch(e.target.value);
-                      setShowTownDropdown(true);
-                    }}
-                    onFocus={() => setShowTownDropdown(true)}
-                    placeholder="Type town name..."
-                    className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary"
-                  />
-
-                  {showTownDropdown && filteredTowns.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                      {filteredTowns.map(town => (
-                        <button
-                          key={town.id}
-                          onClick={() => {
-                            setSelectedTown(town);
-                            setTownSearch(town.name);
-                            setShowTownDropdown(false);
-                            setTestResults(null);
-                          }}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-100 focus:bg-gray-100 transition-colors"
-                        >
-                          <div className="font-medium">{town.name}</div>
-                          <div className="text-sm text-gray-500">
-                            {town.country}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {townSearch && filteredTowns.length === 0 && (
-                  <p className={`text-sm ${uiConfig.colors.muted} mt-1`}>No towns found matching "{townSearch}"</p>
-                )}
-              </div>
-
-              {selectedTown && (
-                <div className={`${uiConfig.colors.card} rounded p-4`}>
-                  <p className={`text-sm mb-2 ${uiConfig.colors.body}`}>
-                    <strong>Testing as:</strong> {currentUser?.email}
-                  </p>
-                  <p className={`text-sm mb-4 ${uiConfig.colors.body}`}>
-                    <strong>Selected:</strong> {selectedTown.name}, {selectedTown.country}
-                  </p>
-
-                  <button
-                    onClick={handleTestScoring}
-                    className={uiConfig.colors.btnPrimary}
-                  >
-                    Calculate Score with Current Settings
-                  </button>
-
-                  <div className={`mt-2 text-xs ${uiConfig.colors.hint}`}>
-                    <p>💡 Tip: The production UI may show cached scores from earlier calculations.</p>
-                    <p>To get fresh scores, clear your browser cache or use an incognito window.</p>
-                  </div>
-                </div>
-              )}
-
-              {testResults && (
-                <div className={`${uiConfig.colors.card} rounded p-4 space-y-4`}>
-                  <h3 className={`font-semibold text-lg ${uiConfig.colors.accent}`}>Test Results</h3>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className={`text-sm ${uiConfig.colors.hint}`}>Overall Score</p>
-                      <p className={`text-2xl font-bold ${uiConfig.colors.accent}`}>{testResults.score}%</p>
-                      <p className={`text-sm ${uiConfig.colors.muted}`}>{testResults.quality}</p>
-                    </div>
-
-                    <div>
-                      <p className={`text-sm ${uiConfig.colors.hint}`}>Category Breakdown</p>
-                      <div className="space-y-1">
-                        {Object.entries(testResults.categoryScores || {}).map(([cat, score]) => (
-                          <div key={cat} className="flex justify-between text-sm">
-                            <span className={`capitalize ${uiConfig.colors.body}`}>{cat}:</span>
-                            <span className={`font-semibold ${uiConfig.colors.heading}`}>{score}%</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {testResults.factors && testResults.factors.length > 0 && (
-                    <div>
-                      <p className={`text-sm font-semibold ${uiConfig.colors.body} mb-2`}>Top Matching Factors:</p>
-                      <ul className="text-sm space-y-1">
-                        {testResults.factors.slice(0, 5).map((factor, idx) => (
-                          <li key={idx} className="flex justify-between">
-                            <span className={uiConfig.colors.body}>{factor.factor}</span>
-                            <span className={factor.score > 0 ? uiConfig.colors.accent : uiConfig.colors.error}>
-                              {factor.score > 0 ? '+' : ''}{factor.score}pts
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  <div className={`text-xs ${uiConfig.colors.muted} mt-4`}>
-                    <p><strong>Note:</strong> This uses YOUR preferences ({currentUser?.email}) with the current algorithm weights.</p>
-                    <p>The score shows how well {selectedTown.name} matches your personal retirement preferences.</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Category Weights Section */}
         <div className={`${uiConfig.colors.card} rounded-lg shadow-md p-6 mb-6`}>

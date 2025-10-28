@@ -1,0 +1,1970 @@
+[
+  {
+    "id": "cd65c4ee-17fb-4661-957c-d401ecfded82",
+    "user_id": "a9e07b59-c10e-4376-8431-879c566df9c6",
+    "retirement_status": "retiring_soon",
+    "created_at": "2025-07-31T20:53:30.004363+00:00",
+    "target_retirement_year": 2030,
+    "timeline_flexibility": "",
+    "primary_citizenship": "us",
+    "secondary_citizenship": "de",
+    "visa_concerns": false,
+    "family_status": "couple",
+    "partner_agreement": null,
+    "bringing_children": false,
+    "bringing_pets": true,
+    "current_location": null,
+    "moving_motivation": null,
+    "regions": [
+      "North America",
+      "Mediterranean"
+    ],
+    "countries": [
+      "Florida"
+    ],
+    "provinces": [],
+    "geographic_features": [
+      "coastal"
+    ],
+    "vegetation_types": [
+      "mediterranean",
+      "subtropical"
+    ],
+    "summer_climate_preference": [
+      "warm",
+      "hot"
+    ],
+    "winter_climate_preference": [
+      "cool",
+      "mild"
+    ],
+    "humidity_level": [
+      "balanced",
+      "humid"
+    ],
+    "sunshine": [
+      "balanced",
+      "often_sunny"
+    ],
+    "precipitation": [
+      "mostly_dry",
+      "balanced"
+    ],
+    "seasonal_preference": "",
+    "expat_community_preference": [
+      "moderate"
+    ],
+    "language_comfort": {
+      "preferences": [
+        "willing_to_learn"
+      ],
+      "already_speak": [
+        "english",
+        "german"
+      ]
+    },
+    "cultural_importance": {
+      "museums": 3,
+      "cultural_events": 3,
+      "dining_nightlife": 3
+    },
+    "lifestyle_preferences": {
+      "urban_rural": [
+        "suburban"
+      ],
+      "pace_of_life": [
+        "moderate"
+      ],
+      "social_preference": "balanced"
+    },
+    "activities": [
+      "fishing",
+      "snorkeling",
+      "swimming"
+    ],
+    "interests": [],
+    "travel_frequency": "occasional",
+    "lifestyle_importance": {
+      "shopping": 4,
+      "wellness": 3,
+      "cultural_events": 3,
+      "outdoor_activities": 3
+    },
+    "healthcare_quality": [
+      "functional"
+    ],
+    "health_considerations": {},
+    "insurance_importance": [],
+    "safety_importance": [
+      "functional"
+    ],
+    "emergency_services": [],
+    "political_stability": [
+      "functional"
+    ],
+    "tax_preference": [
+      "functional"
+    ],
+    "government_efficiency": [
+      "functional"
+    ],
+    "visa_preference": [
+      "functional"
+    ],
+    "stay_duration": [
+      "long"
+    ],
+    "residency_path": [
+      "citizenship"
+    ],
+    "monthly_healthcare_budget": 550,
+    "mobility": {
+      "local": "walk_bike",
+      "regional": "need_car",
+      "international": "regional_airport"
+    },
+    "property_tax_sensitive": false,
+    "sales_tax_sensitive": false,
+    "income_tax_sensitive": false,
+    "onboarding_completed": true,
+    "updated_at": "2025-07-31T22:00:15.264+00:00",
+    "partner_primary_citizenship": "us",
+    "partner_secondary_citizenship": "ca",
+    "pet_types": [
+      "cat"
+    ],
+    "custom_activities": null,
+    "custom_physical": [],
+    "custom_hobbies": [],
+    "children_primary_citizenship": null,
+    "children_secondary_citizenship": null,
+    "target_retirement_month": null,
+    "target_retirement_day": null,
+    "housing_preference": "both",
+    "total_monthly_budget": [
+      3200
+    ],
+    "max_monthly_rent": [
+      1250
+    ],
+    "max_home_price": [
+      300000
+    ],
+    "notifications": {
+      "weekly_digest": true,
+      "friend_requests": true,
+      "push_notifications": false,
+      "email_notifications": true
+    },
+    "privacy": {
+      "show_email": false,
+      "show_location": true,
+      "profile_visibility": "friends"
+    },
+    "comparison_towns": []
+  },
+  {
+    "id": "ef2a9c3f-2db1-44bf-955b-f3c8226b0c8b",
+    "user_id": "da39d09b-af4e-4f11-a67a-b06bd54e06f7",
+    "retirement_status": "planning",
+    "created_at": "2025-07-20T18:49:29.751489+00:00",
+    "target_retirement_year": 2037,
+    "timeline_flexibility": "",
+    "primary_citizenship": "de",
+    "secondary_citizenship": null,
+    "visa_concerns": false,
+    "family_status": "couple",
+    "partner_agreement": null,
+    "bringing_children": false,
+    "bringing_pets": true,
+    "current_location": null,
+    "moving_motivation": null,
+    "regions": [
+      "Western Europe",
+      "Western Europe"
+    ],
+    "countries": [
+      "Netherlands",
+      "Germany"
+    ],
+    "provinces": [
+      "Bavaria"
+    ],
+    "geographic_features": [
+      "plains",
+      "coastal"
+    ],
+    "vegetation_types": [
+      "mediterranean",
+      "Grassland"
+    ],
+    "summer_climate_preference": [
+      "mild"
+    ],
+    "winter_climate_preference": [
+      "cool"
+    ],
+    "humidity_level": [
+      "humid"
+    ],
+    "sunshine": [
+      "less_sunny"
+    ],
+    "precipitation": [
+      "less_dry"
+    ],
+    "seasonal_preference": "Optional",
+    "expat_community_preference": [
+      "small"
+    ],
+    "language_comfort": {
+      "preferences": [
+        "willing_to_learn"
+      ],
+      "already_speak": [
+        "german",
+        "dutch"
+      ]
+    },
+    "cultural_importance": {
+      "museums": 1,
+      "cultural_events": 1,
+      "dining_nightlife": 1
+    },
+    "lifestyle_preferences": {
+      "urban_rural": [
+        "rural"
+      ],
+      "pace_of_life": [
+        "relaxed"
+      ],
+      "social_preference": "balanced",
+      "urban_rural_preference": [
+        "rural",
+        "suburban"
+      ],
+      "pace_of_life_preference": [
+        "relaxed",
+        "moderate"
+      ]
+    },
+    "activities": [],
+    "interests": [
+      "nature_walks"
+    ],
+    "travel_frequency": "rare",
+    "lifestyle_importance": {
+      "shopping": 2,
+      "wellness": 2,
+      "cultural_events": 2,
+      "outdoor_activities": 2
+    },
+    "healthcare_quality": [],
+    "health_considerations": {
+      "healthcare_access": "",
+      "ongoing_treatment": "",
+      "environmental_health": ""
+    },
+    "insurance_importance": [],
+    "safety_importance": [],
+    "emergency_services": [],
+    "political_stability": [],
+    "tax_preference": [],
+    "government_efficiency": [],
+    "visa_preference": [],
+    "stay_duration": [],
+    "residency_path": [],
+    "monthly_healthcare_budget": null,
+    "mobility": {
+      "local": [],
+      "regional": [],
+      "international": []
+    },
+    "property_tax_sensitive": false,
+    "sales_tax_sensitive": false,
+    "income_tax_sensitive": false,
+    "onboarding_completed": true,
+    "updated_at": "2025-09-24T16:46:54.83+00:00",
+    "partner_primary_citizenship": "de",
+    "partner_secondary_citizenship": null,
+    "pet_types": [
+      "no",
+      "dog"
+    ],
+    "custom_activities": [],
+    "custom_physical": [],
+    "custom_hobbies": [
+      "nature_walks"
+    ],
+    "children_primary_citizenship": null,
+    "children_secondary_citizenship": null,
+    "target_retirement_month": 3,
+    "target_retirement_day": 1,
+    "housing_preference": "both",
+    "total_monthly_budget": [
+      3000
+    ],
+    "max_monthly_rent": [
+      2000
+    ],
+    "max_home_price": [
+      500000
+    ],
+    "notifications": {
+      "weekly_digest": true,
+      "friend_requests": true,
+      "push_notifications": false,
+      "email_notifications": true
+    },
+    "privacy": {
+      "show_email": false,
+      "show_location": true,
+      "profile_visibility": "friends"
+    },
+    "comparison_towns": []
+  },
+  {
+    "id": "ed57c4bb-ed06-438f-b711-ec371db23cdc",
+    "user_id": "dad3aadb-4256-40f6-b05a-4d6bdf3ec3bc",
+    "retirement_status": "retiring_soon",
+    "created_at": "2025-07-15T01:27:42.617952+00:00",
+    "target_retirement_year": 2030,
+    "timeline_flexibility": "",
+    "primary_citizenship": null,
+    "secondary_citizenship": null,
+    "visa_concerns": false,
+    "family_status": "Not specified",
+    "partner_agreement": null,
+    "bringing_children": false,
+    "bringing_pets": true,
+    "current_location": null,
+    "moving_motivation": null,
+    "regions": [],
+    "countries": [],
+    "provinces": [],
+    "geographic_features": [
+      "coastal"
+    ],
+    "vegetation_types": [],
+    "summer_climate_preference": [
+      "warm"
+    ],
+    "winter_climate_preference": [],
+    "humidity_level": [],
+    "sunshine": [],
+    "precipitation": [],
+    "seasonal_preference": "",
+    "expat_community_preference": [],
+    "language_comfort": {
+      "preferences": [],
+      "already_speak": []
+    },
+    "cultural_importance": {
+      "museums": 1,
+      "cultural_events": 1,
+      "dining_nightlife": 3
+    },
+    "lifestyle_preferences": {
+      "urban_rural": [
+        "suburban"
+      ],
+      "pace_of_life": [],
+      "social_preference": "",
+      "traditional_progressive": ""
+    },
+    "activities": [
+      "fishing"
+    ],
+    "interests": [],
+    "travel_frequency": "",
+    "lifestyle_importance": {
+      "shopping": 1,
+      "wellness": 1,
+      "cultural_events": 1,
+      "outdoor_activities": 1
+    },
+    "healthcare_quality": [
+      "functional"
+    ],
+    "health_considerations": {
+      "healthcare_access": "",
+      "ongoing_treatment": "",
+      "environmental_health": ""
+    },
+    "insurance_importance": [],
+    "safety_importance": [],
+    "emergency_services": [],
+    "political_stability": [],
+    "tax_preference": [],
+    "government_efficiency": [],
+    "visa_preference": [],
+    "stay_duration": [],
+    "residency_path": [],
+    "monthly_healthcare_budget": 500,
+    "mobility": {
+      "local": "",
+      "regional": "",
+      "international": ""
+    },
+    "property_tax_sensitive": false,
+    "sales_tax_sensitive": false,
+    "income_tax_sensitive": false,
+    "onboarding_completed": false,
+    "updated_at": "2025-07-21T01:44:15.236+00:00",
+    "partner_primary_citizenship": null,
+    "partner_secondary_citizenship": null,
+    "pet_types": [
+      "no"
+    ],
+    "custom_activities": null,
+    "custom_physical": [],
+    "custom_hobbies": [],
+    "children_primary_citizenship": null,
+    "children_secondary_citizenship": null,
+    "target_retirement_month": null,
+    "target_retirement_day": null,
+    "housing_preference": "both",
+    "total_monthly_budget": [
+      3200
+    ],
+    "max_monthly_rent": [
+      1250
+    ],
+    "max_home_price": [
+      100000
+    ],
+    "notifications": {
+      "weekly_digest": true,
+      "friend_requests": true,
+      "push_notifications": false,
+      "email_notifications": true
+    },
+    "privacy": {
+      "show_email": false,
+      "show_location": true,
+      "profile_visibility": "friends"
+    },
+    "comparison_towns": []
+  },
+  {
+    "id": "0a24d19f-0d80-47a4-8632-21d07a30025c",
+    "user_id": "02600f37-06ab-4fa7-88e6-46caa3e1bf05",
+    "retirement_status": "retiring_soon",
+    "created_at": "2025-07-15T01:30:04.594535+00:00",
+    "target_retirement_year": 2030,
+    "timeline_flexibility": "",
+    "primary_citizenship": "uk",
+    "secondary_citizenship": "us",
+    "visa_concerns": false,
+    "family_status": "couple",
+    "partner_agreement": null,
+    "bringing_children": false,
+    "bringing_pets": true,
+    "current_location": null,
+    "moving_motivation": null,
+    "regions": [],
+    "countries": [],
+    "provinces": [],
+    "geographic_features": [
+      "island",
+      "valley",
+      "plains"
+    ],
+    "vegetation_types": [
+      "mediterranean",
+      "desert"
+    ],
+    "summer_climate_preference": [
+      "hot"
+    ],
+    "winter_climate_preference": [
+      "mild"
+    ],
+    "humidity_level": [
+      "humid"
+    ],
+    "sunshine": [
+      "less_sunny"
+    ],
+    "precipitation": [
+      "less_dry"
+    ],
+    "seasonal_preference": "",
+    "expat_community_preference": [
+      "large"
+    ],
+    "language_comfort": {
+      "preferences": [
+        "comfortable"
+      ],
+      "already_speak": []
+    },
+    "cultural_importance": {
+      "museums": 1,
+      "cultural_events": 1,
+      "dining_nightlife": 1
+    },
+    "lifestyle_preferences": {
+      "urban_rural": [],
+      "pace_of_life": [
+        "fast"
+      ],
+      "social_preference": "private",
+      "traditional_progressive": ""
+    },
+    "activities": [
+      "cycling",
+      "gardening",
+      "herb_gardening",
+      "vegetable_gardening",
+      "flower_arranging",
+      "birdwatching",
+      "beekeeping",
+      "dog_walking",
+      "dog_training",
+      "nature_walks",
+      "aquarium_keeping",
+      "greenhouse_gardening",
+      "orchid_growing",
+      "snorkeling",
+      "swimming"
+    ],
+    "interests": [
+      "theater",
+      "wine",
+      "volunteering"
+    ],
+    "travel_frequency": "frequent",
+    "lifestyle_importance": {
+      "shopping": 1,
+      "wellness": 1,
+      "cultural_events": 1,
+      "outdoor_activities": 1
+    },
+    "healthcare_quality": [],
+    "health_considerations": {
+      "healthcare_access": "",
+      "ongoing_treatment": "",
+      "environmental_health": ""
+    },
+    "insurance_importance": [
+      "basic"
+    ],
+    "safety_importance": [
+      "basic"
+    ],
+    "emergency_services": [
+      "basic"
+    ],
+    "political_stability": [
+      "basic"
+    ],
+    "tax_preference": [
+      "basic"
+    ],
+    "government_efficiency": [
+      "basic"
+    ],
+    "visa_preference": [
+      "basic"
+    ],
+    "stay_duration": [
+      "long"
+    ],
+    "residency_path": [
+      "residence",
+      "citizenship"
+    ],
+    "monthly_healthcare_budget": 500,
+    "mobility": {
+      "local": [],
+      "regional": [],
+      "international": [
+        "major_airport"
+      ]
+    },
+    "property_tax_sensitive": false,
+    "sales_tax_sensitive": false,
+    "income_tax_sensitive": false,
+    "onboarding_completed": true,
+    "updated_at": "2025-10-02T03:16:07.077+00:00",
+    "partner_primary_citizenship": "de",
+    "partner_secondary_citizenship": "au",
+    "pet_types": [
+      "dog"
+    ],
+    "custom_activities": [
+      "gardening"
+    ],
+    "custom_physical": [],
+    "custom_hobbies": [],
+    "children_primary_citizenship": null,
+    "children_secondary_citizenship": null,
+    "target_retirement_month": null,
+    "target_retirement_day": null,
+    "housing_preference": "both",
+    "total_monthly_budget": [
+      3200
+    ],
+    "max_monthly_rent": [
+      500
+    ],
+    "max_home_price": [
+      100000
+    ],
+    "notifications": {
+      "weekly_digest": true,
+      "friend_requests": true,
+      "push_notifications": false,
+      "email_notifications": true
+    },
+    "privacy": {
+      "show_email": false,
+      "show_location": true,
+      "profile_visibility": "friends"
+    },
+    "comparison_towns": []
+  },
+  {
+    "id": "9416ad3d-1512-482b-9ff4-716eb65c29c5",
+    "user_id": "e0ed27da-41b6-4d77-accc-1a87ff44efbf",
+    "retirement_status": "",
+    "created_at": "2025-10-14T12:07:25.055184+00:00",
+    "target_retirement_year": 2030,
+    "timeline_flexibility": "",
+    "primary_citizenship": "us",
+    "secondary_citizenship": "ca",
+    "visa_concerns": false,
+    "family_status": "couple",
+    "partner_agreement": null,
+    "bringing_children": false,
+    "bringing_pets": true,
+    "current_location": null,
+    "moving_motivation": null,
+    "regions": [
+      "North America"
+    ],
+    "countries": [
+      "Canada"
+    ],
+    "provinces": [],
+    "geographic_features": [
+      "coastal"
+    ],
+    "vegetation_types": [
+      "Grassland",
+      "Mediterranean",
+      "Forest"
+    ],
+    "summer_climate_preference": [
+      "warm",
+      "mild"
+    ],
+    "winter_climate_preference": [
+      "cool",
+      "mild"
+    ],
+    "humidity_level": [
+      "balanced"
+    ],
+    "sunshine": [
+      "often_sunny",
+      "balanced"
+    ],
+    "precipitation": [
+      "balanced"
+    ],
+    "seasonal_preference": "all_seasons",
+    "expat_community_preference": [
+      "moderate"
+    ],
+    "language_comfort": {
+      "preferences": [
+        "will_learn"
+      ],
+      "already_speak": [
+        "german",
+        "english",
+        "farsi"
+      ]
+    },
+    "cultural_importance": {
+      "museums": 5,
+      "cultural_events": 5,
+      "dining_nightlife": 3
+    },
+    "lifestyle_preferences": {
+      "urban_rural_preference": [
+        "urban",
+        "rural"
+      ],
+      "pace_of_life_preference": [
+        "moderate"
+      ]
+    },
+    "activities": [
+      "cycling",
+      "geocaching",
+      "hiking",
+      "jogging",
+      "mountain_biking",
+      "nordic_walking",
+      "orienteering",
+      "walking",
+      "walking_groups",
+      "cross-country_skiing",
+      "curling",
+      "downhill_skiing",
+      "ice_fishing",
+      "ice_skating",
+      "sledding",
+      "snowboarding",
+      "snowmobiling",
+      "snowshoeing"
+    ],
+    "interests": [
+      "aquarium_keeping",
+      "beekeeping",
+      "birdwatching",
+      "dog_training",
+      "dog_walking",
+      "flower_arranging",
+      "gardening",
+      "herb_gardening",
+      "nature_walks",
+      "vegetable_gardening",
+      "calligraphy",
+      "crochet",
+      "drawing",
+      "embroidery",
+      "jewelry_making",
+      "knitting",
+      "needlepoint",
+      "painting",
+      "photography",
+      "pottery",
+      "quilting",
+      "scrapbooking",
+      "sculpting",
+      "sewing",
+      "sketching",
+      "watercolor_painting",
+      "wildlife_photography",
+      "wood_carving",
+      "woodworking",
+      "ballet",
+      "ballroom_dancing",
+      "choir_singing",
+      "community_theater",
+      "dancing",
+      "film_appreciation",
+      "instruments",
+      "jazz_appreciation",
+      "line_dancing",
+      "music",
+      "opera",
+      "salsa_dancing",
+      "singing",
+      "square_dancing",
+      "tango",
+      "theater",
+      "ukulele",
+      "baking",
+      "cheese_making",
+      "coffee_culture",
+      "cooking",
+      "cooking_classes",
+      "farmers_markets",
+      "food_tours",
+      "home_brewing",
+      "organic_groceries",
+      "vineyards",
+      "wine",
+      "wine_tasting",
+      "antique_collecting",
+      "genealogy",
+      "historical_sites",
+      "history",
+      "museums"
+    ],
+    "travel_frequency": "occasional",
+    "lifestyle_importance": null,
+    "healthcare_quality": [
+      "functional"
+    ],
+    "health_considerations": {
+      "healthcare_access": "full_access",
+      "environmental_health": "air_quality"
+    },
+    "insurance_importance": [
+      "functional",
+      "good"
+    ],
+    "safety_importance": [
+      "good"
+    ],
+    "emergency_services": [
+      "good"
+    ],
+    "political_stability": [
+      "good"
+    ],
+    "tax_preference": [
+      "functional"
+    ],
+    "government_efficiency": [
+      "functional",
+      "good"
+    ],
+    "visa_preference": [
+      "good"
+    ],
+    "stay_duration": [
+      "medium"
+    ],
+    "residency_path": [
+      "residence"
+    ],
+    "monthly_healthcare_budget": null,
+    "mobility": {
+      "local": [
+        "walk_bike",
+        "public_transit"
+      ],
+      "regional": [
+        "train_access",
+        "bus_network"
+      ],
+      "international": [
+        "major_airport",
+        "regional_airport",
+        "train_connections"
+      ]
+    },
+    "property_tax_sensitive": true,
+    "sales_tax_sensitive": true,
+    "income_tax_sensitive": true,
+    "onboarding_completed": true,
+    "updated_at": "2025-10-14T21:59:51.106+00:00",
+    "partner_primary_citizenship": "us",
+    "partner_secondary_citizenship": "de",
+    "pet_types": [
+      "cat"
+    ],
+    "custom_activities": [
+      "walking_cycling",
+      "winter_sports",
+      "interest_gardening",
+      "interest_arts",
+      "interest_music_theater",
+      "interest_cooking_wine",
+      "interest_history"
+    ],
+    "custom_physical": [],
+    "custom_hobbies": [],
+    "children_primary_citizenship": null,
+    "children_secondary_citizenship": null,
+    "target_retirement_month": 1,
+    "target_retirement_day": 1,
+    "housing_preference": "buy",
+    "total_monthly_budget": [
+      2000
+    ],
+    "max_monthly_rent": [],
+    "max_home_price": [
+      200000
+    ],
+    "notifications": {
+      "weekly_digest": true,
+      "friend_requests": true,
+      "push_notifications": false,
+      "email_notifications": true
+    },
+    "privacy": {
+      "show_email": false,
+      "show_location": true,
+      "profile_visibility": "friends"
+    },
+    "comparison_towns": [
+      "0021d026-3148-46c2-8670-af89bf83e605",
+      "559bf836-5efa-4d0d-803d-5ec453258bf8",
+      "1461a300-e3e2-4a14-b027-558854ddc55b"
+    ]
+  },
+  {
+    "id": "83f79ce4-cfdf-4b7a-b570-2b3abc886dcc",
+    "user_id": "426ea09d-b393-4f99-981a-a1dc8c25a50d",
+    "retirement_status": null,
+    "created_at": "2025-07-20T19:32:42.05057+00:00",
+    "target_retirement_year": null,
+    "timeline_flexibility": null,
+    "primary_citizenship": null,
+    "secondary_citizenship": null,
+    "visa_concerns": false,
+    "family_status": null,
+    "partner_agreement": null,
+    "bringing_children": false,
+    "bringing_pets": false,
+    "current_location": null,
+    "moving_motivation": null,
+    "regions": null,
+    "countries": null,
+    "provinces": null,
+    "geographic_features": null,
+    "vegetation_types": null,
+    "summer_climate_preference": null,
+    "winter_climate_preference": null,
+    "humidity_level": null,
+    "sunshine": null,
+    "precipitation": null,
+    "seasonal_preference": null,
+    "expat_community_preference": null,
+    "language_comfort": null,
+    "cultural_importance": null,
+    "lifestyle_preferences": null,
+    "activities": null,
+    "interests": null,
+    "travel_frequency": null,
+    "lifestyle_importance": null,
+    "healthcare_quality": null,
+    "health_considerations": null,
+    "insurance_importance": null,
+    "safety_importance": null,
+    "emergency_services": null,
+    "political_stability": null,
+    "tax_preference": null,
+    "government_efficiency": null,
+    "visa_preference": null,
+    "stay_duration": null,
+    "residency_path": null,
+    "monthly_healthcare_budget": null,
+    "mobility": null,
+    "property_tax_sensitive": false,
+    "sales_tax_sensitive": false,
+    "income_tax_sensitive": false,
+    "onboarding_completed": false,
+    "updated_at": "2025-07-20T19:32:42.05057+00:00",
+    "partner_primary_citizenship": null,
+    "partner_secondary_citizenship": null,
+    "pet_types": null,
+    "custom_activities": null,
+    "custom_physical": [],
+    "custom_hobbies": [],
+    "children_primary_citizenship": null,
+    "children_secondary_citizenship": null,
+    "target_retirement_month": null,
+    "target_retirement_day": null,
+    "housing_preference": "both",
+    "total_monthly_budget": [],
+    "max_monthly_rent": [],
+    "max_home_price": [],
+    "notifications": {
+      "weekly_digest": true,
+      "friend_requests": true,
+      "push_notifications": false,
+      "email_notifications": true
+    },
+    "privacy": {
+      "show_email": false,
+      "show_location": true,
+      "profile_visibility": "friends"
+    },
+    "comparison_towns": []
+  },
+  {
+    "id": "e31dc9d0-5789-40b7-99ba-95bbb5a36567",
+    "user_id": "d44e83a3-548a-4813-9841-f3c5ed5d7600",
+    "retirement_status": null,
+    "created_at": "2025-07-20T19:32:42.27169+00:00",
+    "target_retirement_year": null,
+    "timeline_flexibility": null,
+    "primary_citizenship": null,
+    "secondary_citizenship": null,
+    "visa_concerns": false,
+    "family_status": null,
+    "partner_agreement": null,
+    "bringing_children": false,
+    "bringing_pets": false,
+    "current_location": null,
+    "moving_motivation": null,
+    "regions": null,
+    "countries": null,
+    "provinces": null,
+    "geographic_features": null,
+    "vegetation_types": null,
+    "summer_climate_preference": null,
+    "winter_climate_preference": null,
+    "humidity_level": null,
+    "sunshine": null,
+    "precipitation": null,
+    "seasonal_preference": null,
+    "expat_community_preference": null,
+    "language_comfort": null,
+    "cultural_importance": null,
+    "lifestyle_preferences": null,
+    "activities": null,
+    "interests": null,
+    "travel_frequency": null,
+    "lifestyle_importance": null,
+    "healthcare_quality": null,
+    "health_considerations": null,
+    "insurance_importance": null,
+    "safety_importance": null,
+    "emergency_services": null,
+    "political_stability": null,
+    "tax_preference": null,
+    "government_efficiency": null,
+    "visa_preference": null,
+    "stay_duration": null,
+    "residency_path": null,
+    "monthly_healthcare_budget": null,
+    "mobility": null,
+    "property_tax_sensitive": false,
+    "sales_tax_sensitive": false,
+    "income_tax_sensitive": false,
+    "onboarding_completed": false,
+    "updated_at": "2025-07-20T19:32:42.27169+00:00",
+    "partner_primary_citizenship": null,
+    "partner_secondary_citizenship": null,
+    "pet_types": null,
+    "custom_activities": null,
+    "custom_physical": [],
+    "custom_hobbies": [],
+    "children_primary_citizenship": null,
+    "children_secondary_citizenship": null,
+    "target_retirement_month": null,
+    "target_retirement_day": null,
+    "housing_preference": "both",
+    "total_monthly_budget": [],
+    "max_monthly_rent": [],
+    "max_home_price": [],
+    "notifications": {
+      "weekly_digest": true,
+      "friend_requests": true,
+      "push_notifications": false,
+      "email_notifications": true
+    },
+    "privacy": {
+      "show_email": false,
+      "show_location": true,
+      "profile_visibility": "friends"
+    },
+    "comparison_towns": []
+  },
+  {
+    "id": "8198f82c-dbfa-41e4-adbe-8a50ad69a8ef",
+    "user_id": "1665c069-5ecf-4616-9e81-4c62cc6e612c",
+    "retirement_status": null,
+    "created_at": "2025-07-20T19:30:23.640231+00:00",
+    "target_retirement_year": null,
+    "timeline_flexibility": null,
+    "primary_citizenship": null,
+    "secondary_citizenship": null,
+    "visa_concerns": false,
+    "family_status": null,
+    "partner_agreement": null,
+    "bringing_children": false,
+    "bringing_pets": false,
+    "current_location": null,
+    "moving_motivation": null,
+    "regions": null,
+    "countries": null,
+    "provinces": null,
+    "geographic_features": null,
+    "vegetation_types": null,
+    "summer_climate_preference": null,
+    "winter_climate_preference": null,
+    "humidity_level": null,
+    "sunshine": null,
+    "precipitation": null,
+    "seasonal_preference": null,
+    "expat_community_preference": null,
+    "language_comfort": null,
+    "cultural_importance": null,
+    "lifestyle_preferences": null,
+    "activities": null,
+    "interests": null,
+    "travel_frequency": null,
+    "lifestyle_importance": null,
+    "healthcare_quality": null,
+    "health_considerations": null,
+    "insurance_importance": null,
+    "safety_importance": null,
+    "emergency_services": null,
+    "political_stability": null,
+    "tax_preference": null,
+    "government_efficiency": null,
+    "visa_preference": null,
+    "stay_duration": null,
+    "residency_path": null,
+    "monthly_healthcare_budget": null,
+    "mobility": null,
+    "property_tax_sensitive": false,
+    "sales_tax_sensitive": false,
+    "income_tax_sensitive": false,
+    "onboarding_completed": false,
+    "updated_at": "2025-07-20T19:30:23.640231+00:00",
+    "partner_primary_citizenship": null,
+    "partner_secondary_citizenship": null,
+    "pet_types": null,
+    "custom_activities": null,
+    "custom_physical": [],
+    "custom_hobbies": [],
+    "children_primary_citizenship": null,
+    "children_secondary_citizenship": null,
+    "target_retirement_month": null,
+    "target_retirement_day": null,
+    "housing_preference": "both",
+    "total_monthly_budget": [],
+    "max_monthly_rent": [],
+    "max_home_price": [],
+    "notifications": {
+      "weekly_digest": true,
+      "friend_requests": true,
+      "push_notifications": false,
+      "email_notifications": true
+    },
+    "privacy": {
+      "show_email": false,
+      "show_location": true,
+      "profile_visibility": "friends"
+    },
+    "comparison_towns": []
+  },
+  {
+    "id": "b567bc13-931f-4332-bbac-3fb2b43e23d6",
+    "user_id": "d1039857-71e2-4562-86aa-1f0b4a0c17c8",
+    "retirement_status": "planning",
+    "created_at": "2025-07-14T06:20:50.137089+00:00",
+    "target_retirement_year": 2037,
+    "timeline_flexibility": "",
+    "primary_citizenship": "de",
+    "secondary_citizenship": null,
+    "visa_concerns": false,
+    "family_status": "couple",
+    "partner_agreement": null,
+    "bringing_children": false,
+    "bringing_pets": true,
+    "current_location": null,
+    "moving_motivation": null,
+    "regions": [
+      "Western Europe"
+    ],
+    "countries": [
+      "Netherlands"
+    ],
+    "provinces": [],
+    "geographic_features": [
+      "plains",
+      "lake",
+      "coastal"
+    ],
+    "vegetation_types": [
+      "Grassland"
+    ],
+    "summer_climate_preference": [
+      "warm",
+      "mild"
+    ],
+    "winter_climate_preference": [
+      "cold",
+      "cool"
+    ],
+    "humidity_level": [
+      "balanced",
+      "dry"
+    ],
+    "sunshine": [
+      "less_sunny",
+      "balanced"
+    ],
+    "precipitation": [
+      "mostly_dry",
+      "balanced"
+    ],
+    "seasonal_preference": "all_seasons",
+    "expat_community_preference": [
+      "small",
+      "moderate"
+    ],
+    "language_comfort": {
+      "preferences": [
+        "willing_to_learn",
+        "comfortable",
+        "will_learn"
+      ],
+      "already_speak": [
+        "german",
+        "english",
+        "spanish",
+        "french"
+      ]
+    },
+    "cultural_importance": {
+      "museums": 3,
+      "cultural_events": 3,
+      "dining_nightlife": 5
+    },
+    "lifestyle_preferences": {
+      "urban_rural": [
+        "rural"
+      ],
+      "pace_of_life": [
+        "slow",
+        "relaxed"
+      ],
+      "social_preference": "balanced",
+      "urban_rural_preference": [
+        "rural",
+        "suburban"
+      ],
+      "pace_of_life_preference": [
+        "relaxed",
+        "moderate"
+      ],
+      "traditional_progressive": ""
+    },
+    "activities": [
+      "snorkeling",
+      "swimming",
+      "swimming_laps",
+      "water_aerobics",
+      "water_skiing",
+      "cycling",
+      "geocaching",
+      "hiking",
+      "jogging",
+      "mountain_biking",
+      "nordic_walking",
+      "orienteering",
+      "walking",
+      "walking_groups",
+      "bocce_ball",
+      "golf",
+      "petanque",
+      "pickleball",
+      "ping_pong",
+      "shuffleboard",
+      "tennis",
+      "boating",
+      "canoeing",
+      "deep_sea_fishing",
+      "fishing",
+      "jet_skiing",
+      "kayaking",
+      "sailing",
+      "scuba_diving",
+      "stand-up_paddleboarding",
+      "surfing",
+      "windsurfing"
+    ],
+    "interests": [
+      "aquarium_keeping",
+      "beekeeping",
+      "birdwatching",
+      "dog_training",
+      "dog_walking",
+      "flower_arranging",
+      "gardening",
+      "herb_gardening",
+      "nature_walks",
+      "vegetable_gardening",
+      "calligraphy",
+      "crochet",
+      "drawing",
+      "embroidery",
+      "jewelry_making",
+      "knitting",
+      "needlepoint",
+      "painting",
+      "photography",
+      "pottery",
+      "quilting",
+      "scrapbooking",
+      "sculpting",
+      "sewing",
+      "sketching",
+      "watercolor_painting",
+      "wildlife_photography",
+      "wood_carving",
+      "woodworking",
+      "baking",
+      "cheese_making",
+      "coffee_culture",
+      "cooking",
+      "cooking_classes",
+      "farmers_markets",
+      "food_tours",
+      "home_brewing",
+      "organic_groceries",
+      "vineyards",
+      "wine",
+      "wine_tasting"
+    ],
+    "travel_frequency": "rare",
+    "lifestyle_importance": {
+      "shopping": 2,
+      "wellness": 2,
+      "cultural_events": 2,
+      "outdoor_activities": 3
+    },
+    "healthcare_quality": [
+      "functional"
+    ],
+    "health_considerations": {
+      "healthcare_access": "",
+      "ongoing_treatment": "",
+      "environmental_health": ""
+    },
+    "insurance_importance": [
+      "functional"
+    ],
+    "safety_importance": [
+      "good"
+    ],
+    "emergency_services": [
+      "good"
+    ],
+    "political_stability": [
+      "good"
+    ],
+    "tax_preference": [
+      "functional"
+    ],
+    "government_efficiency": [
+      "functional"
+    ],
+    "visa_preference": [],
+    "stay_duration": [],
+    "residency_path": [
+      "seasonal"
+    ],
+    "monthly_healthcare_budget": 2000,
+    "mobility": {
+      "local": [
+        "walk_bike"
+      ],
+      "regional": [],
+      "international": []
+    },
+    "property_tax_sensitive": false,
+    "sales_tax_sensitive": false,
+    "income_tax_sensitive": false,
+    "onboarding_completed": true,
+    "updated_at": "2025-10-20T19:57:21.752+00:00",
+    "partner_primary_citizenship": "de",
+    "partner_secondary_citizenship": null,
+    "pet_types": [
+      "no",
+      "dog"
+    ],
+    "custom_activities": [
+      "water_sports",
+      "walking_cycling",
+      "golf_tennis",
+      "water_crafts",
+      "interest_gardening",
+      "interest_arts",
+      "interest_cooking_wine"
+    ],
+    "custom_physical": [],
+    "custom_hobbies": [],
+    "children_primary_citizenship": null,
+    "children_secondary_citizenship": null,
+    "target_retirement_month": 3,
+    "target_retirement_day": 1,
+    "housing_preference": "both",
+    "total_monthly_budget": [
+      6000,
+      5000,
+      4000
+    ],
+    "max_monthly_rent": [
+      2500
+    ],
+    "max_home_price": [
+      600000
+    ],
+    "notifications": {
+      "weekly_digest": true,
+      "friend_requests": true,
+      "push_notifications": false,
+      "email_notifications": true
+    },
+    "privacy": {
+      "show_email": false,
+      "show_location": true,
+      "profile_visibility": "friends"
+    },
+    "comparison_towns": [
+      "3fadbd1c-04d3-4a0a-9b10-64baf7d1dd5c",
+      "104f60bd-12a3-44ca-8a8d-ddbdae8fea6a",
+      "798c8a0c-167a-4c19-99d4-9f29d1adcb85"
+    ]
+  },
+  {
+    "id": "61b969d4-9823-4764-9c72-5e1b4af16275",
+    "user_id": "b264633a-fe9b-4b0d-b941-bed58c3c1c48",
+    "retirement_status": "Not specified",
+    "created_at": "2025-07-31T18:13:54.991727+00:00",
+    "target_retirement_year": null,
+    "timeline_flexibility": null,
+    "primary_citizenship": null,
+    "secondary_citizenship": null,
+    "visa_concerns": false,
+    "family_status": "couple",
+    "partner_agreement": null,
+    "bringing_children": false,
+    "bringing_pets": true,
+    "current_location": null,
+    "moving_motivation": null,
+    "regions": [
+      "Northern Europe"
+    ],
+    "countries": [
+      "Latvia"
+    ],
+    "provinces": [],
+    "geographic_features": [
+      "coastal",
+      "valley",
+      "plains",
+      "forest",
+      "river"
+    ],
+    "vegetation_types": [
+      "forest",
+      "grassland"
+    ],
+    "summer_climate_preference": [
+      "warm"
+    ],
+    "winter_climate_preference": [
+      "cold"
+    ],
+    "humidity_level": [
+      "balanced"
+    ],
+    "sunshine": [
+      "balanced"
+    ],
+    "precipitation": [
+      "balanced"
+    ],
+    "seasonal_preference": "all_seasons",
+    "expat_community_preference": [
+      "moderate"
+    ],
+    "language_comfort": {
+      "preferences": [
+        "comfortable"
+      ],
+      "already_speak": []
+    },
+    "cultural_importance": {
+      "museums": 3,
+      "cultural_events": 3,
+      "dining_nightlife": 3
+    },
+    "lifestyle_preferences": {
+      "urban_rural": [
+        "urban"
+      ],
+      "pace_of_life": [
+        "moderate"
+      ],
+      "social_preference": "balanced"
+    },
+    "activities": [
+      "tennis",
+      "walking"
+    ],
+    "interests": [
+      "theater",
+      "wine"
+    ],
+    "travel_frequency": "occasional",
+    "lifestyle_importance": {
+      "shopping": 3,
+      "wellness": 3,
+      "cultural_events": 3,
+      "outdoor_activities": 3
+    },
+    "healthcare_quality": [
+      "good"
+    ],
+    "health_considerations": {
+      "healthcare_access": "full_access"
+    },
+    "insurance_importance": [
+      "good"
+    ],
+    "safety_importance": [
+      "good"
+    ],
+    "emergency_services": [
+      "good"
+    ],
+    "political_stability": [
+      "good"
+    ],
+    "tax_preference": [
+      "good"
+    ],
+    "government_efficiency": [
+      "good"
+    ],
+    "visa_preference": [
+      "good"
+    ],
+    "stay_duration": [
+      "long"
+    ],
+    "residency_path": [
+      "residence"
+    ],
+    "monthly_healthcare_budget": 500,
+    "mobility": {
+      "local": "need_car",
+      "regional": "need_car"
+    },
+    "property_tax_sensitive": false,
+    "sales_tax_sensitive": false,
+    "income_tax_sensitive": false,
+    "onboarding_completed": true,
+    "updated_at": "2025-08-02T16:21:21.363+00:00",
+    "partner_primary_citizenship": "",
+    "partner_secondary_citizenship": null,
+    "pet_types": [
+      "cat"
+    ],
+    "custom_activities": null,
+    "custom_physical": [],
+    "custom_hobbies": [],
+    "children_primary_citizenship": null,
+    "children_secondary_citizenship": null,
+    "target_retirement_month": null,
+    "target_retirement_day": null,
+    "housing_preference": "both",
+    "total_monthly_budget": [
+      2100
+    ],
+    "max_monthly_rent": [
+      650
+    ],
+    "max_home_price": [
+      120000
+    ],
+    "notifications": {
+      "weekly_digest": true,
+      "friend_requests": true,
+      "push_notifications": false,
+      "email_notifications": true
+    },
+    "privacy": {
+      "show_email": false,
+      "show_location": true,
+      "profile_visibility": "friends"
+    },
+    "comparison_towns": []
+  },
+  {
+    "id": "c26fd0c3-143b-4600-9b53-e0db83890924",
+    "user_id": "f263b6d9-ec0a-4aa7-8227-b2702937cbc6",
+    "retirement_status": null,
+    "created_at": "2025-07-20T19:32:41.969344+00:00",
+    "target_retirement_year": null,
+    "timeline_flexibility": null,
+    "primary_citizenship": "usa",
+    "secondary_citizenship": "canada",
+    "visa_concerns": false,
+    "family_status": "couple",
+    "partner_agreement": null,
+    "bringing_children": false,
+    "bringing_pets": false,
+    "current_location": "Gainesville ",
+    "moving_motivation": "Better health care, European culture, healthy eating, exploring close by countries, …",
+    "regions": null,
+    "countries": null,
+    "provinces": null,
+    "geographic_features": null,
+    "vegetation_types": null,
+    "summer_climate_preference": null,
+    "winter_climate_preference": null,
+    "humidity_level": null,
+    "sunshine": null,
+    "precipitation": null,
+    "seasonal_preference": null,
+    "expat_community_preference": null,
+    "language_comfort": null,
+    "cultural_importance": null,
+    "lifestyle_preferences": null,
+    "activities": null,
+    "interests": null,
+    "travel_frequency": null,
+    "lifestyle_importance": null,
+    "healthcare_quality": null,
+    "health_considerations": null,
+    "insurance_importance": null,
+    "safety_importance": null,
+    "emergency_services": null,
+    "political_stability": null,
+    "tax_preference": null,
+    "government_efficiency": null,
+    "visa_preference": null,
+    "stay_duration": null,
+    "residency_path": null,
+    "monthly_healthcare_budget": null,
+    "mobility": null,
+    "property_tax_sensitive": false,
+    "sales_tax_sensitive": false,
+    "income_tax_sensitive": false,
+    "onboarding_completed": false,
+    "updated_at": "2025-07-20T19:32:41.969344+00:00",
+    "partner_primary_citizenship": null,
+    "partner_secondary_citizenship": null,
+    "pet_types": null,
+    "custom_activities": null,
+    "custom_physical": [],
+    "custom_hobbies": [],
+    "children_primary_citizenship": null,
+    "children_secondary_citizenship": null,
+    "target_retirement_month": null,
+    "target_retirement_day": null,
+    "housing_preference": "both",
+    "total_monthly_budget": [],
+    "max_monthly_rent": [],
+    "max_home_price": [],
+    "notifications": {
+      "weekly_digest": true,
+      "friend_requests": true,
+      "push_notifications": false,
+      "email_notifications": true
+    },
+    "privacy": {
+      "show_email": false,
+      "show_location": true,
+      "profile_visibility": "friends"
+    },
+    "comparison_towns": []
+  },
+  {
+    "id": "f3c87e77-9116-4464-9dfb-71c94faf686a",
+    "user_id": "667cfeba-8bc6-4d2d-b6a1-3bbffbc31665",
+    "retirement_status": null,
+    "created_at": "2025-07-20T19:32:42.129508+00:00",
+    "target_retirement_year": null,
+    "timeline_flexibility": null,
+    "primary_citizenship": null,
+    "secondary_citizenship": null,
+    "visa_concerns": false,
+    "family_status": null,
+    "partner_agreement": null,
+    "bringing_children": false,
+    "bringing_pets": false,
+    "current_location": null,
+    "moving_motivation": null,
+    "regions": null,
+    "countries": null,
+    "provinces": null,
+    "geographic_features": null,
+    "vegetation_types": null,
+    "summer_climate_preference": null,
+    "winter_climate_preference": null,
+    "humidity_level": null,
+    "sunshine": null,
+    "precipitation": null,
+    "seasonal_preference": null,
+    "expat_community_preference": null,
+    "language_comfort": null,
+    "cultural_importance": null,
+    "lifestyle_preferences": null,
+    "activities": null,
+    "interests": null,
+    "travel_frequency": null,
+    "lifestyle_importance": null,
+    "healthcare_quality": null,
+    "health_considerations": null,
+    "insurance_importance": null,
+    "safety_importance": null,
+    "emergency_services": null,
+    "political_stability": null,
+    "tax_preference": null,
+    "government_efficiency": null,
+    "visa_preference": null,
+    "stay_duration": null,
+    "residency_path": null,
+    "monthly_healthcare_budget": null,
+    "mobility": null,
+    "property_tax_sensitive": false,
+    "sales_tax_sensitive": false,
+    "income_tax_sensitive": false,
+    "onboarding_completed": false,
+    "updated_at": "2025-07-20T19:32:42.129508+00:00",
+    "partner_primary_citizenship": null,
+    "partner_secondary_citizenship": null,
+    "pet_types": null,
+    "custom_activities": null,
+    "custom_physical": [],
+    "custom_hobbies": [],
+    "children_primary_citizenship": null,
+    "children_secondary_citizenship": null,
+    "target_retirement_month": null,
+    "target_retirement_day": null,
+    "housing_preference": "both",
+    "total_monthly_budget": [],
+    "max_monthly_rent": [],
+    "max_home_price": [],
+    "notifications": {
+      "weekly_digest": true,
+      "friend_requests": true,
+      "push_notifications": false,
+      "email_notifications": true
+    },
+    "privacy": {
+      "show_email": false,
+      "show_location": true,
+      "profile_visibility": "friends"
+    },
+    "comparison_towns": []
+  },
+  {
+    "id": "3c6ba242-365b-499c-bf91-b59d1fb706d3",
+    "user_id": "83d285b2-b21b-4d13-a1a1-6d51b6733d52",
+    "retirement_status": "retiring_soon",
+    "created_at": "2025-07-12T02:38:19.141477+00:00",
+    "target_retirement_year": 2030,
+    "timeline_flexibility": "",
+    "primary_citizenship": "us",
+    "secondary_citizenship": "de",
+    "visa_concerns": false,
+    "family_status": "couple",
+    "partner_agreement": null,
+    "bringing_children": false,
+    "bringing_pets": true,
+    "current_location": null,
+    "moving_motivation": null,
+    "regions": [
+      "Mediterranean",
+      "North America"
+    ],
+    "countries": [
+      "Spain",
+      "Florida"
+    ],
+    "provinces": [
+      "Any Province",
+      "Any Province"
+    ],
+    "geographic_features": [
+      "coastal"
+    ],
+    "vegetation_types": [
+      "Subtropical",
+      "Mediterranean"
+    ],
+    "summer_climate_preference": [
+      "warm",
+      "hot"
+    ],
+    "winter_climate_preference": [
+      "mild"
+    ],
+    "humidity_level": [
+      "balanced",
+      "dry"
+    ],
+    "sunshine": [
+      "balanced",
+      "often_sunny"
+    ],
+    "precipitation": [
+      "mostly_dry"
+    ],
+    "seasonal_preference": "summer_focused",
+    "expat_community_preference": [
+      "moderate",
+      "small"
+    ],
+    "language_comfort": {
+      "preferences": [
+        "willing_to_learn",
+        "english_only",
+        "comfortable",
+        "languages_i_speak",
+        "basic_english"
+      ],
+      "already_speak": [
+        "english",
+        "german"
+      ]
+    },
+    "cultural_importance": {
+      "museums": 3,
+      "cultural_events": 3,
+      "dining_nightlife": 3
+    },
+    "lifestyle_preferences": {
+      "urban_rural": [
+        "suburban",
+        "rural"
+      ],
+      "pace_of_life": [
+        "moderate",
+        "slow",
+        "relaxed"
+      ],
+      "social_preference": "balanced",
+      "urban_rural_preference": [
+        "suburban",
+        "rural"
+      ],
+      "pace_of_life_preference": [
+        "moderate",
+        "relaxed"
+      ],
+      "traditional_progressive": ""
+    },
+    "activities": [
+      "snorkeling",
+      "swimming",
+      "swimming_laps",
+      "water_aerobics",
+      "water_skiing",
+      "boating",
+      "canoeing",
+      "deep_sea_fishing",
+      "fishing",
+      "jet_skiing",
+      "kayaking",
+      "sailing",
+      "scuba_diving",
+      "stand-up_paddleboarding",
+      "surfing",
+      "windsurfing"
+    ],
+    "interests": [
+      "aquarium_keeping",
+      "beekeeping",
+      "birdwatching",
+      "dog_training",
+      "dog_walking",
+      "flower_arranging",
+      "gardening",
+      "herb_gardening",
+      "nature_walks",
+      "vegetable_gardening"
+    ],
+    "travel_frequency": "rare",
+    "lifestyle_importance": {
+      "shopping": 3,
+      "wellness": 3,
+      "cultural_events": 3,
+      "outdoor_activities": 4
+    },
+    "healthcare_quality": [
+      "functional"
+    ],
+    "health_considerations": {
+      "healthcare_access": "general_practitioner",
+      "ongoing_treatment": "none",
+      "environmental_health": ""
+    },
+    "insurance_importance": [
+      "functional"
+    ],
+    "safety_importance": [
+      "functional"
+    ],
+    "emergency_services": [
+      "functional"
+    ],
+    "political_stability": [
+      "functional"
+    ],
+    "tax_preference": [
+      "functional"
+    ],
+    "government_efficiency": [
+      "functional"
+    ],
+    "visa_preference": [
+      "functional"
+    ],
+    "stay_duration": [
+      "long",
+      "medium"
+    ],
+    "residency_path": [
+      "residence"
+    ],
+    "monthly_healthcare_budget": 750,
+    "mobility": {
+      "local": [
+        "walk_bike"
+      ],
+      "regional": [
+        "need_car"
+      ],
+      "international": [
+        "regional_airport"
+      ]
+    },
+    "property_tax_sensitive": true,
+    "sales_tax_sensitive": true,
+    "income_tax_sensitive": false,
+    "onboarding_completed": true,
+    "updated_at": "2025-10-06T22:49:42.243+00:00",
+    "partner_primary_citizenship": "us",
+    "partner_secondary_citizenship": "ca",
+    "pet_types": [
+      "cat"
+    ],
+    "custom_activities": [
+      "water_sports",
+      "water_crafts",
+      "interest_gardening"
+    ],
+    "custom_physical": [
+      "snorkeling",
+      "boating"
+    ],
+    "custom_hobbies": [],
+    "children_primary_citizenship": null,
+    "children_secondary_citizenship": null,
+    "target_retirement_month": 1,
+    "target_retirement_day": 25,
+    "housing_preference": "both",
+    "total_monthly_budget": [
+      3000,
+      2000
+    ],
+    "max_monthly_rent": [
+      500,
+      750,
+      1000
+    ],
+    "max_home_price": [
+      320000,
+      100000,
+      200000,
+      300000
+    ],
+    "notifications": {
+      "weekly_digest": true,
+      "friend_requests": true,
+      "push_notifications": false,
+      "email_notifications": true
+    },
+    "privacy": {
+      "show_email": false,
+      "show_location": true,
+      "profile_visibility": "public"
+    },
+    "comparison_towns": [
+      "104f60bd-12a3-44ca-8a8d-ddbdae8fea6a",
+      "d2085a2d-03db-4248-8aa8-5f73fab0ecc6",
+      "6e333880-db74-49e3-a894-593a05e24228"
+    ]
+  }
+]
