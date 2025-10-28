@@ -93,7 +93,7 @@ function DailyTownCard() {
     setIsUpdating(true);
     try {
       // Toggle favorite
-      const result = await toggleFavorite(user.id, town.id, town.name, town.country);
+      const result = await toggleFavorite(user.id, town.id, town.town_name, town.country);
       if (result.success) {
         // Reload favorites
         const favResult = await fetchFavorites(user.id, 'DailyTownCard');
@@ -156,7 +156,7 @@ function DailyTownCard() {
       <div className="relative h-48">
         <OptimizedImage
           src={town.image_url_1}
-          alt={town.name}
+          alt={town.town_name}
           className="w-full h-full object-cover"
           fallbackIcon={MapPin}
           fallbackIconSize={64}
@@ -208,7 +208,7 @@ function DailyTownCard() {
         {/* Header: Town Name, Country */}
         <div className="flex justify-between items-baseline mb-3">
           <div>
-            <h3 className={`text-lg md:text-xl font-semibold ${uiConfig.colors.heading} mb-1`}>{town.name}</h3>
+            <h3 className={`text-lg md:text-xl font-semibold ${uiConfig.colors.heading} mb-1`}>{town.town_name}</h3>
             <p className={`text-sm ${uiConfig.colors.body}`}>{town.country}</p>
           </div>
         </div>

@@ -60,13 +60,13 @@ function TownCard({
           <div className="w-24 h-24">
             <OptimizedImage
               src={town.image_url_1}
-              alt={town.name}
+              alt={town.town_name}
               className="w-full h-full object-cover"
               fallbackIconSize={16}
             />
           </div>
           <div className="p-3 flex-1">
-            <h4 className={`font-medium ${uiConfig.colors.heading}`}>{town.name}</h4>
+            <h4 className={`font-medium ${uiConfig.colors.heading}`}>{town.town_name}</h4>
             <p className={`text-sm ${uiConfig.colors.hint}`}>{town.country}</p>
             {(town.cost_of_living_usd || town.typical_monthly_living_cost) && (
               <span className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 ${uiConfig.colors.badge} text-xs ${uiConfig.layout.radius.full}`}>
@@ -86,7 +86,7 @@ function TownCard({
       <div className="relative h-48">
         <OptimizedImage
           src={town.image_url_1}
-          alt={town.name}
+          alt={town.town_name}
           className="w-full h-full object-cover"
           fallbackIconSize={24}
         />
@@ -105,7 +105,7 @@ function TownCard({
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
           <div>
-            <h3 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>{town.name}</h3>
+            <h3 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>{town.town_name}</h3>
             <p className={`text-sm ${uiConfig.colors.hint} flex items-center gap-1`}>
               <MapPin size={12} />
               {town.country}

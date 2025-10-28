@@ -94,7 +94,7 @@ export default function Favorites() {
             if (townsResult.success) {
               console.log('Loaded favorite towns:', townsResult.towns.length, 'towns for', townIds.length, 'favorite IDs');
               // DEBUG: Check Gainesville specifically
-              const gainesville = townsResult.towns.find(t => t.name?.toLowerCase().includes('gainesville'));
+              const gainesville = townsResult.towns.find(t => t.town_name?.toLowerCase().includes('gainesville'));
               if (gainesville) {
                 console.log('[Favorites] Gainesville loaded with score:', gainesville.matchScore + '%');
                 console.log('[Favorites] Gainesville full data:', gainesville);
@@ -244,8 +244,8 @@ export default function Favorites() {
     // If there's a search term, search ALL towns
     if (searchTerm && searchTerm.trim().length > 0) {
       console.log('Searching all towns with term:', searchTerm);
-      filtered = allTowns.filter(town => 
-        town.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      filtered = allTowns.filter(town =>
+        town.town_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         town.country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         town.region?.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -281,7 +281,7 @@ export default function Favorites() {
         filtered.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
         break;
       case 'name':
-        filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        filtered.sort((a, b) => (a.town_name || '').localeCompare(b.town_name || ''));
         break;
       case 'cost-low':
         filtered.sort((a, b) => (a.cost_index || 0) - (b.cost_index || 0));
@@ -487,7 +487,7 @@ export default function Favorites() {
                       <div className="relative h-40">
                         <OptimizedImage
                           src={town.image_url_1}
-                          alt={town.name}
+                          alt={town.town_name}
                           className="w-full h-full object-cover"
                           fallbackIcon={MapPin}
                           fallbackIconSize={48}
@@ -514,7 +514,7 @@ export default function Favorites() {
                             isFavorited={isFav}
                             isUpdating={false}
                             onFavoriteClick={async () => {
-                              await handleFavoriteChange(town.id, town.name, town.country);
+                              await handleFavoriteChange(town.id, town.town_name, town.country);
                             }}
                             appealStatement={
                               isFav ? "Saved favorite" :
@@ -533,7 +533,7 @@ export default function Favorites() {
                         {/* Header: Town Name, Country (left) and Cost (right) */}
                         <div className="flex justify-between items-baseline mb-3">
                           <div className={`text-sm ${uiConfig.colors.heading}`}>
-                            {town.name}, {town.country}
+                            {town.town_name}, {town.country}
                           </div>
                           {(town.cost_of_living_usd || town.typical_monthly_living_cost) && (
                             <span className={`text-sm ${uiConfig.colors.body}`}>
