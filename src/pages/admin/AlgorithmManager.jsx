@@ -96,8 +96,8 @@ const AlgorithmManager = () => {
       // Load towns for testing - use only basic columns
       const { data: townsData, error: townsError } = await supabase
         .from('towns')
-        .select('id, name, country')
-        .order('name');
+        .select('id, town_name, country')
+        .order('town_name');
 
       if (townsError) {
         console.error('Error loading towns:', townsError);
@@ -126,12 +126,12 @@ const AlgorithmManager = () => {
       const searchLower = townSearch.toLowerCase();
       // First, get towns that start with the search term
       const startsWithSearch = towns.filter(town =>
-        town.name.toLowerCase().startsWith(searchLower)
+        town.town_name.toLowerCase().startsWith(searchLower)
       );
       // Then get towns that contain the search term but don't start with it
       const containsSearch = towns.filter(town =>
-        !town.name.toLowerCase().startsWith(searchLower) &&
-        town.name.toLowerCase().includes(searchLower)
+        !town.town_name.toLowerCase().startsWith(searchLower) &&
+        town.town_name.toLowerCase().includes(searchLower)
       );
       // Combine them, prioritizing towns that start with the search term
       const filtered = [...startsWithSearch, ...containsSearch].slice(0, 15);
@@ -165,17 +165,17 @@ const AlgorithmManager = () => {
 
         if (town) {
           setIsRestoringTown(true);
-          setTownSearch(town.name);
+          setTownSearch(town.town_name);
           setSelectedTown(town);
-          console.log('[AlgorithmManager] Restored last selected town:', town.name);
+          console.log('[AlgorithmManager] Restored last selected town:', town.town_name);
         } else {
           // Town ID not found, try to find by name
-          const townByName = towns.find(t => t.name === savedTownName);
+          const townByName = towns.find(t => t.town_name === savedTownName);
           if (townByName) {
             setIsRestoringTown(true);
-            setTownSearch(townByName.name);
+            setTownSearch(townByName.town_name);
             setSelectedTown(townByName);
-            console.log('[AlgorithmManager] Restored town by name:', townByName.name);
+            console.log('[AlgorithmManager] Restored town by name:', townByName.town_name);
           }
         }
       }
@@ -201,8 +201,8 @@ const AlgorithmManager = () => {
     if (selectedTown && !isRestoringTown) {
       try {
         localStorage.setItem('algorithmManager_lastTownId', selectedTown.id);
-        localStorage.setItem('algorithmManager_lastTownName', selectedTown.name);
-        console.log('[AlgorithmManager] Saved town to localStorage:', selectedTown.name);
+        localStorage.setItem('algorithmManager_lastTownName', selectedTown.town_name);
+        console.log('[AlgorithmManager] Saved town to localStorage:', selectedTown.town_name);
       } catch (error) {
         console.error('[AlgorithmManager] Error saving town to localStorage:', error);
       }
@@ -311,7 +311,7 @@ const AlgorithmManager = () => {
         return;
       }
 
-      console.log('Full town data loaded:', fullTownData.name, fullTownData.country);
+      console.log('Full town data loaded:', fullTownData.town_name, fullTownData.country);
       console.log('Calling scoreTownsBatch with preferences structure:', {
         hasClimate: !!userPreferences.climate_preferences,
         hasRegion: !!userPreferences.region_preferences,
@@ -325,7 +325,7 @@ const AlgorithmManager = () => {
       const scoredTowns = await scoreTownsBatch([fullTownData], userPreferences);
       const result = scoredTowns[0];
 
-      console.log('[AlgorithmManager] Town being scored:', fullTownData.name);
+      console.log('[AlgorithmManager] Town being scored:', fullTownData.town_name);
       console.log('[AlgorithmManager] Score result:', result.matchScore + '%');
       console.log('[AlgorithmManager] Category breakdown:', {
         overall: result.matchScore,
@@ -372,7 +372,7 @@ const AlgorithmManager = () => {
         breakdown: result
       });
 
-      toast.success(`Scored ${fullTownData.name}: ${result.matchScore}%`);
+      toast.success(`Scored ${fullTownData.town_name}: ${result.matchScore}%`);
     } catch (error) {
       console.error('Error testing scoring:', error);
       toast.error('Error calculating test score');
@@ -455,13 +455,13 @@ const AlgorithmManager = () => {
                         key={town.id}
                         onClick={() => {
                           setSelectedTown(town);
-                          setTownSearch(town.name);
+                          setTownSearch(town.town_name);
                           setShowTownDropdown(false);
                           setTestResults(null);
                         }}
                         className="w-full text-left px-3 py-2 hover:bg-gray-100 focus:bg-gray-100 transition-colors"
                       >
-                        <div className="font-medium">{town.name}</div>
+                        <div className="font-medium">{town.town_name}</div>
                         <div className="text-sm text-gray-500">
                           {town.country}
                         </div>
@@ -482,7 +482,7 @@ const AlgorithmManager = () => {
                   <strong>Testing as:</strong> {currentUser?.email}
                 </p>
                 <p className={`text-sm ${uiConfig.colors.body}`}>
-                  <strong>Selected:</strong> {selectedTown.name}, {selectedTown.country}
+                  <strong>Selected:</strong> {selectedTown.town_name}, {selectedTown.country}
                 </p>
 
                 {isCalculating && (
@@ -541,7 +541,7 @@ const AlgorithmManager = () => {
 
                 <div className={`text-xs ${uiConfig.colors.muted} mt-4`}>
                   <p><strong>Note:</strong> This uses YOUR preferences ({currentUser?.email}) with the current algorithm weights.</p>
-                  <p>The score shows how well {selectedTown.name} matches your personal retirement preferences.</p>
+                  <p>The score shows how well {selectedTown.town_name} matches your personal retirement preferences.</p>
                 </div>
               </div>
             )}

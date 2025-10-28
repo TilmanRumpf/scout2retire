@@ -227,7 +227,7 @@ export const convertPreferencesToAlgorithmFormat = (userPreferences) => {
 export const scoreTown = async (town, userPreferences) => {
   try {
     // DEBUG: Log when scoring Gainesville
-    if (town.name?.toLowerCase().includes('gainesville')) {
+    if (town.town_name?.toLowerCase().includes('gainesville')) {
       console.log('[scoreTown] Starting to score Gainesville');
       console.log('[scoreTown] User preferences passed in:', JSON.stringify(userPreferences, null, 2));
     }
@@ -239,7 +239,7 @@ export const scoreTown = async (town, userPreferences) => {
     const enhancedResult = await calculateEnhancedMatch(convertedPreferences, town);
 
     // DEBUG: Log Gainesville scoring details
-    if (town.name?.toLowerCase().includes('gainesville')) {
+    if (town.town_name?.toLowerCase().includes('gainesville')) {
       console.log('[scoreTown] Scoring Gainesville...');
       console.log('[scoreTown] Enhanced result match_score:', enhancedResult.match_score);
       console.log('[scoreTown] Category scores:', enhancedResult.category_scores);
@@ -296,7 +296,7 @@ export const scoreTown = async (town, userPreferences) => {
     };
   } catch (error) {
     // ERROR HANDLING: If scoring fails, return safe defaults so UI doesn't hang
-    console.error(`❌ Error scoring town ${town.name}:`, error);
+    console.error(`❌ Error scoring town ${town.town_name}:`, error);
 
     // Return town with safe default scores to prevent "Analyzing..." hang
     return {
