@@ -25,6 +25,7 @@ import LegacyFieldsSection from '../../components/admin/LegacyFieldsSection';
 import { getFieldOptions, isMultiSelectField } from '../../utils/townDataOptions';
 import { useFieldDefinitions } from '../../hooks/useFieldDefinitions';
 import { uiConfig } from '../../styles/uiConfig';
+import { formatTownDisplay } from '../../utils/townDisplayUtils';
 
 // Column mappings organized by category and subcategory to match onboarding structure
 const COLUMN_CATEGORIES = {
@@ -1459,8 +1460,7 @@ const TownsManager = () => {
                       selectedTown?.id === town.id ? uiConfig.colors.accent : ''
                     }`}
                   >
-                    <div className={`font-medium ${uiConfig.colors.heading}`}>{town.town_name}</div>
-                    <div className={`text-sm ${uiConfig.colors.body}`}>{town.country}</div>
+                    <div className={`font-medium ${uiConfig.colors.heading}`}>{formatTownDisplay(town)}</div>
                     <div className="flex items-center gap-2 mt-1">
                       {town._completion !== undefined && (
                         <button
@@ -1536,7 +1536,7 @@ const TownsManager = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
                       </button>
-                      <h2 className={`text-lg lg:text-xl font-bold ${uiConfig.colors.heading}`}>{selectedTown.town_name}, {selectedTown.country}</h2>
+                      <h2 className={`text-lg lg:text-xl font-bold ${uiConfig.colors.heading}`}>{formatTownDisplay(selectedTown)}</h2>
                     </div>
                     <div className="flex items-center gap-2">
                       {/* Data Quality Report Button */}
@@ -1865,7 +1865,7 @@ const TownsManager = () => {
                   Field: {formatFieldName(showAuditDialog.fieldName)}
                 </p>
                 <p className={`text-sm ${uiConfig.colors.body} mt-1`}>
-                  Town: {towns.find(t => t.id === showAuditDialog.townId)?.name}
+                  Town: {formatTownDisplay(towns.find(t => t.id === showAuditDialog.townId))}
                 </p>
                 {isFieldAudited(showAuditDialog.townId, showAuditDialog.fieldName) && (
                   <p className={`text-xs ${uiConfig.colors.subtitle} mt-2`}>
