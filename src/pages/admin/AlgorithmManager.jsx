@@ -166,17 +166,17 @@ const AlgorithmManager = () => {
 
         if (town) {
           setIsRestoringTown(true);
-          setTownSearch(town.town_name);
+          setTownSearch(formatTownDisplay(town));
           setSelectedTown(town);
-          console.log('[AlgorithmManager] Restored last selected town:', town.town_name);
+          console.log('[AlgorithmManager] Restored last selected town:', formatTownDisplay(town));
         } else {
           // Town ID not found, try to find by name
           const townByName = towns.find(t => t.town_name === savedTownName);
           if (townByName) {
             setIsRestoringTown(true);
-            setTownSearch(townByName.town_name);
+            setTownSearch(formatTownDisplay(townByName));
             setSelectedTown(townByName);
-            console.log('[AlgorithmManager] Restored town by name:', townByName.town_name);
+            console.log('[AlgorithmManager] Restored town by name:', formatTownDisplay(townByName));
           }
         }
       }
@@ -456,7 +456,7 @@ const AlgorithmManager = () => {
                         key={town.id}
                         onClick={() => {
                           setSelectedTown(town);
-                          setTownSearch(town.town_name);
+                          setTownSearch(formatTownDisplay(town));
                           setShowTownDropdown(false);
                           setTestResults(null);
                         }}
