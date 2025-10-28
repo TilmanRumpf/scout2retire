@@ -22,7 +22,16 @@ const QuickNav = React.memo(function QuickNav({ isOpen: propIsOpen, onClose }) {
 
   // Auto-expand admin section when on admin pages
   const isOnAdminPage = location.pathname.startsWith('/admin');
-  const [adminExpanded, setAdminExpanded] = useState(isOnAdminPage);
+
+  // Initialize adminExpanded from localStorage, or auto-expand if on admin page
+  const [adminExpanded, setAdminExpanded] = useState(() => {
+    const stored = localStorage.getItem('s2r_admin_expanded');
+    if (stored !== null) {
+      return stored === 'true' || isOnAdminPage;
+    }
+    return isOnAdminPage;
+  });
+
   const scrollContainerRef = useRef(null);
 
   // Note: Removed location change effect as it was causing immediate closes
@@ -40,6 +49,11 @@ const QuickNav = React.memo(function QuickNav({ isOpen: propIsOpen, onClose }) {
       setAdminExpanded(true);
     }
   }, [isOnAdminPage]);
+
+  // Persist adminExpanded state to localStorage
+  useEffect(() => {
+    localStorage.setItem('s2r_admin_expanded', String(adminExpanded));
+  }, [adminExpanded]);
 
   // Load user and check for pending invitations and unread messages
   // PERFORMANCE FIX: Only load once, ignore duplicate auth events
