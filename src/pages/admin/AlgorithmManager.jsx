@@ -18,6 +18,7 @@ import {
 import { scoreTownsBatch } from '../../utils/scoring/unifiedScoring';
 import { getOnboardingProgress } from '../../utils/userpreferences/onboardingUtils';
 import { uiConfig } from '../../styles/uiConfig';
+import { formatTownDisplay } from '../../utils/townDisplayUtils';
 
 const AlgorithmManager = () => {
   const navigate = useNavigate();
@@ -462,7 +463,7 @@ const AlgorithmManager = () => {
                         className="w-full text-left px-3 py-2 hover:bg-gray-100 focus:bg-gray-100 transition-colors"
                       >
                         <div className="font-medium">
-                          {town.town_name}, {town.country} {town.region ? `(${town.region})` : ''}
+                          {formatTownDisplay(town)}
                         </div>
                       </button>
                     ))}
@@ -481,7 +482,7 @@ const AlgorithmManager = () => {
                   <strong>Testing as:</strong> {currentUser?.email}
                 </p>
                 <p className={`text-sm ${uiConfig.colors.body}`}>
-                  <strong>Selected:</strong> {selectedTown.town_name}, {selectedTown.country} {selectedTown.region ? `(${selectedTown.region})` : ''}
+                  <strong>Selected:</strong> {formatTownDisplay(selectedTown)}
                 </p>
 
                 {isCalculating && (
@@ -540,7 +541,7 @@ const AlgorithmManager = () => {
 
                 <div className={`text-xs ${uiConfig.colors.muted} mt-4`}>
                   <p><strong>Note:</strong> This uses YOUR preferences ({currentUser?.email}) with the current algorithm weights.</p>
-                  <p>The score shows how well {selectedTown.town_name}, {selectedTown.country} {selectedTown.region ? `(${selectedTown.region})` : ''} matches your personal retirement preferences.</p>
+                  <p>The score shows how well {formatTownDisplay(selectedTown)} matches your personal retirement preferences.</p>
                 </div>
               </div>
             )}
