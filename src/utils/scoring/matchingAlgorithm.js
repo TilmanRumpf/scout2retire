@@ -112,7 +112,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
           // Use cache if less than 1 hour old
           if (Date.now() - timestamp < 3600000) {
             console.log('[getPersonalizedTowns] Using cached results');
-            const gainesville = data.towns?.find(t => t.name?.toLowerCase().includes('gainesville'));
+            const gainesville = data.towns?.find(t => t.town_name?.toLowerCase().includes('gainesville'));
             if (gainesville) {
               console.log('[getPersonalizedTowns] Cached Gainesville score:', gainesville.matchScore + '%');
             }
@@ -202,7 +202,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     }
     
     // Execute query - gets ALL matching towns, not limited to 200
-    const { data: allTowns, error: townsError } = await query.order('name');
+    const { data: allTowns, error: townsError } = await query.order('town_name');
 
     if (townsError) {
       console.error('Error fetching towns:', townsError);
@@ -220,7 +220,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
         .not('image_url_1', 'is', null)
         .not('image_url_1', 'eq', '')
         .not('image_url_1', 'ilike', 'NULL')  // CRITICAL: Only towns with photos
-        .order('name');
+        .order('town_name');
         
       if (!retryError && moreTowns) {
         allTowns.push(...(moreTowns?.filter(t => !allTowns.find(existing => existing.id === t.id)) || []));
@@ -232,7 +232,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     const scoredTowns = await scoreTownsBatch(allTowns, finalUserPreferences);
 
     // Debug logging for Gainesville scoring
-    const gainesville = scoredTowns.find(t => t.name?.toLowerCase().includes('gainesville'));
+    const gainesville = scoredTowns.find(t => t.town_name?.toLowerCase().includes('gainesville'));
     if (gainesville) {
       console.log('[getPersonalizedTowns] Gainesville score:', gainesville.matchScore + '%');
       console.log('[getPersonalizedTowns] Category breakdown:', gainesville.categoryScores);

@@ -1,0 +1,1542 @@
+{
+  "files": {
+    "components/ComparisonGrid.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 251,
+        "context": "alt={town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 261,
+        "context": "<h3 className=\"text-white font-semibold text-lg\">{town.name}</h3>"
+      }
+    ],
+    "components/DailyTownCard.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 96,
+        "context": "const result = await toggleFavorite(user.id, town.id, town.name, town.country);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 159,
+        "context": "alt={town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 194,
+        "context": "return `${highest.name} Match: ${Math.round(highest.score)}%`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 196,
+        "context": "return `Strong ${highest.name.toLowerCase()} match`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 198,
+        "context": "return `Good ${highest.name.toLowerCase()} fit`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 200,
+        "context": "return `${highest.name}: ${Math.round(highest.score)}%`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 211,
+        "context": "<h3 className={`text-lg md:text-xl font-semibold ${uiConfig.colors.heading} mb-1`}>{town.name}</h3>"
+      }
+    ],
+    "components/DataQualityPanel.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 77,
+        "context": "Data Quality Report - ${town.name}, ${town.country}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 117,
+        "context": "<div className={`font-medium ${uiConfig.colors.heading}`}>{town.name}, {town.country}</div>"
+      }
+    ],
+    "components/FilterBarV3.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 100,
+        "context": "town.name.toLowerCase().includes(search) ||"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 163,
+        "context": "town.name.toLowerCase().includes(search) ||"
+      },
+      {
+        "pattern": "dotName",
+        "match": "result.name",
+        "line": 489,
+        "context": "{result.name}, {result.country}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "result.name",
+        "line": 499,
+        "context": "{result.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 656,
+        "context": "{town.name}"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "\"name\"",
+        "line": 684,
+        "context": "<option value=\"name\">Name (A-Z)</option>"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 870,
+        "context": "{['match', 'name', 'cost-low', 'cost-high', 'region', 'climate', 'culture', 'hobbies', 'administration', 'budget'].map(option => ("
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 884,
+        "context": "option === 'name' ? 'Name (A-Z)' :"
+      }
+    ],
+    "components/GroupChatModal.jsx": [
+      {
+        "pattern": "selectName",
+        "match": "select('name, country, region'",
+        "line": 154,
+        "context": ".select('name, country, region')"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 162,
+        "context": "name: town.name,"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 155,
+        "context": ".ilike('name', `%${search}%`)"
+      }
+    ],
+    "components/ScoreBreakdownPanel.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 56,
+        "context": "townName={town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 123,
+        "context": "View and adjust scoring data for {town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 257,
+        "context": "townName={town.name}"
+      }
+    ],
+    "components/ScottyGuide.jsx": [
+      {
+        "pattern": "selectName",
+        "match": "select('name, country'",
+        "line": 266,
+        "context": ".select('name, country')"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 71,
+        "context": "const name = town.name || town.town_name;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 140,
+        "context": "return `${town.name} immigration`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 142,
+        "context": "return `${town.name} costs`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 144,
+        "context": "return `${town.name} healthcare`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 147,
+        "context": "return `${town.name} exploration`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 378,
+        "context": "const townName = townContext.name || townContext.town_name;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "Town.name",
+        "line": 428,
+        "context": "mentioned_towns: activeTown ? [activeTown.name] : extractMentionedTowns(msg.text),"
+      },
+      {
+        "pattern": "dotName",
+        "match": "Town.name",
+        "line": 469,
+        "context": "mentioned_towns: activeTown ? [activeTown.name] : extractMentionedTowns(msg.text),"
+      },
+      {
+        "pattern": "dotName",
+        "match": "Town.name",
+        "line": 624,
+        "context": "const townContext = activeTown ? `\\n\\nCURRENT TOPIC: The user is asking about ${activeTown.name}, ${activeTown.country}. IMPORTANT: Keep the conversation focused on ${activeTown.name} unless the user explicitly asks about a different location.` : '';"
+      },
+      {
+        "pattern": "dotName",
+        "match": "Town.name",
+        "line": 624,
+        "context": "const townContext = activeTown ? `\\n\\nCURRENT TOPIC: The user is asking about ${activeTown.name}, ${activeTown.country}. IMPORTANT: Keep the conversation focused on ${activeTown.name} unless the user explicitly asks about a different location.` : '';"
+      },
+      {
+        "pattern": "dotName",
+        "match": "Town.name",
+        "line": 636,
+        "context": "(activeTown ? `\\nREMEMBER: This entire conversation is about ${activeTown.name}, ${activeTown.country}. Stay focused on this location unless the user explicitly asks about somewhere else.` : '');"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 643,
+        "context": "${availableTowns.map(t => `${t.name}, ${t.country}`).join('\\n')}"
+      },
+      {
+        "pattern": "objectName",
+        "match": "{name}",
+        "line": 94,
+        "context": "citizenshipAdvantage = `Many US retirees love ${name} for its proximity to home. `;"
+      },
+      {
+        "pattern": "objectName",
+        "match": "{name}",
+        "line": 112,
+        "context": "const synopsis = `${name} is a ${sizeContext} in ${country} with ${rentContext} living costs${rentCost ? ` (around $${rentCost}/month for a comfortable apartment)` : ''}. ${citizenshipAdvantage}${"
+      },
+      {
+        "pattern": "objectName",
+        "match": "{name}",
+        "line": 124,
+        "context": "What would you like to know about ${name}?`;"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 268,
+        "context": ".order('name');"
+      }
+    ],
+    "components/ScottyGuideEnhanced.jsx": [
+      {
+        "pattern": "selectName",
+        "match": "select('id, name, country'",
+        "line": 96,
+        "context": ".select('id, name, country')"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 328,
+        "context": "return `${town.name} visa info`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 331,
+        "context": "return `${town.name} costs`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 334,
+        "context": "return `${town.name} healthcare`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 336,
+        "context": "return `${town.name} exploration`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 352,
+        "context": "const name = town.name || town.town_name;"
+      },
+      {
+        "pattern": "objectName",
+        "match": "{name}",
+        "line": 359,
+        "context": "let synopsis = `Welcome! Let's explore **${name}, ${country}** together.\\n\\n`;"
+      },
+      {
+        "pattern": "objectName",
+        "match": "{name}",
+        "line": 367,
+        "context": "synopsis += `Many US retirees love ${name} for its proximity to home. `;"
+      },
+      {
+        "pattern": "objectName",
+        "match": "{name}",
+        "line": 370,
+        "context": "synopsis += `\\n\\nWhat would you like to know about ${name}? I can help with:`;"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 97,
+        "context": ".order('name');"
+      }
+    ],
+    "components/TownCard.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 63,
+        "context": "alt={town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 69,
+        "context": "<h4 className={`font-medium ${uiConfig.colors.heading}`}>{town.name}</h4>"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 89,
+        "context": "alt={town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 108,
+        "context": "<h3 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>{town.name}</h3>"
+      }
+    ],
+    "components/TownComparison.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 58,
+        "context": "<span className=\"font-medium\">{town.name}, {town.country}</span>"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 72,
+        "context": "name={town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 89,
+        "context": "<th key={town.id} className=\"text-right p-2\">{town.name}</th>"
+      }
+    ],
+    "components/TownImageOverlay.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 112,
+        "context": "href={town.google_maps_link || `https://www.google.com/maps/search/${encodeURIComponent(town.name + ', ' + town.country)}`}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 116,
+        "context": "aria-label={`View ${town.name} on Google Maps`}"
+      }
+    ],
+    "components/UnifiedHeader.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 431,
+        "context": "<span className={uiConfig.colors.heading}>{town.name}</span>"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 435,
+        "context": "aria-label={`Remove ${town.name}`}"
+      }
+    ],
+    "components/UsernameSelector.jsx": [
+      {
+        "pattern": "selectName",
+        "match": "select('id, username'",
+        "line": 107,
+        "context": ".select('id, username')"
+      }
+    ],
+    "components/admin/ActivitiesPanel.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 44,
+        "context": "townName={town.name}"
+      }
+    ],
+    "components/admin/ClimatePanel.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 45,
+        "context": "townName={town.name}"
+      }
+    ],
+    "components/admin/CostsPanel.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 43,
+        "context": "townName={town.name}"
+      }
+    ],
+    "components/admin/CulturePanel.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 46,
+        "context": "townName={town.name}"
+      }
+    ],
+    "components/admin/HealthcarePanel.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 47,
+        "context": "townName={town.name}"
+      }
+    ],
+    "components/admin/HobbiesDisplay.jsx": [
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 39,
+        "context": ".order('name');"
+      }
+    ],
+    "components/admin/InfrastructurePanel.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 44,
+        "context": "townName={town.name}"
+      }
+    ],
+    "components/admin/LegacyFieldsSection.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 228,
+        "context": "townName={town.name}"
+      }
+    ],
+    "components/admin/OverviewPanel.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 46,
+        "context": "townName={town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 104,
+        "context": "{town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 201,
+        "context": "alt={`${town.name} preview`}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 226,
+        "context": "alt={`${town.name} secondary preview`}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 251,
+        "context": "alt={`${town.name} tertiary preview`}"
+      }
+    ],
+    "components/admin/RegionPanel.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 46,
+        "context": "townName={town.name}"
+      }
+    ],
+    "components/admin/SafetyPanel.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 44,
+        "context": "townName={town.name}"
+      }
+    ],
+    "components/admin/TownAccessManager.jsx": [
+      {
+        "pattern": "selectName",
+        "match": "select('id, name, country, region'",
+        "line": 82,
+        "context": ".select('id, name, country, region')"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 499,
+        "context": "{town.name}, {town.country} {town.region ? `(${town.region})` : ''}"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 83,
+        "context": ".order('name');"
+      }
+    ],
+    "components/admin/UserAnalyticsDashboard.jsx": [
+      {
+        "pattern": "selectName",
+        "match": "select('event_name, event_type'",
+        "line": 180,
+        "context": ".select('event_name, event_type')"
+      },
+      {
+        "pattern": "selectName",
+        "match": "select('last_country_code, last_country_name'",
+        "line": 262,
+        "context": ".select('last_country_code, last_country_name')"
+      },
+      {
+        "pattern": "selectName",
+        "match": "select('last_region, last_country_name'",
+        "line": 285,
+        "context": ".select('last_region, last_country_name')"
+      },
+      {
+        "pattern": "selectName",
+        "match": "select('last_city, last_region, last_country_name'",
+        "line": 302,
+        "context": ".select('last_city, last_region, last_country_name')"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 496,
+        "context": "<span className=\"text-gray-900 dark:text-gray-100\">{event.name}</span>"
+      },
+      {
+        "pattern": "objectName",
+        "match": "{ name,",
+        "line": 192,
+        "context": ".map(([name, count]) => ({ name, count }));"
+      }
+    ],
+    "components/chat/LobbyTab.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 347,
+        "context": "{town.name}"
+      }
+    ],
+    "components/chat/LoungesTab.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 316,
+        "context": "<div className={uiConfig.font.weight.medium}>{town.name}</div>"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 322,
+        "context": "const result = await toggleFavorite(user.id, town.id, town.name, town.country);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 327,
+        "context": "toast.success(`Removed ${town.name} from favorites`);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 398,
+        "context": "town.name.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()) ||"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 412,
+        "context": "<div className={uiConfig.font.size.sm}>{town.name}</div>"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 418,
+        "context": "town.name.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()) ||"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 433,
+        "context": "town.name.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()) ||"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 447,
+        "context": "<div className={uiConfig.font.weight.medium}>{town.name}</div>"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 453,
+        "context": "const result = await toggleFavorite(user.id, town.id, town.name, town.country);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 458,
+        "context": "toast.success(`Added ${town.name} to favorites`);"
+      }
+    ],
+    "components/chat/MessageInput.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "Town.name",
+        "line": 19,
+        "context": "return `Message ${activeTown.name} chat...`;"
+      }
+    ],
+    "components/search/NearbyMap.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 297,
+        "context": "alt={town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 301,
+        "context": "<h3 className=\"font-semibold\">{town.name}</h3>"
+      }
+    ],
+    "components/search/SearchResults.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 158,
+        "context": "alt={town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 175,
+        "context": "{town.name}"
+      }
+    ],
+    "hooks/useChatActions.js": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 52,
+        "context": "topic: town.name,"
+      }
+    ],
+    "hooks/useChatDataLoader.js": [
+      {
+        "pattern": "selectName",
+        "match": "select('id, name, country, region'",
+        "line": 84,
+        "context": ".select('id, name, country, region')"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 85,
+        "context": ".ilike('name', cityName)"
+      }
+    ],
+    "hooks/useChatDataLoaders.js": [
+      {
+        "pattern": "selectName",
+        "match": "select('id, username, created_at'",
+        "line": 191,
+        "context": ".select('id, username, created_at')"
+      },
+      {
+        "pattern": "selectName",
+        "match": "select('id, name, country'",
+        "line": 285,
+        "context": ".select('id, name, country')"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 286,
+        "context": ".order('name');"
+      }
+    ],
+    "hooks/useChatOperations.jsx": [
+      {
+        "pattern": "selectName",
+        "match": "select('id, username, created_at'",
+        "line": 246,
+        "context": ".select('id, username, created_at')"
+      },
+      {
+        "pattern": "selectName",
+        "match": "select('id, name, country'",
+        "line": 346,
+        "context": ".select('id, name, country')"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 880,
+        "context": "topic: town.name,"
+      },
+      {
+        "pattern": "objectName",
+        "match": "{ name,",
+        "line": 1100,
+        "context": "const handleCreateGroup = async ({ name, category, geographicScope, memberIds, createdBy, isPublic, groupType, invitePolicy, discoverability, groupImageUrl }) => {"
+      },
+      {
+        "pattern": "objectName",
+        "match": "{name}",
+        "line": 1164,
+        "context": "toast.success(`Group \"${name}\" created!`);"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 347,
+        "context": ".order('name');"
+      }
+    ],
+    "hooks/useUsernameCheck.js": [
+      {
+        "pattern": "selectName",
+        "match": "select('username'",
+        "line": 23,
+        "context": ".select('username')"
+      }
+    ],
+    "pages/Chat.jsx": [
+      {
+        "pattern": "selectName",
+        "match": "select('id, name, country, region'",
+        "line": 349,
+        "context": ".select('id, name, country, region')"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 1010,
+        "context": "username={userToReport.name}"
+      },
+      {
+        "pattern": "objectName",
+        "match": "{ name,",
+        "line": 199,
+        "context": "const handleCreateGroup = async ({ name, category, geographicScope, memberIds, createdBy, isPublic, groupType, invitePolicy, discoverability, groupImageUrl }) => {"
+      },
+      {
+        "pattern": "objectName",
+        "match": "{name}",
+        "line": 263,
+        "context": "toast.success(`Group \"${name}\" created!`);"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 350,
+        "context": ".ilike('name', cityName)"
+      }
+    ],
+    "pages/Daily.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 647,
+        "context": "console.log('Clicked top match:', town.name, 'ID:', town.id);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 655,
+        "context": "{town.name}, {town.country}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 676,
+        "context": "console.log('Clicked top match:', town.name, 'ID:', town.id);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 684,
+        "context": "{town.name}, {town.country}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 701,
+        "context": "console.log('Clicked top match (row 2):', town.name, 'ID:', town.id);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 708,
+        "context": "{town.name}, {town.country}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 839,
+        "context": "{town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 878,
+        "context": "name: town.name"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 920,
+        "context": "alt={town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 927,
+        "context": "<p className={`font-medium ${uiConfig.colors.heading}`}>{town.name}, {town.region}</p>"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 956,
+        "context": "alt={town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 968,
+        "context": "<p className={`font-medium ${uiConfig.colors.heading} text-sm`}>{town.name}</p>"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 315,
+        "context": ".in('name', sampleTownNames)"
+      }
+    ],
+    "pages/Favorites.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 97,
+        "context": "const gainesville = townsResult.towns.find(t => t.name?.toLowerCase().includes('gainesville'));"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 248,
+        "context": "town.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 490,
+        "context": "alt={town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 517,
+        "context": "await handleFavoriteChange(town.id, town.name, town.country);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 536,
+        "context": "{town.name}, {town.country}"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 283,
+        "context": "case 'name':"
+      }
+    ],
+    "pages/Login.jsx": [
+      {
+        "pattern": "selectName",
+        "match": "select('username, onboarding_completed'",
+        "line": 134,
+        "context": ".select('username, onboarding_completed')"
+      }
+    ],
+    "pages/MasterSchedule.jsx": [
+      {
+        "pattern": "objectName",
+        "match": "{ name,",
+        "line": 220,
+        "context": "const { name, value } = e.target;"
+      }
+    ],
+    "pages/Settings.jsx": [
+      {
+        "pattern": "objectName",
+        "match": "{ name,",
+        "line": 63,
+        "context": "const { name, value } = e.target;"
+      }
+    ],
+    "pages/TownComparison.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 364,
+        "context": "aria-label={`${isSelected ? 'Deselect' : 'Select'} ${town.name || fav.town_name}`}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 371,
+        "context": "<span>{town.name || fav.town_name}</span>"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 379,
+        "context": "aria-label={`Remove ${town.name || fav.town_name}`}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 427,
+        "context": "alt={town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 454,
+        "context": "<h2 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>{town.name}</h2>"
+      }
+    ],
+    "pages/TownDiscovery.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 265,
+        "context": "town.name || '',"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 478,
+        "context": "return `${best.name} Match: ${Math.round(best.score)}%`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 883,
+        "context": "title={`View details for ${town.name}`}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 887,
+        "context": "alt={town.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 900,
+        "context": "await handleToggleFavorite(town.id, town.name, town.country);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 915,
+        "context": "return `${best.name} Match: ${Math.round(best.score)}%`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 925,
+        "context": "{town.name}, {town.country}"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 301,
+        "context": "case 'name':"
+      }
+    ],
+    "pages/admin/AlgorithmManager.jsx": [
+      {
+        "pattern": "selectName",
+        "match": "select('id, name, country'",
+        "line": 99,
+        "context": ".select('id, name, country')"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 129,
+        "context": "town.name.toLowerCase().startsWith(searchLower)"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 133,
+        "context": "!town.name.toLowerCase().startsWith(searchLower) &&"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 134,
+        "context": "town.name.toLowerCase().includes(searchLower)"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 168,
+        "context": "setTownSearch(town.name);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 170,
+        "context": "console.log('[AlgorithmManager] Restored last selected town:', town.name);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 173,
+        "context": "const townByName = towns.find(t => t.name === savedTownName);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "Town.name",
+        "line": 204,
+        "context": "localStorage.setItem('algorithmManager_lastTownName', selectedTown.name);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "Town.name",
+        "line": 205,
+        "context": "console.log('[AlgorithmManager] Saved town to localStorage:', selectedTown.name);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 458,
+        "context": "setTownSearch(town.name);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 464,
+        "context": "<div className=\"font-medium\">{town.name}</div>"
+      },
+      {
+        "pattern": "dotName",
+        "match": "Town.name",
+        "line": 485,
+        "context": "<strong>Selected:</strong> {selectedTown.name}, {selectedTown.country}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "Town.name",
+        "line": 544,
+        "context": "<p>The score shows how well {selectedTown.name} matches your personal retirement preferences.</p>"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 100,
+        "context": ".order('name');"
+      }
+    ],
+    "pages/admin/PaywallManager.jsx": [
+      {
+        "pattern": "selectName",
+        "match": "select('category_id, user_categories(category_code, display_name, color_hex)'",
+        "line": 110,
+        "context": ".select('category_id, user_categories(category_code, display_name, color_hex)');"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 608,
+        "context": "<h3 className={`font-semibold ${uiConfig.colors.heading}`}>{stat.name}</h3>"
+      }
+    ],
+    "pages/admin/TownsManager.jsx": [
+      {
+        "pattern": "selectName",
+        "match": "select('avatar_url, full_name'",
+        "line": 291,
+        "context": ".select('avatar_url, full_name')"
+      },
+      {
+        "pattern": "selectName",
+        "match": "select('avatar_url, full_name'",
+        "line": 727,
+        "context": ".select('avatar_url, full_name')"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 409,
+        "context": "console.log('🔥 Auto-selecting town from URL:', town.name);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 514,
+        "context": "t.name && t.name.toLowerCase().startsWith(filters.townSearch.toLowerCase())"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 514,
+        "context": "t.name && t.name.toLowerCase().startsWith(filters.townSearch.toLowerCase())"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 544,
+        "context": "if (cityCountryErrors[town.name] && town.country !== cityCountryErrors[town.name]) {"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 544,
+        "context": "if (cityCountryErrors[town.name] && town.country !== cityCountryErrors[town.name]) {"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 545,
+        "context": "errors.push(`${town.name} should be in ${cityCountryErrors[town.name]}, not ${town.country}`);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 545,
+        "context": "errors.push(`${town.name} should be in ${cityCountryErrors[town.name]}, not ${town.country}`);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 608,
+        "context": ".filter(t => t.name && t.name.toLowerCase().startsWith(value.toLowerCase()))"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 608,
+        "context": ".filter(t => t.name && t.name.toLowerCase().startsWith(value.toLowerCase()))"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 609,
+        "context": ".map(t => t.name)"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 636,
+        "context": "const foundTown = towns.find(t => t.name === townName);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 884,
+        "context": "? town.name  // Just town name for country searches"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 885,
+        "context": ": `${town.name}, ${town.country}`;  // Include country for other fields"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 896,
+        "context": "const verifyLocation = fieldName === 'country' ? town.name : location;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 904,
+        "context": "return `Is ${town.name} really in ${currentValue}? Which country is ${town.name} located in?`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 904,
+        "context": "return `Is ${town.name} really in ${currentValue}? Which country is ${town.name} located in?`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 910,
+        "context": "return `Is ${town.name} really in ${currentValue}? Which country is ${town.name} located in?`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 910,
+        "context": "return `Is ${town.name} really in ${currentValue}? Which country is ${town.name} located in?`;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 942,
+        "context": "const searchLocation = fieldName === 'country' ? town.name : location;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 948,
+        "context": "const searchLocation = fieldName === 'country' ? town.name : location;"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 1462,
+        "context": "<div className={`font-medium ${uiConfig.colors.heading}`}>{town.name}</div>"
+      },
+      {
+        "pattern": "dotName",
+        "match": "Town.name",
+        "line": 1539,
+        "context": "<h2 className={`text-lg lg:text-xl font-bold ${uiConfig.colors.heading}`}>{selectedTown.name}, {selectedTown.country}</h2>"
+      },
+      {
+        "pattern": "dotName",
+        "match": "Town.name",
+        "line": 1634,
+        "context": "townName={selectedTown.name}"
+      },
+      {
+        "pattern": "dotName",
+        "match": "Town.name",
+        "line": 1721,
+        "context": "townName={selectedTown.name}"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 159,
+        "context": "used: ['id', 'name', 'image_url_1', 'description', 'appealStatement', 'matchScore'],"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 363,
+        "context": ".order('name');"
+      }
+    ],
+    "pages/onboarding/OnboardingClimate.jsx": [
+      {
+        "pattern": "objectName",
+        "match": "{ name,",
+        "line": 81,
+        "context": "const { name, value } = e.target;"
+      }
+    ],
+    "pages/onboarding/OnboardingComplete.jsx": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 265,
+        "context": "<div className=\"font-medium\">{town.name}</div>"
+      }
+    ],
+    "pages/onboarding/OnboardingCurrentStatus.jsx": [
+      {
+        "pattern": "objectName",
+        "match": "{ name,",
+        "line": 95,
+        "context": "onChange({ target: { name, value: optValue } });"
+      },
+      {
+        "pattern": "objectName",
+        "match": "{ name,",
+        "line": 119,
+        "context": "onChange({ target: { name, value: optValue } });"
+      },
+      {
+        "pattern": "objectName",
+        "match": "{ name,",
+        "line": 251,
+        "context": "const { name, value, type, checked } = e.target;"
+      }
+    ],
+    "services/chatDataService.js": [
+      {
+        "pattern": "selectName",
+        "match": "select('id, username, created_at'",
+        "line": 94,
+        "context": ".select('id, username, created_at')"
+      },
+      {
+        "pattern": "selectName",
+        "match": "select('id, name, country'",
+        "line": 121,
+        "context": "const { data } = await supabase.from('towns').select('id, name, country').order('name');"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 121,
+        "context": "const { data } = await supabase.from('towns').select('id, name, country').order('name');"
+      }
+    ],
+    "utils/authUtils.js": [
+      {
+        "pattern": "selectName",
+        "match": "select('username'",
+        "line": 11,
+        "context": ".select('username')"
+      }
+    ],
+    "utils/hobbies/compoundButtonMappings.js": [
+      {
+        "pattern": "selectName",
+        "match": "select('name'",
+        "line": 33,
+        "context": ".select('name')"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 33,
+        "context": ".select('name')"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 35,
+        "context": ".order('name');"
+      }
+    ],
+    "utils/imageValidation.js": [
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 59,
+        "context": "towns.filter(t => !hasValidImage(t)).map(t => t.name)"
+      }
+    ],
+    "utils/scoring/core/calculateMatch.js": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 88,
+        "context": "town_name: town.name,"
+      }
+    ],
+    "utils/scoring/matchingAlgorithm.js": [
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 115,
+        "context": "const gainesville = data.towns?.find(t => t.name?.toLowerCase().includes('gainesville'));"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 235,
+        "context": "const gainesville = scoredTowns.find(t => t.name?.toLowerCase().includes('gainesville'));"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 205,
+        "context": "const { data: allTowns, error: townsError } = await query.order('name');"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 223,
+        "context": ".order('name');"
+      }
+    ],
+    "utils/scoring/unifiedScoring.js": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 230,
+        "context": "if (town.name?.toLowerCase().includes('gainesville')) {"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 242,
+        "context": "if (town.name?.toLowerCase().includes('gainesville')) {"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 299,
+        "context": "console.error(`❌ Error scoring town ${town.name}:`, error);"
+      }
+    ],
+    "utils/scottyDatabase.js": [
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 194,
+        "context": "if (town.name && lowerContent.includes(town.name.toLowerCase())) {"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 194,
+        "context": "if (town.name && lowerContent.includes(town.name.toLowerCase())) {"
+      }
+    ],
+    "utils/scottyGeographicKnowledge.js": [
+      {
+        "pattern": "selectName",
+        "match": "select('id, name, country, region, latitude, longitude, quality_of_life, rent_1bed, population'",
+        "line": 171,
+        "context": ".select('id, name, country, region, latitude, longitude, quality_of_life, rent_1bed, population');"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 243,
+        "context": "parts.push(`  • ${town.name}${score}${rent}${pop}`);"
+      },
+      {
+        "pattern": "dotName",
+        "match": "t.name",
+        "line": 248,
+        "context": "parts.push(`  ... and ${remaining.length} more: ${remaining.map(t => t.name).join(', ')}`);"
+      }
+    ],
+    "utils/searchUtils.js": [
+      {
+        "pattern": "selectName",
+        "match": "select('name, country, region'",
+        "line": 155,
+        "context": ".select('name, country, region')"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 182,
+        "context": "value: town.name,"
+      },
+      {
+        "pattern": "dotName",
+        "match": "town.name",
+        "line": 183,
+        "context": "display: `${town.name}, ${town.region || town.country}`,"
+      },
+      {
+        "pattern": "sqlName",
+        "match": "'name'",
+        "line": 85,
+        "context": ".order('name', { ascending: true })"
+      }
+    ],
+    "utils/townUtils.jsx": [
+      {
+        "pattern": "selectName",
+        "match": "select('name, country'",
+        "line": 176,
+        "context": ".select('name, country')"
+      },
+      {
+        "pattern": "selectName",
+        "match": "select('name, country'",
+        "line": 256,
+        "context": ".select('name, country')"
+      }
+    ],
+    "utils/userSearchUtils.js": [
+      {
+        "pattern": "selectName",
+        "match": "select('username'",
+        "line": 67,
+        "context": ".select('username')"
+      }
+    ]
+  },
+  "summary": {
+    "totalFiles": 62,
+    "totalMatches": 234,
+    "byPattern": {
+      "dotName": 163,
+      "sqlName": 24,
+      "selectName": 30,
+      "objectName": 17
+    }
+  }
+}

@@ -6,8 +6,9 @@ import { canUserPerform } from './paywallUtils.js';
 // SINGLE SOURCE OF TRUTH FOR TOWN COLUMNS - NEVER DUPLICATE!
 // This caused the 3-hour climate scoring disaster when duplicated
 // UPDATED (2025-10-27): Added 4 missing fields to match matchingAlgorithm.js
+// UPDATED (2025-10-28): Renamed name → town_name for AI search efficiency
 const TOWN_SELECT_COLUMNS = `
-  id, name, country, population, region, geo_region, regions,
+  id, town_name, country, population, region, geo_region, regions,
   image_url_1, image_url_2, image_url_3,
   latitude, longitude, description,
   cost_of_living_usd, typical_monthly_living_cost, cost_index,
@@ -173,12 +174,12 @@ export const toggleFavorite = async (userId, townId, townName = null, townCountr
     if (!townName || !townCountry) {
       const { data: townData, error: townError } = await supabase
         .from('towns')
-        .select('name, country')
+        .select('town_name, country')
         .eq('id', normalizedTownId)
         .maybeSingle();
 
       if (!townError && townData) {
-        townName = townData.name;
+        townName = townData.town_name;
         townCountry = townData.country;
         console.log('Fetched town details for journal:', townName, townCountry);
       }
@@ -253,7 +254,7 @@ export const toggleFavorite = async (userId, townId, townName = null, townCountr
     if (!townName || !townCountry) {
       const { data: townData, error: townError } = await supabase
         .from('towns')
-        .select('name, country')
+        .select('town_name, country')
         .eq('id', normalizedTownId)
         .single();
 
@@ -262,7 +263,7 @@ export const toggleFavorite = async (userId, townId, townName = null, townCountr
         return { success: false, error: { message: "Could not fetch town details" } };
       }
 
-      townName = townData.name;
+      townName = townData.town_name;
       townCountry = townData.country;
     }
 
