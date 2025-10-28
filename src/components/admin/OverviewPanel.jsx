@@ -43,7 +43,7 @@ export default function OverviewPanel({ town, onTownUpdate }) {
         value={value}
         field={field}
         townId={town.id}
-        townName={town.name}
+        townName={town.town_name}
         countryName={town.country}
         type={type}
         range={range}
@@ -101,7 +101,7 @@ export default function OverviewPanel({ town, onTownUpdate }) {
               </div>
               <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
                 <div className="text-sm font-bold text-gray-900 dark:text-gray-100">
-                  {town.name}
+                  {town.town_name}
                 </div>
               </div>
             </div>
@@ -198,7 +198,7 @@ export default function OverviewPanel({ town, onTownUpdate }) {
                 <div className="mt-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                   <img
                     src={town.image_url_1}
-                    alt={`${town.name} preview`}
+                    alt={`${town.town_name} preview`}
                     className="w-full h-auto"
                     onError={(e) => {
                       e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23ddd" width="400" height="300"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="20"%3EImage failed to load%3C/text%3E%3C/svg%3E';
@@ -223,7 +223,7 @@ export default function OverviewPanel({ town, onTownUpdate }) {
                   <div className="mt-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                     <img
                       src={town.image_url_2}
-                      alt={`${town.name} secondary preview`}
+                      alt={`${town.town_name} secondary preview`}
                       className="w-full h-auto"
                       onError={(e) => {
                         e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23ddd" width="400" height="300"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="20"%3EImage failed to load%3C/text%3E%3C/svg%3E';
@@ -248,7 +248,7 @@ export default function OverviewPanel({ town, onTownUpdate }) {
                   <div className="mt-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                     <img
                       src={town.image_url_3}
-                      alt={`${town.name} tertiary preview`}
+                      alt={`${town.town_name} tertiary preview`}
                       className="w-full h-auto"
                       onError={(e) => {
                         e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23ddd" width="400" height="300"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="20"%3EImage failed to load%3C/text%3E%3C/svg%3E';

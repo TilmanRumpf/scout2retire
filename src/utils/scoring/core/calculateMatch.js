@@ -85,7 +85,7 @@ export async function calculateEnhancedMatch(userPreferences, town) {
 
   return {
     town_id: town.id,
-    town_name: town.name,
+    town_name: town.town_name,
     town_country: town.country,
     match_score: Math.min(100, Math.round(totalScore)),
     match_quality: matchQuality,

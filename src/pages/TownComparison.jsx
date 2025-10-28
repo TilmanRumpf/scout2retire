@@ -361,14 +361,14 @@ export default function TownComparison() {
                     }
                   }}
                   aria-pressed={isSelected}
-                  aria-label={`${isSelected ? 'Deselect' : 'Select'} ${town.name || fav.town_name}`}
+                  aria-label={`${isSelected ? 'Deselect' : 'Select'} ${town.town_name || fav.town_name}`}
                 >
                   {isSelected && (
                     <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   )}
-                  <span>{town.name || fav.town_name}</span>
+                  <span>{town.town_name || fav.town_name}</span>
                   {isSelected && (
                     <button
                       onClick={(e) => {
@@ -376,7 +376,7 @@ export default function TownComparison() {
                         handleRemoveTown(fav.town_id);
                       }}
                       className="ml-0.5 text-white/80 hover:text-white transition-colors"
-                      aria-label={`Remove ${town.name || fav.town_name}`}
+                      aria-label={`Remove ${town.town_name || fav.town_name}`}
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -424,7 +424,7 @@ export default function TownComparison() {
                   {town.image_url_1 ? (
                     <img
                       src={town.image_url_1}
-                      alt={town.name}
+                      alt={town.town_name}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -451,7 +451,7 @@ export default function TownComparison() {
                 <div className={`p-4 border-b ${uiConfig.colors.borderLight}`}>
                   <div className="flex justify-between items-start">
                     <div>
-                      <h2 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>{town.name}</h2>
+                      <h2 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>{town.town_name}</h2>
                       <p className={`text-sm ${uiConfig.colors.hint}`}>{town.country}</p>
                     </div>
                     <div className="text-right">

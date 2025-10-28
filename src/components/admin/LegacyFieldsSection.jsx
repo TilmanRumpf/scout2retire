@@ -225,7 +225,7 @@ export default function LegacyFieldsSection({ fields, town, onTownUpdate }) {
                 value={town[field]}
                 field={field}
                 townId={town.id}
-                townName={town.name}
+                townName={town.town_name}
                 countryName={town.country}
                 type={metadata.type}
                 range={metadata.range}

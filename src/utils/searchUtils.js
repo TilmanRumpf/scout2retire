@@ -179,8 +179,8 @@ export async function getAutocompleteSuggestions(searchTerm, limit = 5) {
     (towns || []).forEach(town => {
       suggestions.push({
         type: 'town',
-        value: town.name,
-        display: `${town.name}, ${town.region || town.country}`,
+        value: town.town_name,
+        display: `${town.town_name}, ${town.region || town.country}`,
         data: town
       });
     });

@@ -55,7 +55,7 @@ export default function TownComparison({ towns }) {
               className="w-4 h-4 rounded" 
               style={{ backgroundColor: colors[i] }}
             />
-            <span className="font-medium">{town.name}, {town.country}</span>
+            <span className="font-medium">{town.town_name}, {town.country}</span>
           </div>
         ))}
       </div>
@@ -69,7 +69,7 @@ export default function TownComparison({ towns }) {
           {towns.map((town, i) => (
             <Radar
               key={town.id}
-              name={town.name}
+              name={town.town_name}
               dataKey={`town${i}`}
               stroke={colors[i]}
               fill={colors[i]}
@@ -86,7 +86,7 @@ export default function TownComparison({ towns }) {
             <tr className="border-b">
               <th className="text-left p-2">Metric</th>
               {towns.map(town => (
-                <th key={town.id} className="text-right p-2">{town.name}</th>
+                <th key={town.id} className="text-right p-2">{town.town_name}</th>
               ))}
             </tr>
           </thead>

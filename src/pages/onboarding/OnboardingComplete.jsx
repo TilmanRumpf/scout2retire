@@ -262,7 +262,7 @@ export default function OnboardingComplete() {
                       : `${uiConfig.colors.card} ${uiConfig.colors.borderDefault} border hover:${uiConfig.colors.borderActive}`
                   }`}
                 >
-                  <div className="font-medium">{town.name}</div>
+                  <div className="font-medium">{town.town_name}</div>
                   <div className={`text-xs ${selectedMatch === index ? 'text-white/80' : uiConfig.colors.hint}`}>
                     {town.matchScore}% match
                   </div>

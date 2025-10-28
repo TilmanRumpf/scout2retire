@@ -313,18 +313,18 @@ export default function LoungesTab({
                           onClick={() => onSwitchToTownChat(town)}
                           className="flex-1 text-left"
                         >
-                          <div className={uiConfig.font.weight.medium}>{town.name}</div>
+                          <div className={uiConfig.font.weight.medium}>{town.town_name}</div>
                           <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>{town.country}</div>
                         </button>
                       <button
                         onClick={async (e) => {
                           e.stopPropagation();
-                          const result = await toggleFavorite(user.id, town.id, town.name, town.country);
+                          const result = await toggleFavorite(user.id, town.id, town.town_name, town.country);
                           if (result.success) {
                             const updatedFavorites = await fetchFavorites(user.id, 'TownLounge');
                             if (updatedFavorites.success) {
                               setFavorites(updatedFavorites.favorites);
-                              toast.success(`Removed ${town.name} from favorites`);
+                              toast.success(`Removed ${town.town_name} from favorites`);
                             }
                           }
                         }}
@@ -395,7 +395,7 @@ export default function LoungesTab({
               >
                 {allTowns
                   .filter(town =>
-                    town.name.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()) ||
+                    town.town_name.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()) ||
                     town.country.toLowerCase().includes(townLoungeSearchTerm.toLowerCase())
                   )
                   .slice(0, 10)
@@ -409,13 +409,13 @@ export default function LoungesTab({
                       }}
                       className={`w-full text-left px-4 py-2.5 ${uiConfig.states.hover} ${uiConfig.animation.transition} border-b ${uiConfig.colors.borderLight} last:border-b-0`}
                     >
-                      <div className={uiConfig.font.size.sm}>{town.name}</div>
+                      <div className={uiConfig.font.size.sm}>{town.town_name}</div>
                       <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>{town.country}</div>
                     </button>
                   ))
                 }
                 {allTowns.filter(town =>
-                  town.name.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()) ||
+                  town.town_name.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()) ||
                   town.country.toLowerCase().includes(townLoungeSearchTerm.toLowerCase())
                 ).length === 0 && (
                   <div className={`px-4 py-3 ${uiConfig.colors.hint} ${uiConfig.font.size.sm} text-center`}>
@@ -430,7 +430,7 @@ export default function LoungesTab({
               .filter(town =>
                 !favorites.some(f => f.town_id === town.id) &&
                 (townLoungeSearchTerm === '' ||
-                  town.name.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()) ||
+                  town.town_name.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()) ||
                   town.country.toLowerCase().includes(townLoungeSearchTerm.toLowerCase()))
               )
               .map(town => {
@@ -444,18 +444,18 @@ export default function LoungesTab({
                       onClick={() => onSwitchToTownChat(town)}
                       className="flex-1 text-left"
                     >
-                      <div className={uiConfig.font.weight.medium}>{town.name}</div>
+                      <div className={uiConfig.font.weight.medium}>{town.town_name}</div>
                       <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>{town.country}</div>
                     </button>
                   <button
                     onClick={async (e) => {
                       e.stopPropagation();
-                      const result = await toggleFavorite(user.id, town.id, town.name, town.country);
+                      const result = await toggleFavorite(user.id, town.id, town.town_name, town.country);
                       if (result.success) {
                         const updatedFavorites = await fetchFavorites(user.id, 'TownLounge');
                         if (updatedFavorites.success) {
                           setFavorites(updatedFavorites.favorites);
-                          toast.success(`Added ${town.name} to favorites`);
+                          toast.success(`Added ${town.town_name} to favorites`);
                         }
                       }
                     }}

@@ -74,7 +74,7 @@ export default function DataQualityPanel({ town, isOpen, onClose, onQuickAction 
   // Copy report to clipboard
   const copyReport = () => {
     const report = `
-Data Quality Report - ${town.name}, ${town.country}
+Data Quality Report - ${town.town_name}, ${town.country}
 =====================================
 Completion: ${data.completion}%
 Total Fields: ${data.totalFields}
@@ -114,7 +114,7 @@ ${data.errors.join('\n')}
         
         {/* Town Info */}
         <div className={`px-4 py-3 ${uiConfig.colors.secondary} border-b ${uiConfig.colors.border}`}>
-          <div className={`font-medium ${uiConfig.colors.heading}`}>{town.name}, {town.country}</div>
+          <div className={`font-medium ${uiConfig.colors.heading}`}>{town.town_name}, {town.country}</div>
           <div className={`text-sm ${uiConfig.colors.subtitle} mt-1`}>
             Last updated: {town.updated_at ? new Date(town.updated_at).toLocaleDateString() : 'Unknown'}
           </div>

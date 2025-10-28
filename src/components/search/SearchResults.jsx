@@ -155,7 +155,7 @@ function SearchResultItem({ town, onSelect, searchMode, userLocation, darkMode }
         {town.image_url_1 ? (
           <img
             src={town.image_url_1}
-            alt={town.name}
+            alt={town.town_name}
             className="w-16 h-16 rounded-lg object-cover"
           />
         ) : (
@@ -172,7 +172,7 @@ function SearchResultItem({ town, onSelect, searchMode, userLocation, darkMode }
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
               <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                {town.name}
+                {town.town_name}
               </h3>
               <p className={`text-sm ${textClasses}`}>
                 {town.region ? `${town.region}, ` : ''}{town.country}

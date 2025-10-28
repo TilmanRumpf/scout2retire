@@ -248,7 +248,7 @@ export default function ComparisonGrid({
           <div className="relative h-32">
             <OptimizedImage
               src={town.image_url_1}
-              alt={town.name}
+              alt={town.town_name}
               className="w-full h-full object-cover"
               fallbackIcon={MapPin}
               fallbackIconSize={48}
@@ -258,7 +258,7 @@ export default function ComparisonGrid({
             {/* Town Name & Actions */}
             <div className="absolute bottom-0 left-0 right-0 p-3 flex justify-between items-end">
               <div>
-                <h3 className="text-white font-semibold text-lg">{town.name}</h3>
+                <h3 className="text-white font-semibold text-lg">{town.town_name}</h3>
                 <p className="text-white/80 text-sm">{town.region && `${town.region}, `}{town.country}</p>
               </div>
               <div className="flex gap-2">

@@ -53,7 +53,7 @@ export default function ScoreBreakdownPanel({ town, onTownUpdate }) {
         value={value}
         field={field}
         townId={townId}
-        townName={town.name}
+        townName={town.town_name}
         countryName={town.country}
         type={metadata.type}
         range={metadata.range}
@@ -120,7 +120,7 @@ export default function ScoreBreakdownPanel({ town, onTownUpdate }) {
       <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
         <h2 className="text-xl font-bold text-gray-900">Admin Score Data</h2>
         <p className="text-sm text-gray-600 mt-1">
-          View and adjust scoring data for {town.name}
+          View and adjust scoring data for {town.town_name}
         </p>
       </div>
 
@@ -254,7 +254,7 @@ export default function ScoreBreakdownPanel({ town, onTownUpdate }) {
           category={showAdjustmentModal.category}
           subcategory={showAdjustmentModal.subcategory}
           townId={town.id}
-          townName={town.name}
+          townName={town.town_name}
           onClose={() => setShowAdjustmentModal(null)}
           onSave={async (adjustment) => {
             try {

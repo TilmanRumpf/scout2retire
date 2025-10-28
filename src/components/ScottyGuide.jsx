@@ -68,7 +68,7 @@ function ScottyGuide() {
   // Generate customized town synopsis based on user context
   const generateTownSynopsis = (town, context) => {
     // Use the correct field names from the towns table (handle both direct and nested access)
-    const name = town.name || town.town_name;
+    const name = town.town_name || town.town_name;
     const country = town.country || town.town_country;
     const rentCost = town['rent_cost_$'] || town.rent_cost || town.cost_of_living;
     
@@ -137,14 +137,14 @@ What would you like to know about ${name}?`;
       if (firstUserMessage) {
         const text = firstUserMessage.text.toLowerCase();
         if (text.includes('visa') || text.includes('move') || text.includes('immigrat')) {
-          return `${town.name} immigration`;
+          return `${town.town_name} immigration`;
         } else if (text.includes('cost') || text.includes('budget')) {
-          return `${town.name} costs`;
+          return `${town.town_name} costs`;
         } else if (text.includes('healthcare')) {
-          return `${town.name} healthcare`;
+          return `${town.town_name} healthcare`;
         }
       }
-      return `${town.name} exploration`;
+      return `${town.town_name} exploration`;
     }
     
     // Find the first user message

@@ -325,15 +325,15 @@ export default function ScottyGuideEnhanced() {
     if (town) {
       const text = firstMessage.toLowerCase();
       if (text.includes('visa') || text.includes('residency')) {
-        return `${town.name} visa info`;
+        return `${town.town_name} visa info`;
       }
       if (text.includes('cost') || text.includes('budget')) {
-        return `${town.name} costs`;
+        return `${town.town_name} costs`;
       }
       if (text.includes('health')) {
-        return `${town.name} healthcare`;
+        return `${town.town_name} healthcare`;
       }
-      return `${town.name} exploration`;
+      return `${town.town_name} exploration`;
     }
 
     // General conversation titles
@@ -349,7 +349,7 @@ export default function ScottyGuideEnhanced() {
 
   // Generate town synopsis
   const generateTownSynopsis = (town) => {
-    const name = town.name || town.town_name;
+    const name = town.town_name || town.town_name;
     const country = town.country || town.town_country;
 
     if (!name || !country) {

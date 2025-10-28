@@ -344,7 +344,7 @@ export default function LobbyTab({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className={`${uiConfig.font.weight.medium} ${uiConfig.colors.heading} truncate`}>
-                          {town.name}
+                          {town.town_name}
                         </div>
                         <div className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint}`}>
                           {town.country} • Town lounge

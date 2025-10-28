@@ -496,7 +496,7 @@ function GrantAccessModal({ users, towns, preselectedUserId, onClose, onSuccess 
               <option value="">Select a town...</option>
               {towns.map(town => (
                 <option key={town.id} value={town.id}>
-                  {town.name}, {town.country} {town.region ? `(${town.region})` : ''}
+                  {town.town_name}, {town.country} {town.region ? `(${town.region})` : ''}
                 </option>
               ))}
             </select>

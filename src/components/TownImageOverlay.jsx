@@ -109,11 +109,11 @@ export default function TownImageOverlay({
       {/* Lower right: Location icon with Google Maps link */}
       <div className={`absolute ${uiConfig.townCardOverlay.position.bottomRight}`}>
         <a
-          href={town.google_maps_link || `https://www.google.com/maps/search/${encodeURIComponent(town.name + ', ' + town.country)}`}
+          href={town.google_maps_link || `https://www.google.com/maps/search/${encodeURIComponent(town.town_name + ', ' + town.country)}`}
           target="_blank"
           rel="noopener noreferrer"
           className={`inline-flex ${uiConfig.townCardOverlay.iconButton.base} ${uiConfig.townCardOverlay.backdrop} ${uiConfig.townCardOverlay.iconButton.location.base} ${uiConfig.townCardOverlay.iconButton.location.hover}`}
-          aria-label={`View ${town.name} on Google Maps`}
+          aria-label={`View ${town.town_name} on Google Maps`}
           onClick={(e) => e.stopPropagation()}
         >
           <MapPin size={20} />

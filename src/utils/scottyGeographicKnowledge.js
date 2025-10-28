@@ -240,7 +240,7 @@ export function formatGeographicContext(geographicInfo, towns, userContext) {
       const score = town.overall_score ? ` (score: ${town.overall_score})` : '';
       const rent = town['rent_cost_$'] ? ` - Rent: $${town['rent_cost_$']}/mo` : '';
       const pop = town.population ? ` - Pop: ${town.population.toLocaleString()}` : '';
-      parts.push(`  • ${town.name}${score}${rent}${pop}`);
+      parts.push(`  • ${town.town_name}${score}${rent}${pop}`);
     });
 
     if (towns.length > 10) {

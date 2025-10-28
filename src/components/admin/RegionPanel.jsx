@@ -43,7 +43,7 @@ export default function RegionPanel({ town, onTownUpdate }) {
         value={value}
         field={field}
         townId={town.id}
-        townName={town.name}
+        townName={town.town_name}
         countryName={town.country}
         type={type}
         range={range}

@@ -428,11 +428,11 @@ export default function UnifiedHeader({
                       className={`flex-shrink-0 flex items-center gap-2 px-3 py-1.5 ${uiConfig.colors.card} border ${uiConfig.colors.border} rounded-full text-sm`}
                     >
                       <MapPin className={`w-3 h-3 ${uiConfig.colors.accent}`} />
-                      <span className={uiConfig.colors.heading}>{town.name}</span>
+                      <span className={uiConfig.colors.heading}>{town.town_name}</span>
                       <button
                         onClick={() => comparisonProps.onRemoveTown(town.id)}
                         className={`ml-1 ${uiConfig.colors.subtitle} hover:${uiConfig.colors.danger} transition-colors`}
-                        aria-label={`Remove ${town.name}`}
+                        aria-label={`Remove ${town.town_name}`}
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>

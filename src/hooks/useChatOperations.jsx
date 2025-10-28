@@ -877,7 +877,7 @@ export function useChatOperations(chatState, user, navigate, isMobile) {
           .from('chat_threads')
           .insert([{
             town_id: town.id,
-            topic: town.name,
+            topic: town.town_name,
             created_by: user.id
           }])
           .select();

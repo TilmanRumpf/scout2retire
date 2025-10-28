@@ -294,11 +294,11 @@ export default function NearbyMap({
                       {town.photos && (
                         <img
                           src={town.photos.split(',')[0]}
-                          alt={town.name}
+                          alt={town.town_name}
                           className="w-full h-24 object-cover rounded mb-2"
                         />
                       )}
-                      <h3 className="font-semibold">{town.name}</h3>
+                      <h3 className="font-semibold">{town.town_name}</h3>
                       <p className="text-sm text-gray-600">
                         {town.region ? `${town.region}, ` : ''}{town.country}
                       </p>

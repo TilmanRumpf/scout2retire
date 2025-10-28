@@ -97,7 +97,7 @@ export default function FilterBarV3({
     
     // Filter and sort results
     const filtered = availableTowns.filter(town => 
-      town.name.toLowerCase().includes(search) ||
+      town.town_name.toLowerCase().includes(search) ||
       town.region?.toLowerCase().includes(search) ||
       town.country?.toLowerCase().includes(search)
     );
@@ -160,7 +160,7 @@ export default function FilterBarV3({
     if (value.length >= 2) {
       const search = value.toLowerCase();
       const filtered = availableTowns.filter(town => 
-        town.name.toLowerCase().includes(search) ||
+        town.town_name.toLowerCase().includes(search) ||
         town.region?.toLowerCase().includes(search) ||
         town.country?.toLowerCase().includes(search)
       );
@@ -653,7 +653,7 @@ export default function FilterBarV3({
                       >
                         <div className={`font-medium ${uiConfig.colors.heading} flex items-center gap-2`}>
                           <span className="text-xs opacity-50">📍</span>
-                          {town.name}
+                          {town.town_name}
                         </div>
                         <div className={`text-xs ${uiConfig.colors.subtitle} ml-6`}>
                           {town.region && `${town.region}, `}{town.country}

@@ -159,7 +159,7 @@ const GroupChatModal = React.memo(function GroupChatModal({
         towns.forEach(town => {
           suggestions.push({
             type: 'town',
-            name: town.name,
+            name: town.town_name,
             country: town.country,
             region: town.region
           });

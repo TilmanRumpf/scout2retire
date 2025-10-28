@@ -191,7 +191,7 @@ export function extractMentionedTowns(content, availableTowns = []) {
   const lowerContent = content.toLowerCase();
 
   for (const town of availableTowns) {
-    if (town.name && lowerContent.includes(town.name.toLowerCase())) {
+    if (town.town_name && lowerContent.includes(town.town_name.toLowerCase())) {
       mentionedIds.push(town.id);
     }
   }
