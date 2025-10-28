@@ -82,6 +82,20 @@ export default function RegionPanel({ town, onTownUpdate }) {
               description="Country where the town is located"
             />
             <EditableField
+              field="region"
+              value={town.region}
+              label="State/Province/Region"
+              type="string"
+              description="State/Province/Region name (e.g., Florida, Ontario, Cornwall) - used for display formatting"
+            />
+            <EditableField
+              field="regions"
+              value={town.regions}
+              label="Regions (multiple)"
+              type="array"
+              description="Multiple region classifications if applicable"
+            />
+            <EditableField
               field="geo_region"
               value={town.geo_region}
               label="Geographic Region"
