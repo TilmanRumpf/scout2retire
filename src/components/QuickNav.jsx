@@ -491,6 +491,16 @@ const QuickNav = React.memo(function QuickNav({ isOpen: propIsOpen, onClose }) {
                 >
                   <span className="font-medium text-scout-orange-500">User Manager & Paywall</span>
                 </Link>
+                <Link
+                  to="/admin/data-verification"
+                  className={`flex items-center justify-between p-2 sm:p-3 text-sm sm:text-base ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
+                    location.pathname === '/admin/data-verification'
+                      ? `${uiConfig.colors.success} ${uiConfig.colors.statusSuccess}`
+                      : `${uiConfig.colors.hoverBg}`
+                  }`}
+                >
+                  <span className="font-medium text-scout-orange-500">Data Verification</span>
+                </Link>
               </>
             )}
           </nav>
