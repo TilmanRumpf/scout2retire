@@ -95,7 +95,7 @@ export default function OverviewPanel({ town, onTownUpdate }) {
                     Town Name
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
-                    name
+                    town_name
                   </div>
                 </div>
               </div>

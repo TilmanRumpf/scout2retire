@@ -93,7 +93,7 @@ export default function ScottyGuideEnhanced() {
       // Load available towns for mention detection
       const { data: towns } = await supabase
         .from('towns')
-        .select('id, name, country')
+        .select('id, town_name, country')
         .order('name');
 
       if (towns) {

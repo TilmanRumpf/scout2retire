@@ -168,7 +168,7 @@ export async function getTownsInLocation(geographicInfo) {
   try {
     let query = supabase
       .from('towns')
-      .select('id, name, country, region, latitude, longitude, quality_of_life, rent_1bed, population');
+      .select('id, town_name, country, region, latitude, longitude, quality_of_life, rent_1bed, population');
 
     if (geographicInfo.type === 'country') {
       query = query.eq('country', geographicInfo.name);

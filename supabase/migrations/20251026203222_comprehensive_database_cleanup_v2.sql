@@ -362,18 +362,21 @@ BEGIN
     DROP INDEX IF EXISTS idx_users_username;
 
     -- Drop unused indexes from audit_log partitions
-    DROP INDEX IF EXISTS audit_log_2025_10_action_type_performed_at_idx;
-    DROP INDEX IF EXISTS audit_log_2025_10_entity_type_entity_id_performed_at_idx;
-    DROP INDEX IF EXISTS audit_log_2025_10_performed_by_user_id_performed_at_idx;
-    DROP INDEX IF EXISTS audit_log_2025_10_user_id_performed_at_idx;
-    DROP INDEX IF EXISTS audit_log_2025_11_action_type_performed_at_idx;
-    DROP INDEX IF EXISTS audit_log_2025_11_entity_type_entity_id_performed_at_idx;
-    DROP INDEX IF EXISTS audit_log_2025_11_performed_by_user_id_performed_at_idx;
-    DROP INDEX IF EXISTS audit_log_2025_11_user_id_performed_at_idx;
-    DROP INDEX IF EXISTS audit_log_2025_12_action_type_performed_at_idx;
-    DROP INDEX IF EXISTS audit_log_2025_12_entity_type_entity_id_performed_at_idx;
-    DROP INDEX IF EXISTS audit_log_2025_12_performed_by_user_id_performed_at_idx;
-    DROP INDEX IF EXISTS audit_log_2025_12_user_id_performed_at_idx;
+    -- SKIP: These have complex dependencies (idx_audit_log_action, idx_audit_log_entity, etc.)
+    -- If they have dependencies, they're likely in use and shouldn't be dropped
+    -- Commented out to prevent circular dependency errors:
+    -- DROP INDEX IF EXISTS audit_log_2025_10_action_type_performed_at_idx;
+    -- DROP INDEX IF EXISTS audit_log_2025_10_entity_type_entity_id_performed_at_idx;
+    -- DROP INDEX IF EXISTS audit_log_2025_10_performed_by_user_id_performed_at_idx;
+    -- DROP INDEX IF EXISTS audit_log_2025_10_user_id_performed_at_idx;
+    -- DROP INDEX IF EXISTS audit_log_2025_11_action_type_performed_at_idx;
+    -- DROP INDEX IF EXISTS audit_log_2025_11_entity_type_entity_id_performed_at_idx;
+    -- DROP INDEX IF EXISTS audit_log_2025_11_performed_by_user_id_performed_at_idx;
+    -- DROP INDEX IF EXISTS audit_log_2025_11_user_id_performed_at_idx;
+    -- DROP INDEX IF EXISTS audit_log_2025_12_action_type_performed_at_idx;
+    -- DROP INDEX IF EXISTS audit_log_2025_12_entity_type_entity_id_performed_at_idx;
+    -- DROP INDEX IF EXISTS audit_log_2025_12_performed_by_user_id_performed_at_idx;
+    -- DROP INDEX IF EXISTS audit_log_2025_12_user_id_performed_at_idx;
 
     RAISE NOTICE '✅ PART 2 COMPLETE - Dropped ~180 unused indexes';
 END $$;
@@ -388,13 +391,13 @@ BEGIN
     RAISE NOTICE '';
     RAISE NOTICE '🎯 PART 3: Creating Smart Composite Indexes...';
 
-    -- Composite index for active user queries
-    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_users_activity_composite') THEN
-        CREATE INDEX idx_users_activity_composite
-        ON public.users(last_active DESC, category_id)
-        WHERE last_active > CURRENT_DATE - INTERVAL '90 days';
-        RAISE NOTICE '   ✅ Created smart index for active user queries';
-    END IF;
+    -- SKIP: Composite index for active user queries (column last_active no longer exists)
+    -- IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_users_activity_composite') THEN
+    --     CREATE INDEX idx_users_activity_composite
+    --     ON public.users(last_active DESC, category_id)
+    --     WHERE last_active > CURRENT_DATE - INTERVAL '90 days';
+    --     RAISE NOTICE '   ✅ Created smart index for active user queries';
+    -- END IF;
 
     -- Composite index for chat message queries
     IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_chat_messages_thread_created') THEN
@@ -404,13 +407,13 @@ BEGIN
         RAISE NOTICE '   ✅ Created smart index for chat queries';
     END IF;
 
-    -- Composite index for town searches
-    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_towns_search_optimized') THEN
-        CREATE INDEX idx_towns_search_optimized
-        ON public.towns(country, overall_score DESC)
-        WHERE photos IS NOT NULL;
-        RAISE NOTICE '   ✅ Created smart index for town searches';
-    END IF;
+    -- SKIP: Composite index for town searches (column photos no longer exists)
+    -- IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_towns_search_optimized') THEN
+    --     CREATE INDEX idx_towns_search_optimized
+    --     ON public.towns(country, overall_score DESC)
+    --     WHERE photos IS NOT NULL;
+    --     RAISE NOTICE '   ✅ Created smart index for town searches';
+    -- END IF;
 
     -- Keep essential indexes for core features
     IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_users_email') THEN

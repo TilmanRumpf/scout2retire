@@ -118,7 +118,7 @@ export async function loadAllCountries() {
 }
 
 export async function loadAllTowns() {
-  const { data } = await supabase.from('towns').select('id, name, country').order('name');
+  const { data } = await supabase.from('towns').select('id, town_name, country').order('town_name');
   return data || [];
 }
 

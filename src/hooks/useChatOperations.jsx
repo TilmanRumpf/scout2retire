@@ -343,7 +343,7 @@ export function useChatOperations(chatState, user, navigate, isMobile) {
     try {
       const { data, error } = await supabase
         .from('towns')
-        .select('id, name, country')
+        .select('id, town_name, country')
         .order('name');
 
       if (error) {

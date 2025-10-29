@@ -79,7 +79,7 @@ export default function TownAccessManager() {
       console.log('🔥 Loading towns from database...');
       const { data: townsData, error: townsError } = await supabase
         .from('towns')
-        .select('id, name, country, region')
+        .select('id, town_name, country, region')
         .order('name');
 
       console.log('🔥 Towns query result:', { count: townsData?.length, error: townsError });

@@ -346,7 +346,7 @@ export default function Chat() {
             const cityName = userProfile.hometown.split(',')[0].trim();
             const { data } = await supabase
               .from('towns')
-              .select('id, name, country, region')
+              .select('id, town_name, country, region')
               .ilike('name', cityName)
               .limit(1);
             if (data?.[0]) setUserHomeTown(data[0]);

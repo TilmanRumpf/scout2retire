@@ -16,12 +16,25 @@ ALTER TABLE scotty_conversations
   ADD COLUMN IF NOT EXISTS message_count INTEGER DEFAULT 0;
 
 -- Update existing data
+-- NOTE: updated_at column may not exist if already dropped, so use created_at as fallback
 UPDATE scotty_conversations
 SET
-  started_at = COALESCE(created_at, NOW()),
-  last_message_at = COALESCE(updated_at, created_at, NOW()),
-  topic_category = conversation_topic
+  started_at = COALESCE(started_at, created_at, NOW()),
+  last_message_at = COALESCE(last_message_at, created_at, NOW())
 WHERE started_at IS NULL OR last_message_at IS NULL;
+
+-- Update topic_category separately since conversation_topic may not exist
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'scotty_conversations' AND column_name = 'conversation_topic'
+  ) THEN
+    UPDATE scotty_conversations
+    SET topic_category = conversation_topic
+    WHERE topic_category IS NULL;
+  END IF;
+END $$;
 
 -- Drop old columns we don't need
 ALTER TABLE scotty_conversations
@@ -47,22 +60,50 @@ ALTER TABLE scotty_messages
   ADD COLUMN IF NOT EXISTS mentioned_town_ids UUID[],
   ADD COLUMN IF NOT EXISTS detected_topics TEXT[];
 
--- Migrate data from old columns
-UPDATE scotty_messages
-SET
-  role = CASE
-    WHEN message_type = 'user' THEN 'user'
-    WHEN message_type = 'scotty' THEN 'assistant'
-    ELSE message_type
-  END,
-  mentioned_town_ids = NULL, -- Will need to parse from mentioned_towns text array
-  detected_topics = topics
-WHERE role IS NULL;
+-- Migrate data from old columns (only if they exist)
+DO $$
+BEGIN
+  -- Migrate role from message_type if column exists
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'scotty_messages' AND column_name = 'message_type'
+  ) THEN
+    UPDATE scotty_messages
+    SET role = CASE
+      WHEN message_type = 'user' THEN 'user'
+      WHEN message_type = 'scotty' THEN 'assistant'
+      ELSE message_type
+    END
+    WHERE role IS NULL;
+  END IF;
 
--- Add check constraint for role
-ALTER TABLE scotty_messages
-  DROP CONSTRAINT IF EXISTS scotty_messages_message_type_check,
-  ADD CONSTRAINT scotty_messages_role_check CHECK (role IN ('user', 'assistant'));
+  -- Migrate detected_topics from topics if column exists
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'scotty_messages' AND column_name = 'topics'
+  ) THEN
+    UPDATE scotty_messages
+    SET detected_topics = topics
+    WHERE detected_topics IS NULL;
+  END IF;
+END $$;
+
+-- Add check constraint for role (idempotent)
+DO $$
+BEGIN
+  -- Drop old constraint if exists
+  ALTER TABLE scotty_messages DROP CONSTRAINT IF EXISTS scotty_messages_message_type_check;
+
+  -- Add new constraint only if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'scotty_messages_role_check'
+    AND table_name = 'scotty_messages'
+  ) THEN
+    ALTER TABLE scotty_messages
+      ADD CONSTRAINT scotty_messages_role_check CHECK (role IN ('user', 'assistant'));
+  END IF;
+END $$;
 
 -- Drop old columns
 ALTER TABLE scotty_messages
