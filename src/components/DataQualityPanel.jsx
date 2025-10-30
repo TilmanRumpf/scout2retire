@@ -5,7 +5,21 @@ import toast from 'react-hot-toast';
 
 export default function DataQualityPanel({ town, isOpen, onClose, onQuickAction }) {
   const [activeTab, setActiveTab] = useState('overview');
-  
+  const [fieldSearch, setFieldSearch] = useState('');
+  const [fieldFilter, setFieldFilter] = useState('empty'); // 'all', 'empty', 'filled'
+
+  // Clear search when panel closes or tab changes
+  useEffect(() => {
+    if (!isOpen) {
+      setFieldSearch('');
+      setFieldFilter('empty');
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    setFieldSearch('');
+  }, [activeTab]);
+
   if (!isOpen || !town) return null;
 
   // Analyze town data
@@ -233,72 +247,170 @@ ${data.errors.join('\n')}
           {/* Fields Tab */}
           {activeTab === 'fields' && (
             <div className="space-y-4">
-              {/* Empty Required Fields */}
-              {data.missingCritical.length > 0 && (
-                <div>
-                  <h4 className={`font-medium ${uiConfig.colors.heading} mb-2`}>Empty Critical Fields</h4>
-                  <div className="space-y-1">
-                    {data.missingCritical.map(field => (
-                      <div 
-                        key={field}
-                        className={`p-2 rounded ${uiConfig.colors.secondary} text-sm flex items-center justify-between`}
-                      >
-                        <span className={uiConfig.colors.body}>{formatFieldName(field)}</span>
-                        <button
-                          onClick={() => onQuickAction('scrollToField', field)}
-                          className="text-xs text-blue-600 hover:underline"
-                        >
-                          Fill →
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* Fields with Errors */}
-              {data.errorFields.length > 0 && (
-                <div>
-                  <h4 className={`font-medium ${uiConfig.colors.heading} mb-2`}>Fields with Errors</h4>
-                  <div className="space-y-1">
-                    {data.errorFields.map(field => (
-                      <div 
-                        key={field}
-                        className={`p-2 rounded bg-red-50 dark:bg-red-900/20 text-sm flex items-center justify-between`}
-                      >
-                        <span className="text-red-700 dark:text-red-400">{formatFieldName(field)}</span>
-                        <button
-                          onClick={() => onQuickAction('scrollToField', field)}
-                          className="text-xs text-red-600 hover:underline"
-                        >
-                          Fix →
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* All Empty Fields */}
+              {/* Search Input */}
               <div>
-                <h4 className={`font-medium ${uiConfig.colors.heading} mb-2`}>
-                  All Empty Fields ({data.emptyFields.length})
-                </h4>
+                <input
+                  type="text"
+                  placeholder="Search fields (e.g., farmers market)..."
+                  value={fieldSearch}
+                  onChange={(e) => setFieldSearch(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-lg ${uiConfig.colors.secondary} ${uiConfig.colors.body} placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm`}
+                />
+              </div>
+
+              {/* Filter Buttons */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setFieldFilter('all')}
+                  className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    fieldFilter === 'all'
+                      ? `${uiConfig.colors.primary} ${uiConfig.colors.primaryText}`
+                      : `${uiConfig.colors.secondary} ${uiConfig.colors.body} hover:${uiConfig.colors.tertiary}`
+                  }`}
+                >
+                  All ({data.totalFields})
+                </button>
+                <button
+                  onClick={() => setFieldFilter('empty')}
+                  className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    fieldFilter === 'empty'
+                      ? `${uiConfig.colors.primary} ${uiConfig.colors.primaryText}`
+                      : `${uiConfig.colors.secondary} ${uiConfig.colors.body} hover:${uiConfig.colors.tertiary}`
+                  }`}
+                >
+                  Empty ({data.emptyFields.length})
+                </button>
+                <button
+                  onClick={() => setFieldFilter('filled')}
+                  className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    fieldFilter === 'filled'
+                      ? `${uiConfig.colors.primary} ${uiConfig.colors.primaryText}`
+                      : `${uiConfig.colors.secondary} ${uiConfig.colors.body} hover:${uiConfig.colors.tertiary}`
+                  }`}
+                >
+                  Filled ({data.filledFields.length})
+                </button>
+              </div>
+
+              {/* Fields List */}
+              <div>
                 <div className="space-y-1">
-                  {data.emptyFields.map(field => (
-                    <div 
-                      key={field}
-                      className={`p-2 rounded ${uiConfig.colors.secondary} text-sm flex items-center justify-between`}
-                    >
-                      <span className={`text-xs ${uiConfig.colors.body}`}>{formatFieldName(field)}</span>
-                      <button
-                        onClick={() => onQuickAction('scrollToField', field)}
-                        className="text-xs text-blue-600 hover:underline"
-                      >
-                        Fill
-                      </button>
-                    </div>
-                  ))}
+                  {(() => {
+                    // When searching, ignore filter and search ALL fields
+                    // When not searching, use the filter
+                    let fieldsToShow = [];
+                    if (fieldSearch) {
+                      // Search mode: show ALL fields
+                      fieldsToShow = Object.keys(town).filter(key => !key.startsWith('_') && key !== 'id');
+                    } else {
+                      // Browse mode: use filter
+                      if (fieldFilter === 'all') {
+                        fieldsToShow = Object.keys(town).filter(key => !key.startsWith('_') && key !== 'id');
+                      } else if (fieldFilter === 'empty') {
+                        fieldsToShow = data.emptyFields;
+                      } else {
+                        fieldsToShow = data.filledFields;
+                      }
+                    }
+
+                    // Apply search filter
+                    const filteredFields = fieldsToShow.filter(field => {
+                      if (!fieldSearch) return true;
+
+                      const searchLower = fieldSearch.toLowerCase();
+                      const fieldNameLower = field.toLowerCase();
+                      const formattedNameLower = formatFieldName(field).toLowerCase();
+
+                      // Split search into words and check if all words appear in field name
+                      const searchWords = searchLower.split(/\s+/).filter(w => w.length > 0);
+
+                      // Match if all search words appear in either raw or formatted field name
+                      const allWordsMatch = searchWords.every(word =>
+                        fieldNameLower.includes(word) || formattedNameLower.includes(word)
+                      );
+
+                      // Also support exact phrase match
+                      const exactMatch = fieldNameLower.includes(searchLower) || formattedNameLower.includes(searchLower);
+
+                      return allWordsMatch || exactMatch;
+                    });
+
+                    // Render fields
+                    if (filteredFields.length === 0) {
+                      return (
+                        <div className={`text-center py-8 ${uiConfig.colors.subtitle} text-sm`}>
+                          {fieldSearch
+                            ? `No fields match "${fieldSearch}"`
+                            : `No ${fieldFilter} fields`
+                          }
+                        </div>
+                      );
+                    }
+
+                    return filteredFields.map(field => {
+                      const value = town[field];
+                      const isEmpty = value === null || value === undefined || value === '' ||
+                                     (Array.isArray(value) && value.length === 0);
+                      const isCritical = data.missingCritical.includes(field);
+                      const hasError = data.errorFields.includes(field);
+
+                      // Format value for display
+                      let displayValue = '';
+                      if (!isEmpty) {
+                        if (typeof value === 'boolean') {
+                          displayValue = value ? 'Yes' : 'No';
+                        } else if (typeof value === 'number') {
+                          displayValue = value.toString();
+                        } else if (Array.isArray(value)) {
+                          displayValue = value.join(', ');
+                        } else if (typeof value === 'string') {
+                          displayValue = value.length > 30 ? value.substring(0, 30) + '...' : value;
+                        } else {
+                          displayValue = JSON.stringify(value).substring(0, 30);
+                        }
+                      }
+
+                      return (
+                        <div
+                          key={field}
+                          className={`p-2 rounded text-sm ${
+                            hasError
+                              ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+                              : isCritical
+                              ? 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800'
+                              : `${uiConfig.colors.secondary}`
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className={`font-medium ${
+                                hasError ? 'text-red-700 dark:text-red-400' :
+                                isCritical ? 'text-yellow-700 dark:text-yellow-400' :
+                                uiConfig.colors.heading
+                              }`}>
+                                {formatFieldName(field)}
+                                {isCritical && <span className="ml-1 text-xs">⚠️</span>}
+                                {hasError && <span className="ml-1 text-xs">❌</span>}
+                              </div>
+                              {!isEmpty && (
+                                <div className={`text-xs ${uiConfig.colors.subtitle} mt-1 truncate`}>
+                                  {displayValue}
+                                </div>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => onQuickAction('scrollToField', field)}
+                              className={`text-xs px-2 py-1 rounded hover:underline whitespace-nowrap ${
+                                isEmpty ? 'text-blue-600' : 'text-gray-600'
+                              }`}
+                            >
+                              {isEmpty ? 'Fill' : 'Edit'}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
             </div>

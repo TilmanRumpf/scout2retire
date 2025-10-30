@@ -226,6 +226,11 @@ const TownsManager = () => {
     isOpen: false,
     town: null
   });
+
+  // Global field search state
+  const [fieldSearchQuery, setFieldSearchQuery] = useState('');
+  const [showFieldDropdown, setShowFieldDropdown] = useState(false);
+  const [highlightedField, setHighlightedField] = useState(null);
   
   // Get field definitions for audit questions
   const { getAuditQuestion, getSearchQuery, getFieldDefinition, refreshDefinitions } = useFieldDefinitions();
@@ -396,24 +401,68 @@ const TownsManager = () => {
     }
   }, [currentUser]);
 
-  // Auto-select town from URL parameter
+  // Auto-select town from URL parameter OR localStorage
   useEffect(() => {
     if (towns.length === 0) return; // Wait for towns to load
 
     const params = new URLSearchParams(location.search);
-    const townId = params.get('town');
+    const townIdFromUrl = params.get('town');
 
-    if (townId && !selectedTown) {
-      // Find the town by ID
-      const town = towns.find(t => t.id === townId);
+    // Priority 1: URL parameter
+    if (townIdFromUrl && !selectedTown) {
+      const town = towns.find(t => t.id === townIdFromUrl);
       if (town) {
         console.log('🔥 Auto-selecting town from URL:', town.town_name);
         setSelectedTown(town);
+        return;
       } else {
-        console.warn('⚠️ Town ID from URL not found:', townId);
+        console.warn('⚠️ Town ID from URL not found:', townIdFromUrl);
+      }
+    }
+
+    // Priority 2: localStorage (only if no URL param and no town selected)
+    if (!townIdFromUrl && !selectedTown) {
+      try {
+        const savedTownId = localStorage.getItem('townsManager.selectedTownId');
+        const savedCategory = localStorage.getItem('townsManager.activeCategory');
+
+        if (savedTownId) {
+          const town = towns.find(t => t.id === savedTownId);
+          if (town) {
+            console.log('📂 Restoring town from localStorage:', town.town_name);
+            setSelectedTown(town);
+          }
+        }
+
+        if (savedCategory) {
+          setActiveCategory(savedCategory);
+        }
+      } catch (error) {
+        console.error('Error restoring from localStorage:', error);
       }
     }
   }, [towns, location.search, selectedTown]);
+
+  // Save selectedTown to localStorage whenever it changes
+  useEffect(() => {
+    if (selectedTown) {
+      try {
+        localStorage.setItem('townsManager.selectedTownId', selectedTown.id);
+        console.log('💾 Saved town to localStorage:', selectedTown.town_name);
+      } catch (error) {
+        console.error('Error saving to localStorage:', error);
+      }
+    }
+  }, [selectedTown]);
+
+  // Save activeCategory to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('townsManager.activeCategory', activeCategory);
+    } catch (error) {
+      console.error('Error saving category to localStorage:', error);
+    }
+  }, [activeCategory]);
 
   // Apply filters
   useEffect(() => {
@@ -876,7 +925,97 @@ const TownsManager = () => {
     
     return fieldMappings[fieldName] || fieldName.replace(/_/g, ' ').toLowerCase();
   };
-  
+
+  // Get category for a given field
+  const getFieldCategory = (fieldName) => {
+    // First check if field is in COLUMN_CATEGORIES
+    for (const [category, config] of Object.entries(COLUMN_CATEGORIES)) {
+      for (const subcategoryConfig of Object.values(config.subcategories || {})) {
+        if (subcategoryConfig.used?.includes(fieldName) || subcategoryConfig.unused?.includes(fieldName)) {
+          return category;
+        }
+      }
+    }
+
+    // Smart categorization for fields not explicitly in categories
+    const fieldLower = fieldName.toLowerCase();
+
+    // Activities/Hobbies related
+    if (fieldLower.includes('farmers') || fieldLower.includes('market') ||
+        fieldLower.includes('golf') || fieldLower.includes('tennis') ||
+        fieldLower.includes('swimming') || fieldLower.includes('hiking') ||
+        fieldLower.includes('ski') || fieldLower.includes('beach') ||
+        fieldLower.includes('marina') || fieldLower.includes('coworking') ||
+        fieldLower.includes('dog_park') || fieldLower.includes('vet') ||
+        fieldLower.includes('international_school')) {
+      return 'Activities';
+    }
+
+    // Culture related
+    if (fieldLower.includes('cultural') || fieldLower.includes('museum') ||
+        fieldLower.includes('arts') || fieldLower.includes('music')) {
+      return 'Culture';
+    }
+
+    // Infrastructure related
+    if (fieldLower.includes('transport') || fieldLower.includes('airport') ||
+        fieldLower.includes('internet') || fieldLower.includes('infrastructure')) {
+      return 'Infrastructure';
+    }
+
+    // Overview for basic fields
+    if (fieldLower.includes('photo') || fieldLower.includes('image') ||
+        fieldLower.includes('description') || fieldLower.includes('appeal') ||
+        fieldLower.includes('town_name') || fieldLower.includes('population')) {
+      return 'Overview';
+    }
+
+    // Default fallback
+    return 'Overview';
+  };
+
+  // Get all searchable fields from selected town
+  const getAllSearchableFields = () => {
+    if (!selectedTown) return [];
+
+    return Object.keys(selectedTown)
+      .filter(key => !key.startsWith('_') && key !== 'id')
+      .map(field => ({
+        name: field,
+        displayName: formatFieldName(field),
+        category: getFieldCategory(field),
+        value: selectedTown[field]
+      }));
+  };
+
+  // Handle field selection from autocomplete
+  const handleFieldSelect = (field) => {
+    // Clear search
+    setFieldSearchQuery('');
+    setShowFieldDropdown(false);
+
+    // Switch to the correct category
+    setActiveCategory(field.category);
+
+    // Highlight the field
+    setHighlightedField(field.name);
+
+    // Scroll to field after a brief delay to ensure tab has switched
+    setTimeout(() => {
+      const fieldElement = document.querySelector(`[data-field="${field.name}"]`);
+      if (fieldElement) {
+        fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        fieldElement.classList.add('ring-2', 'ring-red-500', 'bg-red-50', 'dark:bg-red-900/20');
+        setTimeout(() => {
+          fieldElement.classList.remove('ring-2', 'ring-red-500', 'bg-red-50', 'dark:bg-red-900/20');
+          setHighlightedField(null);
+        }, 3000);
+      }
+    }, 300);
+
+    toast.success(`Navigated to "${field.displayName}" in ${field.category} tab`);
+  };
+
   // Generate smart Google search query
   const generateSearchQuery = (town, fieldName, isVerification = false) => {
     const formattedField = formatFieldName(fieldName);
@@ -1524,7 +1663,7 @@ const TownsManager = () => {
               <div className={`${uiConfig.colors.card} rounded-lg shadow`}>
                 {/* Town Header with mobile back button */}
                 <div className="px-4 lg:px-6 py-4 border-b">
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
                       {/* Mobile back button */}
                       <button
@@ -1538,7 +1677,102 @@ const TownsManager = () => {
                       </button>
                       <h2 className={`text-lg lg:text-xl font-bold ${uiConfig.colors.heading}`}>{formatTownDisplay(selectedTown)}</h2>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 lg:gap-3">
+                      {/* Global Field Search - PRIMARY INTERFACE */}
+                      <div className="relative flex-1 lg:flex-initial lg:w-96">
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="🔍 Search fields..."
+                            value={fieldSearchQuery}
+                            onChange={(e) => {
+                              setFieldSearchQuery(e.target.value);
+                              setShowFieldDropdown(e.target.value.length >= 2);
+                            }}
+                            onFocus={() => {
+                              if (fieldSearchQuery.length >= 2) {
+                                setShowFieldDropdown(true);
+                              }
+                            }}
+                            onBlur={() => {
+                              // Delay to allow click on dropdown items
+                              setTimeout(() => setShowFieldDropdown(false), 200);
+                            }}
+                            className={`w-full px-3 py-2 pr-9 lg:px-4 lg:py-2.5 lg:pr-10 rounded-lg border-2 ${uiConfig.colors.border} ${uiConfig.colors.card} ${uiConfig.colors.body} placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm lg:text-base shadow-md hover:shadow-lg transition-all`}
+                          />
+                          {/* Search icon */}
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                          </div>
+                        </div>
+
+                        {/* Autocomplete Dropdown */}
+                        {showFieldDropdown && fieldSearchQuery.length >= 2 && (() => {
+                          const allFields = getAllSearchableFields();
+                          const searchLower = fieldSearchQuery.toLowerCase();
+                          const searchWords = searchLower.split(/\s+/).filter(w => w.length > 0);
+
+                          const matchingFields = allFields.filter(field => {
+                            const displayLower = field.displayName.toLowerCase();
+                            const nameLower = field.name.toLowerCase();
+
+                            // Match if all search words appear
+                            return searchWords.every(word =>
+                              displayLower.includes(word) || nameLower.includes(word)
+                            );
+                          }).slice(0, 10); // Limit to 10 results
+
+                          if (matchingFields.length === 0) return null;
+
+                          return (
+                            <div className={`absolute z-[9999] w-80 mt-2 ${uiConfig.colors.card} border-2 ${uiConfig.colors.border} rounded-lg shadow-lg max-h-96 overflow-auto`}
+                                 style={{ boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
+                              {matchingFields.map(field => {
+                                const isEmpty = field.value === null || field.value === undefined || field.value === '' ||
+                                               (Array.isArray(field.value) && field.value.length === 0);
+
+                                let displayValue = '';
+                                if (!isEmpty) {
+                                  if (typeof field.value === 'boolean') {
+                                    displayValue = field.value ? 'Yes' : 'No';
+                                  } else if (typeof field.value === 'number') {
+                                    displayValue = field.value.toString();
+                                  } else if (Array.isArray(field.value)) {
+                                    displayValue = field.value.join(', ');
+                                  } else if (typeof field.value === 'string') {
+                                    displayValue = field.value.length > 40 ? field.value.substring(0, 40) + '...' : field.value;
+                                  }
+                                }
+
+                                return (
+                                  <button
+                                    key={field.name}
+                                    onClick={() => handleFieldSelect(field)}
+                                    className={`w-full px-3 py-2 text-left hover:${uiConfig.colors.secondary} transition-colors border-b ${uiConfig.colors.border} last:border-b-0`}
+                                  >
+                                    <div className={`font-medium ${uiConfig.colors.heading} text-sm`}>
+                                      {field.displayName}
+                                    </div>
+                                    <div className="flex items-center justify-between mt-1">
+                                      <span className={`text-xs ${uiConfig.colors.subtitle}`}>
+                                        {field.category} {isEmpty && '• Empty'}
+                                      </span>
+                                      {!isEmpty && (
+                                        <span className={`text-xs ${uiConfig.colors.subtitle} truncate max-w-[200px]`}>
+                                          {displayValue}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          );
+                        })()}
+                      </div>
+
                       {/* Data Quality Report Button */}
                       <button
                         onClick={() => setDataQualityPanel({ isOpen: true, town: selectedTown })}
@@ -1553,7 +1787,7 @@ const TownsManager = () => {
                         className={`p-2 rounded-lg ${uiConfig.colors.secondary} hover:${uiConfig.colors.primary} transition-colors flex items-center justify-center`}
                         title="View Wikipedia"
                       >
-                        <img 
+                        <img
                           src="https://en.wikipedia.org/static/favicon/wikipedia.ico"
                           alt="Wikipedia"
                           className="w-5 h-5"

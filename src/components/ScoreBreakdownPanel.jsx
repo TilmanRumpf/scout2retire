@@ -55,6 +55,7 @@ export default function ScoreBreakdownPanel({ town, onTownUpdate }) {
         townId={townId}
         townName={town.town_name}
         countryName={town.country}
+        subdivisionCode={town.region}
         type={metadata.type}
         range={metadata.range}
         description={metadata.description}

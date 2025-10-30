@@ -227,6 +227,7 @@ export default function LegacyFieldsSection({ fields, town, onTownUpdate }) {
                 townId={town.id}
                 townName={town.town_name}
                 countryName={town.country}
+                subdivisionCode={town.region}
                 type={metadata.type}
                 range={metadata.range}
                 description={metadata.description}

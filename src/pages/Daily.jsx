@@ -646,7 +646,7 @@ export default function Daily() {
                         e.preventDefault();
                         e.stopPropagation();
                         console.log('Clicked top match:', town.town_name, 'ID:', town.id);
-                        navigate(`/town/${town.id}`);
+                        navigate(`/discover?town=${town.id}`);
                       }}
                       className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer text-left"
                       style={{ position: 'relative', zIndex: 10 }}
@@ -675,7 +675,7 @@ export default function Daily() {
                           e.preventDefault();
                           e.stopPropagation();
                           console.log('Clicked top match:', town.town_name, 'ID:', town.id);
-                          navigate(`/town/${town.id}`);
+                          navigate(`/discover?town=${town.id}`);
                         }}
                         className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer text-left"
                         style={{ position: 'relative', zIndex: 10 }}
@@ -700,7 +700,7 @@ export default function Daily() {
                           key={town.id}
                           onClick={() => {
                             console.log('Clicked top match (row 2):', town.town_name, 'ID:', town.id);
-                            navigate(`/town/${town.id}`);
+                            navigate(`/discover?town=${town.id}`);
                           }}
                           className={`p-3 ${uiConfig.colors.card} border ${uiConfig.colors.border} ${uiConfig.layout.radius.lg} ${uiConfig.states.hover} ${uiConfig.animation.transition} transform hover:scale-105 text-left`}
                         >

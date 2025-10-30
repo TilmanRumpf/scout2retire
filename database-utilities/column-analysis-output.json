@@ -1,0 +1,2409 @@
+{
+  "boolean_fields": [
+    {
+      "name": "beaches_nearby",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        true,
+        false
+      ],
+      "samples": []
+    },
+    {
+      "name": "childcare_available",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        false
+      ],
+      "samples": []
+    },
+    {
+      "name": "coastline_access",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        false
+      ],
+      "samples": []
+    },
+    {
+      "name": "digital_nomad_visa",
+      "type": "boolean",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        false
+      ],
+      "samples": []
+    },
+    {
+      "name": "english_speaking_doctors",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        true,
+        false
+      ],
+      "samples": []
+    },
+    {
+      "name": "farmers_markets",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        true
+      ],
+      "samples": []
+    },
+    {
+      "name": "foreign_income_taxed",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        true
+      ],
+      "samples": []
+    },
+    {
+      "name": "has_public_transit",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        false
+      ],
+      "samples": []
+    },
+    {
+      "name": "has_uber",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        false
+      ],
+      "samples": []
+    },
+    {
+      "name": "health_insurance_required",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        true
+      ],
+      "samples": []
+    },
+    {
+      "name": "image_is_fallback",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        false
+      ],
+      "samples": []
+    },
+    {
+      "name": "international_schools_available",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        false
+      ],
+      "samples": []
+    },
+    {
+      "name": "lake_river_access",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        false
+      ],
+      "samples": []
+    },
+    {
+      "name": "mountain_access",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        false
+      ],
+      "samples": []
+    },
+    {
+      "name": "needs_update",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        false
+      ],
+      "samples": []
+    },
+    {
+      "name": "requires_car",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        false
+      ],
+      "samples": []
+    },
+    {
+      "name": "retirement_visa_available",
+      "type": "boolean",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        true
+      ],
+      "samples": []
+    },
+    {
+      "name": "tax_haven_status",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        false
+      ],
+      "samples": []
+    },
+    {
+      "name": "tax_treaty_us",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        false
+      ],
+      "samples": []
+    },
+    {
+      "name": "train_station",
+      "type": "boolean",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [
+        false
+      ],
+      "samples": []
+    }
+  ],
+  "numeric_fields": [
+    {
+      "name": "air_quality_index",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 20,
+      "max": 140,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "annual_rainfall",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 550,
+      "max": 1280,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "avg_temp_summer",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 20,
+      "max": 36,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "avg_temp_winter",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": -3,
+      "max": 24,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "cost_index",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 40,
+      "max": 85,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "cost_of_living_usd",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 914,
+      "max": 2576,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "coworking_spaces_count",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 0,
+      "max": 0,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "cultural_events_rating",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 3,
+      "max": 7,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "cultural_rating",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 3,
+      "max": 9,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "data_completeness_score",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 0,
+      "max": 80,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "distance_to_urban_center",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 0,
+      "max": 238,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "dog_parks_count",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 0,
+      "max": 0,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "emergency_services_quality",
+      "type": "integer",
+      "populated": 78,
+      "populated_percent": "22.2",
+      "null_count": 274,
+      "min": 3,
+      "max": 8,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "english_proficiency",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 25,
+      "max": 95,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "environmental_health_rating",
+      "type": "integer",
+      "populated": 78,
+      "populated_percent": "22.2",
+      "null_count": 274,
+      "min": 2,
+      "max": 9,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "family_friendliness_rating",
+      "type": "integer",
+      "populated": 133,
+      "populated_percent": "37.8",
+      "null_count": 219,
+      "min": 4,
+      "max": 9,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "golf_courses_count",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 0,
+      "max": 2,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "government_efficiency_rating",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 8,
+      "max": 70,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "groceries_cost",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 70,
+      "max": 370,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "healthcare_cost",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 75,
+      "max": 500,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "healthcare_cost_monthly",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 65,
+      "max": 431,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "healthcare_score",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 7,
+      "max": 9,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "hiking_trails_km",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 10,
+      "max": 100,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "hospital_count",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 0,
+      "max": 5,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "humidity_average",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 55,
+      "max": 78,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "income_tax_rate_pct",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 0,
+      "max": 54,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "insurance_availability_rating",
+      "type": "integer",
+      "populated": 78,
+      "populated_percent": "22.2",
+      "null_count": 274,
+      "min": 3,
+      "max": 9,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "international_schools_count",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 0,
+      "max": 0,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "internet_speed",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 50,
+      "max": 100,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "latitude",
+      "type": "numeric",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": -22.2745264,
+      "max": 46.234953,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "lgbtq_friendly_rating",
+      "type": "integer",
+      "populated": 81,
+      "populated_percent": "23.0",
+      "null_count": 271,
+      "min": 6,
+      "max": 8,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "longitude",
+      "type": "numeric",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": -82.4442832,
+      "max": 166.442419,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "marinas_count",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 0,
+      "max": 3,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "meal_cost",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 20,
+      "max": 30,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "medical_specialties_rating",
+      "type": "integer",
+      "populated": 78,
+      "populated_percent": "22.2",
+      "null_count": 274,
+      "min": 3,
+      "max": 6,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "min_income_requirement_usd",
+      "type": "integer",
+      "populated": 20,
+      "populated_percent": "5.7",
+      "null_count": 332,
+      "min": 0,
+      "max": 0,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "museums_rating",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 1,
+      "max": 7,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "natural_disaster_risk",
+      "type": "integer",
+      "populated": 341,
+      "populated_percent": "96.9",
+      "null_count": 11,
+      "min": 2,
+      "max": 5,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "natural_disaster_risk_score",
+      "type": "integer",
+      "populated": 55,
+      "populated_percent": "15.6",
+      "null_count": 297,
+      "min": 2,
+      "max": 6,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "nightlife_rating",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 2,
+      "max": 8,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "outdoor_activities_rating",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 5,
+      "max": 7,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "outdoor_rating",
+      "type": "integer",
+      "populated": 350,
+      "populated_percent": "99.4",
+      "null_count": 2,
+      "min": 8,
+      "max": 9,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "parks_per_capita",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 0,
+      "max": 0,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "pet_friendliness",
+      "type": "integer",
+      "populated": 44,
+      "populated_percent": "12.5",
+      "null_count": 308,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "pet_friendly_rating",
+      "type": "integer",
+      "populated": 103,
+      "populated_percent": "29.3",
+      "null_count": 249,
+      "min": 7,
+      "max": 8,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "political_stability_rating",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 9,
+      "max": 85,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "population",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 22000,
+      "max": 1150000,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "private_healthcare_cost_index",
+      "type": "integer",
+      "populated": 55,
+      "populated_percent": "15.6",
+      "null_count": 297,
+      "min": 40,
+      "max": 85,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "property_appreciation_rate_pct",
+      "type": "numeric",
+      "populated": 55,
+      "populated_percent": "15.6",
+      "null_count": 297,
+      "min": 3,
+      "max": 3.5,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "property_tax_rate_pct",
+      "type": "numeric",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 0.5,
+      "max": 1.5,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "public_transport_quality",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 1,
+      "max": 6,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "purchase_apartment_sqm_usd",
+      "type": "integer",
+      "populated": 55,
+      "populated_percent": "15.6",
+      "null_count": 297,
+      "min": 1200,
+      "max": 4500,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "purchase_house_avg_usd",
+      "type": "integer",
+      "populated": 55,
+      "populated_percent": "15.6",
+      "null_count": 297,
+      "min": 150000,
+      "max": 585185,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "quality_of_life",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 7,
+      "max": 9,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "recreation_centers",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 0,
+      "max": 0,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "rent_1bed",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 320,
+      "max": 1680,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "rent_2bed_usd",
+      "type": "integer",
+      "populated": 110,
+      "populated_percent": "31.3",
+      "null_count": 242,
+      "min": 325,
+      "max": 1560,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "rent_house_usd",
+      "type": "integer",
+      "populated": 110,
+      "populated_percent": "31.3",
+      "null_count": 242,
+      "min": 450,
+      "max": 2160,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "restaurants_rating",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 3,
+      "max": 8,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "safety_score",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 6,
+      "max": 9,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "sales_tax_rate_pct",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 6,
+      "max": 23,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "senior_friendly_rating",
+      "type": "integer",
+      "populated": 133,
+      "populated_percent": "37.8",
+      "null_count": 219,
+      "min": 3,
+      "max": 4,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "shopping_rating",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 3,
+      "max": 8,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "ski_resorts_within_100km",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 0,
+      "max": 0,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "solo_living_support",
+      "type": "integer",
+      "populated": 43,
+      "populated_percent": "12.2",
+      "null_count": 309,
+      "min": 3,
+      "max": 7,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "startup_ecosystem_rating",
+      "type": "integer",
+      "populated": 20,
+      "populated_percent": "5.7",
+      "null_count": 332,
+      "min": 4,
+      "max": 4,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "sunshine_hours",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 2040,
+      "max": 2840,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "tennis_courts_count",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 0,
+      "max": 4,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "travel_connectivity_rating",
+      "type": "integer",
+      "populated": 78,
+      "populated_percent": "22.2",
+      "null_count": 274,
+      "min": 3,
+      "max": 7,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "typical_home_price",
+      "type": "integer",
+      "populated": 134,
+      "populated_percent": "38.1",
+      "null_count": 218,
+      "min": 85000,
+      "max": 500000,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "typical_monthly_living_cost",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 914,
+      "max": 2624,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "typical_rent_1bed",
+      "type": "integer",
+      "populated": 133,
+      "populated_percent": "37.8",
+      "null_count": 219,
+      "min": 250,
+      "max": 1200,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "utilities_cost",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 40,
+      "max": 150,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "veterinary_clinics_count",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 0,
+      "max": 0,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "visa_free_days",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 0,
+      "max": 999,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "walkability",
+      "type": "integer",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": 2,
+      "max": 9,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "wellness_rating",
+      "type": "integer",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": 3,
+      "max": 6,
+      "unique_values": [],
+      "samples": []
+    }
+  ],
+  "text_fields": [
+    {
+      "name": "airport_distance",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "41",
+        "102",
+        "80"
+      ]
+    },
+    {
+      "name": "climate",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "subtropical",
+        "mediterranean",
+        "subtropical"
+      ]
+    },
+    {
+      "name": "climate_description",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Warm and humid throughout the year with temperatures between 11°C-24°C. Rainfall distributed throughout year. Sea breezes moderate temperatures",
+        "Long, warm summers up to 26°C contrast with gentle winters at 8°C. Rainfall distributed throughout year",
+        "Balmy temperatures hover around 17°C year-round. Rainfall distributed throughout year. Sea breezes moderate temperatures"
+      ]
+    },
+    {
+      "name": "cost_description",
+      "type": "text",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Costly housing, higher prices, substantial groceries. Utilities run regular.",
+        "Fair rentals, upscale dining, economical groceries, negligible utilities.",
+        "Expect standard rents alongside steep prices. Groceries stay average, utilities fair."
+      ]
+    },
+    {
+      "name": "country",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "United States",
+        "Montenegro",
+        "New Caledonia"
+      ]
+    },
+    {
+      "name": "crime_rate",
+      "type": "text",
+      "populated": 350,
+      "populated_percent": "99.4",
+      "null_count": 2,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "25",
+        "25",
+        "25"
+      ]
+    },
+    {
+      "name": "cultural_events_frequency",
+      "type": "text",
+      "populated": 56,
+      "populated_percent": "15.9",
+      "null_count": 296,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "monthly",
+        "weekly",
+        "monthly"
+      ]
+    },
+    {
+      "name": "cultural_landmark_1",
+      "type": "text",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Venice Beach",
+        "Budva Old Town",
+        "Tjibaou Cultural Center"
+      ]
+    },
+    {
+      "name": "cultural_landmark_2",
+      "type": "text",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Historic Venice Train Depot",
+        "Sveti Stefan Island",
+        "Ouen Toro Lookout"
+      ]
+    },
+    {
+      "name": "cultural_landmark_3",
+      "type": "text",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Venetian Waterway Park",
+        "Monastery of the Holy Mother of God",
+        "Amedee Island Lighthouse"
+      ]
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Venice, Florida is a popular retirement destination known for its mild subtropical climate, beautiful beaches, and laid-back coastal lifestyle. The cost of living is relatively affordable, making it an attractive option for retirees. The town offers a variety of outdoor activities, including fishing, boating, and exploring the nearby Myakka River State Park.",
+        "Budva, Montenegro is a picturesque coastal town that offers a Mediterranean lifestyle perfect for retirees. The climate is mild and sunny, with warm summers and mild winters, making it an ideal destination for outdoor activities year-round. The cost of living is relatively low, with affordable housing and dining options. The town is known for its historic old town, beautiful beaches, and vibrant cultural scene.",
+        "Noumea, the capital of New Caledonia, offers a unique retirement destination for those seeking a tropical paradise. The city boasts a warm, subtropical climate year-round, with average temperatures ranging from 22°C to 28°C. The laid-back lifestyle, combined with a low cost of living, makes Noumea an attractive option for retirees. The main attractions include the stunning beaches, lush forests, and vibrant French-Melanesian culture."
+      ]
+    },
+    {
+      "name": "distance_to_ocean_km",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "0",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "name": "elevation_meters",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "2",
+        "3",
+        "19"
+      ]
+    },
+    {
+      "name": "english_proficiency_level",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "native",
+        "moderate",
+        "low"
+      ]
+    },
+    {
+      "name": "expat_community_size",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "small",
+        "small",
+        "small"
+      ]
+    },
+    {
+      "name": "geo_region",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "north america",
+        "mediterranean",
+        "pacific islands"
+      ]
+    },
+    {
+      "name": "google_maps_link",
+      "type": "text",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "https://www.google.com/maps/place/Venice+Florida",
+        "https://www.google.com/maps/place/Budva+Montenegro",
+        "https://www.google.com/maps/place/Noumea+New+Caledonia"
+      ]
+    },
+    {
+      "name": "healthcare_description",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Quality healthcare available though hospital access requires travel. English-speaking medical staff standard. Basic specialties covered, may need to travel for complex care. Comprehensive insurance essential.",
+        "Quality healthcare available though hospital access requires travel. Local language helpful for medical visits. Basic specialties covered, may need to travel for complex care.",
+        "Good healthcare infrastructure with a hospital within reach. Local language helpful for medical visits. Basic specialties covered, may need to travel for complex care."
+      ]
+    },
+    {
+      "name": "humidity_level_actual",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "humid",
+        "balanced",
+        "humid"
+      ]
+    },
+    {
+      "name": "id",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "0021d026-3148-46c2-8670-af89bf83e605",
+        "0093032e-3c10-421e-8467-0cc84f4ae52c",
+        "012e2095-acef-40b7-b211-87d6acd1ce80"
+      ]
+    },
+    {
+      "name": "image_license",
+      "type": "text",
+      "populated": 24,
+      "populated_percent": "6.8",
+      "null_count": 328,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "CC BY 2.0",
+        "CC BY-SA 3.0",
+        "CC BY-SA 3.0"
+      ]
+    },
+    {
+      "name": "image_photographer",
+      "type": "text",
+      "populated": 12,
+      "populated_percent": "3.4",
+      "null_count": 340,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Stefan Fussan",
+        "Adam Jones, Ph.D.",
+        "C.W. Tan"
+      ]
+    },
+    {
+      "name": "image_source",
+      "type": "text",
+      "populated": 91,
+      "populated_percent": "25.9",
+      "null_count": 261,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "scout2retire-bucket",
+        "Unsplash",
+        "wikimedia"
+      ]
+    },
+    {
+      "name": "image_url_1",
+      "type": "text",
+      "populated": 197,
+      "populated_percent": "56.0",
+      "null_count": 155,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "https://axlruvvsjepsulcbqlho.supabase.co/storage/v1/object/public/town-images/us-venice-beach-2574897.jpg",
+        "https://axlruvvsjepsulcbqlho.supabase.co/storage/v1/object/public/town-images/me-budva-S2R-image-1920x1080px.jpg",
+        "https://axlruvvsjepsulcbqlho.supabase.co/storage/v1/object/public/town-images/ca-charlottetown-s2r-image-1920x1080px-L (1).jpg"
+      ]
+    },
+    {
+      "name": "image_url_2",
+      "type": "text",
+      "populated": 12,
+      "populated_percent": "3.4",
+      "null_count": 340,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "https://axlruvvsjepsulcbqlho.supabase.co/storage/v1/object/public/town-images/us-palm-springs-indian-canyons-golf-resort-1771233.jpg",
+        "https://axlruvvsjepsulcbqlho.supabase.co/storage/v1/object/public/town-images/na-windhoek-church-3767555.jpg",
+        "https://axlruvvsjepsulcbqlho.supabase.co/storage/v1/object/public/town-images/hr-trogir-port-6996783.jpg"
+      ]
+    },
+    {
+      "name": "image_validation_note",
+      "type": "text",
+      "populated": 47,
+      "populated_percent": "13.4",
+      "null_count": 305,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Imported from bucket: me-budva-S2R-image-1920x1080px.jpg",
+        "Imported from bucket: es-baiona-s2r-image-1920x1080px-L-min.jpg",
+        "Imported from bucket: es-puerto-de-la-cruz-s2r-image-1920x1080px-L-min.jpg"
+      ]
+    },
+    {
+      "name": "infrastructure_description",
+      "type": "text",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Strong digital infrastructure supporting remote work, complete car dependency for daily mobility. Quality road infrastructure with consistent essential services. Basic financial services, some pedestrian zones — personal vehicle essential.",
+        "Infrastructure features strong digital infrastructure and moderate public transport. Basic utilities functional, simple infrastructure. Limited banking facilities plus walkable downtown areas.",
+        "Decent utility provision supporting daily life, excellent fiber connectivity for connectivity. Limited transit options, basic road network. Decent pedestrian infrastructure, essential financial services."
+      ]
+    },
+    {
+      "name": "lifestyle_description",
+      "type": "text",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Coastal peaceful lifestyle featuring nice coastal walks and water activities. Modest food scene with modest social options. Modest cultural scene, essential stores.",
+        "Peaceful lifestyle with simple restaurant scene and minimal nightlife. Limited formal culture, plus nice coastal walks and water activities. Modest retail for daily needs.",
+        "Simple social life characterizes this engaging destination. Adequate dining choices, nice coastal walks and water activities, and limited formal culture. Essential stores."
+      ]
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Venice (FL)",
+        "Budva",
+        "Noumea"
+      ]
+    },
+    {
+      "name": "nearest_airport",
+      "type": "text",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Sarasota-Bradenton International Airport (SRQ)",
+        "Tivat Airport (TIV)",
+        "Nouméa La Tontouta International Airport (NOU)"
+      ]
+    },
+    {
+      "name": "nearest_major_hospital_km",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "47",
+        "25",
+        "20"
+      ]
+    },
+    {
+      "name": "pace_of_life_actual",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "relaxed",
+        "relaxed",
+        "moderate"
+      ]
+    },
+    {
+      "name": "pollen_levels",
+      "type": "text",
+      "populated": 20,
+      "populated_percent": "5.7",
+      "null_count": 332,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "moderate",
+        "moderate",
+        "moderate"
+      ]
+    },
+    {
+      "name": "precipitation_level_actual",
+      "type": "text",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "less_dry",
+        "less_dry",
+        "less_dry"
+      ]
+    },
+    {
+      "name": "primary_language",
+      "type": "text",
+      "populated": 312,
+      "populated_percent": "88.6",
+      "null_count": 40,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "English",
+        "Montenegrin",
+        "English"
+      ]
+    },
+    {
+      "name": "region",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Florida",
+        "Budva",
+        "South Province"
+      ]
+    },
+    {
+      "name": "residency_path_info",
+      "type": "text",
+      "populated": 44,
+      "populated_percent": "12.5",
+      "null_count": 308,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Canadian permanent residence available through Federal Skilled Worker Program, Provincial Nominee Programs, or Express Entry system. Processing time: 6-12 months. Consult official IRCC website.",
+        {
+          "available": true,
+          "years_to_permanent": 5,
+          "investment_required": false
+        },
+        {
+          "available": true,
+          "years_to_permanent": 5,
+          "investment_required": false
+        }
+      ]
+    },
+    {
+      "name": "retirement_community_presence",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "very_strong",
+        "none",
+        "none"
+      ]
+    },
+    {
+      "name": "safety_description",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Stable environment requiring normal vigilance. Remote medical access requires planning with seasonal weather patterns to monitor. Quiet rural setting with limited services. Public transport widely used safely, generally fine for independent women.",
+        "Strong safety record with effective local governance. Emergency care accessible within 30km with occasional weather events possible. Quiet rural setting with limited services. Solo exploration typically fine, comfortable for solo female residents.",
+        "Stable environment requiring normal vigilance. Local emergency facilities available with occasional weather events possible. Coastal location with water-related considerations. Outdoor dining relaxed, generally fine for independent women."
+      ]
+    },
+    {
+      "name": "search_vector",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "'-24':70C '11':68C 'activ':47B,89C 'afford':32B 'attract':36B 'back':23B 'beach':19B 'beauti':18B 'boat':50B 'breez':77C 'c':69C,71C 'climat':17B 'coastal':24B,80C,85C 'cost':27B 'cultur':98C 'destin':11B 'distribut':73C 'essenti':100C 'explor':52B 'featur':83C 'fish':49B 'fl':2A 'florida':6B 'food':91C 'humid':61C 'includ':48B 'known':12B 'laid':22B 'laid-back':21B 'lifestyl':25B,82C 'live':29B 'make':33B 'mild':15B 'moder':78C 'modest':90C,94C,97C 'myakka':55B 'nearbi':54B 'nice':84C 'offer':42B 'option':37B,96C 'outdoor':46B 'park':58B 'peac':81C 'popular':9B 'rainfal':72C 'relat':31B 'retir':10B 'retire':39B 'river':56B 'scene':92C,99C 'sea':76C 'social':95C 'state':4A,57B 'store':101C 'subtrop':16B 'temperatur':66C,79C 'throughout':62C,74C 'town':41B 'unit':3A 'varieti':44B 'venic':1A,5B 'walk':86C 'warm':59C 'water':88C 'year':64C,75C",
+        "'26':74C '8':81C 'activ':37B,105C 'afford':49B 'beach':64B 'beauti':63B 'budva':1A,3B 'c':75C,82C 'climat':19B 'coastal':8B,101C 'contrast':76C 'cost':42B 'cultur':67B,98C 'daili':109C 'destin':34B 'dine':52B 'distribut':84C 'formal':97C 'gentl':78C 'histor':60B 'hous':50B 'ideal':33B 'known':57B 'lifestyl':14B,88C 'limit':96C 'live':44B 'long':69C 'low':47B 'make':30B 'mediterranean':13B 'mild':21B,28B 'minim':94C 'modest':106C 'montenegro':2A,4B 'need':110C 'nice':100C 'nightlif':95C 'offer':11B 'old':61B 'option':53B 'outdoor':36B 'peac':87C 'perfect':15B 'picturesqu':7B 'plus':99C 'rainfal':83C 'relat':46B 'restaur':91C 'retail':107C 'retire':17B 'round':40B 'scene':68B,92C 'simpl':90C 'summer':26B,71C 'sunni':23B 'throughout':85C 'town':9B,55B,62B 'vibrant':66B 'walk':102C 'warm':25B,70C 'water':104C 'winter':29B,79C 'year':39B,86C 'year-round':38B",
+        "'17':79C '22':36B '28':39B 'activ':107C 'adequ':99C 'around':78C 'attract':56B,62B 'averag':32B 'back':44B 'balmi':75C 'beach':66B 'boast':23B 'breez':89C 'c':37B,40B,80C 'caledonia':3A,9B 'capit':6B 'character':95C 'choic':101C 'citi':22B 'climat':27B 'coastal':103C 'combin':46B 'cost':50B 'cultur':74B,111C 'destin':14B,98C 'dine':100C 'distribut':85C 'engag':97C 'essenti':112C 'forest':68B 'formal':110C 'french':72B 'french-melanesian':71B 'hover':77C 'includ':63B 'laid':43B 'laid-back':42B 'life':94C 'lifestyl':45B 'limit':109C 'live':52B 'low':49B 'lush':67B 'main':61B 'make':53B 'melanesian':73B 'moder':90C 'new':2A,8B 'nice':102C 'noumea':1A,4B,54B 'offer':10B 'option':57B 'paradis':20B 'rainfal':84C 'rang':34B 'retir':13B 'retire':59B 'round':30B,83C 'sea':88C 'seek':17B 'simpl':92C 'social':93C 'store':113C 'stun':65B 'subtrop':26B 'temperatur':33B,76C,91C 'throughout':86C 'tropic':19B 'uniqu':12B 'vibrant':70B 'walk':104C 'warm':25B 'water':106C 'year':29B,82C,87C 'year-round':28B,81C"
+      ]
+    },
+    {
+      "name": "seasonal_variation_actual",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "minimal",
+        "moderate",
+        "minimal"
+      ]
+    },
+    {
+      "name": "social_atmosphere",
+      "type": "text",
+      "populated": 80,
+      "populated_percent": "22.7",
+      "null_count": 272,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "moderate",
+        "quiet",
+        "friendly"
+      ]
+    },
+    {
+      "name": "summer_climate_actual",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "warm",
+        "warm",
+        "warm"
+      ]
+    },
+    {
+      "name": "sunshine_level_actual",
+      "type": "text",
+      "populated": 350,
+      "populated_percent": "99.4",
+      "null_count": 2,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "balanced",
+        "often_sunny",
+        "often_sunny"
+      ]
+    },
+    {
+      "name": "tourist_season_impact",
+      "type": "text",
+      "populated": 20,
+      "populated_percent": "5.7",
+      "null_count": 332,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "moderate",
+        "moderate",
+        "high"
+      ]
+    },
+    {
+      "name": "town_name",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "Abu Dhabi",
+        "Adelaide",
+        "Agadir"
+      ]
+    },
+    {
+      "name": "traditional_progressive_lean",
+      "type": "text",
+      "populated": 80,
+      "populated_percent": "22.7",
+      "null_count": 272,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "balanced",
+        "traditional",
+        "balanced"
+      ]
+    },
+    {
+      "name": "urban_rural_character",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "rural",
+        "rural",
+        "suburban"
+      ]
+    },
+    {
+      "name": "visa_requirements",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "No visa needed (domestic)",
+        "90-day visa-free",
+        "90-day visa-free"
+      ]
+    },
+    {
+      "name": "winter_climate_actual",
+      "type": "text",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": [
+        "cool",
+        "cool",
+        "cool"
+      ]
+    }
+  ],
+  "timestamp_fields": [
+    {
+      "name": "created_at",
+      "type": "timestamp",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "image_validated_at",
+      "type": "timestamp",
+      "populated": 70,
+      "populated_percent": "19.9",
+      "null_count": 282,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "last_ai_update",
+      "type": "timestamp",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "last_verified_date",
+      "type": "timestamp",
+      "populated": 21,
+      "populated_percent": "6.0",
+      "null_count": 331,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    }
+  ],
+  "json_fields": [
+    {
+      "name": "activities_available",
+      "type": "json",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "activity_infrastructure",
+      "type": "json",
+      "populated": 44,
+      "populated_percent": "12.5",
+      "null_count": 308,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "audit_data",
+      "type": "json",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "data_sources",
+      "type": "json",
+      "populated": 20,
+      "populated_percent": "5.7",
+      "null_count": 332,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "easy_residency_countries",
+      "type": "json",
+      "populated": 20,
+      "populated_percent": "5.7",
+      "null_count": 332,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "environmental_factors",
+      "type": "json",
+      "populated": 44,
+      "populated_percent": "12.5",
+      "null_count": 308,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "geographic_features",
+      "type": "json",
+      "populated": 350,
+      "populated_percent": "99.4",
+      "null_count": 2,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "geographic_features_actual",
+      "type": "json",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "healthcare_specialties_available",
+      "type": "json",
+      "populated": 351,
+      "populated_percent": "99.7",
+      "null_count": 1,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "interests_supported",
+      "type": "json",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "international_access",
+      "type": "json",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "languages_spoken",
+      "type": "json",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "local_mobility_options",
+      "type": "json",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "medical_specialties_available",
+      "type": "json",
+      "populated": 20,
+      "populated_percent": "5.7",
+      "null_count": 332,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "regional_connectivity",
+      "type": "json",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "regions",
+      "type": "json",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "secondary_languages",
+      "type": "json",
+      "populated": 56,
+      "populated_percent": "15.9",
+      "null_count": 296,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "swimming_facilities",
+      "type": "json",
+      "populated": 28,
+      "populated_percent": "8.0",
+      "null_count": 324,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "top_hobbies",
+      "type": "json",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "vegetation_type_actual",
+      "type": "json",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "visa_on_arrival_countries",
+      "type": "json",
+      "populated": 1,
+      "populated_percent": "0.3",
+      "null_count": 351,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "water_bodies",
+      "type": "json",
+      "populated": 352,
+      "populated_percent": "100.0",
+      "null_count": 0,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    }
+  ],
+  "unknown_fields": [
+    {
+      "name": "banking_infrastructure",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "bike_infrastructure",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "country_code",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "cultural_activities",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "digital_services_availability",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "expat_groups",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "image_url_3",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "image_urls",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "international_airport_distance",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "international_flights_direct",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "internet_reliability",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "mobile_coverage",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "mountain_activities",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "nearest_major_city",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "parking_availability",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "regional_airport_distance",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "road_quality",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "sports_facilities",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "subdivision_code",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "timezone",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "traffic_congestion",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    },
+    {
+      "name": "water_sports_available",
+      "type": "unknown",
+      "populated": 0,
+      "populated_percent": "0.0",
+      "null_count": 352,
+      "min": null,
+      "max": null,
+      "unique_values": [],
+      "samples": []
+    }
+  ]
+}

@@ -27,7 +27,8 @@ export default function ActivitiesPanel({ town, onTownUpdate }) {
     outdoor: true,
     water: true,
     cultural: true,
-    facilities: true
+    facilities: true,
+    markets: true
   });
 
   const toggleSection = (section) => {
@@ -43,6 +44,7 @@ export default function ActivitiesPanel({ town, onTownUpdate }) {
         townId={town.id}
         townName={town.town_name}
         countryName={town.country}
+        subdivisionCode={town.region}
         type={type}
         range={range}
         description={description}
@@ -202,6 +204,66 @@ export default function ActivitiesPanel({ town, onTownUpdate }) {
               label="Activities Available"
               type="text"
               description="Comma-separated list of available activities in the area"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Local Markets & Community */}
+      <div>
+        <button
+          onClick={() => toggleSection('markets')}
+          className="w-full flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-lg mb-3 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        >
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            🛒 Local Markets & Community
+          </h3>
+          <span className="text-gray-500">{expandedSections.markets ? '▼' : '▶'}</span>
+        </button>
+
+        {expandedSections.markets && (
+          <div className="space-y-2 pl-4">
+            <EditableField
+              field="farmers_markets"
+              value={town.farmers_markets}
+              label="Farmers Markets"
+              type="boolean"
+              description={`Whether the town has regular farmers markets (weekly/monthly). Include details in notes if available.
+
+SEARCH: Does {town_name}, {subdivision}, {country} have a farmers market? Expected: Yes or No
+EXPECTED: Yes or No`}
+            />
+            <EditableField
+              field="marinas_count"
+              value={town.marinas_count}
+              label="Marinas Count"
+              type="number"
+              range="0-50"
+              description="Number of marinas in the area"
+            />
+            <EditableField
+              field="coworking_spaces_count"
+              value={town.coworking_spaces_count}
+              label="Coworking Spaces Count"
+              type="number"
+              range="0-100"
+              description="Number of coworking spaces available for remote workers"
+            />
+            <EditableField
+              field="veterinary_clinics_count"
+              value={town.veterinary_clinics_count}
+              label="Veterinary Clinics Count"
+              type="number"
+              range="0-50"
+              description="Number of veterinary clinics for pet care"
+            />
+            <EditableField
+              field="international_schools_count"
+              value={town.international_schools_count}
+              label="International Schools Count"
+              type="number"
+              range="0-50"
+              description="Number of international schools (English-language or multi-lingual)"
             />
           </div>
         )}

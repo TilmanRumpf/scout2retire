@@ -43,6 +43,7 @@ export default function InfrastructurePanel({ town, onTownUpdate }) {
         townId={town.id}
         townName={town.town_name}
         countryName={town.country}
+        subdivisionCode={town.region}
         type={type}
         range={range}
         description={description}

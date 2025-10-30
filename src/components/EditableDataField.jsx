@@ -23,6 +23,7 @@ const EditableDataField = ({
   townId,
   townName,
   countryName,
+  subdivisionCode,
   type = 'string',
   range,
   description,
@@ -34,13 +35,32 @@ const EditableDataField = ({
   const [saveState, setSaveState] = useState('idle'); // idle | saving | success | error
   const [showCombinedModal, setShowCombinedModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [expectedFormat, setExpectedFormat] = useState('');
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
   const [hasExistingTemplate, setHasExistingTemplate] = useState(false);
   const inputRef = useRef(null);
   const searchInputRef = useRef(null);
   const editInputRef = useRef(null);
 
-  // Load saved query templates from localStorage
+  // Parse column description for SEARCH and EXPECTED sections
+  const parseDescriptionForSearch = (description) => {
+    if (!description) return null;
+
+    // Extract SEARCH: section
+    const searchMatch = description.match(/SEARCH:\s*(.+?)(?=\nEXPECTED:|$)/s);
+    // Extract EXPECTED: section
+    const expectedMatch = description.match(/EXPECTED:\s*(.+?)(?=\n|$)/);
+    // Human description is everything before SEARCH:
+    const humanDescription = description.split(/\nSEARCH:/)[0].trim();
+
+    return {
+      searchTemplate: searchMatch?.[1]?.trim() || null,
+      expectedFormat: expectedMatch?.[1]?.trim() || null,
+      humanDescription: humanDescription || description
+    };
+  };
+
+  // Load saved query templates from localStorage (FALLBACK)
   const getQueryTemplate = (fieldName) => {
     try {
       const templates = JSON.parse(localStorage.getItem('searchQueryTemplates') || '{}');
@@ -128,7 +148,8 @@ const EditableDataField = ({
     if (type === 'number') {
       valueToSave = editValue === '' || editValue === null ? null : Number(editValue);
     } else if (type === 'boolean') {
-      valueToSave = editValue === 'true' || editValue === true;
+      // Handle multiple boolean representations: 'true', true, 1, '1' -> true; 'false', false, 0, '0' -> false
+      valueToSave = editValue === 'true' || editValue === true || editValue === 1 || editValue === '1';
     }
 
     setSaveState('saving');
@@ -258,23 +279,56 @@ const EditableDataField = ({
 
   // Open combined modal with both search and edit
   const handleOpenCombinedModal = () => {
-    // Check if there's a saved template for this field
-    const savedTemplate = getQueryTemplate(field);
-
     let suggestedQuery;
-    if (savedTemplate) {
-      // Use saved template and replace {town} and {country} placeholders
-      suggestedQuery = savedTemplate
-        .replace(/\{town\}/g, townName)
-        .replace(/\{country\}/g, countryName);
-      setHasExistingTemplate(true);
-    } else {
-      // Use auto-generated query
-      suggestedQuery = generateSmartQuery();
-      setHasExistingTemplate(false);
+    let hasTemplate = false;
+
+    // PRIORITY 1: Column description with SEARCH: section
+    const parsedDescription = parseDescriptionForSearch(description);
+    if (parsedDescription?.searchTemplate) {
+      // Use search template from column description (already includes Expected: format)
+      suggestedQuery = parsedDescription.searchTemplate
+        .replace(/\{town_name\}/g, townName)
+        .replace(/\{town\}/g, townName)  // Support legacy {town} placeholder
+        .replace(/\{country\}/g, countryName)
+        .replace(/\{subdivision\}/g, subdivisionCode || '')
+        .replace(/\{subdivision_code\}/g, subdivisionCode || '')
+        .replace(/\{state\}/g, subdivisionCode || '')
+        .replace(/\{region\}/g, subdivisionCode || '');
+      hasTemplate = true;
+    }
+    // PRIORITY 2: localStorage template (FALLBACK)
+    else {
+      const savedTemplate = getQueryTemplate(field);
+      if (savedTemplate) {
+        suggestedQuery = savedTemplate
+          .replace(/\{town_name\}/g, townName)
+          .replace(/\{town\}/g, townName)
+          .replace(/\{subdivision\}/g, subdivisionCode || '')
+          .replace(/\{subdivision_code\}/g, subdivisionCode || '')
+          .replace(/\{state\}/g, subdivisionCode || '')
+          .replace(/\{region\}/g, subdivisionCode || '')
+          .replace(/\{country\}/g, countryName);
+        hasTemplate = true;
+      }
+      // PRIORITY 3: Auto-generated query with expected format
+      else {
+        const baseQuery = generateSmartQuery();
+        // Add expected format to the query
+        const defaultExpected = type === 'boolean' ? 'Yes or No'
+                              : type === 'number' && range ? range
+                              : 'Appropriate value';
+        suggestedQuery = `${baseQuery} Expected: ${defaultExpected}`;
+        hasTemplate = false;
+      }
     }
 
+    // Extract expected format from query if present
+    const expectedMatch = suggestedQuery.match(/Expected:\s*(.+?)(?:\?|$)/i);
+    const initialExpectedFormat = expectedMatch ? expectedMatch[1].trim() : '';
+
+    setHasExistingTemplate(hasTemplate);
     setSearchQuery(suggestedQuery);
+    setExpectedFormat(initialExpectedFormat);
     setEditValue(value);
     setSaveAsTemplate(false);
     setSaveState('idle');
@@ -283,7 +337,17 @@ const EditableDataField = ({
 
   // Execute the search (keep modal open)
   const executeSearch = () => {
-    const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+    // Replace ALL placeholders with actual town data
+    const finalQuery = searchQuery
+      .replace(/\{town_name\}/g, townName)
+      .replace(/\{town\}/g, townName)
+      .replace(/\{subdivision\}/g, subdivisionCode || '')
+      .replace(/\{subdivision_code\}/g, subdivisionCode || '')
+      .replace(/\{state\}/g, subdivisionCode || '')
+      .replace(/\{region\}/g, subdivisionCode || '')
+      .replace(/\{country\}/g, countryName);
+
+    const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(finalQuery)}`;
     // Open in smaller popup window
     window.open(googleSearchUrl, '_blank', 'width=1000,height=700,scrollbars=yes,resizable=yes');
     // Modal stays open for data entry
@@ -303,7 +367,8 @@ const EditableDataField = ({
     if (type === 'number') {
       valueToSave = editValue === '' || editValue === null ? null : Number(editValue);
     } else if (type === 'boolean') {
-      valueToSave = editValue === 'true' || editValue === true;
+      // Handle multiple boolean representations: 'true', true, 1, '1' -> true; 'false', false, 0, '0' -> false
+      valueToSave = editValue === 'true' || editValue === true || editValue === 1 || editValue === '1';
     }
 
     setSaveState('saving');
@@ -345,27 +410,78 @@ const EditableDataField = ({
   };
 
   // Handle template save/update (for executive admins)
-  const handleSaveTemplate = () => {
-    // Replace actual town/country names with placeholders
-    const template = searchQuery
-      .replace(new RegExp(townName, 'g'), '{town}')
-      .replace(new RegExp(countryName, 'g'), '{country}');
-    saveQueryTemplate(field, template);
-    setHasExistingTemplate(true);
-    toast.success('Template saved! Will be used for all future searches of this field.');
-  };
-
-  // Handle template deletion (for executive admins)
-  const handleDeleteTemplate = () => {
+  const handleSaveTemplate = async () => {
     try {
-      const templates = JSON.parse(localStorage.getItem('searchQueryTemplates') || '{}');
-      delete templates[field];
-      localStorage.setItem('searchQueryTemplates', JSON.stringify(templates));
-      setHasExistingTemplate(false);
-      toast.success('Template deleted. Auto-generated queries will be used.');
+      // Replace actual values with placeholders
+      let template = searchQuery
+        .replace(new RegExp(townName, 'gi'), '{town_name}')
+        .replace(new RegExp(countryName, 'gi'), '{country}');
+
+      // Replace subdivision if present
+      if (subdivisionCode && subdivisionCode.trim()) {
+        template = template.replace(new RegExp(subdivisionCode, 'gi'), '{subdivision}');
+      }
+
+      // Parse current description to preserve human-readable part
+      const parsedDescription = parseDescriptionForSearch(description);
+      const humanPart = parsedDescription?.humanDescription || description || `Field: ${field}`;
+
+      // Extract expected format from template (if user included it in the query)
+      const expectedMatch = template.match(/Expected:\s*(.+?)(?:\?|$)/i);
+      let finalExpectedFormat = '';
+      let cleanTemplate = template;
+
+      if (expectedMatch) {
+        // User included Expected in query - extract it
+        finalExpectedFormat = expectedMatch[1].trim();
+        // Remove "Expected: X" from template since we save it separately
+        cleanTemplate = template.replace(/\s*Expected:\s*.+?(?:\?|$)/i, '').trim();
+      } else {
+        // No Expected in query - use the state value
+        finalExpectedFormat = expectedFormat.trim() || 'Appropriate value';
+      }
+
+      const newDescription = `${humanPart}
+
+SEARCH: ${cleanTemplate}
+EXPECTED: ${finalExpectedFormat}`;
+
+      // Try to update column description in Supabase
+      const { error } = await supabase.rpc('update_column_description', {
+        table_name: 'towns',
+        column_name: field,
+        new_description: newDescription
+      });
+
+      if (error) {
+        // RPC function doesn't exist yet - save to localStorage and show manual instructions
+        console.warn('RPC function not available, saving to localStorage only:', error);
+        saveQueryTemplate(field, template);
+        setHasExistingTemplate(true);
+
+        // Copy SQL command to clipboard
+        const sqlCommand = `COMMENT ON COLUMN public.towns.${field} IS $$ ${newDescription} $$;`;
+        navigator.clipboard.writeText(sqlCommand);
+
+        toast((t) => (
+          <div>
+            <p className="font-bold">✅ Template saved to localStorage!</p>
+            <p className="text-sm mt-1">To save to database (all towns):</p>
+            <p className="text-xs mt-1">SQL command copied to clipboard </p>
+            <p className="text-xs">Paste in Supabase SQL editor</p>
+          </div>
+        ), { duration: 8000 });
+        return;
+      }
+
+      setHasExistingTemplate(true);
+      toast.success(`✅ Template saved to database! All 343+ towns will use this search query for "${label}".`);
+
+      // Also save to localStorage as backup
+      saveQueryTemplate(field, template);
     } catch (error) {
-      console.error('Error deleting template:', error);
-      toast.error('Failed to delete template');
+      console.error('Error saving template:', error);
+      toast.error('Failed to save template');
     }
   };
 
@@ -413,10 +529,14 @@ const EditableDataField = ({
         );
 
       case 'boolean':
+        // Handle 0/1, true/false, 'true'/'false' values
+        const boolValue = editValue === true || editValue === 1 || editValue === '1' || editValue === 'true' ? 'true'
+                        : editValue === false || editValue === 0 || editValue === '0' || editValue === 'false' ? 'false'
+                        : '';
         return (
           <select
             ref={inputRef}
-            value={editValue === true ? 'true' : editValue === false ? 'false' : ''}
+            value={boolValue}
             onChange={(e) => setEditValue(e.target.value)}
             onKeyDown={handleKeyDown}
             className={baseClasses}
@@ -487,10 +607,14 @@ const EditableDataField = ({
         );
 
       case 'boolean':
+        // Handle 0/1, true/false, 'true'/'false' values
+        const boolValue = editValue === true || editValue === 1 || editValue === '1' || editValue === 'true' ? 'true'
+                        : editValue === false || editValue === 0 || editValue === '0' || editValue === 'false' ? 'false'
+                        : '';
         return (
           <select
             ref={editInputRef}
-            value={editValue === true ? 'true' : editValue === false ? 'false' : ''}
+            value={boolValue}
             onChange={(e) => setEditValue(e.target.value)}
             className={baseClasses}
           >
@@ -601,7 +725,7 @@ const EditableDataField = ({
               className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors flex items-center gap-0.5"
               title={`Research & Edit: ${label}`}
             >
-              <span className="text-base">🤔</span>
+              
               <Edit2 size={14} />
             </button>
           </div>
@@ -692,9 +816,9 @@ const EditableDataField = ({
             {/* Modal Header */}
             <div className="sticky top-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-t-lg">
               <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <span className="text-xl">🤔</span>
+                
                 Research & Edit: {label}
-                <span className="text-xl ml-1">✏️</span>
+                <span className="text-xl ml-1"></span>
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 3-step workflow: Search Google → Enter Data → Save Template
@@ -702,15 +826,15 @@ const EditableDataField = ({
             </div>
 
             {/* Modal Body - All 3 sections visible */}
-            <div className="p-6 space-y-6">
-              {/* SECTION 1: Google Search */}
-              <div className="border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4 bg-blue-50/30 dark:bg-blue-900/10">
-                <h4 className="text-sm font-bold text-blue-800 dark:text-blue-300 mb-3 flex items-center gap-2">
-                  <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
-                  🔍 Step 1: Research on Google
+            <div className="p-6 space-y-4">
+              {/* SECTION 1: Google Search - GREEN (Safe, read-only) */}
+              <div className="border-2 border-green-200 dark:border-green-800 rounded-lg p-4 bg-green-50/30 dark:bg-green-900/10">
+                <h4 className="text-sm font-bold text-green-800 dark:text-green-300 mb-3 flex items-center gap-2">
+                  <span className="bg-green-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
+                   Step 1: Research on Google
                 </h4>
 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Search Query <span className="text-gray-500">(editable)</span>
@@ -743,11 +867,24 @@ const EditableDataField = ({
                     )}
                   </div>
 
+                  {/* EXPECTED FORMAT - Help user know what to look for */}
+                  {expectedFormat && (
+                    <div className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        
+                        <div className="flex-1">
+                          <span className="text-xs font-medium text-green-700 dark:text-green-400">Expected: </span>
+                          <span className="text-sm font-bold text-green-900 dark:text-green-200">{expectedFormat}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <button
                     onClick={executeSearch}
-                    className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-medium"
+                    className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 font-medium"
                   >
-                    <span>🔍 Search Google</span>
+                    <span> Search Google</span>
                   </button>
 
                   <p className="text-xs text-gray-500 dark:text-gray-400 italic">
@@ -756,14 +893,14 @@ const EditableDataField = ({
                 </div>
               </div>
 
-              {/* SECTION 2: Enter Data & Save to Database */}
-              <div className="border-2 border-green-200 dark:border-green-800 rounded-lg p-4 bg-green-50/30 dark:bg-green-900/10">
-                <h4 className="text-sm font-bold text-green-800 dark:text-green-300 mb-3 flex items-center gap-2">
-                  <span className="bg-green-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
-                  ✏️ Step 2: Enter Data & Save to Database
+              {/* SECTION 2: Enter Data & Save to Database - YELLOW (Caution, modifying one town) */}
+              <div className="border-2 border-yellow-200 dark:border-yellow-800 rounded-lg p-4 bg-yellow-50/30 dark:bg-yellow-900/10">
+                <h4 className="text-sm font-bold text-yellow-800 dark:text-yellow-300 mb-3 flex items-center gap-2">
+                  <span className="bg-yellow-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
+                   Step 2: Enter Data & Save to Database
                 </h4>
 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       {label} Value
@@ -791,7 +928,7 @@ const EditableDataField = ({
                   <button
                     onClick={handleSaveFromModal}
                     disabled={saveState === 'saving'}
-                    className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 font-medium"
+                    className="w-full px-4 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 font-medium"
                   >
                     {saveState === 'saving' ? (
                       <>
@@ -805,76 +942,130 @@ const EditableDataField = ({
                       </>
                     ) : (
                       <>
-                        <span>💾 Save to Database</span>
+                        <span> Save to Database</span>
                       </>
                     )}
                   </button>
                 </div>
               </div>
 
-              {/* SECTION 3: Template Management (only visible for executive admins) */}
+              {/* SECTION 3: Template Management (only visible for executive admins) - RED (Danger, affects ALL towns) */}
               {isExecutiveAdmin && (
-                <div className="border-2 border-purple-200 dark:border-purple-800 rounded-lg p-4 bg-purple-50/30 dark:bg-purple-900/10">
-                  <h4 className="text-sm font-bold text-purple-800 dark:text-purple-300 mb-3 flex items-center gap-2">
-                    <span className="bg-purple-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span>
-                    💾 Step 3: Manage Query Template
+                <div className="border-2 border-red-200 dark:border-red-800 rounded-lg p-4 bg-red-50/30 dark:bg-red-900/10">
+                  <h4 className="text-sm font-bold text-red-800 dark:text-red-300 mb-3 flex items-center gap-2">
+                    <span className="bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span>
+                     Step 3: Manage Query Template
                   </h4>
 
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {hasExistingTemplate ? (
                       <>
-                        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded p-3 text-xs">
-                          <div className="flex items-center gap-2 text-green-700 dark:text-green-300 mb-2">
-                            <Check size={14} />
-                            <strong>Saved Template (in use for all towns):</strong>
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-2">
+                          <div className="text-xs font-medium text-red-700 dark:text-red-300 mb-1">
+                            Template Preview:
                           </div>
-                          <div className="font-mono text-purple-700 dark:text-purple-300 bg-white dark:bg-gray-900/50 p-2 rounded">
-                            {searchQuery}
+                          <div className="font-mono text-xs text-red-800 dark:text-red-200 bg-white dark:bg-gray-900/50 p-2 rounded">
+                            {(() => {
+                              let preview = searchQuery
+                                .replace(new RegExp(townName, 'gi'), '{town_name}')
+                                .replace(new RegExp(countryName, 'gi'), '{country}');
+                              if (subdivisionCode && subdivisionCode.trim()) {
+                                preview = preview.replace(new RegExp(subdivisionCode, 'gi'), '{subdivision}');
+                              }
+                              return preview;
+                            })()}
                           </div>
                         </div>
 
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
-                          Edit the query above to <strong>update the template</strong> for all {label} searches across all 343+ towns.
-                        </p>
-
-                        <div className="flex gap-3">
-                          <button
-                            onClick={handleDeleteTemplate}
-                            className="flex-1 px-4 py-2 border-2 border-red-300 dark:border-red-600 rounded-lg text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-medium"
-                          >
-                            🗑️ Delete Template
-                          </button>
-                          <button
-                            onClick={handleSaveTemplate}
-                            className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-                          >
-                            💾 Update Template
-                          </button>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
-                          Save this query as a <strong>template</strong> to use for all {label} searches across all 343+ towns.
-                        </p>
-
-                        <div className="bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded p-3 text-xs">
-                          <div className="text-gray-600 dark:text-gray-400 mb-1">
-                            <strong>Current query:</strong>
-                          </div>
-                          <div className="font-mono text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/20 p-2 rounded">
-                            {searchQuery}
-                          </div>
-                          <div className="text-gray-600 dark:text-gray-400 mt-2">
-                            Will be saved with <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">{'{town}'}</code> and <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">{'{country}'}</code> placeholders
+                        {/* EXPECTED FORMAT - Editable input */}
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg p-3">
+                          <div className="flex items-start gap-2">
+                            
+                            <div className="flex-1">
+                              <label className="text-xs font-medium text-red-700 dark:text-red-400 mb-1 block">
+                                Expected Format (affects all 343+ towns):
+                              </label>
+                              <input
+                                type="text"
+                                value={expectedFormat}
+                                onChange={(e) => {
+                                  const newExpected = e.target.value;
+                                  setExpectedFormat(newExpected);
+                                  // Update query to include new expected format
+                                  const baseQuery = searchQuery.replace(/\s*Expected:\s*.+?$/i, '').trim();
+                                  if (newExpected.trim()) {
+                                    setSearchQuery(`${baseQuery} Expected: ${newExpected}`);
+                                  } else {
+                                    setSearchQuery(baseQuery);
+                                  }
+                                }}
+                                placeholder="e.g., Yes or No, 1-10, 0-100"
+                                className="w-full px-3 py-2 border border-red-300 dark:border-red-700 rounded bg-white dark:bg-gray-900 text-red-800 dark:text-red-200 font-semibold focus:ring-2 focus:ring-red-500 text-sm"
+                              />
+                            </div>
                           </div>
                         </div>
 
                         <button
                           onClick={handleSaveTemplate}
-                          className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                          className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
                         >
-                          💾 Save as Template for All Towns
+                           Update Template
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-2">
+                          <div className="text-xs font-medium text-red-700 dark:text-red-300 mb-1">
+                            Template Preview:
+                          </div>
+                          <div className="font-mono text-xs text-red-800 dark:text-red-200 bg-white dark:bg-gray-900/50 p-2 rounded">
+                            {(() => {
+                              let preview = searchQuery
+                                .replace(new RegExp(townName, 'gi'), '{town_name}')
+                                .replace(new RegExp(countryName, 'gi'), '{country}');
+                              if (subdivisionCode && subdivisionCode.trim()) {
+                                preview = preview.replace(new RegExp(subdivisionCode, 'gi'), '{subdivision}');
+                              }
+                              return preview;
+                            })()}
+                          </div>
+                        </div>
+
+                        {/* EXPECTED FORMAT - Editable input */}
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg p-3">
+                          <div className="flex items-start gap-2">
+                            
+                            <div className="flex-1">
+                              <label className="text-xs font-medium text-red-700 dark:text-red-400 mb-1 block">
+                                Expected Format (affects all 343+ towns):
+                              </label>
+                              <input
+                                type="text"
+                                value={expectedFormat}
+                                onChange={(e) => {
+                                  const newExpected = e.target.value;
+                                  setExpectedFormat(newExpected);
+                                  // Update query to include new expected format
+                                  const baseQuery = searchQuery.replace(/\s*Expected:\s*.+?$/i, '').trim();
+                                  if (newExpected.trim()) {
+                                    setSearchQuery(`${baseQuery} Expected: ${newExpected}`);
+                                  } else {
+                                    setSearchQuery(baseQuery);
+                                  }
+                                }}
+                                placeholder="e.g., Yes or No, 1-10, 0-100"
+                                className="w-full px-3 py-2 border border-red-300 dark:border-red-700 rounded bg-white dark:bg-gray-900 text-red-800 dark:text-red-200 font-semibold focus:ring-2 focus:ring-red-500 text-sm"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={handleSaveTemplate}
+                          className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                        >
+                           Save as Template for All Towns
                         </button>
                       </>
                     )}
@@ -888,7 +1079,7 @@ const EditableDataField = ({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    💡 Workflow: Search → Copy value → Paste → Save{isExecutiveAdmin ? ' → Manage template' : ''}
+                     Workflow: Search → Copy value → Paste → Save{isExecutiveAdmin ? ' → Manage template' : ''}
                   </p>
                   <button
                     onClick={() => {

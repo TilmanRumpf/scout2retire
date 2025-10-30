@@ -377,8 +377,6 @@ export default function TownDiscovery() {
       <UnifiedHeader
         variant="compact"
         title="Discover"
-        totalCount={totalTownCount}
-        filteredCount={sortedAndFilteredTowns.length}
         showFilters={true}
         filterProps={{
           variant: "integrated",

@@ -541,7 +541,7 @@ export default function FilterBarV3({
                   setShowSearchDropdown(true);
                 }
               }}
-              placeholder="Search..."
+              placeholder="Search other towns..."
               className={`w-full h-9 pl-9 pr-8 text-sm ${uiConfig.colors.input} rounded-lg border ${uiConfig.colors.border} focus:outline-none focus:${uiConfig.colors.card} focus:border-${uiConfig.colors.accentBorder} transition-all`}
             />
             {searchInput && (
@@ -595,8 +595,8 @@ export default function FilterBarV3({
             }
             
             return (
-              <div className={`absolute z-[9999] w-full mt-2 ${uiConfig.colors.card} rounded-lg shadow-md max-h-60 overflow-auto`}
-                   style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}>
+              <div className={`absolute z-[9999] w-full mt-2 ${uiConfig.colors.card} border-2 ${uiConfig.colors.border} rounded-lg shadow-lg max-h-60 overflow-auto`}
+                   style={{ boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
                 
                 {/* Countries Section */}
                 {matchingCountries.length > 0 && (

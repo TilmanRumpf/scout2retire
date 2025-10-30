@@ -1,0 +1,351 @@
+{
+  "summer_climate_actual": {
+    "total_records": 352,
+    "unique_values": 3,
+    "values": [
+      {
+        "value": "warm",
+        "count": 145,
+        "percentage": "41.2"
+      },
+      {
+        "value": "hot",
+        "count": 136,
+        "percentage": "38.6"
+      },
+      {
+        "value": "mild",
+        "count": 71,
+        "percentage": "20.2"
+      }
+    ]
+  },
+  "winter_climate_actual": {
+    "total_records": 352,
+    "unique_values": 4,
+    "values": [
+      {
+        "value": "cool",
+        "count": 167,
+        "percentage": "47.4"
+      },
+      {
+        "value": "mild",
+        "count": 146,
+        "percentage": "41.5"
+      },
+      {
+        "value": "cold",
+        "count": 38,
+        "percentage": "10.8"
+      },
+      {
+        "value": "hot",
+        "count": 1,
+        "percentage": "0.3"
+      }
+    ]
+  },
+  "sunshine_level_actual": {
+    "total_records": 350,
+    "unique_values": 3,
+    "values": [
+      {
+        "value": "often_sunny",
+        "count": 200,
+        "percentage": "57.1"
+      },
+      {
+        "value": "balanced",
+        "count": 136,
+        "percentage": "38.9"
+      },
+      {
+        "value": "less_sunny",
+        "count": 14,
+        "percentage": "4.0"
+      }
+    ]
+  },
+  "precipitation_level_actual": {
+    "total_records": 351,
+    "unique_values": 3,
+    "values": [
+      {
+        "value": "less_dry",
+        "count": 191,
+        "percentage": "54.4"
+      },
+      {
+        "value": "balanced",
+        "count": 138,
+        "percentage": "39.3"
+      },
+      {
+        "value": "mostly_dry",
+        "count": 22,
+        "percentage": "6.3"
+      }
+    ]
+  },
+  "seasonal_variation_actual": {
+    "total_records": 352,
+    "unique_values": 5,
+    "values": [
+      {
+        "value": "moderate",
+        "count": 145,
+        "percentage": "41.2"
+      },
+      {
+        "value": "minimal",
+        "count": 126,
+        "percentage": "35.8"
+      },
+      {
+        "value": "high",
+        "count": 54,
+        "percentage": "15.3"
+      },
+      {
+        "value": "extreme",
+        "count": 24,
+        "percentage": "6.8"
+      },
+      {
+        "value": "distinct_seasons",
+        "count": 3,
+        "percentage": "0.9"
+      }
+    ]
+  },
+  "humidity_level_actual": {
+    "total_records": 352,
+    "unique_values": 3,
+    "values": [
+      {
+        "value": "balanced",
+        "count": 155,
+        "percentage": "44.0"
+      },
+      {
+        "value": "humid",
+        "count": 153,
+        "percentage": "43.5"
+      },
+      {
+        "value": "dry",
+        "count": 44,
+        "percentage": "12.5"
+      }
+    ]
+  },
+  "pace_of_life_actual": {
+    "total_records": 352,
+    "unique_values": 3,
+    "values": [
+      {
+        "value": "moderate",
+        "count": 171,
+        "percentage": "48.6"
+      },
+      {
+        "value": "relaxed",
+        "count": 165,
+        "percentage": "46.9"
+      },
+      {
+        "value": "fast",
+        "count": 16,
+        "percentage": "4.5"
+      }
+    ]
+  },
+  "social_atmosphere": {
+    "total_records": 80,
+    "unique_values": 4,
+    "values": [
+      {
+        "value": "friendly",
+        "count": 46,
+        "percentage": "57.5"
+      },
+      {
+        "value": "moderate",
+        "count": 21,
+        "percentage": "26.3"
+      },
+      {
+        "value": "vibrant",
+        "count": 9,
+        "percentage": "11.3"
+      },
+      {
+        "value": "quiet",
+        "count": 4,
+        "percentage": "5.0"
+      }
+    ]
+  },
+  "retirement_community_presence": {
+    "total_records": 352,
+    "unique_values": 7,
+    "values": [
+      {
+        "value": "minimal",
+        "count": 103,
+        "percentage": "29.3"
+      },
+      {
+        "value": "none",
+        "count": 99,
+        "percentage": "28.1"
+      },
+      {
+        "value": "moderate",
+        "count": 81,
+        "percentage": "23.0"
+      },
+      {
+        "value": "strong",
+        "count": 41,
+        "percentage": "11.6"
+      },
+      {
+        "value": "very_strong",
+        "count": 14,
+        "percentage": "4.0"
+      },
+      {
+        "value": "limited",
+        "count": 8,
+        "percentage": "2.3"
+      },
+      {
+        "value": "extensive",
+        "count": 6,
+        "percentage": "1.7"
+      }
+    ]
+  },
+  "expat_community_size": {
+    "total_records": 352,
+    "unique_values": 3,
+    "values": [
+      {
+        "value": "small",
+        "count": 216,
+        "percentage": "61.4"
+      },
+      {
+        "value": "moderate",
+        "count": 84,
+        "percentage": "23.9"
+      },
+      {
+        "value": "large",
+        "count": 52,
+        "percentage": "14.8"
+      }
+    ]
+  },
+  "cultural_events_frequency": {
+    "total_records": 56,
+    "unique_values": 3,
+    "values": [
+      {
+        "value": "monthly",
+        "count": 28,
+        "percentage": "50.0"
+      },
+      {
+        "value": "weekly",
+        "count": 27,
+        "percentage": "48.2"
+      },
+      {
+        "value": "daily",
+        "count": 1,
+        "percentage": "1.8"
+      }
+    ]
+  },
+  "traditional_progressive_lean": {
+    "total_records": 80,
+    "unique_values": 4,
+    "values": [
+      {
+        "value": "traditional",
+        "count": 37,
+        "percentage": "46.3"
+      },
+      {
+        "value": "balanced",
+        "count": 26,
+        "percentage": "32.5"
+      },
+      {
+        "value": "moderate",
+        "count": 11,
+        "percentage": "13.8"
+      },
+      {
+        "value": "progressive",
+        "count": 6,
+        "percentage": "7.5"
+      }
+    ]
+  },
+  "english_proficiency_level": {
+    "total_records": 352,
+    "unique_values": 5,
+    "values": [
+      {
+        "value": "moderate",
+        "count": 113,
+        "percentage": "32.1"
+      },
+      {
+        "value": "high",
+        "count": 88,
+        "percentage": "25.0"
+      },
+      {
+        "value": "native",
+        "count": 85,
+        "percentage": "24.1"
+      },
+      {
+        "value": "low",
+        "count": 65,
+        "percentage": "18.5"
+      },
+      {
+        "value": "widespread",
+        "count": 1,
+        "percentage": "0.3"
+      }
+    ]
+  },
+  "urban_rural_character": {
+    "total_records": 352,
+    "unique_values": 3,
+    "values": [
+      {
+        "value": "suburban",
+        "count": 153,
+        "percentage": "43.5"
+      },
+      {
+        "value": "rural",
+        "count": 115,
+        "percentage": "32.7"
+      },
+      {
+        "value": "urban",
+        "count": 84,
+        "percentage": "23.9"
+      }
+    ]
+  }
+}
