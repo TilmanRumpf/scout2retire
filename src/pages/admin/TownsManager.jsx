@@ -662,7 +662,7 @@ const TownsManager = () => {
         .filter(t => t.town_name && t.town_name.toLowerCase().startsWith(value.toLowerCase()))
         .map(t => ({
           town_name: t.town_name,
-          state_code: t.state_code || t.subdivision || '',
+          subdivision_code: t.subdivision_code || t.region || '',
           country: t.country,
           id: t.id
         }))
@@ -1500,9 +1500,9 @@ const TownsManager = () => {
                     >
                       <div className={uiConfig.colors.heading}>
                         {suggestion.town_name}
-                        {suggestion.state_code && (
+                        {suggestion.subdivision_code && (
                           <span className={`ml-1 ${uiConfig.colors.subtitle} text-xs`}>
-                            {suggestion.state_code}
+                            {suggestion.subdivision_code}
                           </span>
                         )}
                       </div>
