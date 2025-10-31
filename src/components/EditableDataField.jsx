@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import supabase from '../utils/supabaseClient';
-import { Check, X, Loader2, Edit2 } from 'lucide-react';
+import { Check, X, Loader2, Edit2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { researchFieldWithContext, hasAnthropicAPIKey } from '../utils/aiResearch';
 
 /**
  * EditableDataField - Inline editable field with database updates
@@ -38,6 +39,17 @@ const EditableDataField = ({
   const [expectedFormat, setExpectedFormat] = useState('');
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
   const [hasExistingTemplate, setHasExistingTemplate] = useState(false);
+
+  // AI Research state
+  const [aiResearching, setAiResearching] = useState(false);
+  const [aiRecommendation, setAiRecommendation] = useState(null);
+
+  // Template section collapse state (persisted in localStorage)
+  const [isTemplateExpanded, setIsTemplateExpanded] = useState(() => {
+    const saved = localStorage.getItem('editableField_templateExpanded');
+    return saved === 'true'; // Default: collapsed (false)
+  });
+
   const inputRef = useRef(null);
   const searchInputRef = useRef(null);
   const editInputRef = useRef(null);
@@ -396,6 +408,58 @@ const EditableDataField = ({
     setSaveAsTemplate(false);
     setSaveState('idle');
     setShowCombinedModal(true);
+  };
+
+  // AI-assisted research handler
+  const handleAIResearch = async () => {
+    if (!hasAnthropicAPIKey()) {
+      toast.error('Anthropic API key not configured. Check .env file.');
+      return;
+    }
+
+    setAiResearching(true);
+    setAiRecommendation(null);
+
+    try {
+      const result = await researchFieldWithContext({
+        townName,
+        subdivisionCode,
+        country: countryName,
+        townId,
+        fieldName: field,
+        searchQuery,
+        expectedFormat,
+        currentValue: editValue || ''
+      });
+
+      if (result.error) {
+        toast.error(`AI Research failed: ${result.error}`);
+      } else {
+        setAiRecommendation(result);
+        toast.success('AI recommendation ready!');
+      }
+    } catch (error) {
+      console.error('AI research error:', error);
+      toast.error('AI research failed. Try Google search instead.');
+    } finally {
+      setAiResearching(false);
+    }
+  };
+
+  // Accept AI recommendation and auto-fill the value
+  const handleAcceptRecommendation = () => {
+    if (aiRecommendation?.recommendedValue) {
+      setEditValue(aiRecommendation.recommendedValue);
+      setAiRecommendation(null);
+      toast.success('Value auto-filled! Review and save when ready.');
+    }
+  };
+
+  // Toggle template management section visibility
+  const toggleTemplateSection = () => {
+    const newState = !isTemplateExpanded;
+    setIsTemplateExpanded(newState);
+    localStorage.setItem('editableField_templateExpanded', String(newState));
   };
 
   // Execute the search (keep modal open)
@@ -954,16 +1018,97 @@ const EditableDataField = ({
                     </div>
                   )}
 
-                  <button
-                    onClick={executeSearch}
-                    className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 font-medium"
-                  >
-                    <span> Search Google</span>
-                  </button>
+                  {/* Two research buttons side-by-side */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Claude AI Research Button */}
+                    <button
+                      onClick={handleAIResearch}
+                      disabled={aiResearching}
+                      className="px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 font-medium shadow-md"
+                    >
+                      {aiResearching ? (
+                        <>
+                          <Loader2 size={18} className="animate-spin" />
+                          <span className="text-sm">Researching...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles size={18} />
+                          <span className="text-sm">Research</span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* Google Search Button */}
+                    <button
+                      onClick={executeSearch}
+                      className="px-4 py-3 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-2 border-blue-500 dark:border-blue-600 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 font-medium shadow-sm"
+                    >
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                      </svg>
+                      <span className="text-sm">Research</span>
+                    </button>
+                  </div>
 
                   <p className="text-xs text-gray-500 dark:text-gray-400 italic">
-                    Opens in popup window. Leave this modal open to enter data after searching.
+                    Claude AI learns from your database. Google opens in popup window.
                   </p>
+
+                  {/* AI Recommendation Section */}
+                  {aiRecommendation && (
+                    <div className="mt-3 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4 bg-blue-50/30 dark:bg-blue-900/10">
+                      <div className="flex items-start justify-between mb-2">
+                        <h5 className="text-sm font-bold text-blue-800 dark:text-blue-300 flex items-center gap-2">
+                          <Sparkles size={16} />
+                          AI Recommendation
+                        </h5>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          aiRecommendation.confidence === 'high'
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                            : aiRecommendation.confidence === 'medium'
+                            ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                            : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                        }`}>
+                          {aiRecommendation.confidence === 'high' ? '✓ High' : aiRecommendation.confidence === 'medium' ? '~ Medium' : '! Low'} Confidence
+                        </span>
+                      </div>
+
+                      <div className="bg-white dark:bg-gray-900/50 border border-blue-200 dark:border-blue-700 rounded p-3 mb-2">
+                        <div className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                          {aiRecommendation.recommendedValue}
+                        </div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">
+                          {aiRecommendation.reasoning}
+                        </div>
+                        {aiRecommendation.patternCount > 0 && (
+                          <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                            Based on {aiRecommendation.patternCount} similar towns
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleAcceptRecommendation}
+                          className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center justify-center gap-1"
+                        >
+                          <Check size={16} />
+                          Accept & Fill Below
+                        </button>
+                        <button
+                          onClick={() => setAiRecommendation(null)}
+                          className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-sm font-medium flex items-center justify-center gap-1"
+                        >
+                          <X size={16} />
+                          Discard
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1026,12 +1171,24 @@ const EditableDataField = ({
               {/* SECTION 3: Template Management (only visible for executive admins) - RED (Danger, affects ALL towns) */}
               {isExecutiveAdmin && (
                 <div className="border-2 border-red-200 dark:border-red-800 rounded-lg p-4 bg-red-50/30 dark:bg-red-900/10">
-                  <h4 className="text-sm font-bold text-red-800 dark:text-red-300 mb-3 flex items-center gap-2">
-                    <span className="bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span>
-                     Step 3: Manage Query Template
-                  </h4>
+                  <button
+                    onClick={toggleTemplateSection}
+                    className="w-full text-left text-sm font-bold text-red-800 dark:text-red-300 mb-3 flex items-center justify-between gap-2 hover:text-red-900 dark:hover:text-red-200 transition-colors group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span>
+                      <span>Step 3: Manage Query Template</span>
+                      <span className="text-xs font-normal text-red-600 dark:text-red-400">(Admin Only)</span>
+                    </div>
+                    {isTemplateExpanded ? (
+                      <ChevronUp size={20} className="text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300" />
+                    ) : (
+                      <ChevronDown size={20} className="text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300" />
+                    )}
+                  </button>
 
-                  <div className="space-y-2">
+                  {isTemplateExpanded && (
+                    <div className="space-y-2">
                     {hasExistingTemplate ? (
                       <>
                         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-2">
@@ -1157,7 +1314,8 @@ const EditableDataField = ({
                         </button>
                       </>
                     )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
