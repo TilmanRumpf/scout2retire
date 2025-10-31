@@ -228,10 +228,7 @@ export default function ActivitiesPanel({ town, onTownUpdate }) {
               value={town.farmers_markets}
               label="Farmers Markets"
               type="boolean"
-              description={`Whether the town has regular farmers markets (weekly/monthly). Include details in notes if available.
-
-SEARCH: Does {town_name}, {subdivision}, {country} have a farmers market? Expected: Yes or No
-EXPECTED: Yes or No`}
+              description="Whether the town has regular farmers markets (weekly/monthly). Include details in notes if available."
             />
             <EditableField
               field="marinas_count"

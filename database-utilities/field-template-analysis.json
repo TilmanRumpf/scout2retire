@@ -1,0 +1,922 @@
+{
+  "summary": {
+    "total": 107,
+    "no_template": 16,
+    "auto_generation": 67,
+    "custom_template": 24
+  },
+  "fields": {
+    "NO_TEMPLATE": [
+      {
+        "field": "climate_description",
+        "label": "Climate Description",
+        "type": "text",
+        "description": "General description of the climate",
+        "file": "ClimatePanel.jsx",
+        "reason": "Human-written narrative text"
+      },
+      {
+        "field": "healthcare_score",
+        "label": "Healthcare Score",
+        "type": "number",
+        "range": "1-10",
+        "description": "Overall healthcare quality score (1-10 scale)",
+        "file": "HealthcarePanel.jsx",
+        "reason": "Computed/calculated score"
+      },
+      {
+        "field": "healthcare_description",
+        "label": "Healthcare Description",
+        "type": "text",
+        "description": "General description of healthcare system and quality",
+        "file": "HealthcarePanel.jsx",
+        "reason": "Human-written narrative text"
+      },
+      {
+        "field": "infrastructure_description",
+        "label": "Infrastructure Description",
+        "type": "string",
+        "description": "Overall description of local infrastructure",
+        "file": "InfrastructurePanel.jsx",
+        "reason": "Human-written narrative text"
+      },
+      {
+        "field": "image_url_1",
+        "label": "Primary Photo URL",
+        "type": "string",
+        "description": "URL to the primary town photo (displayed in search results)",
+        "file": "OverviewPanel.jsx",
+        "reason": "Uploaded file"
+      },
+      {
+        "field": "image_url_2",
+        "label": "Secondary Photo URL",
+        "type": "string",
+        "description": "URL to the secondary town photo",
+        "file": "OverviewPanel.jsx",
+        "reason": "Uploaded file"
+      },
+      {
+        "field": "image_url_3",
+        "label": "Tertiary Photo URL",
+        "type": "string",
+        "description": "URL to the tertiary town photo",
+        "file": "OverviewPanel.jsx",
+        "reason": "Uploaded file"
+      },
+      {
+        "field": "description",
+        "label": "Short Description",
+        "type": "text",
+        "description": "Brief description of the town (used in search results and previews)",
+        "file": "OverviewPanel.jsx",
+        "reason": "Human-written narrative text"
+      },
+      {
+        "field": "verbose_description",
+        "label": "Verbose Description",
+        "type": "text",
+        "description": "Detailed description with more information about the town",
+        "file": "OverviewPanel.jsx",
+        "reason": "Human-written narrative text"
+      },
+      {
+        "field": "summary",
+        "label": "Summary",
+        "type": "text",
+        "description": "Quick summary highlighting key features",
+        "file": "OverviewPanel.jsx",
+        "reason": "Human-written narrative text"
+      },
+      {
+        "field": "appealStatement",
+        "label": "Appeal Statement",
+        "type": "text",
+        "description": "Statement describing what makes this town appealing for retirees",
+        "file": "OverviewPanel.jsx",
+        "reason": "Human-written narrative text"
+      },
+      {
+        "field": "latitude",
+        "label": "Latitude",
+        "type": "number",
+        "range": "-90 to 90",
+        "description": "Latitude coordinate",
+        "file": "RegionPanel.jsx",
+        "reason": "Auto-generated or geocoded"
+      },
+      {
+        "field": "longitude",
+        "label": "Longitude",
+        "type": "number",
+        "range": "-180 to 180",
+        "description": "Longitude coordinate",
+        "file": "RegionPanel.jsx",
+        "reason": "Auto-generated or geocoded"
+      },
+      {
+        "field": "safety_score",
+        "label": "Safety Score",
+        "type": "number",
+        "range": "1-10",
+        "description": "Overall safety score (1-10 scale)",
+        "file": "SafetyPanel.jsx",
+        "reason": "Computed/calculated score"
+      },
+      {
+        "field": "safety_description",
+        "label": "Safety Description",
+        "type": "text",
+        "description": "General description of safety conditions",
+        "file": "SafetyPanel.jsx",
+        "reason": "Human-written narrative text"
+      },
+      {
+        "field": "natural_disaster_risk_score",
+        "label": "Natural Disaster Risk Score",
+        "type": "number",
+        "range": "1-10",
+        "description": "Natural disaster risk score (1-10 scale, 1=lowest risk)",
+        "file": "SafetyPanel.jsx",
+        "reason": "Computed/calculated score"
+      }
+    ],
+    "AUTO_GENERATION": [
+      {
+        "field": "golf_courses_count",
+        "label": "Golf Courses Count",
+        "type": "number",
+        "range": "0-100",
+        "description": "Number of golf courses in the area",
+        "file": "ActivitiesPanel.jsx",
+        "reason": "Numeric count/distance - simple \"how many\" or \"how far\" query works"
+      },
+      {
+        "field": "tennis_courts_count",
+        "label": "Tennis Courts Count",
+        "type": "number",
+        "range": "0-200",
+        "description": "Number of tennis courts available",
+        "file": "ActivitiesPanel.jsx",
+        "reason": "Numeric count/distance - simple \"how many\" or \"how far\" query works"
+      },
+      {
+        "field": "dog_parks_count",
+        "label": "Dog Parks Count",
+        "type": "number",
+        "range": "0-50",
+        "description": "Number of dog parks and pet-friendly areas",
+        "file": "ActivitiesPanel.jsx",
+        "reason": "Numeric count/distance - simple \"how many\" or \"how far\" query works"
+      },
+      {
+        "field": "hiking_trails_km",
+        "label": "Hiking Trails (km)",
+        "type": "number",
+        "range": "0-10000",
+        "description": "Total kilometers of hiking trails accessible from town",
+        "file": "ActivitiesPanel.jsx",
+        "reason": "Numeric count/distance - simple \"how many\" or \"how far\" query works"
+      },
+      {
+        "field": "ski_resorts_within_100km",
+        "label": "Ski Resorts Within 100km",
+        "type": "number",
+        "range": "0-50",
+        "description": "Number of ski resorts within 100km radius",
+        "file": "ActivitiesPanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "outdoor_rating",
+        "label": "Outdoor Rating",
+        "type": "number",
+        "range": "1-10",
+        "description": "Overall outdoor activities rating (1-10 scale)",
+        "file": "ActivitiesPanel.jsx",
+        "reason": "Numeric rating/score with range - auto-gen adds range to query"
+      },
+      {
+        "field": "outdoor_activities_rating",
+        "label": "Outdoor Activities Rating",
+        "type": "number",
+        "range": "1-10",
+        "description": "Alternative outdoor activities rating (1-10 scale)",
+        "file": "ActivitiesPanel.jsx",
+        "reason": "Numeric rating/score with range - auto-gen adds range to query"
+      },
+      {
+        "field": "beaches_nearby",
+        "label": "Beaches Nearby",
+        "type": "boolean",
+        "description": "Whether there are beaches within reasonable distance",
+        "file": "ActivitiesPanel.jsx",
+        "reason": "Boolean field - simple yes/no query works"
+      },
+      {
+        "field": "farmers_markets",
+        "label": "Farmers Markets",
+        "type": "boolean",
+        "description": "Whether the town has regular farmers markets (weekly/monthly). Include details in notes if available.",
+        "file": "ActivitiesPanel.jsx",
+        "reason": "Boolean field - simple yes/no query works"
+      },
+      {
+        "field": "marinas_count",
+        "label": "Marinas Count",
+        "type": "number",
+        "range": "0-50",
+        "description": "Number of marinas in the area",
+        "file": "ActivitiesPanel.jsx",
+        "reason": "Numeric count/distance - simple \"how many\" or \"how far\" query works"
+      },
+      {
+        "field": "coworking_spaces_count",
+        "label": "Coworking Spaces Count",
+        "type": "number",
+        "range": "0-100",
+        "description": "Number of coworking spaces available for remote workers",
+        "file": "ActivitiesPanel.jsx",
+        "reason": "Numeric count/distance - simple \"how many\" or \"how far\" query works"
+      },
+      {
+        "field": "veterinary_clinics_count",
+        "label": "Veterinary Clinics Count",
+        "type": "number",
+        "range": "0-50",
+        "description": "Number of veterinary clinics for pet care",
+        "file": "ActivitiesPanel.jsx",
+        "reason": "Numeric count/distance - simple \"how many\" or \"how far\" query works"
+      },
+      {
+        "field": "international_schools_count",
+        "label": "International Schools Count",
+        "type": "number",
+        "range": "0-50",
+        "description": "Number of international schools (English-language or multi-lingual)",
+        "file": "ActivitiesPanel.jsx",
+        "reason": "Numeric count/distance - simple \"how many\" or \"how far\" query works"
+      },
+      {
+        "field": "avg_temp_summer",
+        "label": "Average Summer Temperature (°C)",
+        "type": "number",
+        "range": "-50 to 50",
+        "description": "Average temperature during summer months in Celsius",
+        "file": "ClimatePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "avg_temp_winter",
+        "label": "Average Winter Temperature (°C)",
+        "type": "number",
+        "range": "-50 to 30",
+        "description": "Average temperature during winter months in Celsius",
+        "file": "ClimatePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "sunshine_hours",
+        "label": "Annual Sunshine Hours",
+        "type": "number",
+        "range": "0-4500",
+        "description": "Total sunshine hours per year",
+        "file": "ClimatePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "annual_rainfall",
+        "label": "Annual Rainfall (mm)",
+        "type": "number",
+        "range": "0-10000",
+        "description": "Total annual rainfall in millimeters",
+        "file": "ClimatePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "humidity_average",
+        "label": "Average Humidity (%)",
+        "type": "number",
+        "range": "0-100",
+        "description": "Average humidity percentage",
+        "file": "ClimatePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "air_quality_index",
+        "label": "Air Quality Index",
+        "type": "number",
+        "range": "0-500",
+        "description": "Air quality index (0-50: Excellent, 51-100: Good, 101-150: Moderate, 151+: Poor)",
+        "file": "ClimatePanel.jsx",
+        "reason": "Numeric rating/score with range - auto-gen adds range to query"
+      },
+      {
+        "field": "natural_disaster_risk",
+        "label": "Natural Disaster Risk",
+        "type": "number",
+        "range": "1-10",
+        "description": "Risk level for natural disasters (1=Very Low, 10=Very High)",
+        "file": "ClimatePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "environmental_health_rating",
+        "label": "Environmental Health Rating",
+        "type": "number",
+        "range": "0-10",
+        "description": "Overall environmental health score (0-10 scale)",
+        "file": "ClimatePanel.jsx",
+        "reason": "Numeric rating/score with range - auto-gen adds range to query"
+      },
+      {
+        "field": "cost_of_living_usd",
+        "label": "Cost of Living (USD)",
+        "type": "number",
+        "range": "0-10000",
+        "description": "Overall cost of living in USD per month",
+        "file": "CostsPanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "typical_monthly_living_cost",
+        "label": "Typical Monthly Living Cost",
+        "type": "number",
+        "range": "0-10000",
+        "description": "Typical monthly expenses in local currency",
+        "file": "CostsPanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "rent_1bed",
+        "label": "Rent - 1 Bedroom",
+        "type": "number",
+        "range": "0-10000",
+        "description": "Monthly rent for 1-bedroom apartment in city center",
+        "file": "CostsPanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "utilities_cost",
+        "label": "Utilities Cost",
+        "type": "number",
+        "range": "0-500",
+        "description": "Monthly utilities (electricity, water, gas, internet)",
+        "file": "CostsPanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "groceries_cost",
+        "label": "Groceries Cost (USD)",
+        "type": "number",
+        "range": "0-2000",
+        "description": "Typical monthly groceries cost in USD",
+        "file": "CostsPanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "meal_cost",
+        "label": "Average Meal Cost (USD)",
+        "type": "number",
+        "range": "0-100",
+        "description": "Average cost of a meal at a restaurant in USD",
+        "file": "CostsPanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "tax_haven_status",
+        "label": "Tax Haven Status",
+        "type": "boolean",
+        "description": "Whether the location is considered a tax haven",
+        "file": "CostsPanel.jsx",
+        "reason": "Boolean field - simple yes/no query works"
+      },
+      {
+        "field": "foreign_income_taxed",
+        "label": "Foreign Income Taxed",
+        "type": "boolean",
+        "description": "Whether foreign income is subject to local taxation",
+        "file": "CostsPanel.jsx",
+        "reason": "Boolean field - simple yes/no query works"
+      },
+      {
+        "field": "social_atmosphere",
+        "label": "Social Atmosphere",
+        "type": "select",
+        "description": "How social and welcoming the community is",
+        "file": "CulturePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "traditional_progressive_lean",
+        "label": "Traditional vs Progressive",
+        "type": "select",
+        "description": "Cultural attitude towards tradition vs progress",
+        "file": "CulturePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "expat_community_size",
+        "label": "Expat Community Size",
+        "type": "select",
+        "description": "Size of the expatriate community",
+        "file": "CulturePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "retirement_community_presence",
+        "label": "Retirement Community Presence",
+        "type": "select",
+        "description": "Presence of retirement-focused communities",
+        "file": "CulturePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "cultural_events_frequency",
+        "label": "Cultural Events Frequency",
+        "type": "select",
+        "description": "How often cultural events and festivals occur",
+        "file": "CulturePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "cultural_events_rating",
+        "label": "Cultural Events Rating",
+        "type": "number",
+        "range": "1-10",
+        "description": "Quality and frequency of cultural events (1-10 scale)",
+        "file": "CulturePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "nightlife_rating",
+        "label": "Nightlife Rating",
+        "type": "number",
+        "range": "1-10",
+        "description": "Quality and variety of nightlife options (1-10 scale)",
+        "file": "CulturePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "restaurants_rating",
+        "label": "Restaurants Rating",
+        "type": "number",
+        "range": "1-10",
+        "description": "Quality and variety of dining options (1-10 scale)",
+        "file": "CulturePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "museums_rating",
+        "label": "Museums Rating",
+        "type": "number",
+        "range": "1-10",
+        "description": "Quality and variety of museums and galleries (1-10 scale)",
+        "file": "CulturePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "shopping_rating",
+        "label": "Shopping Rating",
+        "type": "number",
+        "range": "1-10",
+        "description": "Quality and variety of shopping options (1-10 scale)",
+        "file": "CulturePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "outdoor_rating",
+        "label": "Outdoor Activities Rating",
+        "type": "number",
+        "range": "1-10",
+        "description": "Quality and variety of outdoor activities (1-10 scale)",
+        "file": "CulturePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "environmental_health_rating",
+        "label": "Environmental Health Rating",
+        "type": "number",
+        "range": "1-10",
+        "description": "Environmental health factors rating (1-10 scale)",
+        "file": "HealthcarePanel.jsx",
+        "reason": "Numeric rating/score with range - auto-gen adds range to query"
+      },
+      {
+        "field": "hospital_count",
+        "label": "Hospital Count",
+        "type": "number",
+        "description": "Number of hospitals in the area",
+        "file": "HealthcarePanel.jsx",
+        "reason": "Numeric count/distance - simple \"how many\" or \"how far\" query works"
+      },
+      {
+        "field": "nearest_major_hospital_km",
+        "label": "Nearest Major Hospital (km)",
+        "type": "number",
+        "description": "Distance to nearest major hospital in kilometers",
+        "file": "HealthcarePanel.jsx",
+        "reason": "Numeric count/distance - simple \"how many\" or \"how far\" query works"
+      },
+      {
+        "field": "emergency_services_quality",
+        "label": "Emergency Services Quality",
+        "type": "select",
+        "description": "Quality of emergency medical services",
+        "file": "HealthcarePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "english_speaking_doctors",
+        "label": "English Speaking Doctors",
+        "type": "select",
+        "description": "Availability of English-speaking medical professionals",
+        "file": "HealthcarePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "healthcare_cost",
+        "label": "Healthcare Cost",
+        "type": "select",
+        "description": "General healthcare cost level",
+        "file": "HealthcarePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "healthcare_cost_monthly",
+        "label": "Healthcare Cost Monthly (USD)",
+        "type": "number",
+        "description": "Average monthly healthcare cost in USD",
+        "file": "HealthcarePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "private_healthcare_cost_index",
+        "label": "Private Healthcare Cost Index",
+        "type": "number",
+        "description": "Cost index for private healthcare (100 = baseline)",
+        "file": "HealthcarePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "insurance_availability_rating",
+        "label": "Insurance Availability Rating",
+        "type": "number",
+        "range": "1-10",
+        "description": "How easily accessible health insurance is (1-10 scale)",
+        "file": "HealthcarePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "health_insurance_required",
+        "label": "Health Insurance Required",
+        "type": "boolean",
+        "description": "Whether health insurance is mandatory",
+        "file": "HealthcarePanel.jsx",
+        "reason": "Boolean field - simple yes/no query works"
+      },
+      {
+        "field": "internet_speed",
+        "label": "Internet Speed (Mbps)",
+        "type": "number",
+        "range": "1-1000",
+        "description": "Average internet download speed in Mbps",
+        "file": "InfrastructurePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "coworking_spaces_count",
+        "label": "Coworking Spaces Count",
+        "type": "number",
+        "range": "0-100",
+        "description": "Number of coworking spaces available",
+        "file": "InfrastructurePanel.jsx",
+        "reason": "Numeric count/distance - simple \"how many\" or \"how far\" query works"
+      },
+      {
+        "field": "digital_nomad_visa",
+        "label": "Digital Nomad Visa Available",
+        "type": "boolean",
+        "description": "Whether the country offers a digital nomad visa",
+        "file": "InfrastructurePanel.jsx",
+        "reason": "Boolean field - simple yes/no query works"
+      },
+      {
+        "field": "public_transport_quality",
+        "label": "Public Transport Quality",
+        "type": "number",
+        "range": "1-5",
+        "description": "Overall quality of public transportation (1=very poor, 5=excellent)",
+        "file": "InfrastructurePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "airport_distance",
+        "label": "Airport Distance (km)",
+        "type": "string",
+        "description": "Distance to nearest airport (e.g., '40' or '40-60')",
+        "file": "InfrastructurePanel.jsx",
+        "reason": "Numeric count/distance - simple \"how many\" or \"how far\" query works"
+      },
+      {
+        "field": "international_airport_distance",
+        "label": "International Airport Distance (km)",
+        "type": "string",
+        "description": "Distance to nearest international airport",
+        "file": "InfrastructurePanel.jsx",
+        "reason": "Numeric count/distance - simple \"how many\" or \"how far\" query works"
+      },
+      {
+        "field": "regional_airport_distance",
+        "label": "Regional Airport Distance (km)",
+        "type": "string",
+        "description": "Distance to nearest regional/domestic airport",
+        "file": "InfrastructurePanel.jsx",
+        "reason": "Numeric count/distance - simple \"how many\" or \"how far\" query works"
+      },
+      {
+        "field": "walkability",
+        "label": "Walkability Score",
+        "type": "number",
+        "range": "1-10",
+        "description": "Walkability rating (1=car dependent, 10=very walkable)",
+        "file": "InfrastructurePanel.jsx",
+        "reason": "Numeric rating/score with range - auto-gen adds range to query"
+      },
+      {
+        "field": "government_efficiency_rating",
+        "label": "Government Efficiency Rating",
+        "type": "number",
+        "range": "1-100",
+        "description": "Efficiency of government services and bureaucracy (1-100 scale)",
+        "file": "InfrastructurePanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "regions",
+        "label": "Regions (multiple)",
+        "type": "array",
+        "description": "Multiple region classifications if applicable",
+        "file": "RegionPanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "geo_region",
+        "label": "Geographic Region",
+        "type": "array",
+        "description": "Geographic regions (e.g., Mediterranean, Caribbean)",
+        "file": "RegionPanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "elevation_meters",
+        "label": "Elevation (meters)",
+        "type": "number",
+        "range": "0-9000",
+        "description": "Elevation above sea level in meters",
+        "file": "RegionPanel.jsx",
+        "reason": "Simple factual number"
+      },
+      {
+        "field": "population",
+        "label": "Population",
+        "type": "number",
+        "range": "0-50000000",
+        "description": "Town/city population",
+        "file": "RegionPanel.jsx",
+        "reason": "Simple factual number"
+      },
+      {
+        "field": "urban_rural_character",
+        "label": "Urban/Rural Character",
+        "type": "select",
+        "description": "Character of the area: rural, suburban, or urban",
+        "file": "RegionPanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "crime_rate",
+        "label": "Crime Rate",
+        "type": "select",
+        "description": "Overall crime rate level",
+        "file": "SafetyPanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      },
+      {
+        "field": "political_stability_rating",
+        "label": "Political Stability Rating",
+        "type": "number",
+        "range": "1-10",
+        "description": "Political stability and governance rating (1-10 scale)",
+        "file": "SafetyPanel.jsx",
+        "reason": "Numeric rating/score with range - auto-gen adds range to query"
+      },
+      {
+        "field": "natural_disaster_risk",
+        "label": "Natural Disaster Risk",
+        "type": "select",
+        "description": "Overall natural disaster risk level",
+        "file": "SafetyPanel.jsx",
+        "reason": "Simple field type - auto-generation should work"
+      }
+    ],
+    "CUSTOM_TEMPLATE": [
+      {
+        "field": "water_bodies",
+        "label": "Water Bodies",
+        "type": "string",
+        "description": "Names of nearby water bodies (oceans, lakes, rivers)",
+        "file": "ActivitiesPanel.jsx",
+        "reason": "Text field - may need specific Expected format"
+      },
+      {
+        "field": "activities_available",
+        "label": "Activities Available",
+        "type": "text",
+        "description": "Comma-separated list of available activities in the area",
+        "file": "ActivitiesPanel.jsx",
+        "reason": "List/array field - needs specific format guidance"
+      },
+      {
+        "field": "summer_climate_actual",
+        "label": "Summer Climate",
+        "type": "select",
+        "description": "Summer climate conditions",
+        "file": "ClimatePanel.jsx",
+        "reason": "Categorical field with specific valid values - needs Expected format"
+      },
+      {
+        "field": "winter_climate_actual",
+        "label": "Winter Climate",
+        "type": "select",
+        "description": "Winter climate conditions",
+        "file": "ClimatePanel.jsx",
+        "reason": "Categorical field with specific valid values - needs Expected format"
+      },
+      {
+        "field": "sunshine_level_actual",
+        "label": "Sunshine Level",
+        "type": "select",
+        "description": "Amount of sunshine throughout the year",
+        "file": "ClimatePanel.jsx",
+        "reason": "Categorical field with specific valid values - needs Expected format"
+      },
+      {
+        "field": "precipitation_level_actual",
+        "label": "Precipitation Level",
+        "type": "select",
+        "description": "Amount of rainfall/precipitation",
+        "file": "ClimatePanel.jsx",
+        "reason": "Categorical field with specific valid values - needs Expected format"
+      },
+      {
+        "field": "seasonal_variation_actual",
+        "label": "Seasonal Variation",
+        "type": "select",
+        "description": "How much climate varies between seasons",
+        "file": "ClimatePanel.jsx",
+        "reason": "Categorical field with specific valid values - needs Expected format"
+      },
+      {
+        "field": "humidity_level_actual",
+        "label": "Humidity Level",
+        "type": "select",
+        "description": "General humidity level throughout the year",
+        "file": "ClimatePanel.jsx",
+        "reason": "Categorical field with specific valid values - needs Expected format"
+      },
+      {
+        "field": "income_tax_rate_pct",
+        "label": "Income Tax Rate (%)",
+        "type": "number",
+        "range": "0-100",
+        "description": "Personal income tax rate percentage",
+        "file": "CostsPanel.jsx",
+        "reason": "Complex legal/administrative info - needs specific query format"
+      },
+      {
+        "field": "property_tax_rate_pct",
+        "label": "Property Tax Rate (%)",
+        "type": "number",
+        "range": "0-10",
+        "description": "Property tax rate percentage (annual)",
+        "file": "CostsPanel.jsx",
+        "reason": "Complex legal/administrative info - needs specific query format"
+      },
+      {
+        "field": "sales_tax_rate_pct",
+        "label": "Sales Tax Rate (%)",
+        "type": "number",
+        "range": "0-30",
+        "description": "Sales/VAT tax rate percentage",
+        "file": "CostsPanel.jsx",
+        "reason": "Complex legal/administrative info - needs specific query format"
+      },
+      {
+        "field": "primary_language",
+        "label": "Primary Language",
+        "type": "string",
+        "description": "Main language spoken in the area",
+        "file": "CulturePanel.jsx",
+        "reason": "Text field - may need specific Expected format"
+      },
+      {
+        "field": "english_proficiency_level",
+        "label": "English Proficiency Level",
+        "type": "select",
+        "description": "How widely English is spoken",
+        "file": "CulturePanel.jsx",
+        "reason": "Categorical field with specific valid values - needs Expected format"
+      },
+      {
+        "field": "pace_of_life_actual",
+        "label": "Pace of Life",
+        "type": "select",
+        "description": "General pace of daily life",
+        "file": "CulturePanel.jsx",
+        "reason": "Categorical field with specific valid values - needs Expected format"
+      },
+      {
+        "field": "cultural_landmark_1",
+        "label": "Cultural Landmark 1",
+        "type": "string",
+        "description": "First notable cultural landmark or attraction",
+        "file": "CulturePanel.jsx",
+        "reason": "Text field - may need specific Expected format"
+      },
+      {
+        "field": "cultural_landmark_2",
+        "label": "Cultural Landmark 2",
+        "type": "string",
+        "description": "Second notable cultural landmark or attraction",
+        "file": "CulturePanel.jsx",
+        "reason": "Text field - may need specific Expected format"
+      },
+      {
+        "field": "cultural_landmark_3",
+        "label": "Cultural Landmark 3",
+        "type": "string",
+        "description": "Third notable cultural landmark or attraction",
+        "file": "CulturePanel.jsx",
+        "reason": "Text field - may need specific Expected format"
+      },
+      {
+        "field": "medical_specialties_rating",
+        "label": "Medical Specialties Rating",
+        "type": "number",
+        "range": "1-10",
+        "description": "Quality and availability of medical specialists (1-10 scale)",
+        "file": "HealthcarePanel.jsx",
+        "reason": "List/array field - needs specific format guidance"
+      },
+      {
+        "field": "medical_specialties_available",
+        "label": "Medical Specialties Available",
+        "type": "text",
+        "description": "List of available medical specialties (comma-separated)",
+        "file": "HealthcarePanel.jsx",
+        "reason": "List/array field - needs specific format guidance"
+      },
+      {
+        "field": "healthcare_specialties_available",
+        "label": "Healthcare Specialties Available",
+        "type": "text",
+        "description": "Specific healthcare specialties in the area",
+        "file": "HealthcarePanel.jsx",
+        "reason": "List/array field - needs specific format guidance"
+      },
+      {
+        "field": "country",
+        "label": "Country",
+        "type": "string",
+        "description": "Country where the town is located",
+        "file": "RegionPanel.jsx",
+        "reason": "Text field - may need specific Expected format"
+      },
+      {
+        "field": "region",
+        "label": "State/Province/Region",
+        "type": "string",
+        "description": "State/Province/Region name (e.g., Florida, Ontario, Cornwall) - used for display formatting",
+        "file": "RegionPanel.jsx",
+        "reason": "Text field - may need specific Expected format"
+      },
+      {
+        "field": "geographic_features_actual",
+        "label": "Geographic Features",
+        "type": "array",
+        "description": "",
+        "file": "RegionPanel.jsx",
+        "reason": "Categorical field with specific valid values - needs Expected format"
+      },
+      {
+        "field": "vegetation_type_actual",
+        "label": "Vegetation Type",
+        "type": "array",
+        "description": "",
+        "file": "RegionPanel.jsx",
+        "reason": "Categorical field with specific valid values - needs Expected format"
+      }
+    ]
+  }
+}

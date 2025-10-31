@@ -60,28 +60,40 @@ const EditableDataField = ({
     };
   };
 
-  // Load saved query templates from localStorage (FALLBACK)
-  const getQueryTemplate = (fieldName) => {
-    try {
-      const templates = JSON.parse(localStorage.getItem('searchQueryTemplates') || '{}');
-      return templates[fieldName] || null;
-    } catch {
-      return null;
-    }
-  };
+  // Load templates from database (replaced localStorage)
+  const [dbTemplates, setDbTemplates] = useState({});
+  const [templatesLoaded, setTemplatesLoaded] = useState(false);
 
-  // Save query template to localStorage
-  const saveQueryTemplate = (fieldName, template) => {
-    try {
-      const templates = JSON.parse(localStorage.getItem('searchQueryTemplates') || '{}');
-      templates[fieldName] = template;
-      localStorage.setItem('searchQueryTemplates', JSON.stringify(templates));
-      toast.success(`Query template saved for ${label}!`);
-    } catch (error) {
-      console.error('Error saving template:', error);
-      toast.error('Failed to save query template');
+  // Load all templates on component mount
+  useEffect(() => {
+    async function loadTemplates() {
+      try {
+        const { data, error } = await supabase
+          .from('field_search_templates')
+          .select('field_name, search_template, expected_format, human_description')
+          .eq('status', 'active');
+
+        if (error) {
+          console.error('Error loading templates:', error);
+          return;
+        }
+
+        // Convert array to object for easy lookup
+        const templatesMap = {};
+        data?.forEach(t => {
+          templatesMap[t.field_name] = t;
+        });
+        setDbTemplates(templatesMap);
+        setTemplatesLoaded(true);
+      } catch (err) {
+        console.error('Error loading templates:', err);
+      }
     }
-  };
+
+    if (!templatesLoaded) {
+      loadTemplates();
+    }
+  }, [templatesLoaded]);
 
   // Update editValue when value prop changes
   useEffect(() => {
@@ -201,8 +213,12 @@ const EditableDataField = ({
     const labelLower = label.toLowerCase();
     let query = '';
 
-    // Location format: "Town, Country" (with comma for better Google parsing)
-    const location = `${townName}, ${countryName}`;
+    // Location format: "Town, Subdivision, Country" (with subdivision for disambiguation)
+    // Critical: Many towns have duplicate names (e.g., 3+ Springfields in USA)
+    // Smart deduplication: Skip subdivision if it's the same as town name (e.g., "Abu Dhabi, Abu Dhabi")
+    const location = subdivisionCode && subdivisionCode.toLowerCase() !== townName.toLowerCase()
+      ? `${townName}, ${subdivisionCode}, ${countryName}`
+      : `${townName}, ${countryName}`;
 
     // Distance fields - "how far is..." format
     if (labelLower.includes('distance')) {
@@ -269,6 +285,27 @@ const EditableDataField = ({
     else if (labelLower.includes('quality')) {
       query = `what is the ${label.toLowerCase()} in ${location}?`;
     }
+    // Description fields - special handling for better research queries
+    else if (field === 'description') {
+      query = `What makes ${location} special? What is it known for? Write a brief 2-3 sentence description.`;
+    }
+    else if (field === 'verbose_description') {
+      query = `Tell me about ${location}. What are the key features, attractions, and characteristics that define this place?`;
+    }
+    else if (field === 'summary') {
+      query = `Summarize the key highlights of ${location} - what should people know about living here?`;
+    }
+    else if (field === 'appealStatement' || labelLower.includes('appeal')) {
+      query = `What makes ${location} appealing for retirees? What are the main selling points?`;
+    }
+    else if (labelLower.includes('description')) {
+      query = `Describe ${location} - what are the key features and characteristics?`;
+    }
+    // Climate/Safety description fields
+    else if (field.includes('_description')) {
+      const category = field.replace('_description', '').replace('_', ' ');
+      query = `Describe the ${category} in ${location}`;
+    }
     // Default - "what is..." format
     else {
       query = `what is ${location} ${label.toLowerCase()}?`;
@@ -296,11 +333,12 @@ const EditableDataField = ({
         .replace(/\{region\}/g, subdivisionCode || '');
       hasTemplate = true;
     }
-    // PRIORITY 2: localStorage template (FALLBACK)
+    // PRIORITY 2: Database template (from field_search_templates table)
     else {
-      const savedTemplate = getQueryTemplate(field);
-      if (savedTemplate) {
-        suggestedQuery = savedTemplate
+      const dbTemplate = dbTemplates[field];
+      if (dbTemplate) {
+        // Reconstruct full query with expected format
+        const baseQuery = dbTemplate.search_template
           .replace(/\{town_name\}/g, townName)
           .replace(/\{town\}/g, townName)
           .replace(/\{subdivision\}/g, subdivisionCode || '')
@@ -308,15 +346,40 @@ const EditableDataField = ({
           .replace(/\{state\}/g, subdivisionCode || '')
           .replace(/\{region\}/g, subdivisionCode || '')
           .replace(/\{country\}/g, countryName);
+
+        // Add expected format to query
+        suggestedQuery = dbTemplate.expected_format
+          ? `${baseQuery} Expected: ${dbTemplate.expected_format}`
+          : baseQuery;
         hasTemplate = true;
       }
       // PRIORITY 3: Auto-generated query with expected format
       else {
         const baseQuery = generateSmartQuery();
-        // Add expected format to the query
-        const defaultExpected = type === 'boolean' ? 'Yes or No'
-                              : type === 'number' && range ? range
-                              : 'Appropriate value';
+        // Add expected format to the query with CRITICAL character limits for text fields
+        let defaultExpected;
+
+        if (type === 'boolean') {
+          defaultExpected = 'Yes or No';
+        } else if (type === 'number' && range) {
+          defaultExpected = range;
+        } else if (field === 'description') {
+          // UI breaks if description exceeds ~750 characters
+          defaultExpected = '750 characters max';
+        } else if (field === 'verbose_description') {
+          defaultExpected = '2000 characters max';
+        } else if (field === 'summary') {
+          defaultExpected = '300 characters max';
+        } else if (field === 'appealStatement') {
+          defaultExpected = '500 characters max';
+        } else if (field.includes('_description')) {
+          defaultExpected = '500 characters max';
+        } else if (type === 'text' || type === 'string') {
+          defaultExpected = '300 characters max';
+        } else {
+          defaultExpected = 'Appropriate value';
+        }
+
         suggestedQuery = `${baseQuery} Expected: ${defaultExpected}`;
         hasTemplate = false;
       }
@@ -412,19 +475,32 @@ const EditableDataField = ({
   // Handle template save/update (for executive admins)
   const handleSaveTemplate = async () => {
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('You must be logged in to save templates');
+        return;
+      }
+
       // Replace actual values with placeholders
-      let template = searchQuery
+      // Template must be UNIVERSAL - always include {subdivision} even if current town doesn't use it
+      let template = searchQuery;
+
+      // First, replace town and country
+      template = template
         .replace(new RegExp(townName, 'gi'), '{town_name}')
         .replace(new RegExp(countryName, 'gi'), '{country}');
 
-      // Replace subdivision if present
-      if (subdivisionCode && subdivisionCode.trim()) {
+      // Then replace subdivision if it exists and is different from town name
+      if (subdivisionCode && subdivisionCode.trim() && subdivisionCode.toLowerCase() !== townName.toLowerCase()) {
         template = template.replace(new RegExp(subdivisionCode, 'gi'), '{subdivision}');
       }
 
-      // Parse current description to preserve human-readable part
-      const parsedDescription = parseDescriptionForSearch(description);
-      const humanPart = parsedDescription?.humanDescription || description || `Field: ${field}`;
+      // UNIVERSAL TEMPLATE: Ensure {subdivision} is always present between town and country
+      // Pattern: "{town_name}, {country}" should become "{town_name}, {subdivision}, {country}"
+      if (!template.includes('{subdivision}')) {
+        template = template.replace(/\{town_name\},\s*\{country\}/gi, '{town_name}, {subdivision}, {country}');
+      }
 
       // Extract expected format from template (if user included it in the query)
       const expectedMatch = template.match(/Expected:\s*(.+?)(?:\?|$)/i);
@@ -441,44 +517,44 @@ const EditableDataField = ({
         finalExpectedFormat = expectedFormat.trim() || 'Appropriate value';
       }
 
-      const newDescription = `${humanPart}
+      // Parse current description to preserve human-readable part
+      const parsedDescription = parseDescriptionForSearch(description);
+      const humanPart = parsedDescription?.humanDescription || description || `Field: ${field}`;
 
-SEARCH: ${cleanTemplate}
-EXPECTED: ${finalExpectedFormat}`;
-
-      // Try to update column description in Supabase
-      const { error } = await supabase.rpc('update_column_description', {
-        table_name: 'towns',
-        column_name: field,
-        new_description: newDescription
-      });
+      // Save directly to field_search_templates table
+      const { error } = await supabase
+        .from('field_search_templates')
+        .upsert({
+          field_name: field,
+          search_template: cleanTemplate,
+          expected_format: finalExpectedFormat,
+          human_description: humanPart,
+          status: 'active',
+          updated_by: user.id
+        }, {
+          onConflict: 'field_name'
+        });
 
       if (error) {
-        // RPC function doesn't exist yet - save to localStorage and show manual instructions
-        console.warn('RPC function not available, saving to localStorage only:', error);
-        saveQueryTemplate(field, template);
-        setHasExistingTemplate(true);
-
-        // Copy SQL command to clipboard
-        const sqlCommand = `COMMENT ON COLUMN public.towns.${field} IS $$ ${newDescription} $$;`;
-        navigator.clipboard.writeText(sqlCommand);
-
-        toast((t) => (
-          <div>
-            <p className="font-bold">✅ Template saved to localStorage!</p>
-            <p className="text-sm mt-1">To save to database (all towns):</p>
-            <p className="text-xs mt-1">SQL command copied to clipboard </p>
-            <p className="text-xs">Paste in Supabase SQL editor</p>
-          </div>
-        ), { duration: 8000 });
+        console.error('Error saving template:', error);
+        toast.error(`Failed to save template: ${error.message}`);
         return;
       }
 
-      setHasExistingTemplate(true);
-      toast.success(`✅ Template saved to database! All 343+ towns will use this search query for "${label}".`);
+      // Update local state to reflect new template
+      setDbTemplates(prev => ({
+        ...prev,
+        [field]: {
+          field_name: field,
+          search_template: cleanTemplate,
+          expected_format: finalExpectedFormat,
+          human_description: humanPart
+        }
+      }));
 
-      // Also save to localStorage as backup
-      saveQueryTemplate(field, template);
+      setHasExistingTemplate(true);
+      toast.success(`Template saved to database! All 343+ towns will use this search query for "${label}".`);
+
     } catch (error) {
       console.error('Error saving template:', error);
       toast.error('Failed to save template');
@@ -839,19 +915,17 @@ EXPECTED: ${finalExpectedFormat}`;
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Search Query <span className="text-gray-500">(editable)</span>
                     </label>
-                    <input
+                    <textarea
                       ref={searchInputRef}
-                      type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          executeSearch();
-                        } else if (e.key === 'Escape') {
+                        if (e.key === 'Escape') {
                           setShowCombinedModal(false);
                         }
                       }}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      rows={3}
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-y"
                       placeholder="Edit search query..."
                     />
                   </div>
@@ -966,11 +1040,18 @@ EXPECTED: ${finalExpectedFormat}`;
                           </div>
                           <div className="font-mono text-xs text-red-800 dark:text-red-200 bg-white dark:bg-gray-900/50 p-2 rounded">
                             {(() => {
-                              let preview = searchQuery
+                              let preview = searchQuery;
+                              // Replace town and country first
+                              preview = preview
                                 .replace(new RegExp(townName, 'gi'), '{town_name}')
                                 .replace(new RegExp(countryName, 'gi'), '{country}');
-                              if (subdivisionCode && subdivisionCode.trim()) {
+                              // Replace subdivision if present and different
+                              if (subdivisionCode && subdivisionCode.trim() && subdivisionCode.toLowerCase() !== townName.toLowerCase()) {
                                 preview = preview.replace(new RegExp(subdivisionCode, 'gi'), '{subdivision}');
+                              }
+                              // UNIVERSAL: Always show {subdivision} in template
+                              if (!preview.includes('{subdivision}')) {
+                                preview = preview.replace(/\{town_name\},\s*\{country\}/gi, '{town_name}, {subdivision}, {country}');
                               }
                               return preview;
                             })()}
@@ -1021,11 +1102,18 @@ EXPECTED: ${finalExpectedFormat}`;
                           </div>
                           <div className="font-mono text-xs text-red-800 dark:text-red-200 bg-white dark:bg-gray-900/50 p-2 rounded">
                             {(() => {
-                              let preview = searchQuery
+                              let preview = searchQuery;
+                              // Replace town and country first
+                              preview = preview
                                 .replace(new RegExp(townName, 'gi'), '{town_name}')
                                 .replace(new RegExp(countryName, 'gi'), '{country}');
-                              if (subdivisionCode && subdivisionCode.trim()) {
+                              // Replace subdivision if present and different
+                              if (subdivisionCode && subdivisionCode.trim() && subdivisionCode.toLowerCase() !== townName.toLowerCase()) {
                                 preview = preview.replace(new RegExp(subdivisionCode, 'gi'), '{subdivision}');
+                              }
+                              // UNIVERSAL: Always show {subdivision} in template
+                              if (!preview.includes('{subdivision}')) {
+                                preview = preview.replace(/\{town_name\},\s*\{country\}/gi, '{town_name}, {subdivision}, {country}');
                               }
                               return preview;
                             })()}

@@ -1,0 +1,325 @@
+{
+  "summary": {
+    "must_have_template": 18,
+    "can_use_auto_gen": 4,
+    "skip_entirely": 2,
+    "total_templates_to_create": 18
+  },
+  "templates_to_create": [
+    {
+      "field": "summer_climate_actual",
+      "label": "Summer Climate",
+      "type": "select",
+      "description": "Summer climate conditions",
+      "file": "ClimatePanel.jsx",
+      "reason": "Categorical field with specific valid values - needs Expected format",
+      "validValues": [
+        "cold",
+        "cool",
+        "mild",
+        "warm",
+        "hot"
+      ],
+      "expectedFormat": "cold | cool | mild | warm | hot",
+      "priority": "HIGH",
+      "reasoning": "Categorical field with 5 valid values - needs Expected format to guide Google searches"
+    },
+    {
+      "field": "winter_climate_actual",
+      "label": "Winter Climate",
+      "type": "select",
+      "description": "Winter climate conditions",
+      "file": "ClimatePanel.jsx",
+      "reason": "Categorical field with specific valid values - needs Expected format",
+      "validValues": [
+        "cold",
+        "cool",
+        "mild",
+        "warm",
+        "hot"
+      ],
+      "expectedFormat": "cold | cool | mild | warm | hot",
+      "priority": "HIGH",
+      "reasoning": "Categorical field with 5 valid values - needs Expected format to guide Google searches"
+    },
+    {
+      "field": "sunshine_level_actual",
+      "label": "Sunshine Level",
+      "type": "select",
+      "description": "Amount of sunshine throughout the year",
+      "file": "ClimatePanel.jsx",
+      "reason": "Categorical field with specific valid values - needs Expected format",
+      "validValues": [
+        "low",
+        "less_sunny",
+        "balanced",
+        "high",
+        "often_sunny"
+      ],
+      "expectedFormat": "low | less sunny | balanced | high | often sunny",
+      "priority": "HIGH",
+      "reasoning": "Categorical field with 5 valid values - needs Expected format to guide Google searches"
+    },
+    {
+      "field": "precipitation_level_actual",
+      "label": "Precipitation Level",
+      "type": "select",
+      "description": "Amount of rainfall/precipitation",
+      "file": "ClimatePanel.jsx",
+      "reason": "Categorical field with specific valid values - needs Expected format",
+      "validValues": [
+        "low",
+        "mostly_dry",
+        "balanced",
+        "high",
+        "less_dry"
+      ],
+      "expectedFormat": "low | mostly dry | balanced | high | less dry",
+      "priority": "HIGH",
+      "reasoning": "Categorical field with 5 valid values - needs Expected format to guide Google searches"
+    },
+    {
+      "field": "seasonal_variation_actual",
+      "label": "Seasonal Variation",
+      "type": "select",
+      "description": "How much climate varies between seasons",
+      "file": "ClimatePanel.jsx",
+      "reason": "Categorical field with specific valid values - needs Expected format",
+      "validValues": [
+        "low",
+        "minimal",
+        "moderate",
+        "distinct_seasons",
+        "high",
+        "extreme"
+      ],
+      "expectedFormat": "low | minimal | moderate | distinct seasons | high | extreme",
+      "priority": "HIGH",
+      "reasoning": "Categorical field with 6 valid values - needs Expected format to guide Google searches"
+    },
+    {
+      "field": "humidity_level_actual",
+      "label": "Humidity Level",
+      "type": "select",
+      "description": "General humidity level throughout the year",
+      "file": "ClimatePanel.jsx",
+      "reason": "Categorical field with specific valid values - needs Expected format",
+      "validValues": [
+        "dry",
+        "balanced",
+        "humid"
+      ],
+      "expectedFormat": "dry | balanced | humid",
+      "priority": "HIGH",
+      "reasoning": "Categorical field with 3 valid values - needs Expected format to guide Google searches"
+    },
+    {
+      "field": "income_tax_rate_pct",
+      "label": "Income Tax Rate (%)",
+      "type": "number",
+      "range": "0-100",
+      "description": "Personal income tax rate percentage",
+      "file": "CostsPanel.jsx",
+      "reason": "Complex legal/administrative info - needs specific query format",
+      "expectedFormat": "Percentage (e.g., 15%, 22%, 0%)",
+      "priority": "HIGH",
+      "reasoning": "Tax/legal field - complex queries need specific Expected format"
+    },
+    {
+      "field": "property_tax_rate_pct",
+      "label": "Property Tax Rate (%)",
+      "type": "number",
+      "range": "0-10",
+      "description": "Property tax rate percentage (annual)",
+      "file": "CostsPanel.jsx",
+      "reason": "Complex legal/administrative info - needs specific query format",
+      "expectedFormat": "Percentage (e.g., 15%, 22%, 0%)",
+      "priority": "HIGH",
+      "reasoning": "Tax/legal field - complex queries need specific Expected format"
+    },
+    {
+      "field": "sales_tax_rate_pct",
+      "label": "Sales Tax Rate (%)",
+      "type": "number",
+      "range": "0-30",
+      "description": "Sales/VAT tax rate percentage",
+      "file": "CostsPanel.jsx",
+      "reason": "Complex legal/administrative info - needs specific query format",
+      "expectedFormat": "Percentage (e.g., 15%, 22%, 0%)",
+      "priority": "HIGH",
+      "reasoning": "Tax/legal field - complex queries need specific Expected format"
+    },
+    {
+      "field": "english_proficiency_level",
+      "label": "English Proficiency Level",
+      "type": "select",
+      "description": "How widely English is spoken",
+      "file": "CulturePanel.jsx",
+      "reason": "Categorical field with specific valid values - needs Expected format",
+      "validValues": [
+        "low",
+        "moderate",
+        "high",
+        "very high",
+        "widespread",
+        "native"
+      ],
+      "expectedFormat": "low | moderate | high | very high | widespread | native",
+      "priority": "HIGH",
+      "reasoning": "Categorical field with 6 valid values - needs Expected format to guide Google searches"
+    },
+    {
+      "field": "pace_of_life_actual",
+      "label": "Pace of Life",
+      "type": "select",
+      "description": "General pace of daily life",
+      "file": "CulturePanel.jsx",
+      "reason": "Categorical field with specific valid values - needs Expected format",
+      "validValues": [
+        "slow",
+        "relaxed",
+        "moderate",
+        "fast"
+      ],
+      "expectedFormat": "slow | relaxed | moderate | fast",
+      "priority": "HIGH",
+      "reasoning": "Categorical field with 4 valid values - needs Expected format to guide Google searches"
+    },
+    {
+      "field": "medical_specialties_rating",
+      "label": "Medical Specialties Rating",
+      "type": "number",
+      "range": "1-10",
+      "description": "Quality and availability of medical specialists (1-10 scale)",
+      "file": "HealthcarePanel.jsx",
+      "reason": "List/array field - needs specific format guidance",
+      "expectedFormat": "Comma-separated list (e.g., Cardiology, Neurology, Orthopedics)",
+      "priority": "MEDIUM",
+      "reasoning": "List field - needs Expected format for consistency"
+    },
+    {
+      "field": "medical_specialties_available",
+      "label": "Medical Specialties Available",
+      "type": "text",
+      "description": "List of available medical specialties (comma-separated)",
+      "file": "HealthcarePanel.jsx",
+      "reason": "List/array field - needs specific format guidance",
+      "expectedFormat": "Comma-separated list (e.g., Cardiology, Neurology, Orthopedics)",
+      "priority": "MEDIUM",
+      "reasoning": "List field - needs Expected format for consistency"
+    },
+    {
+      "field": "healthcare_specialties_available",
+      "label": "Healthcare Specialties Available",
+      "type": "text",
+      "description": "Specific healthcare specialties in the area",
+      "file": "HealthcarePanel.jsx",
+      "reason": "List/array field - needs specific format guidance",
+      "expectedFormat": "Comma-separated list (e.g., Cardiology, Neurology, Orthopedics)",
+      "priority": "MEDIUM",
+      "reasoning": "List field - needs Expected format for consistency"
+    },
+    {
+      "field": "geographic_features_actual",
+      "label": "Geographic Features",
+      "type": "array",
+      "description": "",
+      "file": "RegionPanel.jsx",
+      "reason": "Categorical field with specific valid values - needs Expected format",
+      "expectedFormat": "Comma-separated list (e.g., coastal, mountainous, forested)",
+      "priority": "MEDIUM",
+      "reasoning": "Array field with multiple possible values - needs Expected format for consistency"
+    },
+    {
+      "field": "vegetation_type_actual",
+      "label": "Vegetation Type",
+      "type": "array",
+      "description": "",
+      "file": "RegionPanel.jsx",
+      "reason": "Categorical field with specific valid values - needs Expected format",
+      "expectedFormat": "Comma-separated list (e.g., coastal, mountainous, forested)",
+      "priority": "MEDIUM",
+      "reasoning": "Array field with multiple possible values - needs Expected format for consistency"
+    },
+    {
+      "field": "water_bodies",
+      "label": "Water Bodies",
+      "type": "string",
+      "description": "Names of nearby water bodies (oceans, lakes, rivers)",
+      "file": "ActivitiesPanel.jsx",
+      "reason": "Text field - may need specific Expected format",
+      "expectedFormat": "Comma-separated list",
+      "priority": "LOW",
+      "reasoning": "List field - benefits from Expected format but auto-gen might work"
+    },
+    {
+      "field": "activities_available",
+      "label": "Activities Available",
+      "type": "text",
+      "description": "Comma-separated list of available activities in the area",
+      "file": "ActivitiesPanel.jsx",
+      "reason": "List/array field - needs specific format guidance",
+      "expectedFormat": "Comma-separated list",
+      "priority": "LOW",
+      "reasoning": "List field - benefits from Expected format but auto-gen might work"
+    }
+  ],
+  "auto_generation_ok": [
+    {
+      "field": "primary_language",
+      "label": "Primary Language",
+      "type": "string",
+      "description": "Main language spoken in the area",
+      "file": "CulturePanel.jsx",
+      "reason": "Text field - may need specific Expected format",
+      "reasoning": "Simple factual query - \"what is the primary language spoken in X\" works fine"
+    },
+    {
+      "field": "cultural_landmark_1",
+      "label": "Cultural Landmark 1",
+      "type": "string",
+      "description": "First notable cultural landmark or attraction",
+      "file": "CulturePanel.jsx",
+      "reason": "Text field - may need specific Expected format",
+      "reasoning": "Simple text field - \"what is the most famous cultural landmark in X\" works fine"
+    },
+    {
+      "field": "cultural_landmark_2",
+      "label": "Cultural Landmark 2",
+      "type": "string",
+      "description": "Second notable cultural landmark or attraction",
+      "file": "CulturePanel.jsx",
+      "reason": "Text field - may need specific Expected format",
+      "reasoning": "Simple text field - \"what is the most famous cultural landmark in X\" works fine"
+    },
+    {
+      "field": "cultural_landmark_3",
+      "label": "Cultural Landmark 3",
+      "type": "string",
+      "description": "Third notable cultural landmark or attraction",
+      "file": "CulturePanel.jsx",
+      "reason": "Text field - may need specific Expected format",
+      "reasoning": "Simple text field - \"what is the most famous cultural landmark in X\" works fine"
+    }
+  ],
+  "skip": [
+    {
+      "field": "country",
+      "label": "Country",
+      "type": "string",
+      "description": "Country where the town is located",
+      "file": "RegionPanel.jsx",
+      "reason": "Text field - may need specific Expected format",
+      "reasoning": "Administrative field - already known from town selection, no Google search needed"
+    },
+    {
+      "field": "region",
+      "label": "State/Province/Region",
+      "type": "string",
+      "description": "State/Province/Region name (e.g., Florida, Ontario, Cornwall) - used for display formatting",
+      "file": "RegionPanel.jsx",
+      "reason": "Text field - may need specific Expected format",
+      "reasoning": "Administrative field - already known from town selection, no Google search needed"
+    }
+  ]
+}
