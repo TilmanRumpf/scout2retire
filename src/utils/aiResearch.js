@@ -3,83 +3,19 @@
  *
  * Intelligently researches town data by:
  * 1. Learning patterns from similar towns in YOUR database
- * 2. Using Claude API to research with learned context
+ * 2. Using Claude API to research with learned context (via secure Edge Function)
  * 3. Returning recommendations with reasoning
+ *
+ * SECURITY: All API calls go through Supabase Edge Function (server-side)
+ * Never exposes API keys to client
  */
 
-import Anthropic from '@anthropic-ai/sdk';
-import { supabase } from './supabaseClient';
-
-// Initialize Anthropic client
-const anthropic = new Anthropic({
-  apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
-  dangerouslyAllowBrowser: true // Required for client-side usage
-});
-
-/**
- * Query database for similar towns to learn data patterns
- * @param {string} fieldName - Field being researched
- * @param {string} country - Current town's country
- * @param {string} townId - Current town's ID (to exclude)
- * @returns {Promise<Array>} Similar towns with data for this field
- */
-async function getSimilarTownsPattern(fieldName, country, townId) {
-  try {
-    // Strategy 1: Same country with data
-    let { data: similarTowns } = await supabase
-      .from('towns')
-      .select(`id, name, country, ${fieldName}`)
-      .eq('country', country)
-      .not(fieldName, 'is', null)
-      .neq('id', townId)
-      .limit(5);
-
-    // Strategy 2: If <3 results, expand to all countries
-    if (!similarTowns || similarTowns.length < 3) {
-      const { data: allTowns } = await supabase
-        .from('towns')
-        .select(`id, name, country, ${fieldName}`)
-        .not(fieldName, 'is', null)
-        .neq('id', townId)
-        .limit(10);
-
-      similarTowns = allTowns || [];
-    }
-
-    return similarTowns || [];
-  } catch (error) {
-    console.error('Error fetching similar towns:', error);
-    return [];
-  }
-}
-
-/**
- * Analyze pattern from similar towns
- * @param {Array} similarTowns - Towns with data
- * @param {string} fieldName - Field name
- * @returns {string} Pattern analysis for AI
- */
-function analyzePattern(similarTowns, fieldName) {
-  if (!similarTowns || similarTowns.length === 0) {
-    return 'No examples found in database. Research freely following Expected Format.';
-  }
-
-  const examples = similarTowns
-    .filter(t => t[fieldName])
-    .map(t => `- ${t.name}, ${t.country}: "${t[fieldName]}"`);
-
-  return `Found ${examples.length} examples in our database:
-${examples.join('\n')}
-
-IMPORTANT: Study these examples carefully:
-- Count of items (if comma-separated)
-- Format and structure
-- Level of detail/granularity
-- Maintain consistency with these patterns`;
-}
+import supabase from './supabaseClient';
 
 /**
  * Main AI research function with database pattern learning
+ *
+ * Calls Supabase Edge Function for secure server-side API access
  *
  * @param {Object} params - Research parameters
  * @param {string} params.townName - Town name
@@ -103,81 +39,42 @@ export async function researchFieldWithContext({
   currentValue
 }) {
   try {
-    // Step 1: Learn from database
-    console.log(`🔍 Learning patterns for ${fieldName} from database...`);
-    const similarTowns = await getSimilarTownsPattern(fieldName, country, townId);
-    const patternAnalysis = analyzePattern(similarTowns, fieldName);
+    console.log(`🔍 Calling AI Research Edge Function for ${fieldName}...`);
 
-    // Step 2: Build AI prompt with context
-    const location = subdivisionCode && subdivisionCode.toLowerCase() !== townName.toLowerCase()
-      ? `${townName}, ${subdivisionCode}, ${country}`
-      : `${townName}, ${country}`;
-
-    const prompt = `You are a data research assistant for a retirement town database.
-
-RESEARCH TARGET:
-Town: ${location}
-Field: ${fieldName}
-Query: "${searchQuery}"
-Expected Format: "${expectedFormat}"
-Current Value: ${currentValue || '(empty)'}
-
-PATTERN LEARNING FROM DATABASE:
-${patternAnalysis}
-
-Task: ${currentValue
-  ? 'Improve or enhance the current value. Maintain consistency with database patterns. Explain what you added/changed and why.'
-  : 'Research and provide a value that matches the patterns from our database examples. If no pattern exists, follow the Expected Format.'
-}
-
-CRITICAL RULES:
-1. If improving existing value: Keep good parts, add missing details
-2. Match the granularity and format of database examples
-3. Be concise - follow Expected Format character limits
-4. If uncertain, indicate lower confidence
-
-Respond in JSON format only:
-{
-  "recommendedValue": "your researched answer here",
-  "reasoning": "explain what you learned from database patterns and what you researched",
-  "confidence": "high|medium|low",
-  "changes": {
-    "added": ["new item 1", "new item 2"],
-    "removed": ["removed item"],
-    "kept": ["existing item"]
-  }
-}`;
-
-    // Step 3: Call Claude API
-    console.log('🤖 Calling Claude Haiku API...');
-    const message = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 1024,
-      messages: [{
-        role: 'user',
-        content: prompt
-      }]
-    });
-
-    // Step 4: Parse response
-    const responseText = message.content[0].text;
-    console.log('📝 AI Response:', responseText);
-
-    // Extract JSON from response (handle markdown code blocks)
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('Could not parse JSON from AI response');
+    // Get current user session for authentication
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      throw new Error('Not authenticated. Please log in.');
     }
 
-    const result = JSON.parse(jsonMatch[0]);
+    // Call Supabase Edge Function (server-side secure API call)
+    const { data, error } = await supabase.functions.invoke('ai-research-field', {
+      body: {
+        townName,
+        subdivisionCode,
+        country,
+        townId,
+        fieldName,
+        searchQuery,
+        expectedFormat,
+        currentValue
+      }
+    });
+
+    if (error) {
+      console.error('Edge Function error:', error);
+      throw new Error(error.message || 'Failed to call AI research function');
+    }
+
+    console.log('✅ AI Research completed:', data);
 
     return {
-      recommendedValue: result.recommendedValue,
-      reasoning: result.reasoning,
-      confidence: result.confidence || 'medium',
-      changes: result.changes || { added: [], removed: [], kept: [] },
-      patternCount: similarTowns.length,
-      error: null
+      recommendedValue: data.recommendedValue,
+      reasoning: data.reasoning,
+      confidence: data.confidence || 'medium',
+      changes: data.changes || { added: [], removed: [], kept: [] },
+      patternCount: data.patternCount || 0,
+      error: data.error || null
     };
 
   } catch (error) {
@@ -196,10 +93,12 @@ Respond in JSON format only:
 
 /**
  * Validate Anthropic API key is configured
- * @returns {boolean} True if API key exists
+ * @returns {boolean} True (API key is configured server-side in Supabase Edge Function)
  */
 export function hasAnthropicAPIKey() {
-  return !!import.meta.env.VITE_ANTHROPIC_API_KEY;
+  // API key is now configured server-side in Supabase Edge Function
+  // No need to check client-side environment variables
+  return true;
 }
 
 /**
