@@ -11,7 +11,7 @@ import React, { useState, useEffect } from 'react';
 import EditableDataField from '../EditableDataField';
 import { checkAdminAccess } from '../../utils/paywallUtils';
 
-export default function OverviewPanel({ town, onTownUpdate }) {
+export default function OverviewPanel({ town, onTownUpdate, auditResults = {} }) {
   const [isExecutiveAdmin, setIsExecutiveAdmin] = useState(false);
 
   // Check if user is executive admin
@@ -35,6 +35,24 @@ export default function OverviewPanel({ town, onTownUpdate }) {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
+  // Helper function to get confidence indicator color
+  const getConfidenceColor = (field) => {
+    const confidence = auditResults[field] || 'unknown';
+    switch (confidence) {
+      case 'high':
+        return 'bg-green-500';
+      case 'limited':
+        return 'bg-yellow-500';
+      case 'low':
+        return 'bg-red-500';
+      case 'not_editable':
+        return 'bg-black';
+      case 'unknown':
+      default:
+        return 'bg-gray-300';
+    }
+  };
+
   // Helper component for editable fields
   const EditableField = ({ field, value, label, type = 'string', range, description }) => {
     return (
@@ -50,6 +68,7 @@ export default function OverviewPanel({ town, onTownUpdate }) {
         range={range}
         description={description}
         isExecutiveAdmin={isExecutiveAdmin}
+        confidence={auditResults[field] || 'unknown'}
         onUpdate={(field, newValue) => {
           if (onTownUpdate) {
             onTownUpdate(field, newValue);
@@ -99,6 +118,10 @@ export default function OverviewPanel({ town, onTownUpdate }) {
                     town_name
                   </div>
                 </div>
+                <div
+                  className={`w-3 h-3 rounded-full bg-black`}
+                  title="Non-editable field"
+                />
               </div>
               <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
                 <div className="text-sm font-bold text-gray-900 dark:text-gray-100">
@@ -118,6 +141,10 @@ export default function OverviewPanel({ town, onTownUpdate }) {
                     country
                   </div>
                 </div>
+                <div
+                  className={`w-3 h-3 rounded-full bg-black`}
+                  title="Non-editable field"
+                />
               </div>
               <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
                 <div className="text-sm text-gray-900 dark:text-gray-100">
@@ -137,6 +164,10 @@ export default function OverviewPanel({ town, onTownUpdate }) {
                     region
                   </div>
                 </div>
+                <div
+                  className={`w-3 h-3 rounded-full bg-black`}
+                  title="Non-editable field"
+                />
               </div>
               <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
                 <div className="text-sm text-gray-900 dark:text-gray-100">
@@ -156,6 +187,10 @@ export default function OverviewPanel({ town, onTownUpdate }) {
                     overall_score
                   </div>
                 </div>
+                <div
+                  className={`w-3 h-3 rounded-full ${getConfidenceColor('overall_score')}`}
+                  title={`Audit confidence: ${auditResults['overall_score'] || 'unknown'}`}
+                />
               </div>
               <div className="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
                 <div className="text-sm font-bold text-blue-900 dark:text-blue-100">
@@ -343,6 +378,10 @@ export default function OverviewPanel({ town, onTownUpdate }) {
                     id
                   </div>
                 </div>
+                <div
+                  className={`w-3 h-3 rounded-full bg-black`}
+                  title="Non-editable field"
+                />
               </div>
               <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
                 <div className="text-sm font-mono text-gray-900 dark:text-gray-100">
@@ -362,6 +401,10 @@ export default function OverviewPanel({ town, onTownUpdate }) {
                     created_at
                   </div>
                 </div>
+                <div
+                  className={`w-3 h-3 rounded-full bg-black`}
+                  title="Non-editable field"
+                />
               </div>
               <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
                 <div className="text-sm text-gray-900 dark:text-gray-100">
@@ -381,6 +424,10 @@ export default function OverviewPanel({ town, onTownUpdate }) {
                     updated_at
                   </div>
                 </div>
+                <div
+                  className={`w-3 h-3 rounded-full bg-black`}
+                  title="Non-editable field"
+                />
               </div>
               <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
                 <div className="text-sm text-gray-900 dark:text-gray-100">
@@ -401,6 +448,10 @@ export default function OverviewPanel({ town, onTownUpdate }) {
                       last_ai_update
                     </div>
                   </div>
+                  <div
+                    className={`w-3 h-3 rounded-full bg-black`}
+                    title="Non-editable field"
+                  />
                 </div>
                 <div className="px-3 py-2 bg-purple-50 dark:bg-purple-900/20 rounded border border-purple-200 dark:border-purple-800">
                   <div className="text-sm text-purple-900 dark:text-purple-100">

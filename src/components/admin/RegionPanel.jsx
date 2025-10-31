@@ -13,7 +13,7 @@ import LegacyFieldsSection from './LegacyFieldsSection';
 import { checkAdminAccess } from '../../utils/paywallUtils';
 import { VALID_CATEGORICAL_VALUES } from '../../utils/validation/categoricalValues';
 
-export default function RegionPanel({ town, onTownUpdate }) {
+export default function RegionPanel({ town, onTownUpdate, auditResults = {} }) {
   const [isExecutiveAdmin, setIsExecutiveAdmin] = useState(false);
 
   // Check if user is executive admin
@@ -50,6 +50,7 @@ export default function RegionPanel({ town, onTownUpdate }) {
         range={range}
         description={description}
         isExecutiveAdmin={isExecutiveAdmin}
+        confidence={auditResults[field] || 'unknown'}
         onUpdate={(field, newValue) => {
           if (onTownUpdate) {
             onTownUpdate(field, newValue);

@@ -16,6 +16,7 @@ import { researchFieldWithContext, hasAnthropicAPIKey } from '../utils/aiResearc
  * @param {string} description - Field description/help text
  * @param {function} onUpdate - Callback after successful update
  * @param {boolean} isExecutiveAdmin - Whether current user is executive admin
+ * @param {string} confidence - Audit confidence: 'unknown' | 'low' | 'limited' | 'high' | 'not_editable'
  */
 const EditableDataField = ({
   label,
@@ -29,7 +30,8 @@ const EditableDataField = ({
   range,
   description,
   onUpdate,
-  isExecutiveAdmin = false
+  isExecutiveAdmin = false,
+  confidence = 'unknown'
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
@@ -843,6 +845,23 @@ const EditableDataField = ({
     return String(value);
   };
 
+  // Get confidence indicator color
+  const getConfidenceColor = () => {
+    switch (confidence) {
+      case 'high':
+        return 'bg-green-500'; // 🟢 High confidence
+      case 'limited':
+        return 'bg-yellow-500'; // 🟡 Limited confidence
+      case 'low':
+        return 'bg-red-500'; // 🔴 Low confidence
+      case 'not_editable':
+        return 'bg-black'; // ⚫ Non-editable
+      case 'unknown':
+      default:
+        return 'bg-gray-300'; // ⚪ Unknown
+    }
+  };
+
   return (
     <div className="space-y-2">
       {/* Label and Field Name */}
@@ -858,16 +877,21 @@ const EditableDataField = ({
 
         {/* Action buttons (only show when not editing) */}
         {!isEditing && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             {/* Combined Research & Edit button */}
             <button
               onClick={handleOpenCombinedModal}
               className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors flex items-center gap-0.5"
               title={`Research & Edit: ${label}`}
             >
-              
+
               <Edit2 size={14} />
             </button>
+            {/* Audit Confidence Indicator */}
+            <div
+              className={`w-3 h-3 rounded-full ${getConfidenceColor()}`}
+              title={`Audit confidence: ${confidence}`}
+            />
           </div>
         )}
       </div>

@@ -1,5 +1,16 @@
 # 🚨 CLAUDE: READ THIS ENTIRE FILE FIRST OR DIE
 
+## 🔴🔴🔴 RULE #1: NEVER USE LOCAL STORAGE FOR DATA 🔴🔴🔴
+**IMPORTANT DATA MUST BE SAVED TO THE DATABASE - NOT LOCAL STORAGE, NOT MEMORY, NOT SESSION STORAGE**
+- ❌ NEVER use useState() for data that should persist
+- ❌ NEVER use localStorage for audit results, user data, or anything important
+- ❌ NEVER say "we can add database persistence later"
+- ✅ ALWAYS use Supabase database tables for ANY data that needs to survive page refresh
+- ✅ ALWAYS implement proper database storage FROM THE START
+- ✅ If data is important enough to compute, it's important enough to save in the database
+
+**VIOLATION = TILMAN WILL RAGE AND YOU WILL DIE**
+
 ## 📚 MANDATORY READING BEFORE ANY WORK
 1. **THIS FILE (CLAUDE.md)** - All rules and warnings
 2. **docs/project-history/LESSONS_LEARNED.md** - Past disasters to avoid

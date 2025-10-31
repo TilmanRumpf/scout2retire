@@ -227,6 +227,10 @@ const TownsManager = () => {
     town: null
   });
 
+  // Audit state - stores confidence level per field
+  const [auditResults, setAuditResults] = useState({});
+  const [auditLoading, setAuditLoading] = useState(false);
+
   // Global field search state
   const [fieldSearchQuery, setFieldSearchQuery] = useState('');
   const [showFieldDropdown, setShowFieldDropdown] = useState(false);
@@ -872,6 +876,65 @@ const TownsManager = () => {
         ? { ...town, [field]: newValue }
         : town
     ));
+  };
+
+  // Load audit results from database when town is selected
+  useEffect(() => {
+    async function loadAuditData() {
+      if (!selectedTown?.id) {
+        setAuditResults({});
+        return;
+      }
+
+      try {
+        const { loadAuditResults } = await import('../../utils/auditTown');
+        const results = await loadAuditResults(selectedTown.id, supabase);
+        setAuditResults(results);
+      } catch (error) {
+        console.error('Error loading audit results:', error);
+        setAuditResults({});
+      }
+    }
+
+    loadAuditData();
+  }, [selectedTown?.id]);
+
+  // Handle audit request for the selected town
+  const handleAuditTown = async () => {
+    if (!selectedTown) {
+      toast.error('No town selected');
+      return;
+    }
+
+    // Check if API key is configured
+    if (!import.meta.env.VITE_ANTHROPIC_API_KEY) {
+      toast.error('Anthropic API key not configured. Check .env file.');
+      return;
+    }
+
+    setAuditLoading(true);
+    toast('Starting audit... This may take 30-60 seconds', { icon: '🔍' });
+
+    try {
+      // Dynamically import the audit utility
+      const { auditTownData } = await import('../../utils/auditTown');
+
+      // Pass supabase client to save results to database
+      const result = await auditTownData(selectedTown, supabase);
+
+      if (!result.success) {
+        throw new Error(result.error || 'Audit failed');
+      }
+
+      setAuditResults(result.fieldConfidence || {});
+
+      toast.success(`Audit complete! Assessed ${result.totalFields} fields and saved to database`);
+    } catch (error) {
+      console.error('Audit error:', error);
+      toast.error(`Audit failed: ${error.message}`);
+    } finally {
+      setAuditLoading(false);
+    }
   };
 
   const isFieldAudited = (townId, fieldName) => {
@@ -1533,148 +1596,17 @@ const TownsManager = () => {
           </select>
         </div>
       </div>
+      </div>
 
       <div className={`${uiConfig.layout.width.containerXL} ${uiConfig.layout.spacing.page}`}>
-        {/* Mobile: Show either list OR details. Desktop: Show both side by side */}
-        <div className="lg:grid lg:grid-cols-12 lg:gap-6">
-          {/* Town List - Full width on mobile, 3 cols on desktop */}
-          <div className={`${selectedTown ? 'hidden lg:block' : 'block'} lg:col-span-3`}>
-            <div className={`${uiConfig.colors.card} rounded-lg shadow max-h-[800px] overflow-y-auto`}>
-              <div className={`sticky top-0 ${uiConfig.colors.card} border-b`}>
-                <div className="px-4 py-2">
-                  <h2 className={`font-semibold ${uiConfig.colors.heading}`}>Towns</h2>
-                </div>
-                {/* Sorting controls - more functional and left-aligned */}
-                <div className={`px-4 py-2 ${uiConfig.colors.secondary} border-t flex items-center gap-2`}>
-                  <button
-                    onClick={() => setFilters({...filters, 
-                      sortBy: 'abc', 
-                      sortDirection: filters.sortBy === 'abc' && filters.sortDirection === 'asc' ? 'desc' : 'asc'
-                    })}
-                    className={`flex items-center gap-1 px-3 py-1 text-sm rounded transition-colors ${
-                      filters.sortBy === 'abc' 
-                        ? uiConfig.colors.btnPrimary 
-                        : `${uiConfig.colors.card} border hover:${uiConfig.colors.secondary}`
-                    }`}
-                    title="Sort alphabetically"
-                  >
-                    <span>A-Z</span>
-                    {filters.sortBy === 'abc' && (
-                      <span className="text-xs">
-                        {filters.sortDirection === 'asc' ? '↓' : '↑'}
-                      </span>
-                    )}
-                  </button>
-                  
-                  <button
-                    onClick={() => setFilters({...filters, 
-                      sortBy: filters.sortBy === 'completion-high' ? 'completion-low' : 'completion-high'
-                    })}
-                    className={`flex items-center gap-1 px-3 py-1 text-sm rounded transition-colors ${
-                      filters.sortBy.startsWith('completion') 
-                        ? uiConfig.colors.btnPrimary 
-                        : `${uiConfig.colors.card} border hover:${uiConfig.colors.secondary}`
-                    }`}
-                    title="Sort by completion percentage"
-                  >
-                    <span>%</span>
-                    {filters.sortBy.startsWith('completion') && (
-                      <span className="text-xs">
-                        {filters.sortBy === 'completion-high' ? '↓' : '↑'}
-                      </span>
-                    )}
-                  </button>
-                  
-                  <span className={`text-xs ${uiConfig.colors.subtitle} ml-2`}>
-                    {filteredTowns.length} towns
-                  </span>
-                </div>
-              </div>
-              <div className="divide-y">
-                {filteredTowns.map((town) => (
-                  <div 
-                    key={town.id}
-                    onClick={() => setSelectedTown(town)}
-                    className={`px-4 py-3 cursor-pointer hover:${uiConfig.colors.secondary} ${
-                      selectedTown?.id === town.id ? uiConfig.colors.accent : ''
-                    }`}
-                  >
-                    <div className={`font-medium ${uiConfig.colors.heading}`}>{formatTownDisplay(town)}</div>
-                    <div className="flex items-center gap-2 mt-1">
-                      {town._completion !== undefined && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation(); // Prevent town selection
-                            setDataQualityPanel({ isOpen: true, town });
-                          }}
-                          className={`text-xs px-2 py-1 rounded flex items-center gap-1 hover:opacity-80 transition-all ${
-                            town._completion < 30 ? 'bg-red-100 text-red-700 animate-pulse' :
-                            town._completion < 50 ? 'bg-yellow-100 text-yellow-700 animate-pulse' :
-                            town._completion < 70 ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-green-100 text-green-700'
-                          } ${
-                            town._completion < 50 ? 'hover:scale-105' : ''
-                          }`}
-                          title={`Data Completeness: ${town._completion}% of fields populated\n\n(Note: This is NOT the match score - it shows how much town data we have)\n\nClick to view detailed data quality report`}
-                        >
-                          <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                          {town._completion}%
-                        </button>
-                      )}
-                      {town._errors && town._errors.length > 0 && (
-                        <span className={`text-xs px-2 py-1 rounded bg-red-100 text-red-700 ${
-                          town._errors.length > 3 ? 'font-semibold' : ''
-                        }`}>
-                          {town._errors.length} error{town._errors.length > 1 ? 's' : ''}
-                        </span>
-                      )}
-                      {/* Access Level Badge - show for non-admins */}
-                      {!isAdmin && userTownAccess[town.id] && (
-                        <span className={`text-xs px-2 py-1 rounded font-medium ${
-                          userTownAccess[town.id] === 'view'
-                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                            : userTownAccess[town.id] === 'edit'
-                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                            : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
-                        }`} title={`You have ${userTownAccess[town.id]} access`}>
-                          {userTownAccess[town.id] === 'view' ? '👁️' : userTownAccess[town.id] === 'edit' ? '✏️' : '🔓'} {userTownAccess[town.id]}
-                        </span>
-                      )}
-                      {!town.image_url_1 && (
-                        <span className="text-xs px-2 py-1 rounded bg-orange-100 text-orange-700 flex items-center gap-1">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          No photo
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Town Details - Full width on mobile, 9 cols on desktop */}
-          <div className={`${selectedTown ? 'block' : 'hidden lg:block'} lg:col-span-9`}>
+        {/* Town Details - Full width */}
+        <div>
             {selectedTown ? (
               <div className={`${uiConfig.colors.card} rounded-lg shadow`}>
-                {/* Town Header with mobile back button */}
+                {/* Town Header */}
                 <div className="px-4 lg:px-6 py-4 border-b">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                      {/* Mobile back button */}
-                      <button
-                        onClick={() => setSelectedTown(null)}
-                        className={`lg:hidden p-2 rounded-lg ${uiConfig.colors.secondary} hover:${uiConfig.colors.primary} transition-colors`}
-                        title="Back to list"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                      </button>
                       <h2 className={`text-lg lg:text-xl font-bold ${uiConfig.colors.heading}`}>{formatTownDisplay(selectedTown)}</h2>
                     </div>
                     <div className="flex items-center gap-2 lg:gap-3">
@@ -1773,13 +1705,14 @@ const TownsManager = () => {
                         })()}
                       </div>
 
-                      {/* Data Quality Report Button */}
+                      {/* Audit Button - Verifies data confidence for this town */}
                       <button
-                        onClick={() => setDataQualityPanel({ isOpen: true, town: selectedTown })}
-                        className={`px-3 py-1 rounded-lg ${uiConfig.colors.secondary} hover:${uiConfig.colors.primary} transition-colors flex items-center justify-center text-sm font-medium`}
-                        title="View Data Quality Report"
+                        onClick={handleAuditTown}
+                        disabled={auditLoading}
+                        className={`px-3 py-1 rounded-lg ${auditLoading ? 'bg-gray-400 cursor-not-allowed' : `${uiConfig.colors.secondary} hover:${uiConfig.colors.primary}`} transition-colors flex items-center justify-center text-sm font-medium`}
+                        title="Audit town data - AI verifies confidence level for each field"
                       >
-                        QS-Report
+                        {auditLoading ? 'Auditing...' : 'Audit'}
                       </button>
                       {/* Wikipedia Button */}
                       <button
@@ -1835,31 +1768,31 @@ const TownsManager = () => {
                 <div className="p-4 lg:p-6">
                   {activeCategory === 'Overview' ? (
                     // Special handling for Overview tab with photos and descriptions
-                    <OverviewPanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                    <OverviewPanel town={selectedTown} onTownUpdate={handleTownUpdate} auditResults={auditResults} />
                   ) : activeCategory === 'Admin' ? (
                     // Special handling for Admin tab with score breakdown panel
                     <ScoreBreakdownPanel town={selectedTown} onTownUpdate={handleTownUpdate} />
                   ) : activeCategory === 'Region' ? (
                     // Special handling for Region tab with inline editing panel
-                    <RegionPanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                    <RegionPanel town={selectedTown} onTownUpdate={handleTownUpdate} auditResults={auditResults} />
                   ) : activeCategory === 'Climate' ? (
                     // Special handling for Climate tab with inline editing panel
-                    <ClimatePanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                    <ClimatePanel town={selectedTown} onTownUpdate={handleTownUpdate} auditResults={auditResults} />
                   ) : activeCategory === 'Culture' ? (
                     // Special handling for Culture tab with inline editing panel
-                    <CulturePanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                    <CulturePanel town={selectedTown} onTownUpdate={handleTownUpdate} auditResults={auditResults} />
                   ) : activeCategory === 'Healthcare' ? (
                     // Special handling for Healthcare tab with inline editing panel
-                    <HealthcarePanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                    <HealthcarePanel town={selectedTown} onTownUpdate={handleTownUpdate} auditResults={auditResults} />
                   ) : activeCategory === 'Safety' ? (
                     // Special handling for Safety tab with inline editing panel
-                    <SafetyPanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                    <SafetyPanel town={selectedTown} onTownUpdate={handleTownUpdate} auditResults={auditResults} />
                   ) : activeCategory === 'Infrastructure' ? (
                     // Special handling for Infrastructure tab with inline editing panel
-                    <InfrastructurePanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                    <InfrastructurePanel town={selectedTown} onTownUpdate={handleTownUpdate} auditResults={auditResults} />
                   ) : activeCategory === 'Activities' ? (
                     // Special handling for Activities tab with inline editing panel
-                    <ActivitiesPanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                    <ActivitiesPanel town={selectedTown} onTownUpdate={handleTownUpdate} auditResults={auditResults} />
                   ) : activeCategory === 'Hobbies' ? (
                     // Special handling for Hobbies tab with enhanced display
                     <div>
@@ -1877,7 +1810,7 @@ const TownsManager = () => {
                     </div>
                   ) : activeCategory === 'Costs' ? (
                     // Special handling for Costs tab with inline editing panel
-                    <CostsPanel town={selectedTown} onTownUpdate={handleTownUpdate} />
+                    <CostsPanel town={selectedTown} onTownUpdate={handleTownUpdate} auditResults={auditResults} />
                   ) : (
                     // Default rendering for other categories
                     Object.entries(COLUMN_CATEGORIES[activeCategory].subcategories).map(([subcategoryName, subcategory]) => {
@@ -1925,9 +1858,8 @@ const TownsManager = () => {
             )}
           </div>
         </div>
-      </div>
-      
-      
+
+
       {/* Field Definition Editor */}
       {fieldDefEditor.isOpen && (
         <FieldDefinitionEditor
@@ -2128,7 +2060,6 @@ const TownsManager = () => {
           </div>
         </>
       )}
-      </div>
     </div>
   );
 };

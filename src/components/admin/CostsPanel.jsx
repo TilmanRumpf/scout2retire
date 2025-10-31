@@ -11,7 +11,7 @@ import React, { useState, useEffect } from 'react';
 import EditableDataField from '../EditableDataField';
 import { checkAdminAccess } from '../../utils/paywallUtils';
 
-export default function CostsPanel({ town, onTownUpdate }) {
+export default function CostsPanel({ town, onTownUpdate, auditResults = {} }) {
   const [isExecutiveAdmin, setIsExecutiveAdmin] = useState(false);
 
   useEffect(() => {
@@ -47,6 +47,7 @@ export default function CostsPanel({ town, onTownUpdate }) {
         range={range}
         description={description}
         isExecutiveAdmin={isExecutiveAdmin}
+        confidence={auditResults[field] || 'unknown'}
         onUpdate={(field, newValue) => {
           if (onTownUpdate) {
             onTownUpdate(field, newValue);

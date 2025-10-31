@@ -12,7 +12,7 @@ import EditableDataField from '../EditableDataField';
 import { checkAdminAccess } from '../../utils/paywallUtils';
 import { VALID_CATEGORICAL_VALUES } from '../../utils/validation/categoricalValues';
 
-export default function SafetyPanel({ town, onTownUpdate }) {
+export default function SafetyPanel({ town, onTownUpdate, auditResults = {} }) {
   const [isExecutiveAdmin, setIsExecutiveAdmin] = useState(false);
 
   useEffect(() => {
@@ -48,6 +48,7 @@ export default function SafetyPanel({ town, onTownUpdate }) {
         range={range}
         description={description}
         isExecutiveAdmin={isExecutiveAdmin}
+        confidence={auditResults[field] || 'unknown'}
         onUpdate={(field, newValue) => {
           if (onTownUpdate) {
             onTownUpdate(field, newValue);
