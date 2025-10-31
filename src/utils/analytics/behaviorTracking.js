@@ -182,7 +182,12 @@ export const trackEvent = async (
     });
 
     if (error) {
-      console.error('Failed to track event:', error);
+      // Silent error handling: RPC function may not exist yet (404)
+      // This is optional analytics, fail gracefully without console spam
+      if (error.code !== '42883' && !error.message?.includes('not found')) {
+        // Only log non-404 errors as warnings
+        console.warn('Event tracking unavailable:', error.message);
+      }
     }
   } catch (err) {
     console.error('Error tracking event:', err);

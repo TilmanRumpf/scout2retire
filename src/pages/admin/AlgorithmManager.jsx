@@ -183,7 +183,7 @@ const AlgorithmManager = () => {
     } catch (error) {
       console.error('[AlgorithmManager] Error restoring last town:', error);
     }
-  }, [towns, isRestoringTown]);
+  }, [towns]); // FIXED: Removed isRestoringTown from dependencies to prevent infinite loop
 
   // Reset restoration flag after restoration is complete
   useEffect(() => {

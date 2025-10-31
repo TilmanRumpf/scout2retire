@@ -491,7 +491,14 @@ export const updateUserDevice = async (userId) => {
     });
 
     if (error) {
-      console.error('Failed to update enhanced device info:', error);
+      // Silent error handling: RPC function may not exist yet (404)
+      // This is optional analytics, don't spam console
+      if (error.code === '42883' || error.message?.includes('not found')) {
+        // Function doesn't exist - fail silently
+        return { success: false, error: 'RPC function not available' };
+      }
+      // Log other errors as warnings
+      console.warn('Device tracking unavailable:', error.message);
       return { success: false, error: error.message };
     }
 
