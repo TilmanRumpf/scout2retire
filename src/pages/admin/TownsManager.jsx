@@ -656,11 +656,16 @@ const TownsManager = () => {
   // Handle town search input
   const handleTownSearch = (value) => {
     setFilters({...filters, townSearch: value});
-    
+
     if (value.length > 0) {
       const suggestions = towns
         .filter(t => t.town_name && t.town_name.toLowerCase().startsWith(value.toLowerCase()))
-        .map(t => t.town_name)
+        .map(t => ({
+          town_name: t.town_name,
+          state_code: t.state_code || t.subdivision || '',
+          country: t.country,
+          id: t.id
+        }))
         .slice(0, 10);
       setSearchSuggestions(suggestions);
       setShowSuggestions(suggestions.length > 0);
@@ -671,7 +676,7 @@ const TownsManager = () => {
   };
   
   // Handle suggestion click
-  const handleSuggestionClick = (townName) => {
+  const handleSuggestionClick = (suggestion) => {
     // Reset all filters to defaults to ensure searched town is visible
     setFilters({
       hasPhoto: 'all',  // Reset to 'all' so town is visible regardless of photo status
@@ -679,15 +684,15 @@ const TownsManager = () => {
       dataQuality: 'all',
       country: 'all',
       geo_region: 'all',
-      townSearch: townName,
+      townSearch: suggestion.town_name,
       sortBy: 'abc',
       sortDirection: 'asc'
     });
     setShowSuggestions(false);
     setSearchSuggestions([]);
-    
-    // Find and auto-select the searched town
-    const foundTown = towns.find(t => t.town_name === townName);
+
+    // Find and auto-select the searched town by ID
+    const foundTown = towns.find(t => t.id === suggestion.id);
     if (foundTown) {
       setSelectedTown(foundTown);
     }
@@ -1493,7 +1498,17 @@ const TownsManager = () => {
                       onClick={() => handleSuggestionClick(suggestion)}
                       className={`px-3 py-2 hover:${uiConfig.colors.secondary} cursor-pointer`}
                     >
-                      {suggestion}
+                      <div className={uiConfig.colors.heading}>
+                        {suggestion.town_name}
+                        {suggestion.state_code && (
+                          <span className={`ml-1 ${uiConfig.colors.subtitle} text-xs`}>
+                            {suggestion.state_code}
+                          </span>
+                        )}
+                      </div>
+                      <div className={`text-xs ${uiConfig.colors.subtitle}`}>
+                        {suggestion.country}
+                      </div>
                     </div>
                   ))}
                 </div>
