@@ -980,7 +980,18 @@ const EditableDataField = ({
               <div className="border-2 border-green-200 dark:border-green-800 rounded-lg p-4 bg-green-50/30 dark:bg-green-900/10">
                 <h4 className="text-sm font-bold text-green-800 dark:text-green-300 mb-3 flex items-center gap-2">
                   <span className="bg-green-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
-                   Step 1: Research on Google
+                  <span>Step 1: Research on Google</span>
+                  {/* Database Info Tooltip for Research */}
+                  <div className="group/research relative inline-block">
+                    <Info size={14} className="text-green-500 hover:text-green-700 dark:hover:text-green-300 cursor-help transition-colors" />
+                    <div className="hidden group-hover/research:block absolute left-0 top-5 bg-gray-900 dark:bg-gray-700 text-white text-xs px-3 py-1.5 rounded shadow-lg whitespace-nowrap z-10">
+                      <div className="font-semibold">AI Research Process:</div>
+                      <div className="mt-0.5">1. Query templates from: <span className="text-blue-300">field_search_templates</span></div>
+                      <div>2. Learn patterns from: <span className="text-blue-300">towns</span> table</div>
+                      <div>3. Claude AI researches via: <span className="text-purple-300">Anthropic API</span></div>
+                      <div className="text-green-300 mt-1">✓ Read-only, no data changes</div>
+                    </div>
+                  </div>
                 </h4>
 
                 <div className="space-y-2">
@@ -1125,7 +1136,17 @@ const EditableDataField = ({
               <div className="border-2 border-yellow-200 dark:border-yellow-800 rounded-lg p-4 bg-yellow-50/30 dark:bg-yellow-900/10">
                 <h4 className="text-sm font-bold text-yellow-800 dark:text-yellow-300 mb-3 flex items-center gap-2">
                   <span className="bg-yellow-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
-                   Step 2: Enter Data & Save to Database
+                  <span>Step 2: Enter Data & Save to Database</span>
+                  {/* Database Info Tooltip for Save */}
+                  <div className="group/save relative inline-block">
+                    <Info size={14} className="text-yellow-500 hover:text-yellow-700 dark:hover:text-yellow-300 cursor-help transition-colors" />
+                    <div className="hidden group-hover/save:block absolute left-0 top-5 bg-gray-900 dark:bg-gray-700 text-white text-xs px-3 py-1.5 rounded shadow-lg whitespace-nowrap z-10">
+                      <div className="font-semibold">Database Info:</div>
+                      <div className="mt-0.5">Table: <span className="text-blue-300">towns</span></div>
+                      <div>Column: <span className="text-green-300">{field}</span></div>
+                      <div className="text-yellow-300 mt-1">⚠️ Saves to single town only</div>
+                    </div>
+                  </div>
                 </h4>
 
                 <div className="space-y-2">
@@ -1187,6 +1208,15 @@ const EditableDataField = ({
                     <div className="flex items-center gap-2">
                       <span className="bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span>
                       <span>Step 3: Manage Query Template</span>
+                      {/* Database Info Tooltip for Templates */}
+                      <div className="group/template relative inline-block">
+                        <Info size={14} className="text-red-400 hover:text-red-600 dark:hover:text-red-300 cursor-help transition-colors" />
+                        <div className="hidden group-hover/template:block absolute left-0 top-5 bg-gray-900 dark:bg-gray-700 text-white text-xs px-3 py-1.5 rounded shadow-lg whitespace-nowrap z-10">
+                          <div className="font-semibold">Database Info:</div>
+                          <div className="mt-0.5">Table: <span className="text-blue-300">field_search_templates</span></div>
+                          <div>Columns: <span className="text-green-300">field_name, search_query, expected_format</span></div>
+                        </div>
+                      </div>
                       <span className="text-xs font-normal text-red-600 dark:text-red-400">(Admin Only)</span>
                     </div>
                     {isTemplateExpanded ? (
