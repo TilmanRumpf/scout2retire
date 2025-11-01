@@ -167,6 +167,7 @@ export const SUBDIVISION_TO_ISO = {
   'MX': {
     'Baja California': 'BC',
     'Baja California Sur': 'BCS',
+    'Guanajuato': 'GTO',
     'Jalisco': 'JAL',
     'Nayarit': 'NAY',
     'Oaxaca': 'OAX',
@@ -408,6 +409,7 @@ export const SUBDIVISION_TO_ISO = {
   'PA': {
     'Bocas del Toro': 'BOC',
     'Central America': null,  // Not a real subdivision
+    'Chiriquí': 'CHI',
     'Los Santos': 'LOS',
     'Panamá': 'PAN',
     'Panamá Oeste': 'POE'
@@ -468,6 +470,7 @@ export const SUBDIVISION_TO_ISO = {
   },
   'NP': {
     'Bagmati': 'BA',
+    'Bagmati Province': 'BA',
     'Puducherry': null  // This is actually in India, data error
   },
   'CY': {
@@ -521,7 +524,9 @@ export const SUBDIVISION_TO_ISO = {
     'Saint George': 'SG'
   },
   'GW': {
-    'Africa': null  // Invalid region
+    'Africa': null,  // Invalid region
+    'Bolama': 'BL',
+    'Bolama Region': 'BL'
   },
   'HN': {
     'Bay Islands': 'IB'
@@ -530,6 +535,8 @@ export const SUBDIVISION_TO_ISO = {
     'Central Hungary': 'HU'
   },
   'IS': {
+    'Capital Region': 'HOF',
+    'Höfuðborgarsvæðið': 'HOF',
     'Ticino': null  // This is Switzerland, data error
   },
   'MH': {
