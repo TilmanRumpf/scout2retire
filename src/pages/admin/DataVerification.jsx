@@ -104,9 +104,13 @@ export default function DataVerification() {
     return filtered;
   };
 
-  // Navigate to town in TownsManager
-  const navigateToTown = (townId) => {
-    navigate(`/admin/towns-manager?town=${townId}`);
+  // Navigate to town in TownsManager with optional field for auto-tab-selection
+  const navigateToTown = (townId, fieldName = null) => {
+    const params = new URLSearchParams({ town: townId });
+    if (fieldName) {
+      params.append('field', fieldName);
+    }
+    navigate(`/admin/towns-manager?${params.toString()}`);
   };
 
   // Severity badge component
@@ -248,7 +252,7 @@ export default function DataVerification() {
                         <div
                           key={idx}
                           className={`p-3 rounded-lg border-l-4 border-red-500 ${uiConfig.colors.secondary} cursor-pointer hover:${uiConfig.colors.primary}`}
-                          onClick={() => navigateToTown(issue.townId)}
+                          onClick={() => navigateToTown(issue.townId, issue.field)}
                         >
                           <div className="flex justify-between items-start">
                             <div>
@@ -378,7 +382,7 @@ export default function DataVerification() {
                       <div
                         key={town.townId}
                         className={`p-4 rounded-lg ${uiConfig.colors.secondary} cursor-pointer hover:${uiConfig.colors.primary}`}
-                        onClick={() => navigateToTown(town.townId)}
+                        onClick={() => navigateToTown(town.townId, town.issues[0]?.field)}
                       >
                         <div className="flex justify-between items-start mb-2">
                           <div className={`font-medium ${uiConfig.colors.heading}`}>
@@ -443,7 +447,7 @@ export default function DataVerification() {
                                   <div
                                     key={idx}
                                     className={`text-sm ${uiConfig.colors.body} px-3 py-1 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700`}
-                                    onClick={() => navigateToTown(violation.townId)}
+                                    onClick={() => navigateToTown(violation.townId, fieldName)}
                                   >
                                     <span className="font-medium">{violation.townName}:</span> {violation.message}
                                   </div>
@@ -463,7 +467,7 @@ export default function DataVerification() {
                                   <div
                                     key={idx}
                                     className={`text-sm ${uiConfig.colors.body} px-3 py-1 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700`}
-                                    onClick={() => navigateToTown(outlier.townId)}
+                                    onClick={() => navigateToTown(outlier.townId, fieldName)}
                                   >
                                     <span className="font-medium">{outlier.townName}:</span> {outlier.value}{' '}
                                     <span className={`${uiConfig.colors.hint}`}>(Z-score: {outlier.zScore.toFixed(2)})</span>

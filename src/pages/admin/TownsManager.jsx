@@ -411,6 +411,7 @@ const TownsManager = () => {
 
     const params = new URLSearchParams(location.search);
     const townIdFromUrl = params.get('town');
+    const fieldFromUrl = params.get('field');
 
     // Priority 1: URL parameter
     if (townIdFromUrl && !selectedTown) {
@@ -418,6 +419,29 @@ const TownsManager = () => {
       if (town) {
         console.log('🔥 Auto-selecting town from URL:', town.town_name);
         setSelectedTown(town);
+
+        // If field parameter exists, auto-select the correct category tab
+        if (fieldFromUrl) {
+          const category = getFieldCategory(fieldFromUrl);
+          if (category) {
+            console.log(`📂 Auto-selecting category "${category}" for field "${fieldFromUrl}"`);
+            setActiveCategory(category);
+
+            // Highlight the field after a delay to ensure tab has switched
+            setTimeout(() => {
+              setHighlightedField(fieldFromUrl);
+              const fieldElement = document.querySelector(`[data-field="${fieldFromUrl}"]`);
+              if (fieldElement) {
+                fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                fieldElement.classList.add('ring-2', 'ring-red-500', 'bg-red-50', 'dark:bg-red-900/20');
+                setTimeout(() => {
+                  fieldElement.classList.remove('ring-2', 'ring-red-500', 'bg-red-50', 'dark:bg-red-900/20');
+                  setHighlightedField(null);
+                }, 3000);
+              }
+            }, 300);
+          }
+        }
         return;
       } else {
         console.warn('⚠️ Town ID from URL not found:', townIdFromUrl);
