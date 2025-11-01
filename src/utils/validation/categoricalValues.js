@@ -114,13 +114,12 @@ export const VALID_CATEGORICAL_VALUES = {
     'large'
   ],
 
-  // English proficiency level
+  // English proficiency level (4 simplified levels based on EF Index)
+  // Native (90+), High (60-89), Moderate (30-59), Low (0-29)
   english_proficiency_level: [
     'low',
     'moderate',
     'high',
-    'very high',
-    'widespread',
     'native'
   ],
 

@@ -19,8 +19,10 @@ const FIELD_CONVENTIONS = {
   healthcare_score: { min: 0, max: 10, type: 'score', integer: true },
   safety_score: { min: 0, max: 10, type: 'score', integer: true },
   walkability: { min: 0, max: 10, type: 'score', integer: true },
-  english_proficiency: { min: 0, max: 10, type: 'score', integer: true },
   expat_rating: { min: 0, max: 10, type: 'score', integer: true },
+
+  // English proficiency (0-100 percentage scale, separate from 0-10 scores)
+  english_proficiency: { min: 0, max: 100, type: 'percentage', integer: true },
 
   // Cost fields (USD)
   cost_of_living_usd: { min: 200, max: 10000, type: 'cost', unit: 'USD' },
