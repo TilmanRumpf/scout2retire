@@ -125,7 +125,11 @@ export default function ComparisonGrid({
                 </div>
                 <div className="flex justify-between">
                   <span className={uiConfig.colors.hint}>English</span>
-                  <span className="font-medium">{town.english_proficiency ? `${town.english_proficiency * 10}/10` : 'N/A'}</span>
+                  <span className="font-medium">
+                    {town.english_proficiency_level
+                      ? town.english_proficiency_level.charAt(0).toUpperCase() + town.english_proficiency_level.slice(1)
+                      : 'N/A'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className={uiConfig.colors.hint}>Expat Scene</span>

@@ -84,13 +84,20 @@ export default function CulturePanel({ town, onTownUpdate, auditResults = {} }) 
               description="Main language spoken in the area"
             />
             <EditableField
-              field="english_proficiency_level"
-              value={town.english_proficiency_level}
-              label="English Proficiency Level"
-              type="select"
-              range={VALID_CATEGORICAL_VALUES.english_proficiency_level}
-              description="How widely English is spoken"
+              field="english_proficiency"
+              value={town.english_proficiency}
+              label="English Proficiency Score"
+              type="number"
+              description="EF Index score 0-100 (auto-computes level below)"
             />
+            <div className="text-sm text-gray-600 dark:text-gray-400 pl-4">
+              → Level: <span className="font-semibold">{town.english_proficiency_level || 'not set'}</span>
+              {town.english_proficiency && (
+                <span className="ml-2 text-xs">
+                  (Native: 90+, High: 60-89, Moderate: 30-59, Low: 0-29)
+                </span>
+              )}
+            </div>
           </div>
         )}
       </div>
