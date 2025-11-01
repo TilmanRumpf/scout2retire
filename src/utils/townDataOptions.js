@@ -112,7 +112,10 @@ export const TOWN_DATA_OPTIONS = {
 
   // Expat community size - MUST MATCH OnboardingCulture.jsx exactly (lines 433-437)
   expat_community: ['small', 'moderate', 'large'],
-  
+
+  // English proficiency level (4-level categorical - auto-computed from 0-100 score)
+  english_proficiency_level: ['low', 'moderate', 'high', 'native'],
+
   // Safety score (0-10)
   scores: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
   
@@ -217,7 +220,7 @@ export function getFieldOptions(fieldName) {
     'safety_score': TOWN_DATA_OPTIONS.scores,
     'healthcare_score': TOWN_DATA_OPTIONS.scores,
     'walkability': TOWN_DATA_OPTIONS.scores,
-    'english_proficiency': TOWN_DATA_OPTIONS.scores,
+    'english_proficiency_level': TOWN_DATA_OPTIONS.english_proficiency_level,
     'cultural_rating': TOWN_DATA_OPTIONS.scores,
     'outdoor_rating': TOWN_DATA_OPTIONS.scores,
     'nightlife_rating': TOWN_DATA_OPTIONS.scores,
