@@ -68,10 +68,12 @@ Return data in this EXACT JSON format (ALL fields required - use realistic estim
     "sunshine_hours": 2000,
     "annual_rainfall": 800,
     "humidity_average": 70,
-    "climate_description": "2-3 sentence description"
+    "climate_description": "2-3 sentence description",
+    "climate": "temperate oceanic"
   },
   "geography": {
     "geographic_features_actual": "coastal|mountainous|plains|lakes|rivers|desert|islands (comma-separated)",
+    "geographic_features": "mountainous,rivers (comma-separated)",
     "vegetation_type_actual": "tropical|temperate|mediterranean|arid|alpine|mixed (comma-separated)",
     "elevation_meters": 123,
     "latitude": 51.2562,
@@ -82,69 +84,141 @@ Return data in this EXACT JSON format (ALL fields required - use realistic estim
   "culture": {
     "primary_language": "language name",
     "languages_spoken": "English,Spanish,French (comma-separated)",
-    "english_proficiency": "low|basic|moderate|high|very_high",
+    "english_proficiency_level": "low|basic|moderate|high|very_high",
+    "english_proficiency": 7,
     "pace_of_life_actual": "slow|relaxed|moderate|fast",
     "social_atmosphere": "reserved|quiet|moderate|friendly|vibrant",
     "cultural_events_frequency": "rare|occasional|monthly|frequent|weekly|constant",
     "traditional_progressive_lean": "traditional|moderate|balanced|progressive",
     "expat_community_size": "small|moderate|large",
-    "lgbtq_friendly_rating": 1-10,
-    "pet_friendly_rating": 1-10
+    "lgbtq_friendly_rating": 7,
+    "pet_friendly_rating": 8,
+    "cultural_events_rating": 7,
+    "cultural_rating": 8,
+    "cultural_landmark_1": "Famous landmark name",
+    "cultural_landmark_2": "Another landmark name",
+    "cultural_landmark_3": "Third landmark name",
+    "expat_groups": "International Club,Expat Meetup (comma-separated)",
+    "secondary_languages": "English,Turkish (comma-separated)"
   },
   "costs": {
     "cost_of_living_usd": 1500,
     "typical_monthly_living_cost": 2000,
     "rent_1bed": 800,
+    "typical_rent_1bed": 800,
     "rent_2bed_usd": 1200,
     "rent_house_usd": 1500,
     "purchase_apartment_sqm_usd": 3000,
     "purchase_house_avg_usd": 250000,
+    "typical_home_price": 250000,
     "groceries_cost": 400,
     "meal_cost": 15,
     "utilities_cost": 150,
     "healthcare_cost_monthly": 200,
     "property_tax_rate_pct": 1.5,
     "income_tax_rate_pct": 25.0,
-    "sales_tax_rate_pct": 8.0
+    "sales_tax_rate_pct": 8.0,
+    "cost_description": "Brief description of cost of living",
+    "cost_index": 75,
+    "property_appreciation_rate_pct": 2.5
   },
   "healthcare": {
     "hospital_count": 3,
     "nearest_major_hospital_km": 5,
     "healthcare_specialties_available": "cardiology,orthopedics,oncology (comma-separated)",
-    "english_speaking_doctors": true|false,
-    "insurance_availability_rating": 1-10,
-    "emergency_services_quality": 1-10
+    "medical_specialties_available": "cardiology,orthopedics,oncology (comma-separated)",
+    "english_speaking_doctors": true,
+    "insurance_availability_rating": 8,
+    "emergency_services_quality": 9,
+    "medical_specialties_rating": 8,
+    "healthcare_description": "Brief description of healthcare system",
+    "healthcare_cost": 200,
+    "healthcare_score": 8,
+    "private_healthcare_cost_index": 75
   },
   "safety": {
     "crime_rate": "very_low|low|moderate|high|very_high",
-    "natural_disaster_risk": "very_low|low|moderate|high|very_high",
+    "natural_disaster_risk": 3,
     "air_quality_index": 50,
-    "political_stability_rating": 1-10,
-    "environmental_health_rating": 1-10
+    "political_stability_rating": 8,
+    "environmental_health_rating": 7,
+    "natural_disaster_risk_score": 2,
+    "safety_description": "Brief description of safety conditions",
+    "safety_score": 9
   },
   "infrastructure": {
     "internet_speed": 100,
-    "internet_reliability": 1-10,
     "mobile_coverage": "poor|fair|good|excellent",
-    "public_transport_quality": 1-10,
-    "road_quality": 1-10,
-    "walkability": 1-10,
-    "bike_infrastructure": 1-10,
+    "public_transport_quality": 7,
+    "walkability": 8,
     "nearest_airport": "Airport Name",
     "airport_distance": 25,
-    "international_airport_distance": 50
+    "international_airport_distance": 50,
+    "regional_airport_distance": 30,
+    "banking_infrastructure": "excellent",
+    "digital_services_availability": "high",
+    "infrastructure_description": "Brief description of infrastructure",
+    "local_mobility_options": "bus,train,tram (comma-separated)",
+    "traffic_congestion": "low|moderate|high",
+    "international_access": "rail,air,road (comma-separated)",
+    "regional_connectivity": "excellent rail,major highways (comma-separated)"
   },
   "activities": {
-    "cultural_activities": "museums|theaters|galleries|festivals (comma-separated)",
-    "outdoor_activities_rating": 1-10,
-    "restaurants_rating": 1-10,
-    "nightlife_rating": 1-10,
-    "shopping_rating": 1-10,
-    "sports_facilities": "gym|pool|tennis|golf (comma-separated)"
+    "outdoor_activities_rating": 7,
+    "restaurants_rating": 8,
+    "nightlife_rating": 6,
+    "shopping_rating": 7,
+    "museums_rating": 7,
+    "outdoor_rating": 8,
+    "activities_available": "hiking,cycling,museums (comma-separated)",
+    "activity_infrastructure": "excellent",
+    "interests_supported": "arts,culture,sports (comma-separated)",
+    "top_hobbies": "hiking,cycling,theater (comma-separated)"
   },
   "demographics": {
     "population": 350000,
     "retirement_community_presence": "none|minimal|limited|moderate|strong|extensive"
+  },
+  "location": {
+    "town_name": "Wuppertal",
+    "country_code": "DE",
+    "geo_region": "Europe",
+    "nearest_major_city": "Düsseldorf",
+    "timezone": "Europe/Berlin",
+    "urban_rural_character": "urban",
+    "subdivision_code": "NW",
+    "distance_to_urban_center": 0,
+    "regions": "North Rhine-Westphalia (comma-separated)"
+  },
+  "lifestyle": {
+    "lifestyle_description": "Brief description of lifestyle",
+    "family_friendliness_rating": 8,
+    "senior_friendly_rating": 9,
+    "solo_living_support": 7,
+    "pet_friendliness": "high",
+    "pollen_levels": "moderate",
+    "tourist_season_impact": "low",
+    "wellness_rating": 7,
+    "quality_of_life": 8
+  },
+  "environment": {
+    "environmental_factors": "clean air,green spaces (comma-separated)"
+  },
+  "travel": {
+    "travel_connectivity_rating": 8,
+    "international_flights_direct": "Amsterdam,Paris,London (comma-separated)"
+  },
+  "startups": {
+    "startup_ecosystem_rating": 6,
+    "government_efficiency_rating": 7
+  },
+  "visa": {
+    "residency_path_info": "Brief description of residency options",
+    "visa_requirements": "Brief description of visa requirements",
+    "visa_free_days": 90,
+    "min_income_requirement_usd": 1500,
+    "easy_residency_countries": "EU,Schengen (comma-separated)",
+    "visa_on_arrival_countries": "US,Canada,Australia (comma-separated)"
   },
   "description": "2-3 comprehensive paragraphs about the town for retirees"
 }
@@ -153,9 +227,15 @@ CRITICAL RULES:
 1. Use ONLY exact values shown in quotes for categorical fields
 2. All monetary values in USD
 3. All distances in km, temperatures in Celsius
-4. Provide realistic estimates based on research
-5. Return ONLY valid JSON, no extra text
-6. ALL fields required - no null values except water_bodies`
+4. All "_rating" fields must be integers 1-10 (not text like "low"/"high")
+5. All "_score" and "quality_of_life" fields must be integers 0-10 (NOT 0-100!)
+6. healthcare_score, safety_score, quality_of_life are 0-10 scale (0=worst, 10=best)
+7. natural_disaster_risk is 1-10 integer (1=very low risk, 10=very high risk)
+8. english_proficiency is 1-10 integer (1=very low, 10=very high English proficiency)
+9. solo_living_support is 1-10 integer (1=poor support, 10=excellent support for solo living)
+10. Provide realistic estimates based on research
+11. Return ONLY valid JSON, no extra text
+12. ALL fields required - no null values except water_bodies`
 
     // Call Anthropic API
     console.log('🤖 Calling Claude Haiku API for comprehensive research...')
@@ -224,6 +304,17 @@ CRITICAL RULES:
       return num;
     };
 
+    // Helper function for 0-10 scores with validation (different from ratings!)
+    const toScore = (value: any): number | null => {
+      if (value === null || value === undefined) return null;
+      const num = parseInt(String(value), 10);
+      if (isNaN(num)) return null;
+      // Clamp to 0-10 range
+      if (num < 0) return 0;
+      if (num > 10) return 10;
+      return num;
+    };
+
     // Helper function to ensure float values
     const toFloat = (value: any): number | null => {
       if (value === null || value === undefined) return null;
@@ -262,7 +353,7 @@ CRITICAL RULES:
 
     // Flatten the data for database update
     const updateData = {
-      // Climate - ALL FIELDS
+      // Climate - ALL fields
       summer_climate_actual: aiData.climate?.summer_climate_actual,
       winter_climate_actual: aiData.climate?.winter_climate_actual,
       humidity_level_actual: aiData.climate?.humidity_level_actual,
@@ -275,9 +366,11 @@ CRITICAL RULES:
       annual_rainfall: toInteger(aiData.climate?.annual_rainfall),
       humidity_average: toInteger(aiData.climate?.humidity_average),
       climate_description: aiData.climate?.climate_description,
+      climate: aiData.climate?.climate,
 
-      // Geography - ALL FIELDS
+      // Geography - ALL fields
       geographic_features_actual: parseToArray(aiData.geography?.geographic_features_actual),
+      geographic_features: parseToArray(aiData.geography?.geographic_features),
       vegetation_type_actual: parseToArray(aiData.geography?.vegetation_type_actual),
       elevation_meters: toInteger(aiData.geography?.elevation_meters),
       latitude: toFloat(aiData.geography?.latitude),
@@ -285,29 +378,36 @@ CRITICAL RULES:
       distance_to_ocean_km: toInteger(aiData.geography?.distance_to_ocean_km),
       water_bodies: parseToArray(aiData.geography?.water_bodies),
 
-      // Culture - ALL text fields
+      // Culture - ALL fields
       primary_language: aiData.culture?.primary_language,
       languages_spoken: parseToArray(aiData.culture?.languages_spoken),
-      // WORKAROUND: Skip english_proficiency - it's INTEGER in DB (should be TEXT)
-      // english_proficiency: aiData.culture?.english_proficiency,
-      english_proficiency_level: aiData.culture?.english_proficiency, // Use _level field instead
+      english_proficiency_level: aiData.culture?.english_proficiency_level,
+      english_proficiency: toRating(aiData.culture?.english_proficiency),
       pace_of_life_actual: aiData.culture?.pace_of_life_actual,
       social_atmosphere: aiData.culture?.social_atmosphere,
       cultural_events_frequency: mapCulturalEventsFrequency(aiData.culture?.cultural_events_frequency),
       traditional_progressive_lean: aiData.culture?.traditional_progressive_lean,
       expat_community_size: aiData.culture?.expat_community_size,
-      // SKIP ALL RATING FIELDS - persistent check constraint violations
-      // lgbtq_friendly_rating: toRating(aiData.culture?.lgbtq_friendly_rating),
-      // pet_friendly_rating: toRating(aiData.culture?.pet_friendly_rating),
+      lgbtq_friendly_rating: toRating(aiData.culture?.lgbtq_friendly_rating),
+      pet_friendly_rating: toRating(aiData.culture?.pet_friendly_rating),
+      cultural_events_rating: toRating(aiData.culture?.cultural_events_rating),
+      cultural_rating: toRating(aiData.culture?.cultural_rating),
+      cultural_landmark_1: aiData.culture?.cultural_landmark_1,
+      cultural_landmark_2: aiData.culture?.cultural_landmark_2,
+      cultural_landmark_3: aiData.culture?.cultural_landmark_3,
+      expat_groups: parseToArray(aiData.culture?.expat_groups),
+      secondary_languages: parseToArray(aiData.culture?.secondary_languages),
 
-      // Costs - ALL FIELDS
+      // Costs - ALL fields
       cost_of_living_usd: toInteger(aiData.costs?.cost_of_living_usd),
       typical_monthly_living_cost: toInteger(aiData.costs?.typical_monthly_living_cost),
       rent_1bed: toInteger(aiData.costs?.rent_1bed),
+      typical_rent_1bed: toInteger(aiData.costs?.typical_rent_1bed),
       rent_2bed_usd: toInteger(aiData.costs?.rent_2bed_usd),
       rent_house_usd: toInteger(aiData.costs?.rent_house_usd),
       purchase_apartment_sqm_usd: toInteger(aiData.costs?.purchase_apartment_sqm_usd),
       purchase_house_avg_usd: toInteger(aiData.costs?.purchase_house_avg_usd),
+      typical_home_price: toInteger(aiData.costs?.typical_home_price),
       groceries_cost: toInteger(aiData.costs?.groceries_cost),
       meal_cost: toInteger(aiData.costs?.meal_cost),
       utilities_cost: toInteger(aiData.costs?.utilities_cost),
@@ -315,45 +415,112 @@ CRITICAL RULES:
       property_tax_rate_pct: toFloat(aiData.costs?.property_tax_rate_pct),
       income_tax_rate_pct: toFloat(aiData.costs?.income_tax_rate_pct),
       sales_tax_rate_pct: toFloat(aiData.costs?.sales_tax_rate_pct),
+      cost_description: aiData.costs?.cost_description,
+      cost_index: toInteger(aiData.costs?.cost_index),
+      property_appreciation_rate_pct: toFloat(aiData.costs?.property_appreciation_rate_pct),
 
-      // Healthcare - Non-rating fields only
+      // Healthcare - ALL fields
       hospital_count: toInteger(aiData.healthcare?.hospital_count),
       nearest_major_hospital_km: toInteger(aiData.healthcare?.nearest_major_hospital_km),
       healthcare_specialties_available: parseToArray(aiData.healthcare?.healthcare_specialties_available),
+      medical_specialties_available: parseToArray(aiData.healthcare?.medical_specialties_available),
       english_speaking_doctors: toBoolean(aiData.healthcare?.english_speaking_doctors),
-      // insurance_availability_rating: toRating(aiData.healthcare?.insurance_availability_rating),  // SKIP - rating
-      // emergency_services_quality: toRating(aiData.healthcare?.emergency_services_quality),  // SKIP - rating
+      insurance_availability_rating: toRating(aiData.healthcare?.insurance_availability_rating),
+      emergency_services_quality: toRating(aiData.healthcare?.emergency_services_quality),
+      medical_specialties_rating: toRating(aiData.healthcare?.medical_specialties_rating),
+      healthcare_description: aiData.healthcare?.healthcare_description,
+      healthcare_cost: toInteger(aiData.healthcare?.healthcare_cost),
+      healthcare_score: toScore(aiData.healthcare?.healthcare_score),
+      private_healthcare_cost_index: toInteger(aiData.healthcare?.private_healthcare_cost_index),
 
-      // Safety - Non-rating fields only
+      // Safety - ALL fields
       crime_rate: aiData.safety?.crime_rate,
-      // natural_disaster_risk: aiData.safety?.natural_disaster_risk,  // SKIP: INTEGER field, expects number not text
+      natural_disaster_risk: toInteger(aiData.safety?.natural_disaster_risk),
       air_quality_index: toInteger(aiData.safety?.air_quality_index),
-      // political_stability_rating: toRating(aiData.safety?.political_stability_rating),  // SKIP - rating
-      // environmental_health_rating: toRating(aiData.safety?.environmental_health_rating),  // SKIP - rating
+      political_stability_rating: toRating(aiData.safety?.political_stability_rating),
+      environmental_health_rating: toRating(aiData.safety?.environmental_health_rating),
+      natural_disaster_risk_score: toScore(aiData.safety?.natural_disaster_risk_score),
+      safety_description: aiData.safety?.safety_description,
+      safety_score: toScore(aiData.safety?.safety_score),
 
-      // Infrastructure - Non-rating fields only
+      // Infrastructure - Some working, some blocked
       internet_speed: toInteger(aiData.infrastructure?.internet_speed),
-      // internet_reliability: toRating(aiData.infrastructure?.internet_reliability),  // SKIP - rating
+      // internet_reliability: toRating(aiData.infrastructure?.internet_reliability),  // BLOCKED - constraint violation
       mobile_coverage: aiData.infrastructure?.mobile_coverage,
-      // public_transport_quality: toRating(aiData.infrastructure?.public_transport_quality),  // SKIP - rating
-      // road_quality: toRating(aiData.infrastructure?.road_quality),  // SKIP - rating
-      // walkability: toRating(aiData.infrastructure?.walkability),  // SKIP - rating
-      // bike_infrastructure: toRating(aiData.infrastructure?.bike_infrastructure),  // SKIP - rating
+      public_transport_quality: toRating(aiData.infrastructure?.public_transport_quality),
+      // road_quality: toRating(aiData.infrastructure?.road_quality),  // BLOCKED - constraint violation
+      walkability: toRating(aiData.infrastructure?.walkability),
+      // bike_infrastructure: toRating(aiData.infrastructure?.bike_infrastructure),  // BLOCKED - constraint violation
       nearest_airport: aiData.infrastructure?.nearest_airport,
       airport_distance: toInteger(aiData.infrastructure?.airport_distance),
       international_airport_distance: toInteger(aiData.infrastructure?.international_airport_distance),
+      regional_airport_distance: toInteger(aiData.infrastructure?.regional_airport_distance),
+      banking_infrastructure: aiData.infrastructure?.banking_infrastructure,
+      digital_services_availability: aiData.infrastructure?.digital_services_availability,
+      infrastructure_description: aiData.infrastructure?.infrastructure_description,
+      local_mobility_options: parseToArray(aiData.infrastructure?.local_mobility_options),
+      traffic_congestion: aiData.infrastructure?.traffic_congestion,
+      international_access: parseToArray(aiData.infrastructure?.international_access),
+      regional_connectivity: parseToArray(aiData.infrastructure?.regional_connectivity),
 
-      // Activities - ALL SKIPPED due to check constraints
-      // cultural_activities: parseToArray(aiData.activities?.cultural_activities),  // SKIP - constraint violation
-      // outdoor_activities_rating: toRating(aiData.activities?.outdoor_activities_rating),  // SKIP - rating
-      // restaurants_rating: toRating(aiData.activities?.restaurants_rating),  // SKIP - rating
-      // nightlife_rating: toRating(aiData.activities?.nightlife_rating),  // SKIP - rating
-      // shopping_rating: toRating(aiData.activities?.shopping_rating),  // SKIP - rating
-      // sports_facilities: parseToArray(aiData.activities?.sports_facilities),  // SKIP - constraint violation
+      // Activities - Ratings work, arrays blocked
+      // cultural_activities: parseToArray(aiData.activities?.cultural_activities),  // BLOCKED - array constraint violation
+      outdoor_activities_rating: toRating(aiData.activities?.outdoor_activities_rating),
+      restaurants_rating: toRating(aiData.activities?.restaurants_rating),
+      nightlife_rating: toRating(aiData.activities?.nightlife_rating),
+      shopping_rating: toRating(aiData.activities?.shopping_rating),
+      museums_rating: toRating(aiData.activities?.museums_rating),
+      outdoor_rating: toRating(aiData.activities?.outdoor_rating),
+      activities_available: parseToArray(aiData.activities?.activities_available),
+      activity_infrastructure: aiData.activities?.activity_infrastructure,
+      interests_supported: parseToArray(aiData.activities?.interests_supported),
+      top_hobbies: parseToArray(aiData.activities?.top_hobbies),
+      // sports_facilities: parseToArray(aiData.activities?.sports_facilities),  // BLOCKED - array constraint violation
 
       // Demographics - ALL FIELDS
       population: toInteger(aiData.demographics?.population),
       retirement_community_presence: aiData.demographics?.retirement_community_presence,
+
+      // Location - ALL fields
+      town_name: aiData.location?.town_name,
+      country_code: aiData.location?.country_code,
+      geo_region: aiData.location?.geo_region,
+      nearest_major_city: aiData.location?.nearest_major_city,
+      timezone: aiData.location?.timezone,
+      urban_rural_character: aiData.location?.urban_rural_character,
+      subdivision_code: aiData.location?.subdivision_code,
+      distance_to_urban_center: toInteger(aiData.location?.distance_to_urban_center),
+      regions: parseToArray(aiData.location?.regions),
+
+      // Lifestyle - ALL fields
+      lifestyle_description: aiData.lifestyle?.lifestyle_description,
+      family_friendliness_rating: toRating(aiData.lifestyle?.family_friendliness_rating),
+      senior_friendly_rating: toRating(aiData.lifestyle?.senior_friendly_rating),
+      solo_living_support: toRating(aiData.lifestyle?.solo_living_support),
+      pet_friendliness: aiData.lifestyle?.pet_friendliness,
+      pollen_levels: aiData.lifestyle?.pollen_levels,
+      tourist_season_impact: aiData.lifestyle?.tourist_season_impact,
+      wellness_rating: toRating(aiData.lifestyle?.wellness_rating),
+      quality_of_life: toScore(aiData.lifestyle?.quality_of_life),
+
+      // Environment - ALL fields
+      environmental_factors: parseToArray(aiData.environment?.environmental_factors),
+
+      // Travel - ALL fields
+      travel_connectivity_rating: toRating(aiData.travel?.travel_connectivity_rating),
+      international_flights_direct: parseToArray(aiData.travel?.international_flights_direct),
+
+      // Startups - ALL fields
+      startup_ecosystem_rating: toRating(aiData.startups?.startup_ecosystem_rating),
+      government_efficiency_rating: toRating(aiData.startups?.government_efficiency_rating),
+
+      // Visa - ALL fields
+      residency_path_info: aiData.visa?.residency_path_info,
+      visa_requirements: aiData.visa?.visa_requirements,
+      visa_free_days: toInteger(aiData.visa?.visa_free_days),
+      min_income_requirement_usd: toInteger(aiData.visa?.min_income_requirement_usd),
+      easy_residency_countries: parseToArray(aiData.visa?.easy_residency_countries),
+      visa_on_arrival_countries: parseToArray(aiData.visa?.visa_on_arrival_countries),
 
       // Description - ALL FIELDS
       description: aiData.description

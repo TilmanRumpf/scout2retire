@@ -390,8 +390,41 @@ export function analyzeDataQuality(towns) {
     }
   });
 
-  // Sort towns by number of issues (worst first)
-  report.townIssues.sort((a, b) => b.issues.length - a.issues.length);
+  // Sort towns by severity priority (critical > high > medium > low), then by total count
+  report.townIssues.sort((a, b) => {
+    // Count issues by severity for each town
+    const countSeverity = (town, severity) =>
+      town.issues.filter(i => i.severity === severity).length;
+
+    const aCritical = countSeverity(a, SEVERITY.CRITICAL);
+    const bCritical = countSeverity(b, SEVERITY.CRITICAL);
+    if (aCritical !== bCritical) return bCritical - aCritical;
+
+    const aHigh = countSeverity(a, SEVERITY.HIGH);
+    const bHigh = countSeverity(b, SEVERITY.HIGH);
+    if (aHigh !== bHigh) return bHigh - aHigh;
+
+    const aMedium = countSeverity(a, SEVERITY.MEDIUM);
+    const bMedium = countSeverity(b, SEVERITY.MEDIUM);
+    if (aMedium !== bMedium) return bMedium - aMedium;
+
+    const aLow = countSeverity(a, SEVERITY.LOW);
+    const bLow = countSeverity(b, SEVERITY.LOW);
+    if (aLow !== bLow) return bLow - aLow;
+
+    // Tiebreaker: total issue count
+    return b.issues.length - a.issues.length;
+  });
+
+  // Debug log top 10 for verification
+  console.log('🔴 Top 10 towns after severity sort:');
+  report.townIssues.slice(0, 10).forEach((town, idx) => {
+    const critical = town.issues.filter(i => i.severity === SEVERITY.CRITICAL).length;
+    const high = town.issues.filter(i => i.severity === SEVERITY.HIGH).length;
+    const medium = town.issues.filter(i => i.severity === SEVERITY.MEDIUM).length;
+    const low = town.issues.filter(i => i.severity === SEVERITY.LOW).length;
+    console.log(`  ${idx + 1}. ${town.townName}: ${critical}C, ${high}H, ${medium}M, ${low}L (total: ${town.issues.length})`);
+  });
 
   return report;
 }

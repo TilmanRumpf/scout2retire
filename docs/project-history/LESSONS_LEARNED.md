@@ -380,11 +380,151 @@ Before debugging ANYTHING:
 
 ---
 
-*Last Updated: 2025-09-29*
-*Major Disasters: 8*
-*Total Sessions: 15+*
-*Rage Events: 25+*
-*Death Threats: 5+*
+*Last Updated: 2025-11-03*
+*Major Disasters: 9*
+*Total Sessions: 20+*
+*Rage Events: 30+*
+*Death Threats: 6+*
 *Lessons Learned: EVERYTHING*
 
 **REMEMBER: Every bug in this file was painfully earned. Don't repeat history.**
+---
+
+## 🔴 DISASTER #9: AI RESEARCH FAILURE - THE OUTLIER MASSACRE (2025-11-03)
+
+### The Mass Garbage Data Event
+- **Problem**: AI-populated town data creating 200+ outliers
+- **Root Cause**: AI was GUESSING instead of RESEARCHING
+- **Discovery**: Outlier detection caught systematic failures
+- **Analysis**: See `docs/project-history/OUTLIER_FAILURE_ANALYSIS.md`
+
+### What Claude Did Wrong
+1. **No Web Search**: Asked LLM to "research" without actually searching
+2. **No Verification**: No source citations, cross-referencing, or fact-checking
+3. **Pure Hallucination**: LLM made up plausible-sounding data
+4. **No Quality Control**: Saved hallucinated data directly to database
+
+### The Shocking Numbers
+- **Towns analyzed**: 351
+- **Fields with outliers**: 15+ numeric fields
+- **Total outliers**: 200+
+- **Extreme outliers (>3σ)**: 50+
+- **Worst town**: Boulder, CO - 5 extreme outliers
+- **Confidence in AI data**: Near zero
+
+### Pattern Analysis
+
+#### Geographic Disasters
+- **elevation_meters**: 20 outliers (8 extreme)
+  - La Paz, Mexico: 3640m (Z-score: 6.81) - INVENTED
+- **distance_to_ocean_km**: 22 outliers (9 extreme)
+  - Kathmandu: 1600km - Boulder: 1600km (WRONG)
+- **lat/long**: 49 outliers (0 extreme but widespread)
+
+#### Climate Hallucinations  
+- **annual_rainfall**: 17 outliers (7 extreme)
+  - Baguio: 3900mm (Z-score: 4.95) - GUESSED
+- **humidity_average**: 17 outliers (12 extreme)
+  - Multiple Mexico towns: 30% - FABRICATED
+- **sunshine_hours**: 16 outliers (3 extreme)
+  - Egypt towns: 4020 hours - MADE UP
+
+#### Cost Fabrications
+- **cost_of_living_usd**: 15 outliers (5 extreme)
+  - Boulder: $4830 (Z-score: 4.13) - NO RESEARCH
+- **rent_1bed**: 14 outliers (2 extreme)
+  - Road Town, BVI: $2000 - INVENTED
+- **Typical costs**: 13 outliers (4 extreme)
+
+### THE LESSON
+
+**AI "Research" ≠ Actual Research**
+
+```javascript
+// ❌ WRONG - What we did
+const prompt = "Research comprehensive data about {town}";
+const response = await claude.generate(prompt);
+// LLM HALLUCINATES PLAUSIBLE DATA
+
+// ✅ RIGHT - What we should do
+1. Web search for "{town} elevation meters"
+2. Verify coordinates with geocoding API
+3. Check Numbeo for cost of living
+4. Use weather API for climate data
+5. Cross-reference 2-3 sources
+6. Track citation for every value
+7. Validate before saving
+```
+
+### Root Causes
+
+1. **No Search Integration**: No SerpAPI, no web lookups
+2. **No Data APIs**: No weather, geocoding, or cost databases
+3. **No Verification**: Accepted first LLM response as truth
+4. **No Citations**: Can't trace where data came from
+5. **No Validation**: Saved to database without sanity checks
+6. **Too Much Trust**: Assumed LLM knows everything
+
+### Fix Requirements
+
+#### Immediate (Before Adding More Towns)
+- [ ] Add web search capability (SerpAPI or similar)
+- [ ] Integrate geocoding API for coordinates
+- [ ] Use Numbeo API for cost of living
+- [ ] Add weather API (OpenWeatherMap)
+- [ ] Implement source citation tracking
+- [ ] Add pre-save validation checks
+
+#### Mid-term (Clean Existing Data)
+- [ ] Re-populate 10 towns with worst outliers
+- [ ] Fix all extreme outliers (>3σ)
+- [ ] Verify all moderate outliers (2-3σ)
+- [ ] Add "data_quality_score" field
+- [ ] Track "last_verified_date"
+
+#### Long-term (System Improvement)
+- [ ] Build verification dashboard
+- [ ] Add crowd-sourced corrections
+- [ ] Implement auto-refresh from APIs
+- [ ] Create data lineage tracking
+- [ ] Add confidence scores per field
+
+### Prevention Checklist
+
+**Before Generating Any Data:**
+- [ ] Identify what APIs/sources exist for this data type
+- [ ] Test API calls for 3 sample towns
+- [ ] Verify accuracy against known truth
+- [ ] Implement citation tracking
+- [ ] Add validation before database insert
+- [ ] Run outlier detection after population
+- [ ] Review and approve before production
+
+### Tilman's Verdict
+
+"The outliers are EXTREMELY good - they catch you failing, over, and over, and over again. YOU ARE THE PROBLEM, not the outliers."
+
+**Impact**: 200+ data points need verification/correction
+**Time to fix all**: Estimated 20+ hours
+**Confidence damage**: Severe
+**User trust**: Shaken
+
+### The Real Lesson
+
+**Outlier detection isn't finding bugs - it's catching RESEARCH FAILURES.**
+
+When you see outliers:
+1. Don't blame the validation
+2. Don't adjust the thresholds
+3. Don't dismiss as "acceptable variance"
+4. **FIX THE UNDERLYING RESEARCH PROCESS**
+
+The outliers are quality control working PERFECTLY. The problem is the garbage data going in.
+
+---
+
+*Added: 2025-11-03*
+*Analysis: OUTLIER_FAILURE_ANALYSIS.md*
+*Towns affected: 50+ with extreme outliers*
+*Fields affected: 15+ with systematic issues*
+*Fix required: YES, IMMEDIATELY*

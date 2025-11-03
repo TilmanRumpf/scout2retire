@@ -73,11 +73,16 @@ export default function TownPhotoUpload({ town, onPhotoUpdate }) {
       // Step 3: Generate filename
       const fileName = generateTownImageFilename(town, slotNumber);
 
-      // Step 4: Upload to Supabase storage
+      // Step 4: Upload to Supabase storage with metadata for RLS
       toast.loading('Uploading to storage...', { id: 'upload' });
       const { error: uploadError } = await supabase.storage
         .from('town-images')
-        .upload(fileName, optimizedFile, { upsert: true });
+        .upload(fileName, optimizedFile, {
+          upsert: true,
+          metadata: {
+            town_id: town.id  // For RLS policy per-town access control
+          }
+        });
 
       if (uploadError) throw uploadError;
       toast.dismiss('upload');
