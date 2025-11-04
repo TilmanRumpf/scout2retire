@@ -9,9 +9,7 @@
  * Created: 2025-10-18
  */
 
-import React, { useState, useEffect } from 'react';
-import EditableDataField from '../EditableDataField';
-import { checkAdminAccess } from '../../utils/paywallUtils';
+import React, { useState } from 'react';
 
 // Field metadata: type, range, description
 const FIELD_METADATA = {
@@ -173,17 +171,8 @@ const fieldToLabel = (field) => {
     .join(' ');
 };
 
-export default function LegacyFieldsSection({ fields, town, onTownUpdate }) {
-  const [isExecutiveAdmin, setIsExecutiveAdmin] = useState(false);
+export default function LegacyFieldsSection({ fields, town }) {
   const [isExpanded, setIsExpanded] = useState(false);
-
-  useEffect(() => {
-    const checkExecAdmin = async () => {
-      const hasAccess = await checkAdminAccess('executive_admin');
-      setIsExecutiveAdmin(hasAccess);
-    };
-    checkExecAdmin();
-  }, []);
 
   // Don't render if no fields
   if (!fields || fields.length === 0) {
@@ -211,33 +200,37 @@ export default function LegacyFieldsSection({ fields, town, onTownUpdate }) {
       {isExpanded && (
         <div className="space-y-2 pl-4">
           <div className="text-sm text-amber-700 dark:text-amber-300 mb-4 p-3 bg-amber-50 dark:bg-amber-900/10 rounded border border-amber-200 dark:border-amber-800">
-            ℹ️ These fields contain historical data that may guide your decisions. They have the same
-            inline editing and Google search capabilities as modern fields.
+            ℹ️ These fields contain historical data that may guide your decisions. They are <strong>READ-ONLY</strong> for reference purposes.
           </div>
 
           {fields.map(field => {
+            const value = town[field];
             const metadata = FIELD_METADATA[field] || { type: 'text', description: `Legacy ${fieldToLabel(field)} field` };
 
             return (
-              <EditableDataField
-                key={field}
-                label={fieldToLabel(field)}
-                value={town[field]}
-                field={field}
-                townId={town.id}
-                townName={town.town_name}
-                countryName={town.country}
-                subdivisionCode={town.region}
-                type={metadata.type}
-                range={metadata.range}
-                description={metadata.description}
-                isExecutiveAdmin={isExecutiveAdmin}
-                onUpdate={(field, newValue) => {
-                  if (onTownUpdate) {
-                    onTownUpdate(field, newValue);
-                  }
-                }}
-              />
+              <div key={field} className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded border border-gray-200 dark:border-gray-700">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-700 dark:text-gray-300 text-sm mb-1">
+                      {fieldToLabel(field)}
+                    </div>
+                    {value ? (
+                      <div className="text-gray-900 dark:text-gray-100 text-sm whitespace-pre-wrap">
+                        {value}
+                      </div>
+                    ) : (
+                      <div className="text-gray-400 dark:text-gray-500 text-sm italic">
+                        (empty)
+                      </div>
+                    )}
+                    {metadata.description && (
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {metadata.description}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>
