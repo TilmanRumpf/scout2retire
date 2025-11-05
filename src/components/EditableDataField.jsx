@@ -863,7 +863,7 @@ const EditableDataField = ({
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-field={field}>
       {/* Label and Field Name */}
       <div className="flex items-center justify-between">
         <div>

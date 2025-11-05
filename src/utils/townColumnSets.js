@@ -28,6 +28,9 @@ export const COLUMN_SETS = {
   // Infrastructure - Services and connectivity
   infrastructure: 'id, town_name, walkability, public_transport_quality, nearest_major_hospital_km, airport_distance, english_speaking_doctors, emergency_services_quality, local_mobility_options, regional_connectivity, international_access',
 
+  // Culture - Language and communication
+  culture: 'id, town_name, primary_language, english_proficiency, english_proficiency_level, cultural_events_frequency, traditional_progressive_lean',
+
   // Admin - Visa and residency
   admin: 'id, town_name, country, visa_requirements, residency_path_info, retirement_visa_available, digital_nomad_visa, easy_residency_countries',
 

@@ -1,0 +1,163 @@
+================================================================================
+ENGLISH PROFICIENCY DATA FLOW CRISIS - VISUAL DIAGRAM
+================================================================================
+
+WHAT EXISTS IN DATABASE (Oct 20, 2025):
+  Column: english_proficiency
+  Type: INTEGER (0-100 percentage scale)
+  Status: FULLY POPULATED
+  Examples: 95, 90, 35, 27, 70
+  
+WHAT UI CODE EXPECTS:
+  Column: english_proficiency_level  
+  Type: TEXT (categorical)
+  Valid values: ['low', 'moderate', 'high', 'very high', 'widespread', 'native']
+  Status: DOES NOT EXIST IN DATABASE
+  
+RESULT: COMPLETE DATA MISMATCH
+
+
+================================================================================
+CURRENT DATA FLOW (BROKEN)
+================================================================================
+
+1. Database Query (townUtils.jsx line 23):
+   SELECT english_proficiency_level
+   
+   Returns: NULL (field doesn't exist)
+
+
+2. CulturePanel Component (expects dropdown):
+   EditableField with type="select"
+   value={town.english_proficiency_level}  ← NULL
+   Shows: Empty dropdown
+
+
+3. Scoring Algorithm (cultureScoring.js):
+   if (town.english_proficiency_level) {  ← FALSE!
+     Calculate score based on value
+   } else {
+     Fall back to missing data penalty
+   }
+
+
+4. User Display (TownDiscovery.jsx):
+   Attempts to show: {english_proficiency_level}
+   Actually shows: (nothing - undefined)
+
+
+5. Data Verification (dataVerification.js):
+   Expects: english_proficiency with range 0-10
+   Actually stores: english_proficiency with values 0-100
+   Result: FALSE POSITIVE ERRORS
+
+
+================================================================================
+KEY CONFLICTS
+================================================================================
+
+CONFLICT #1: Two Field Names
+  Database has: english_proficiency (numeric)
+  Code expects: english_proficiency_level (categorical)
+  Impact: Component references wrong column, gets NULL
+
+
+CONFLICT #2: Range Mismatch  
+  Database stores: 0-100 (like 95 for US)
+  Validation expects: 0-10
+  Impact: Data quality checker reports false errors
+
+
+CONFLICT #3: Type Mismatch
+  Database: INTEGER (percentage like 95)
+  Code: TEXT (category like 'high')
+  Impact: UI can't use data directly, needs conversion
+
+
+CONFLICT #4: Category Error
+  TownsManager references: english_proficiency (wrong!)
+  Should reference: english_proficiency_level
+  Impact: Field name confusion in admin UI
+
+
+================================================================================
+FILES WITH PROBLEMS
+================================================================================
+
+1. src/utils/dataVerification.js (Line 22)
+   Problem: Range 0-10 but database has 0-100
+   Fix needed: Update range to 0-100
+
+2. src/components/ComparisonGrid.jsx
+   Problem: Multiplies by 10 (95 * 10 = 950/10)
+   Fix needed: Display as percentage or categorical
+
+3. src/pages/admin/TownsManager.jsx (Lines 82, 973)
+   Problem: References english_proficiency (wrong field)
+   Fix needed: Reference english_proficiency_level
+
+4. src/components/admin/CulturePanel.jsx (Lines 87-93)
+   Problem: Expects categorical but field has no data
+   Fix needed: Populate english_proficiency_level column
+
+5. src/utils/scoring/categories/cultureScoring.js (Lines 177-195)
+   Problem: Uses categorical field that has no data
+   Fix needed: Populate english_proficiency_level column
+
+6. src/pages/TownDiscovery.jsx
+   Problem: Tries to display undefined field
+   Fix needed: Populate english_proficiency_level column
+
+
+================================================================================
+WHAT SHOULD HAPPEN
+================================================================================
+
+Option A: Convert to Categorical (RECOMMENDED)
+
+Step 1: Create new column
+  ALTER TABLE towns ADD COLUMN english_proficiency_level TEXT;
+
+Step 2: Populate from existing data
+  UPDATE towns SET english_proficiency_level = CASE
+    WHEN english_proficiency >= 99 THEN 'native'
+    WHEN english_proficiency >= 91 THEN 'widespread'
+    WHEN english_proficiency >= 76 THEN 'very high'
+    WHEN english_proficiency >= 51 THEN 'high'
+    WHEN english_proficiency >= 26 THEN 'moderate'
+    ELSE 'low'
+  END;
+
+Step 3: Components work correctly
+  - CulturePanel shows filled dropdown
+  - cultureScoring gets values
+  - TownDiscovery displays value
+  - Scoring algorithm activates
+
+
+Option B: Keep numeric, rewrite code (NOT RECOMMENDED)
+  More complex, less aligned with system design
+
+
+================================================================================
+TIMELINE
+================================================================================
+
+Sep 30, 2025:
+  Validation schema created with categorical values
+  
+Oct 18, 2025:
+  CulturePanel created expecting categorical field
+  
+Oct 20, 2025:
+  Migrations created but wrong column (numeric not categorical)
+  All 352 towns populated with numeric values
+  
+Oct 27, 2025:
+  Data audit finds range validation error
+  
+Oct 31, 2025:
+  CURRENT: Two parallel systems, nothing working together
+
+
+================================================================================

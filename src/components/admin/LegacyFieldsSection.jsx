@@ -10,8 +10,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import EditableDataField from '../EditableDataField';
-import { checkAdminAccess } from '../../utils/paywallUtils';
+import supabase from '../../utils/supabaseClient';
 
 // Field metadata: type, range, description
 const FIELD_METADATA = {
@@ -173,17 +172,63 @@ const fieldToLabel = (field) => {
     .join(' ');
 };
 
-export default function LegacyFieldsSection({ fields, town, onTownUpdate }) {
-  const [isExecutiveAdmin, setIsExecutiveAdmin] = useState(false);
+export default function LegacyFieldsSection({ fields, town }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [assembledHobbies, setAssembledHobbies] = useState(null);
+  const [loading, setLoading] = useState(false);
 
+  // Assemble outdoor_activities from towns_hobbies junction table
   useEffect(() => {
-    const checkExecAdmin = async () => {
-      const hasAccess = await checkAdminAccess('executive_admin');
-      setIsExecutiveAdmin(hasAccess);
+    const assembleHobbiesJSON = async () => {
+      if (!town?.id || !fields.includes('outdoor_activities')) return;
+
+      setLoading(true);
+      try {
+        // Get hobbies for this town from junction table
+        const { data: townHobbies, error: townError } = await supabase
+          .from('towns_hobbies')
+          .select('hobby_id, is_excluded')
+          .eq('town_id', town.id);
+
+        if (townError) throw townError;
+
+        // Get all hobbies details
+        const { data: allHobbies, error: hobbiesError } = await supabase
+          .from('hobbies')
+          .select('id, name, category, is_universal')
+          .order('name');
+
+        if (hobbiesError) throw hobbiesError;
+
+        // Filter to active (not excluded) hobbies for this town
+        const activeHobbyIds = new Set(
+          townHobbies?.filter(th => !th.is_excluded).map(th => th.hobby_id) || []
+        );
+
+        // Assemble JSON structure
+        const hobbiesData = {
+          universal: allHobbies
+            .filter(h => h.is_universal && !townHobbies?.some(th => th.hobby_id === h.id && th.is_excluded))
+            .map(h => h.name),
+          specific: allHobbies
+            .filter(h => !h.is_universal && activeHobbyIds.has(h.id))
+            .map(h => h.name),
+          total: 0
+        };
+
+        hobbiesData.total = hobbiesData.universal.length + hobbiesData.specific.length;
+
+        setAssembledHobbies(JSON.stringify(hobbiesData, null, 2));
+      } catch (error) {
+        console.error('Error assembling hobbies JSON:', error);
+        setAssembledHobbies(`Error: ${error.message}`);
+      } finally {
+        setLoading(false);
+      }
     };
-    checkExecAdmin();
-  }, []);
+
+    assembleHobbiesJSON();
+  }, [town?.id, fields]);
 
   // Don't render if no fields
   if (!fields || fields.length === 0) {
@@ -211,33 +256,53 @@ export default function LegacyFieldsSection({ fields, town, onTownUpdate }) {
       {isExpanded && (
         <div className="space-y-2 pl-4">
           <div className="text-sm text-amber-700 dark:text-amber-300 mb-4 p-3 bg-amber-50 dark:bg-amber-900/10 rounded border border-amber-200 dark:border-amber-800">
-            ℹ️ These fields contain historical data that may guide your decisions. They have the same
-            inline editing and Google search capabilities as modern fields.
+            ℹ️ These fields contain historical data that may guide your decisions. They are <strong>READ-ONLY</strong> for reference purposes.
           </div>
 
           {fields.map(field => {
             const metadata = FIELD_METADATA[field] || { type: 'text', description: `Legacy ${fieldToLabel(field)} field` };
 
+            // Special handling for outdoor_activities - assemble from junction table
+            let displayValue;
+            if (field === 'outdoor_activities' && assembledHobbies) {
+              displayValue = assembledHobbies;
+            } else {
+              displayValue = town[field];
+            }
+
             return (
-              <EditableDataField
-                key={field}
-                label={fieldToLabel(field)}
-                value={town[field]}
-                field={field}
-                townId={town.id}
-                townName={town.town_name}
-                countryName={town.country}
-                subdivisionCode={town.region}
-                type={metadata.type}
-                range={metadata.range}
-                description={metadata.description}
-                isExecutiveAdmin={isExecutiveAdmin}
-                onUpdate={(field, newValue) => {
-                  if (onTownUpdate) {
-                    onTownUpdate(field, newValue);
-                  }
-                }}
-              />
+              <div key={field} className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded border border-gray-200 dark:border-gray-700">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-700 dark:text-gray-300 text-sm mb-1">
+                      {fieldToLabel(field)}
+                      {field === 'outdoor_activities' && (
+                        <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
+                          (assembled from towns_hobbies table)
+                        </span>
+                      )}
+                    </div>
+                    {loading && field === 'outdoor_activities' ? (
+                      <div className="text-gray-400 dark:text-gray-500 text-sm italic animate-pulse">
+                        Loading hobbies data...
+                      </div>
+                    ) : displayValue ? (
+                      <div className="text-gray-900 dark:text-gray-100 text-sm whitespace-pre-wrap font-mono bg-white dark:bg-gray-900 p-2 rounded border border-gray-300 dark:border-gray-600 overflow-x-auto">
+                        {displayValue}
+                      </div>
+                    ) : (
+                      <div className="text-gray-400 dark:text-gray-500 text-sm italic">
+                        {field === 'outdoor_activities' ? 'No hobbies data in junction table' : '(empty)'}
+                      </div>
+                    )}
+                    {metadata.description && (
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {metadata.description}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>
