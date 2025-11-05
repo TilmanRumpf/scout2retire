@@ -19,6 +19,24 @@ import { scoreTownsBatch } from '../../utils/scoring/unifiedScoring';
 import { getOnboardingProgress } from '../../utils/userpreferences/onboardingUtils';
 import { uiConfig } from '../../styles/uiConfig';
 import { formatTownDisplay } from '../../utils/townDisplayUtils';
+import {
+  formatUserRegionPrefs,
+  formatUserClimatePrefs,
+  formatUserCulturePrefs,
+  formatUserHobbiesPrefs,
+  formatUserAdminPrefs,
+  formatUserCostPrefs,
+  formatTownRegionAttrs,
+  formatTownClimateAttrs,
+  formatTownCultureAttrs,
+  formatTownHobbiesAttrs,
+  formatTownAdminAttrs,
+  formatTownCostAttrs,
+  getMatchIndicator,
+  getScoreColor,
+  calculateSectionScore,
+  formatFinalCalculation
+} from '../../utils/scoring/matchDisplayHelpers';
 
 const AlgorithmManager = () => {
   const navigate = useNavigate();
@@ -480,11 +498,11 @@ const AlgorithmManager = () => {
           </button>
 
           {showTesting && (
-            <div className="px-6 pb-6 space-y-4 border-t border-gray-200">
-            {/* Town and User Selection Row */}
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              {/* Town Selection */}
-              <div>
+            <div className="px-6 pb-6 border-t border-gray-200">
+            {/* Three Column Layout: Town | User | Live Results */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+              {/* COLUMN 1: Town Selection */}
+              <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-blue-800 mb-2">
                   Search for a Town to Test:
                 </h3>
@@ -528,8 +546,8 @@ const AlgorithmManager = () => {
                 )}
               </div>
 
-              {/* User Selection */}
-              <div>
+              {/* COLUMN 2: User Selection */}
+              <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-blue-800 mb-2">
                   Select User to Test With:
                 </h3>
@@ -577,88 +595,217 @@ const AlgorithmManager = () => {
                   <p className={`text-sm ${uiConfig.colors.muted} mt-1`}>No users found matching "{userSearch}"</p>
                 )}
               </div>
-            </div>
 
-            {/* Show message if missing selection */}
-            {(selectedTown || selectedTestUser) && (!selectedTown || !selectedTestUser) && (
-              <div className={`${uiConfig.colors.warning} rounded p-4 mt-2`}>
-                <p className="text-sm">
-                  ⚠️ Please select both a town AND a user to test the matching algorithm.
-                  {!selectedTown && " Missing: Town selection."}
-                  {!selectedTestUser && " Missing: User selection."}
-                </p>
-              </div>
-            )}
+              {/* COLUMN 3: Live Match Results */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                  Live Match Results
+                </h3>
 
-            {selectedTown && selectedTestUser && (
-              <div className={`${uiConfig.colors.card} rounded p-4`}>
-                <p className={`text-sm mb-2 ${uiConfig.colors.body}`}>
-                  <strong>Testing as:</strong> {selectedTestUser.email} {selectedTestUser.full_name && `(${selectedTestUser.full_name})`}
-                </p>
-                <p className={`text-sm ${uiConfig.colors.body}`}>
-                  <strong>Selected Town:</strong> {formatTownDisplay(selectedTown)}
-                </p>
-
-                {isCalculating && (
-                  <div className="mt-4 flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-                    <span className={`text-sm ${uiConfig.colors.muted}`}>Calculating score...</span>
-                  </div>
-                )}
-
-                <div className={`mt-2 text-xs ${uiConfig.colors.hint}`}>
-                  <p>💡 Tip: The production UI may show cached scores from earlier calculations.</p>
-                  <p>To get fresh scores, clear your browser cache or use an incognito window.</p>
-                </div>
-              </div>
-            )}
-
-            {testResults && !isCalculating && (
-              <div className={`${uiConfig.colors.card} rounded p-4 space-y-4`}>
-                <h3 className={`font-semibold text-lg ${uiConfig.colors.accent}`}>Test Results</h3>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className={`text-sm ${uiConfig.colors.hint}`}>Overall Score</p>
-                    <p className={`text-2xl font-bold ${uiConfig.colors.accent}`}>{testResults.score}%</p>
-                    <p className={`text-sm ${uiConfig.colors.muted}`}>{testResults.quality}</p>
-                  </div>
-
-                  <div>
-                    <p className={`text-sm ${uiConfig.colors.hint}`}>Category Breakdown</p>
-                    <div className="space-y-1">
-                      {Object.entries(testResults.categoryScores || {}).map(([cat, score]) => (
-                        <div key={cat} className="flex justify-between text-sm">
-                          <span className={`capitalize ${uiConfig.colors.body}`}>{cat}:</span>
-                          <span className={`font-semibold ${uiConfig.colors.heading}`}>{score}%</span>
-                        </div>
-                      ))}
+                {/* Empty state - no selection */}
+                {(!selectedTown || !selectedTestUser) && (
+                  <div className="bg-gray-50 rounded-lg p-8 text-center">
+                    <div className="text-gray-400">
+                      <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      <p className="text-sm">Select both a town and user</p>
+                      <p className="text-sm">to see live matching results</p>
                     </div>
                   </div>
-                </div>
+                )}
 
-                {testResults.factors && testResults.factors.length > 0 && (
-                  <div>
-                    <p className={`text-sm font-semibold ${uiConfig.colors.body} mb-2`}>Top Matching Factors:</p>
-                    <ul className="text-sm space-y-1">
-                      {testResults.factors.slice(0, 5).map((factor, idx) => (
-                        <li key={idx} className="flex justify-between">
-                          <span className={uiConfig.colors.body}>{factor.factor}</span>
-                          <span className={factor.score > 0 ? uiConfig.colors.accent : uiConfig.colors.error}>
-                            {factor.score > 0 ? '+' : ''}{factor.score}pts
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
+                {/* Loading state */}
+                {isCalculating && selectedTown && selectedTestUser && (
+                  <div className="bg-white rounded-lg p-8 text-center border-2 border-blue-200">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-sm text-gray-600">Calculating match...</p>
                   </div>
                 )}
 
-                <div className={`text-xs ${uiConfig.colors.muted} mt-4`}>
-                  <p><strong>Note:</strong> This uses the selected user's preferences ({selectedTestUser?.email}) with the current algorithm weights.</p>
-                  <p>The score shows how well {formatTownDisplay(selectedTown)} matches their retirement preferences.</p>
-                </div>
+                {/* Results display */}
+                {testResults && !isCalculating && selectedTown && selectedTestUser && (
+                  <div className="space-y-4">
+                    {/* Overall Score Card */}
+                    <div className={`rounded-lg p-4 text-center border-2 ${getScoreColor(testResults.score || 0)}`}>
+                      <div className="text-4xl font-bold">
+                        {testResults.score || 0}%
+                      </div>
+                      <div className="text-sm mt-1">
+                        {testResults.quality || 'Calculating...'}
+                      </div>
+                    </div>
+
+                    {/* Category Scores */}
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-gray-700">Category Breakdown:</h4>
+
+                      {/* Region Score */}
+                      {testResults.categoryScores?.region !== undefined && (
+                        <div className="bg-white rounded-lg p-3 border border-gray-200">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-medium">📍 Region Match</span>
+                            <span className={`font-bold ${getScoreColor(testResults.categoryScores.region)}`}>
+                              {testResults.categoryScores.region}%
+                            </span>
+                          </div>
+                          <div className="text-xs space-y-1">
+                            <div className="text-gray-600">
+                              <span className="font-medium">User wants:</span> {formatUserRegionPrefs(userPreferences?.region_preferences).text}
+                            </div>
+                            <div className="text-gray-600">
+                              <span className="font-medium">Town offers:</span> {formatTownRegionAttrs(selectedTown).text}
+                            </div>
+                            <div className="text-gray-500 mt-1">
+                              Weight: {config.categoryWeights.region}% • Contributes: {(testResults.categoryScores.region * config.categoryWeights.region / 100).toFixed(1)} pts
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Climate Score */}
+                      {testResults.categoryScores?.climate !== undefined && (
+                        <div className="bg-white rounded-lg p-3 border border-gray-200">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-medium">🌡️ Climate Match</span>
+                            <span className={`font-bold ${getScoreColor(testResults.categoryScores.climate)}`}>
+                              {testResults.categoryScores.climate}%
+                            </span>
+                          </div>
+                          <div className="text-xs space-y-1">
+                            <div className="text-gray-600">
+                              <span className="font-medium">User wants:</span> {formatUserClimatePrefs(userPreferences?.climate_preferences).text}
+                            </div>
+                            <div className="text-gray-600">
+                              <span className="font-medium">Town offers:</span> {formatTownClimateAttrs(selectedTown).text}
+                            </div>
+                            <div className="text-gray-500 mt-1">
+                              Weight: {config.categoryWeights.climate}% • Contributes: {(testResults.categoryScores.climate * config.categoryWeights.climate / 100).toFixed(1)} pts
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Culture Score */}
+                      {testResults.categoryScores?.culture !== undefined && (
+                        <div className="bg-white rounded-lg p-3 border border-gray-200">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-medium">🎭 Culture Match</span>
+                            <span className={`font-bold ${getScoreColor(testResults.categoryScores.culture)}`}>
+                              {testResults.categoryScores.culture}%
+                            </span>
+                          </div>
+                          <div className="text-xs space-y-1">
+                            <div className="text-gray-600">
+                              <span className="font-medium">User wants:</span> {formatUserCulturePrefs(userPreferences?.culture_preferences).text}
+                            </div>
+                            <div className="text-gray-600">
+                              <span className="font-medium">Town offers:</span> {formatTownCultureAttrs(selectedTown).text}
+                            </div>
+                            <div className="text-gray-500 mt-1">
+                              Weight: {config.categoryWeights.culture}% • Contributes: {(testResults.categoryScores.culture * config.categoryWeights.culture / 100).toFixed(1)} pts
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Hobbies Score */}
+                      {testResults.categoryScores?.hobbies !== undefined && (
+                        <div className="bg-white rounded-lg p-3 border border-gray-200">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-medium">🎯 Hobbies Match</span>
+                            <span className={`font-bold ${getScoreColor(testResults.categoryScores.hobbies)}`}>
+                              {testResults.categoryScores.hobbies}%
+                            </span>
+                          </div>
+                          <div className="text-xs space-y-1">
+                            <div className="text-gray-600">
+                              <span className="font-medium">User wants:</span> {formatUserHobbiesPrefs(userPreferences?.hobbies).text}
+                            </div>
+                            <div className="text-gray-600">
+                              <span className="font-medium">Town offers:</span> {formatTownHobbiesAttrs(selectedTown).text}
+                            </div>
+                            <div className="text-gray-500 mt-1">
+                              Weight: {config.categoryWeights.hobbies}% • Contributes: {(testResults.categoryScores.hobbies * config.categoryWeights.hobbies / 100).toFixed(1)} pts
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Administration Score */}
+                      {testResults.categoryScores?.administration !== undefined && (
+                        <div className="bg-white rounded-lg p-3 border border-gray-200">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-medium">🏥 Admin Match</span>
+                            <span className={`font-bold ${getScoreColor(testResults.categoryScores.administration)}`}>
+                              {testResults.categoryScores.administration}%
+                            </span>
+                          </div>
+                          <div className="text-xs space-y-1">
+                            <div className="text-gray-600">
+                              <span className="font-medium">User wants:</span> {formatUserAdminPrefs(userPreferences?.administration).text}
+                            </div>
+                            <div className="text-gray-600">
+                              <span className="font-medium">Town offers:</span> {formatTownAdminAttrs(selectedTown).text}
+                            </div>
+                            <div className="text-gray-500 mt-1">
+                              Weight: {config.categoryWeights.administration}% • Contributes: {(testResults.categoryScores.administration * config.categoryWeights.administration / 100).toFixed(1)} pts
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Costs Score */}
+                      {testResults.categoryScores?.costs !== undefined && (
+                        <div className="bg-white rounded-lg p-3 border border-gray-200">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-medium">💰 Budget Match</span>
+                            <span className={`font-bold ${getScoreColor(testResults.categoryScores.costs)}`}>
+                              {testResults.categoryScores.costs}%
+                            </span>
+                          </div>
+                          <div className="text-xs space-y-1">
+                            <div className="text-gray-600">
+                              <span className="font-medium">User wants:</span> {formatUserCostPrefs(userPreferences?.costs).text}
+                            </div>
+                            <div className="text-gray-600">
+                              <span className="font-medium">Town offers:</span> {formatTownCostAttrs(selectedTown).text}
+                            </div>
+                            <div className="text-gray-500 mt-1">
+                              Weight: {config.categoryWeights.costs}% • Contributes: {(testResults.categoryScores.costs * config.categoryWeights.costs / 100).toFixed(1)} pts
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Final Calculation */}
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <h4 className="font-semibold text-gray-700 mb-2">Final Score Calculation:</h4>
+                      <div className="text-xs font-mono space-y-1">
+                        {Object.entries(testResults.categoryScores || {}).map(([cat, score]) => {
+                          const weight = config.categoryWeights[cat] || 0;
+                          const contribution = (score * weight / 100).toFixed(1);
+                          return (
+                            <div key={cat} className="flex justify-between">
+                              <span className="capitalize">{cat}:</span>
+                              <span>{score}% × {weight}% = {contribution} pts</span>
+                            </div>
+                          );
+                        })}
+                        <div className="border-t pt-1 font-bold">
+                          <div className="flex justify-between">
+                            <span>Total:</span>
+                            <span>{testResults.score}%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+
           </div>
           )}
         </div>
