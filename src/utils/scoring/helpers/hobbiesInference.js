@@ -108,24 +108,31 @@ export function inferHobbyAvailability(town, userHobbies) {
  */
 function inferFromGeography(town, userHobbies) {
   const inferred = [];
-  
+
   userHobbies.forEach(hobby => {
     // WATER SPORTS - Coastal or lake towns (case-insensitive check)
-    const waterSports = ['Swimming', 'Sailing', 'Surfing', 'Scuba Diving', 'Kayaking', 
+    const waterSports = ['Swimming', 'Sailing', 'Surfing', 'Scuba Diving', 'Kayaking',
          'Fishing', 'Boating', 'Windsurfing', 'Kitesurfing', 'Snorkeling',
          'Water Skiing', 'Swimming Laps', 'Water Aerobics', 'Stand-up Paddleboarding',
          'Canoeing', 'Jet Skiing', 'Deep Sea Fishing'];
-    
+
     // Normalize hobby name for comparison (handle underscores)
     const normalizedHobby = hobby.toLowerCase().replace(/_/g, ' ');
     if (waterSports.some(sport => sport.toLowerCase().replace(/_/g, ' ') === normalizedHobby)) {
       // Check geographic features with case-insensitive comparison
-      const hasCoastal = town.geographic_features_actual?.some(f => 
+      const hasCoastal = town.geographic_features_actual?.some(f =>
         f && f.toString().toLowerCase() === 'coastal'
       );
-      
-      if (town.distance_to_ocean_km === 0 || hasCoastal ||
-          (town.distance_to_water_km === 0 && town.distance_to_ocean_km <= 50)) {
+
+      // FLORIDA SPECIAL CASE - All Florida towns have water access
+      const isFloridaTown = town.state_code === 'FL' ||
+                           (town.country === 'United States' && town.town_name?.includes('FL'));
+
+      if (isFloridaTown ||  // Florida always has water sports
+          town.distance_to_ocean_km === 0 ||
+          hasCoastal ||
+          (town.distance_to_water_km === 0 && town.distance_to_ocean_km <= 50) ||
+          town.distance_to_ocean_km <= 100) {  // Within 100km of ocean = water sports available
         inferred.push(hobby);
       }
     }

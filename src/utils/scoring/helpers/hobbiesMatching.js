@@ -63,10 +63,10 @@ const legacyMapping = {
   'water_sports': ['swimming', 'snorkeling', 'water skiing', 'swimming laps', 'water aerobics'],
   'water_crafts': ['kayaking', 'sailing', 'boating', 'canoeing', 'stand-up paddleboarding'],
   'winter_sports': ['downhill skiing', 'cross-country skiing', 'ice skating', 'snowboarding'],
-  
+
   // NEW FORMAT: Keep lowercase (no case conversion!)
   'swimming': 'swimming',
-  'snorkeling': 'snorkeling', 
+  'snorkeling': 'snorkeling',
   'water_skiing': 'water skiing',
   'swimming_laps': 'swimming laps',
   'water_aerobics': 'water aerobics',
@@ -94,12 +94,14 @@ const legacyMapping = {
   'canoeing': 'canoeing',
   'boating': 'boating',
   'paddleboarding': 'paddleboarding',
+  'stand-up_paddleboarding': 'stand-up paddleboarding',
   'stand_up_paddleboarding': 'stand-up paddleboarding',
   'surfing': 'surfing',
   'windsurfing': 'windsurfing',
   'kitesurfing': 'kitesurfing',
   'scuba_diving': 'scuba diving',
   'deep_sea_fishing': 'deep sea fishing',
+  'jet_skiing': 'jet skiing',
   'water_polo': 'water polo',
   'yacht_racing': 'yacht racing',
   
@@ -121,7 +123,19 @@ const legacyMapping = {
   'pottery': 'pottery',
   'dancing': 'dancing',
   'yoga': 'yoga',
-  'volunteering': 'volunteering'
+  'volunteering': 'volunteering',
+
+  // Gardening interests that were missing
+  'interest_gardening': ['gardening', 'vegetable gardening', 'herb gardening', 'flower arranging'],
+  'aquarium_keeping': 'aquarium keeping',
+  'beekeeping': 'beekeeping',
+  'birdwatching': 'birdwatching',
+  'dog_training': 'dog training',
+  'dog_walking': 'dog walking',
+  'flower_arranging': 'flower arranging',
+  'herb_gardening': 'herb gardening',
+  'nature_walks': 'nature walks',
+  'vegetable_gardening': 'vegetable gardening'
 };
 
 /**
