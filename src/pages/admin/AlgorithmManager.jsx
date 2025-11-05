@@ -704,7 +704,7 @@ const AlgorithmManager = () => {
                 )}
                 </div>
 
-                {townSearch && filteredTowns.length === 0 && (
+                {townSearch && filteredTowns.length === 0 && !selectedTown && (
                   <p className={`text-sm ${uiConfig.colors.muted} mt-1`}>No towns found matching "{townSearch}"</p>
                 )}
               </div>
