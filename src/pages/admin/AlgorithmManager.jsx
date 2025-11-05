@@ -65,6 +65,7 @@ const AlgorithmManager = () => {
   const [filteredTowns, setFilteredTowns] = useState([]);
   const [isCalculating, setIsCalculating] = useState(false);
   const [isRestoringTown, setIsRestoringTown] = useState(false);
+  const [isRestoringUser, setIsRestoringUser] = useState(false);
 
   // Algorithm configuration state
   const [config, setConfig] = useState({
@@ -179,27 +180,35 @@ const AlgorithmManager = () => {
 
   // Load preferences when a user is selected
   useEffect(() => {
+    console.log('[useEffect] selectedTestUser changed to:', selectedTestUser?.email || 'null');
+
     const loadUserPreferences = async () => {
       if (!selectedTestUser) {
+        console.log('[loadUserPreferences] No user, clearing preferences');
         setUserPreferences(null);
         return;
       }
 
+      console.log('[loadUserPreferences] Loading for user:', selectedTestUser.email, 'ID:', selectedTestUser.id);
+
       try {
         const result = await getOnboardingProgress(selectedTestUser.id);
+        console.log('[loadUserPreferences] getOnboardingProgress result:', result);
+
         if (result.success && result.data) {
           setUserPreferences(result.data);
-          console.log('Loaded preferences for test user:', selectedTestUser.email, result.data);
+          console.log('✅ Loaded preferences for test user:', selectedTestUser.email, result.data);
           // Clear test results when user changes
           setTestResults(null);
         } else {
-          console.error('Failed to load preferences for user:', selectedTestUser.email);
+          console.error('❌ Failed to load preferences for user:', selectedTestUser.email, result);
           setUserPreferences(null);
           toast.error('Could not load preferences for selected user');
         }
       } catch (error) {
-        console.error('Error loading user preferences:', error);
+        console.error('❌ Error loading user preferences:', error);
         setUserPreferences(null);
+        toast.error('Error loading user preferences');
       }
     };
 
@@ -277,6 +286,90 @@ const AlgorithmManager = () => {
     }
   }, [selectedTown, isRestoringTown]);
 
+  // Restore last selected user from localStorage when users are loaded
+  useEffect(() => {
+    console.log('[User Restore] Checking conditions:', {
+      availableUsersCount: availableUsers.length,
+      isRestoringUser: isRestoringUser
+    });
+
+    if (availableUsers.length === 0) {
+      console.log('[User Restore] No users available yet');
+      return;
+    }
+    if (isRestoringUser) {
+      console.log('[User Restore] Already restoring');
+      return;
+    }
+
+    try {
+      const savedUserId = localStorage.getItem('algorithmManager_lastUserId');
+      const savedUserEmail = localStorage.getItem('algorithmManager_lastUserEmail');
+
+      console.log('[User Restore] Saved data:', {
+        savedUserId,
+        savedUserEmail
+      });
+
+      // Also check if userSearch has a value (from default or previous state)
+      const emailToFind = savedUserEmail || userSearch || 'tilman.rumpf@gmail.com';
+
+      if (emailToFind) {
+        // Find the user by email (most reliable method)
+        const user = availableUsers.find(u => u.email === emailToFind);
+
+        if (user) {
+          setIsRestoringUser(true);
+          setUserSearch(user.email);
+          setSelectedTestUser(user);
+          console.log('✅ [AlgorithmManager] Selected user:', user.email);
+
+          // Save to localStorage for next time
+          localStorage.setItem('algorithmManager_lastUserId', user.id);
+          localStorage.setItem('algorithmManager_lastUserEmail', user.email);
+        } else {
+          console.log('❌ [User Restore] Could not find user with email:', emailToFind);
+          console.log('Available users:', availableUsers.map(u => ({ id: u.id, email: u.email })));
+
+          // Try to select tilman.rumpf@gmail.com as default
+          const defaultUser = availableUsers.find(u => u.email === 'tilman.rumpf@gmail.com');
+          if (defaultUser) {
+            setIsRestoringUser(true);
+            setUserSearch(defaultUser.email);
+            setSelectedTestUser(defaultUser);
+            console.log('✅ [AlgorithmManager] Selected default user:', defaultUser.email);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[AlgorithmManager] Error restoring last user:', error);
+    }
+  }, [availableUsers, userSearch]);
+
+  // Reset user restoration flag after restoration is complete
+  useEffect(() => {
+    if (isRestoringUser && selectedTestUser) {
+      const timer = setTimeout(() => {
+        setIsRestoringUser(false);
+        console.log('[AlgorithmManager] User restoration complete, re-enabled saving');
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedTestUser, isRestoringUser]);
+
+  // Save selected user to localStorage whenever it changes
+  useEffect(() => {
+    if (selectedTestUser && !isRestoringUser) {
+      try {
+        localStorage.setItem('algorithmManager_lastUserId', selectedTestUser.id);
+        localStorage.setItem('algorithmManager_lastUserEmail', selectedTestUser.email);
+        console.log('[AlgorithmManager] Saved user to localStorage:', selectedTestUser.email);
+      } catch (error) {
+        console.error('[AlgorithmManager] Error saving user to localStorage:', error);
+      }
+    }
+  }, [selectedTestUser, isRestoringUser]);
+
   // Handle category weight change
   const handleWeightChange = (category, value) => {
     setConfig(prev => ({
@@ -286,6 +379,14 @@ const AlgorithmManager = () => {
         [category]: parseFloat(value) || 0
       }
     }));
+
+    // If we have test results, re-run the test with new weights
+    if (testResults && selectedTown && selectedTestUser) {
+      // Delay slightly to ensure state updates
+      setTimeout(() => {
+        handleTestScoring();
+      }, 100);
+    }
   };
 
   // Handle other settings changes
@@ -297,6 +398,14 @@ const AlgorithmManager = () => {
         [key]: isNaN(value) ? value : parseFloat(value)
       }
     }));
+
+    // If we have test results, re-run the test with new settings
+    if (testResults && selectedTown && selectedTestUser) {
+      // Delay slightly to ensure state updates
+      setTimeout(() => {
+        handleTestScoring();
+      }, 100);
+    }
   };
 
   // Save configuration
@@ -347,8 +456,27 @@ const AlgorithmManager = () => {
 
   // Test scoring with selected town
   const handleTestScoring = async () => {
-    if (!selectedTown || !userPreferences) {
-      console.log('Missing data - selectedTown:', selectedTown, 'userPreferences:', userPreferences);
+    console.log('[handleTestScoring] Called with:', {
+      selectedTown: selectedTown?.town_name || 'none',
+      selectedTestUser: selectedTestUser?.email || 'none',
+      hasUserPreferences: !!userPreferences
+    });
+
+    if (!selectedTown) {
+      console.log('❌ No town selected');
+      toast.error('Please select a town to test');
+      return;
+    }
+
+    if (!selectedTestUser) {
+      console.log('❌ No user selected');
+      toast.error('Please select a user to test');
+      return;
+    }
+
+    if (!userPreferences) {
+      console.log('❌ No user preferences loaded yet');
+      toast.error('User preferences are still loading...');
       return;
     }
 
@@ -452,6 +580,10 @@ const AlgorithmManager = () => {
   // Auto-calculate when both town and user are selected
   useEffect(() => {
     if (selectedTown && selectedTestUser && userPreferences) {
+      console.log('[AlgorithmManager] Auto-triggering scoring - all conditions met');
+      console.log('- Town:', selectedTown.town_name);
+      console.log('- User:', selectedTestUser.email);
+      console.log('- Has preferences:', !!userPreferences);
       handleTestScoring();
     }
   }, [selectedTown, selectedTestUser, userPreferences]); // Trigger when any of these change
@@ -552,17 +684,36 @@ const AlgorithmManager = () => {
                   Select User to Test With:
                 </h3>
                 <div className="relative">
-                  <input
-                    type="text"
-                    value={userSearch}
-                    onChange={(e) => {
-                      setUserSearch(e.target.value);
-                      setShowUserDropdown(true);
-                    }}
-                    onFocus={() => setShowUserDropdown(true)}
-                    placeholder="Type user email or name..."
-                    className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={userSearch}
+                      onChange={(e) => {
+                        setUserSearch(e.target.value);
+                        setShowUserDropdown(true);
+                      }}
+                      onFocus={() => setShowUserDropdown(true)}
+                      placeholder="Type user email or name..."
+                      className="flex-1 px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary"
+                    />
+                    {userSearch && !selectedTestUser && (
+                      <button
+                        onClick={() => {
+                          const user = availableUsers.find(u => u.email === userSearch);
+                          if (user) {
+                            setSelectedTestUser(user);
+                            console.log('✅ Manually selected user:', user.email);
+                            toast.success(`Selected user: ${user.email}`);
+                          } else {
+                            toast.error('User not found');
+                          }
+                        }}
+                        className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      >
+                        Select
+                      </button>
+                    )}
+                  </div>
 
                   {showUserDropdown && filteredUsers.length > 0 && (
                     <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
@@ -598,9 +749,20 @@ const AlgorithmManager = () => {
 
               {/* COLUMN 3: Live Match Results */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                  Live Match Results
-                </h3>
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-semibold text-blue-800">
+                    Live Match Results
+                  </h3>
+                  {selectedTown && selectedTestUser && (
+                    <button
+                      onClick={handleTestScoring}
+                      disabled={isCalculating}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+                    >
+                      {isCalculating ? 'Calculating...' : 'Test Scoring'}
+                    </button>
+                  )}
+                </div>
 
                 {/* Empty state - no selection */}
                 {(!selectedTown || !selectedTestUser) && (
@@ -994,7 +1156,16 @@ const AlgorithmManager = () => {
 
         {/* Region Settings */}
         <div className={`${uiConfig.colors.card} rounded-lg shadow-md p-6 mb-6`}>
-          <h2 className={`text-xl font-semibold ${uiConfig.colors.heading} mb-4`}>Region Scoring Settings</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className={`text-xl font-semibold ${uiConfig.colors.heading}`}>
+              Region Scoring Settings
+            </h2>
+            {testResults?.categoryScores?.region !== undefined && (
+              <span className="text-xl font-bold text-green-600">
+                {Math.round(testResults.categoryScores.region)}%
+              </span>
+            )}
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(config.regionSettings).map(([key, value]) => (
@@ -1019,7 +1190,16 @@ const AlgorithmManager = () => {
 
         {/* Climate Settings */}
         <div className={`${uiConfig.colors.card} rounded-lg shadow-md p-6 mb-6`}>
-          <h2 className={`text-xl font-semibold ${uiConfig.colors.heading} mb-4`}>Climate Scoring Settings</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className={`text-xl font-semibold ${uiConfig.colors.heading}`}>
+              Climate Scoring Settings
+            </h2>
+            {testResults?.categoryScores?.climate !== undefined && (
+              <span className="text-xl font-bold text-green-600">
+                {Math.round(testResults.categoryScores.climate)}%
+              </span>
+            )}
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(config.climateSettings).map(([key, value]) => (
@@ -1043,7 +1223,16 @@ const AlgorithmManager = () => {
 
         {/* Culture Settings */}
         <div className={`${uiConfig.colors.card} rounded-lg shadow-md p-6 mb-6`}>
-          <h2 className={`text-xl font-semibold ${uiConfig.colors.heading} mb-4`}>Culture Scoring Settings</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className={`text-xl font-semibold ${uiConfig.colors.heading}`}>
+              Culture Scoring Settings
+            </h2>
+            {testResults?.categoryScores?.culture !== undefined && (
+              <span className="text-xl font-bold text-green-600">
+                {Math.round(testResults.categoryScores.culture)}%
+              </span>
+            )}
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(config.cultureSettings).map(([key, value]) => (
@@ -1063,9 +1252,80 @@ const AlgorithmManager = () => {
           </div>
         </div>
 
+        {/* Hobbies Settings */}
+        <div className={`${uiConfig.colors.card} rounded-lg shadow-md p-6 mb-6`}>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className={`text-xl font-semibold ${uiConfig.colors.heading}`}>
+              Hobbies Scoring Settings
+            </h2>
+            {testResults?.categoryScores?.hobbies !== undefined && (
+              <span className="text-xl font-bold text-green-600">
+                {Math.round(testResults.categoryScores.hobbies)}%
+              </span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Object.entries(config.hobbiesSettings).map(([key, value]) => (
+              <div key={key} className="flex items-center space-x-4">
+                <label className={`flex-1 ${uiConfig.colors.body} text-sm`}>
+                  {key.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}:
+                </label>
+                <input
+                  type="number"
+                  value={value}
+                  onChange={(e) => handleSettingChange('hobbiesSettings', key, e.target.value)}
+                  className="w-20 px-3 py-1 border border-border rounded-md focus:ring-2 focus:ring-primary"
+                />
+                <span className={uiConfig.colors.muted}>pts</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Administration Settings */}
+        <div className={`${uiConfig.colors.card} rounded-lg shadow-md p-6 mb-6`}>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className={`text-xl font-semibold ${uiConfig.colors.heading}`}>
+              Administration Scoring Settings
+            </h2>
+            {testResults?.categoryScores?.administration !== undefined && (
+              <span className="text-xl font-bold text-green-600">
+                {Math.round(testResults.categoryScores.administration)}%
+              </span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Object.entries(config.adminSettings).map(([key, value]) => (
+              <div key={key} className="flex items-center space-x-4">
+                <label className={`flex-1 ${uiConfig.colors.body} text-sm`}>
+                  {key.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}:
+                </label>
+                <input
+                  type="number"
+                  value={value}
+                  onChange={(e) => handleSettingChange('adminSettings', key, e.target.value)}
+                  className="w-20 px-3 py-1 border border-border rounded-md focus:ring-2 focus:ring-primary"
+                />
+                <span className={uiConfig.colors.muted}>pts</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Budget Settings */}
         <div className={`${uiConfig.colors.card} rounded-lg shadow-md p-6 mb-6`}>
-          <h2 className={`text-xl font-semibold ${uiConfig.colors.heading} mb-4`}>Budget Scoring Settings</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className={`text-xl font-semibold ${uiConfig.colors.heading}`}>
+              Budget Scoring Settings
+            </h2>
+            {testResults?.categoryScores?.cost !== undefined && (
+              <span className="text-xl font-bold text-green-600">
+                {Math.round(testResults.categoryScores.cost)}%
+              </span>
+            )}
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(config.budgetSettings).map(([key, value]) => (
