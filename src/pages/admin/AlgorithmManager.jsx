@@ -631,9 +631,27 @@ const AlgorithmManager = () => {
 
           {showTesting && (
             <div className="px-6 pb-6 border-t border-gray-200">
-            {/* Test Scoring Button */}
+            {/* Test Scoring Button and Overall Match */}
             {selectedTown && selectedTestUser && (
-              <div className="flex justify-end mb-4 mt-4">
+              <div className="flex justify-between items-center mb-4 mt-4">
+                {/* Overall Match Score */}
+                {testResults && testResults.score !== undefined && (
+                  <div className="flex items-center space-x-4">
+                    <span className="text-2xl font-bold text-gray-700">Overall Match:</span>
+                    <span className="text-4xl font-bold text-blue-600">
+                      {testResults.score}%
+                    </span>
+                    <span className="text-lg text-gray-600">
+                      ({testResults.quality || 'Calculated'})
+                    </span>
+                  </div>
+                )}
+                {/* If no results yet, show empty space */}
+                {(!testResults || testResults.score === undefined) && (
+                  <div></div>
+                )}
+
+                {/* Test Scoring Button */}
                 <button
                   onClick={handleTestScoring}
                   disabled={isCalculating}
