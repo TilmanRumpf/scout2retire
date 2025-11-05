@@ -416,6 +416,33 @@ const AlgorithmManager = () => {
       return;
     }
 
+    // DANGER ZONE confirmation
+    const confirmed = window.confirm(
+      '⚠️ DANGER ZONE - UNIVERSAL ALGORITHM CHANGE ⚠️\n\n' +
+      'You are about to change the CORE ALGORITHM for the ENTIRE SYSTEM!\n\n' +
+      '• This affects ALL USERS immediately\n' +
+      '• This is NOT town-specific\n' +
+      '• All future searches will use these new settings\n\n' +
+      'Are you ABSOLUTELY SURE you want to proceed?'
+    );
+
+    if (!confirmed) {
+      toast.info('Algorithm changes cancelled');
+      return;
+    }
+
+    // Second confirmation for extra safety
+    const reallyConfirmed = window.confirm(
+      '🚨 FINAL CONFIRMATION 🚨\n\n' +
+      'This will IMMEDIATELY change how the system calculates matches for EVERYONE.\n\n' +
+      'Click OK only if you understand the system-wide impact.'
+    );
+
+    if (!reallyConfirmed) {
+      toast.info('Algorithm changes cancelled');
+      return;
+    }
+
     setSaving(true);
     try {
       // In a real implementation, you'd save this to a database or config file
@@ -1202,23 +1229,37 @@ const AlgorithmManager = () => {
               disabled={!isValidWeight || saving}
               className={`${
                 isValidWeight && !saving
-                  ? uiConfig.colors.btnPrimary
+                  ? 'px-6 py-2 rounded-lg bg-red-600 text-white font-bold hover:bg-red-700 transition-colors'
                   : 'px-6 py-2 rounded-lg bg-gray-300 text-gray-500 cursor-not-allowed transition-colors'
               }`}
+              title="⚠️ WARNING: This changes the algorithm for ALL USERS system-wide!"
             >
-              {saving ? 'Saving...' : 'Save Configuration'}
+              {saving ? 'Saving...' : '⚠️ Save Universal Configuration'}
             </button>
           </div>
         </div>
 
+        {/* DANGER ZONE WARNING */}
+        <div className="mt-8 p-4 bg-red-50 border-2 border-red-500 rounded-lg">
+          <h3 className="text-lg font-bold text-red-800 mb-2">⚠️ DANGER ZONE - UNIVERSAL ALGORITHM CHANGES</h3>
+          <ul className="text-sm text-red-700 space-y-1 font-semibold">
+            <li>• 🚨 These changes affect the ENTIRE SYSTEM for ALL USERS</li>
+            <li>• 🚨 This is NOT town-specific - it changes the core algorithm</li>
+            <li>• 🚨 All user searches will use these new weights and thresholds</li>
+            <li>• 🚨 Changes are IMMEDIATE and affect ALL future calculations</li>
+          </ul>
+          <p className="mt-3 text-sm text-red-800 font-bold">
+            Only modify if you understand the system-wide impact!
+          </p>
+        </div>
+
         {/* Info Box */}
-        <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <h3 className="text-sm font-semibold text-blue-800 mb-2">ℹ️ How This Works</h3>
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• Category weights determine how much each category contributes to the overall score</li>
             <li>• Match quality thresholds define what score ranges count as excellent, good, etc.</li>
             <li>• Individual category settings control the detailed scoring within each category</li>
-            <li>• Changes will affect all future town matching calculations</li>
           </ul>
         </div>
       </div>
