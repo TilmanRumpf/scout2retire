@@ -104,7 +104,7 @@ export default function Daily() {
       mapMarkersData.forEach(markerData => {
         const marker = window.L.marker([markerData.lat, markerData.lng])
           .addTo(mapInstance)
-          .bindPopup(`<div style="padding: 8px; font-size: 14px;"><strong>${markerData.name}</strong></div>`);
+          .bindPopup(`<div style="padding: 8px; font-size: 14px;"><strong>${markerData.town_name}</strong></div>`);
         markerObjects.push(marker);
       });
 
@@ -876,7 +876,7 @@ export default function Daily() {
                           const markersData = townsWithCoords.map(town => ({
                             lat: parseFloat(town.latitude),
                             lng: parseFloat(town.longitude),
-                            name: town.name
+                            town_name: town.town_name
                           }));
 
                           // Open modal instead of new window

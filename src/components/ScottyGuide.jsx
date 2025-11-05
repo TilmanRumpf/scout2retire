@@ -263,9 +263,9 @@ What would you like to know about ${name}?`;
           // Load available towns with photos
           const { data: townsWithPhotos, error: townsError } = await supabase
             .from('towns')
-            .select('name, country')
+            .select('town_name, country')
             .not('image_url_1', 'is', null)
-            .order('name');
+            .order('town_name');
 
           if (townsError) {
             console.error('Error loading towns with photos:', townsError);
@@ -375,7 +375,7 @@ What would you like to know about ${name}?`;
     // If it's a town chat, add an initial greeting
     if (townContext) {
       const firstName = getFirstName(userContext?.personal?.name);
-      const townName = townContext.name || townContext.town_name;
+      const townName = townContext.town_name;
       const greeting = `Hi ${firstName}, how can I help you with ${townName}?`;
       const initialMessage = {
         id: Date.now().toString(),
@@ -640,7 +640,7 @@ What would you like to know about ${name}?`;
     const availableTownsContext = availableTowns.length > 0 ? `\n\nAVAILABLE DESTINATIONS DATABASE:
 When recommending alternative towns or suggesting destinations, you MUST ONLY recommend towns from this list (towns that have photos and complete data in our database):
 
-${availableTowns.map(t => `${t.name}, ${t.country}`).join('\n')}
+${availableTowns.map(t => `${t.town_name}, ${t.country}`).join('\n')}
 
 CRITICAL RULE: Do NOT suggest towns like San Sebastián, Split, Trieste, or any other town that is NOT in the above list. Only recommend towns that appear in this database. If a user asks about a town not in the list, acknowledge it's a great place but explain that you can only provide detailed recommendations for towns in our database with complete information and photos.` : '';
     

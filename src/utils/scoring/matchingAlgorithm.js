@@ -131,7 +131,7 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
     // SELECT only needed columns for better performance
     // FIXED (2025-10-27): Added 6 missing fields that caused scoring discrepancies
     const selectColumns = `
-      id, name, country, population, region,
+      id, town_name, country, population, region,
       image_url_1, image_url_2, image_url_3,
       latitude, longitude, description,
       cost_index, cost_of_living_usd, typical_monthly_living_cost,

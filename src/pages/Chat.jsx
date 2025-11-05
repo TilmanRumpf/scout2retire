@@ -410,7 +410,7 @@ export default function Chat() {
             activeTownChatsData.sort((a, b) => {
               if (a.is_favorited && !b.is_favorited) return -1;
               if (!a.is_favorited && b.is_favorited) return 1;
-              return a.towns.name.localeCompare(b.towns.name);
+              return a.towns.town_name.localeCompare(b.towns.town_name);
             });
 
             setActiveTownChats(activeTownChatsData);
@@ -480,7 +480,7 @@ export default function Chat() {
                 .from('chat_threads')
                 .insert([{
                   town_id: townId,
-                  topic: towns[0].name,
+                  topic: towns[0].town_name,
                   created_by: currentUser.id
                 }])
                 .select();

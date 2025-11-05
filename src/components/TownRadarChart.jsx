@@ -59,7 +59,7 @@ export default function TownRadarChart({ townData }) {
         convertScore(townData.categoryScores.cost || townData.categoryScores.costs || townData.categoryScores.budget || 0)
       ];
       
-      console.log(`Spider Chart INSTANT for ${townData.name}:`, {
+      console.log(`Spider Chart INSTANT for ${townData.town_name}:`, {
         categoryScores: townData.categoryScores,
         finalValues
       });
@@ -70,7 +70,7 @@ export default function TownRadarChart({ townData }) {
       
     } else {
       // NO DATA YET - do breathing animation while waiting
-      console.log(`Spider Chart BREATHING for ${townData.name} - waiting for data`);
+      console.log(`Spider Chart BREATHING for ${townData.town_name} - waiting for data`);
       
       startTimeRef.current = Date.now();
       
@@ -202,7 +202,7 @@ export default function TownRadarChart({ townData }) {
             className="text-gray-500 dark:text-gray-500"
           />
           <Radar 
-            name={townData.name} 
+            name={townData.town_name} 
             dataKey="value" 
             stroke="#10b981" 
             fill="#10b981" 

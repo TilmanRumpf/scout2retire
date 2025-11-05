@@ -16,7 +16,7 @@ export default function MessageInput({
 }) {
   const getPlaceholder = () => {
     if (chatType === 'town' && activeTown) {
-      return `Message ${activeTown.name} chat...`;
+      return `Message ${activeTown.town_name} chat...`;
     } else if (chatType === 'lounge') {
       // Check if it's a country-specific lounge or general retirement lounge
       if (activeThread && activeThread.topic && activeThread.topic !== 'Lounge') {

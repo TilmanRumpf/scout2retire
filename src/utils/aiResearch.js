@@ -28,7 +28,7 @@ async function getSimilarTownsPattern(fieldName, country, townId) {
     // Strategy 1: Same country with data
     let { data: similarTowns } = await supabase
       .from('towns')
-      .select(`id, name, country, ${fieldName}`)
+      .select(`id, town_name, country, ${fieldName}`)
       .eq('country', country)
       .not(fieldName, 'is', null)
       .neq('id', townId)
@@ -38,7 +38,7 @@ async function getSimilarTownsPattern(fieldName, country, townId) {
     if (!similarTowns || similarTowns.length < 3) {
       const { data: allTowns } = await supabase
         .from('towns')
-        .select(`id, name, country, ${fieldName}`)
+        .select(`id, town_name, country, ${fieldName}`)
         .not(fieldName, 'is', null)
         .neq('id', townId)
         .limit(10);
@@ -66,7 +66,7 @@ function analyzePattern(similarTowns, fieldName) {
 
   const examples = similarTowns
     .filter(t => t[fieldName])
-    .map(t => `- ${t.name}, ${t.country}: "${t[fieldName]}"`);
+    .map(t => `- ${t.town_name}, ${t.country}: "${t[fieldName]}"`);
 
   return `Found ${examples.length} examples in our database:
 ${examples.join('\n')}

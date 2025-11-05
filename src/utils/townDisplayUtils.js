@@ -86,7 +86,7 @@ export function formatTownDisplay(town, options = {}) {
 
   if (!town) return '';
 
-  let townName = town.town_name || town.name || '';
+  let townName = town.town_name || '';
   const region = town.region || '';
   const country = town.country || '';
 
@@ -122,7 +122,7 @@ export function formatTownDisplay(town, options = {}) {
 export function formatTownCompact(town) {
   if (!town) return '';
 
-  const townName = town.town_name || town.name || '';
+  const townName = town.town_name || '';
   const region = town.region || '';
   const country = town.country || '';
 
@@ -145,7 +145,7 @@ export function formatTownCompact(town) {
 export function formatTownFull(town) {
   if (!town) return '';
 
-  const townName = town.town_name || town.name || '';
+  const townName = town.town_name || '';
   const region = town.region || '';
   const country = town.country || '';
 

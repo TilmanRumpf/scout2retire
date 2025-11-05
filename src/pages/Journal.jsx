@@ -317,7 +317,7 @@ export default function Journal() {
                           <p className="font-medium line-clamp-2">{entry.content}</p>
                           {entry.towns && (
                             <p className={`text-xs ${uiConfig.colors.hint} mt-1`}>
-                              {entry.towns.name}, {entry.towns.country}
+                              {entry.towns.town_name}, {entry.towns.country}
                             </p>
                           )}
                         </div>

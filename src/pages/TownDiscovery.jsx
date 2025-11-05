@@ -300,7 +300,7 @@ export default function TownDiscovery() {
         filtered.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
         break;
       case 'name':
-        filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        filtered.sort((a, b) => (a.town_name || '').localeCompare(b.town_name || ''));
         break;
       case 'cost-low':
         filtered.sort((a, b) => (a.cost_index || 0) - (b.cost_index || 0));
@@ -446,7 +446,7 @@ export default function TownDiscovery() {
                 <OptimizedImage
                   key={`town-image-${selectedTownData.id}`}
                   src={selectedTownData.image_url_1}
-                  alt={selectedTownData.name}
+                  alt={selectedTownData.town_name}
                   className="w-full h-full object-cover"
                   fallbackIcon={MapPin}
                   fallbackIconSize={64}
@@ -459,7 +459,7 @@ export default function TownDiscovery() {
                     isUpdating={false}
                     enableAnimation={true}
                     onFavoriteClick={async () => {
-                      await handleToggleFavorite(selectedTownData.id, selectedTownData.name, selectedTownData.country);
+                      await handleToggleFavorite(selectedTownData.id, selectedTownData.town_name, selectedTownData.country);
                     }}
                     appealStatement={(() => {
                       if (!selectedTownData.categoryScores) return null; // Will show "Analyzing..."
@@ -483,7 +483,7 @@ export default function TownDiscovery() {
               <div className="p-6">
                 <div className="flex justify-between items-baseline mb-4">
                   <h2 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>
-                    {selectedTownData.name}, {selectedTownData.country}
+                    {selectedTownData.town_name}, {selectedTownData.country}
                   </h2>
                   <div className={`text-lg font-semibold ${uiConfig.colors.heading}`}>
                     Score: {Math.round(selectedTownData.matchScore || 0)}%

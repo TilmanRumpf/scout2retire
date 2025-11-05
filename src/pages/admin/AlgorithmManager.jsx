@@ -33,6 +33,13 @@ const AlgorithmManager = () => {
   const [testResults, setTestResults] = useState(null);
   const [userPreferences, setUserPreferences] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+
+  // User selection for testing
+  const [availableUsers, setAvailableUsers] = useState([]);
+  const [selectedTestUser, setSelectedTestUser] = useState(null);
+  const [userSearch, setUserSearch] = useState('');
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [showTransparency, setShowTransparency] = useState(false);
   const [showTesting, setShowTesting] = useState(true); // Default to open
   const [townSearch, setTownSearch] = useState('');
@@ -79,20 +86,18 @@ const AlgorithmManager = () => {
 
       setIsExecutiveAdmin(true);
 
-      // Load user's preferences for testing
-      try {
-        const result = await getOnboardingProgress(user.id);
-        // Extract the actual data from the result
-        if (result.success && result.data) {
-          setUserPreferences(result.data);
-          console.log('Loaded user preferences:', result.data);
-        } else {
-          console.error('Failed to load user preferences:', result);
-          setUserPreferences(null);
-        }
-      } catch (error) {
-        console.error('Error loading user preferences:', error);
+      // Load all users for testing selection
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select('id, email, full_name')
+        .order('email');
+
+      if (!usersError && usersData) {
+        setAvailableUsers(usersData);
+        console.log('Loaded users for testing:', usersData.length);
       }
+
+      // Don't load preferences yet - wait for user selection
 
       // Load towns for testing - use only basic columns (added region for US state disambiguation)
       const { data: townsData, error: townsError } = await supabase
@@ -140,11 +145,55 @@ const AlgorithmManager = () => {
     }
   }, [townSearch, towns]);
 
+  // Filter users based on search
+  useEffect(() => {
+    if (userSearch.trim() === '') {
+      setFilteredUsers([]);
+    } else {
+      const searchLower = userSearch.toLowerCase();
+      const filtered = availableUsers.filter(user =>
+        user.email?.toLowerCase().includes(searchLower) ||
+        user.full_name?.toLowerCase().includes(searchLower)
+      ).slice(0, 10);
+      setFilteredUsers(filtered);
+    }
+  }, [userSearch, availableUsers]);
+
+  // Load preferences when a user is selected
+  useEffect(() => {
+    const loadUserPreferences = async () => {
+      if (!selectedTestUser) {
+        setUserPreferences(null);
+        return;
+      }
+
+      try {
+        const result = await getOnboardingProgress(selectedTestUser.id);
+        if (result.success && result.data) {
+          setUserPreferences(result.data);
+          console.log('Loaded preferences for test user:', selectedTestUser.email, result.data);
+          // Clear test results when user changes
+          setTestResults(null);
+        } else {
+          console.error('Failed to load preferences for user:', selectedTestUser.email);
+          setUserPreferences(null);
+          toast.error('Could not load preferences for selected user');
+        }
+      } catch (error) {
+        console.error('Error loading user preferences:', error);
+        setUserPreferences(null);
+      }
+    };
+
+    loadUserPreferences();
+  }, [selectedTestUser]);
+
   // Handle click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowTownDropdown(false);
+        setShowUserDropdown(false);
       }
     };
 
@@ -382,12 +431,12 @@ const AlgorithmManager = () => {
     }
   };
 
-  // Auto-calculate when town is selected
+  // Auto-calculate when both town and user are selected
   useEffect(() => {
-    if (selectedTown && userPreferences) {
+    if (selectedTown && selectedTestUser && userPreferences) {
       handleTestScoring();
     }
-  }, [selectedTown]); // Only trigger when selectedTown changes
+  }, [selectedTown, selectedTestUser, userPreferences]); // Trigger when any of these change
 
   if (loading) {
     return (
@@ -432,22 +481,25 @@ const AlgorithmManager = () => {
 
           {showTesting && (
             <div className="px-6 pb-6 space-y-4 border-t border-gray-200">
-            <div>
-              <h3 className="text-lg font-semibold text-blue-800 mb-2 mt-4">
-                Search for a Town to Test:
-              </h3>
-              <div className="relative" ref={dropdownRef}>
-                <input
-                  type="text"
-                  value={townSearch}
-                  onChange={(e) => {
-                    setTownSearch(e.target.value);
-                    setShowTownDropdown(true);
-                  }}
-                  onFocus={() => setShowTownDropdown(true)}
-                  placeholder="Type town name..."
-                  className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary"
-                />
+            {/* Town and User Selection Row */}
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              {/* Town Selection */}
+              <div>
+                <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                  Search for a Town to Test:
+                </h3>
+                <div className="relative" ref={dropdownRef}>
+                  <input
+                    type="text"
+                    value={townSearch}
+                    onChange={(e) => {
+                      setTownSearch(e.target.value);
+                      setShowTownDropdown(true);
+                    }}
+                    onFocus={() => setShowTownDropdown(true)}
+                    placeholder="Type town name..."
+                    className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary"
+                  />
 
                 {showTownDropdown && filteredTowns.length > 0 && (
                   <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
@@ -469,20 +521,82 @@ const AlgorithmManager = () => {
                     ))}
                   </div>
                 )}
+                </div>
+
+                {townSearch && filteredTowns.length === 0 && (
+                  <p className={`text-sm ${uiConfig.colors.muted} mt-1`}>No towns found matching "{townSearch}"</p>
+                )}
               </div>
 
-              {townSearch && filteredTowns.length === 0 && (
-                <p className={`text-sm ${uiConfig.colors.muted} mt-1`}>No towns found matching "{townSearch}"</p>
-              )}
+              {/* User Selection */}
+              <div>
+                <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                  Select User to Test With:
+                </h3>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={userSearch}
+                    onChange={(e) => {
+                      setUserSearch(e.target.value);
+                      setShowUserDropdown(true);
+                    }}
+                    onFocus={() => setShowUserDropdown(true)}
+                    placeholder="Type user email or name..."
+                    className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary"
+                  />
+
+                  {showUserDropdown && filteredUsers.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      {filteredUsers.map(user => (
+                        <button
+                          key={user.id}
+                          onClick={() => {
+                            setSelectedTestUser(user);
+                            setUserSearch(user.email);
+                            setShowUserDropdown(false);
+                            setTestResults(null);
+                          }}
+                          className="w-full text-left px-3 py-2 hover:bg-gray-100 focus:bg-gray-100 transition-colors"
+                        >
+                          <div className="font-medium">
+                            {user.email}
+                          </div>
+                          {user.full_name && (
+                            <div className="text-sm text-gray-500">
+                              {user.full_name}
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {userSearch && filteredUsers.length === 0 && (
+                  <p className={`text-sm ${uiConfig.colors.muted} mt-1`}>No users found matching "{userSearch}"</p>
+                )}
+              </div>
             </div>
 
-            {selectedTown && (
+            {/* Show message if missing selection */}
+            {(selectedTown || selectedTestUser) && (!selectedTown || !selectedTestUser) && (
+              <div className={`${uiConfig.colors.warning} rounded p-4 mt-2`}>
+                <p className="text-sm">
+                  ⚠️ Please select both a town AND a user to test the matching algorithm.
+                  {!selectedTown && " Missing: Town selection."}
+                  {!selectedTestUser && " Missing: User selection."}
+                </p>
+              </div>
+            )}
+
+            {selectedTown && selectedTestUser && (
               <div className={`${uiConfig.colors.card} rounded p-4`}>
                 <p className={`text-sm mb-2 ${uiConfig.colors.body}`}>
-                  <strong>Testing as:</strong> {currentUser?.email}
+                  <strong>Testing as:</strong> {selectedTestUser.email} {selectedTestUser.full_name && `(${selectedTestUser.full_name})`}
                 </p>
                 <p className={`text-sm ${uiConfig.colors.body}`}>
-                  <strong>Selected:</strong> {formatTownDisplay(selectedTown)}
+                  <strong>Selected Town:</strong> {formatTownDisplay(selectedTown)}
                 </p>
 
                 {isCalculating && (
@@ -540,12 +654,12 @@ const AlgorithmManager = () => {
                 )}
 
                 <div className={`text-xs ${uiConfig.colors.muted} mt-4`}>
-                  <p><strong>Note:</strong> This uses YOUR preferences ({currentUser?.email}) with the current algorithm weights.</p>
-                  <p>The score shows how well {formatTownDisplay(selectedTown)} matches your personal retirement preferences.</p>
+                  <p><strong>Note:</strong> This uses the selected user's preferences ({selectedTestUser?.email}) with the current algorithm weights.</p>
+                  <p>The score shows how well {formatTownDisplay(selectedTown)} matches their retirement preferences.</p>
                 </div>
               </div>
             )}
-            </div>
+          </div>
           )}
         </div>
 

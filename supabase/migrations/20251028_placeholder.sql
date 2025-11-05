@@ -1,0 +1,2 @@
+-- Placeholder migration for sync purposes
+-- The actual migration content is in the timestamped versions

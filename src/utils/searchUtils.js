@@ -152,8 +152,8 @@ export async function getAutocompleteSuggestions(searchTerm, limit = 5) {
     // Search for matching towns
     const { data: towns, error: townError } = await supabase
       .from('towns')
-      .select('name, country, region')
-      .or(`name.ilike.${term}%,name.ilike.% ${term}%`)
+      .select('town_name, country, region')
+      .or(`town_name.ilike.${term}%,town_name.ilike.% ${term}%`)
       .limit(limit);
 
     if (townError) {

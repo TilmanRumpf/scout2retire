@@ -151,8 +151,8 @@ const GroupChatModal = React.memo(function GroupChatModal({
       // Search towns from database
       const { data: towns } = await supabase
         .from('towns')
-        .select('name, country, region')
-        .ilike('name', `%${search}%`)
+        .select('town_name, country, region')
+        .ilike('town_name', `%${search}%`)
         .limit(5);
 
       if (towns) {

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Browser Console</title>
+</head>
+<body>
+    <h1>Checking Town Display Issue</h1>
+    <div id="results"></div>
+
+    <script>
+        // Open localhost in iframe and check
+        async function checkTownDisplay() {
+            try {
+                const response = await fetch('http://localhost:5173/api/towns?limit=5');
+                const data = await response.json();
+
+                document.getElementById('results').innerHTML = `
+                    <h2>API Response:</h2>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                // Try direct check
+                window.location.href = 'http://localhost:5173/towns';
+            }
+        }
+
+        checkTownDisplay();
+    </script>
+</body>
+</html>

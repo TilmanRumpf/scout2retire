@@ -245,7 +245,7 @@ export function formatGeographicContext(geographicInfo, towns, userContext) {
 
     if (towns.length > 10) {
       const remaining = towns.slice(10);
-      parts.push(`  ... and ${remaining.length} more: ${remaining.map(t => t.name).join(', ')}`);
+      parts.push(`  ... and ${remaining.length} more: ${remaining.map(t => t.town_name).join(', ')}`);
     }
   } else {
     parts.push(`\nNOTE: No towns found in our database for ${geographicInfo.name}. You should acknowledge this is a wonderful location but explain that you can only provide detailed recommendations for towns in our database.`);
