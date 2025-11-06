@@ -786,7 +786,7 @@ const AlgorithmManager = () => {
                         // Delay hiding dropdown to allow clicking on dropdown items
                         setTimeout(() => {
                           setShowUserDropdown(false);
-                        }, 200);
+                        }, 300);
                       }}
                       placeholder="Type user email or name..."
                       className="flex-1 px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary"
