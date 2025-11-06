@@ -171,10 +171,17 @@ const AlgorithmManager = () => {
       setFilteredUsers([]);
     } else {
       const searchLower = userSearch.toLowerCase();
+      console.log(`[User Filter] Searching for: "${searchLower}" in ${availableUsers.length} users`);
+
       const filtered = availableUsers.filter(user =>
         user.email?.toLowerCase().includes(searchLower) ||
         user.full_name?.toLowerCase().includes(searchLower)
       ).slice(0, 10);
+
+      console.log(`[User Filter] Found ${filtered.length} matching users:`,
+        filtered.map(u => ({ email: u.email, name: u.full_name }))
+      );
+
       setFilteredUsers(filtered);
     }
   }, [userSearch, availableUsers]);
@@ -425,7 +432,7 @@ const AlgorithmManager = () => {
     );
 
     if (!confirmed) {
-      toast.info('Algorithm changes cancelled');
+      toast('Algorithm changes cancelled');
       return;
     }
 
@@ -437,7 +444,7 @@ const AlgorithmManager = () => {
     );
 
     if (!reallyConfirmed) {
-      toast.info('Algorithm changes cancelled');
+      toast('Algorithm changes cancelled');
       return;
     }
 
@@ -749,7 +756,7 @@ const AlgorithmManager = () => {
                         localStorage.removeItem('algorithmManager_lastUserId');
                         localStorage.removeItem('algorithmManager_lastUserEmail');
                         console.log('✅ Cleared user selection');
-                        toast.info('User selection cleared');
+                        toast('User selection cleared');
                       }}
                       className="text-sm px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md transition-colors"
                       title="Clear selection and saved preference"
