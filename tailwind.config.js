@@ -178,6 +178,8 @@ module.exports = {
         'slideDown': 'slideDown 0.3s ease-out',
         'scaleIn': 'scaleIn 0.2s ease-out',
         'spin': 'spin 1s linear infinite',
+        // Startup screen animation
+        'pulse-scale': 'pulseScale 2s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -199,6 +201,11 @@ module.exports = {
         spin: {
           '0%': { transform: 'rotate(0deg)' },
           '100%': { transform: 'rotate(360deg)' },
+        },
+        // Startup screen pulse animation
+        pulseScale: {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.05)' },
         },
       },
       transitionTimingFunction: {

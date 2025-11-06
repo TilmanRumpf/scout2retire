@@ -11,6 +11,7 @@ import UnifiedErrorBoundary from './components/UnifiedErrorBoundary';
 import { checkAppVersion, setupAutoRefresh } from './utils/versionCheck';
 import InstallPromptBanner from './components/InstallPromptBanner';
 import SuspenseLoader from './components/SuspenseLoader';
+import StartupScreen from './components/StartupScreen';
 
 // Core Pages - Lazy loaded for better performance
 const Home = React.lazy(() => import("./pages/Home"));
@@ -343,6 +344,21 @@ const router = createBrowserRouter([
 });
 
 function App() {
+  const [showStartup, setShowStartup] = useState(true);
+
+  useEffect(() => {
+    // Show startup screen for 2 seconds
+    const timer = setTimeout(() => {
+      setShowStartup(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (showStartup) {
+    return <StartupScreen />;
+  }
+
   return (
     <UnifiedErrorBoundary variant="full">
       <AuthProvider>
