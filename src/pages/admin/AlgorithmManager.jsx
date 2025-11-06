@@ -810,14 +810,9 @@ const AlgorithmManager = () => {
                     )}
                   </div>
 
-                  {/* DEBUG: Show dropdown state */}
-                  <div className="text-sm font-bold text-red-600 mt-1">
-                    DEBUG: showDropdown={String(showUserDropdown)}, filteredUsers={filteredUsers.length}, search="{userSearch}"
-                  </div>
-
-                  {/* Force show for debugging */}
+                  {/* Dropdown for filtered users */}
                   {filteredUsers.length > 0 && (
-                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-md shadow-2xl max-h-60 overflow-y-auto" style={{ display: 'block', backgroundColor: 'white', border: '3px solid blue' }}>
+                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
                       {filteredUsers.map(user => (
                         <button
                           key={user.id}
