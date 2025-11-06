@@ -424,7 +424,7 @@ const TownsManager = () => {
     if (townIdFromUrl && !selectedTown) {
       const town = towns.find(t => t.id === townIdFromUrl);
       if (town) {
-        console.log('🔥 Auto-selecting town from URL:', town.name);
+        console.log('🔥 Auto-selecting town from URL:', town.town_name);
         setSelectedTown(town);
 
         // If field parameter exists, auto-select the correct category tab
@@ -464,7 +464,7 @@ const TownsManager = () => {
         if (savedTownId) {
           const town = towns.find(t => t.id === savedTownId);
           if (town) {
-            console.log('📂 Restoring town from localStorage:', town.name);
+            console.log('📂 Restoring town from localStorage:', town.town_name);
             setSelectedTown(town);
           }
         }
@@ -483,7 +483,7 @@ const TownsManager = () => {
     if (selectedTown) {
       try {
         localStorage.setItem('townsManager.selectedTownId', selectedTown.id);
-        console.log('💾 Saved town to localStorage:', selectedTown.name);
+        console.log('💾 Saved town to localStorage:', selectedTown.town_name);
       } catch (error) {
         console.error('Error saving to localStorage:', error);
       }
@@ -596,14 +596,14 @@ const TownsManager = () => {
     // Town name search filter
     if (filters.townSearch) {
       filtered = filtered.filter(t =>
-        t.name && t.name.toLowerCase().startsWith(filters.townSearch.toLowerCase())
+        t.town_name && t.town_name.toLowerCase().startsWith(filters.townSearch.toLowerCase())
       );
     }
 
     // Apply sorting
     if (filters.sortBy === 'abc') {
       filtered.sort((a, b) => {
-        const result = a.name.localeCompare(b.name);
+        const result = a.town_name.localeCompare(b.town_name);
         return filters.sortDirection === 'asc' ? result : -result;
       });
     } else if (filters.sortBy === 'completion-high') {
@@ -626,8 +626,8 @@ const TownsManager = () => {
       'Kyoto': 'Japan',
     };
     
-    if (cityCountryErrors[town.name] && town.country !== cityCountryErrors[town.name]) {
-      errors.push(`${town.name} should be in ${cityCountryErrors[town.name]}, not ${town.country}`);
+    if (cityCountryErrors[town.town_name] && town.country !== cityCountryErrors[town.town_name]) {
+      errors.push(`${town.town_name} should be in ${cityCountryErrors[town.town_name]}, not ${town.country}`);
     }
     
     // Check for impossible temperatures
@@ -690,9 +690,9 @@ const TownsManager = () => {
 
     if (value.length > 0) {
       const suggestions = towns
-        .filter(t => t.name && t.name.toLowerCase().startsWith(value.toLowerCase()))
+        .filter(t => t.town_name && t.town_name.toLowerCase().startsWith(value.toLowerCase()))
         .map(t => ({
-          town_name: t.name,
+          town_name: t.town_name,
           subdivision_code: t.subdivision_code || t.region || '',
           country: t.country,
           id: t.id
@@ -715,7 +715,7 @@ const TownsManager = () => {
       dataQuality: 'all',
       country: 'all',
       geo_region: 'all',
-      townSearch: suggestion.name,
+      townSearch: suggestion.town_name,
       sortBy: 'abc',
       sortDirection: 'asc'
     });
@@ -1121,8 +1121,8 @@ const TownsManager = () => {
     const formattedField = formatFieldName(fieldName);
     // CRITICAL: Don't use stored country when searching for country field itself!
     const location = fieldName === 'country'
-      ? town.name  // Just town name for country searches
-      : `${town.name}, ${town.country}`;  // Include country for other fields
+      ? town.town_name  // Just town name for country searches
+      : `${town.town_name}, ${town.country}`;  // Include country for other fields
 
     // Check if this field has dropdown options
     const fieldOptions = getFieldOptions(fieldName);
@@ -1133,7 +1133,7 @@ const TownsManager = () => {
     if (isVerification) {
       const currentValue = town[fieldName];
       // For country field verification, don't include the stored country in the search!
-      const verifyLocation = fieldName === 'country' ? town.name : location;
+      const verifyLocation = fieldName === 'country' ? town.town_name : location;
 
       // Handle fields with dropdown options
       if (hasOptions && fieldHasData(currentValue)) {
@@ -1141,13 +1141,13 @@ const TownsManager = () => {
           const values = Array.isArray(currentValue) ? currentValue.join(', ') : currentValue;
           // Special case for country field
           if (fieldName === 'country') {
-            return `Is ${town.name} really in ${currentValue}? Which country is ${town.name} located in?`;
+            return `Is ${town.town_name} really in ${currentValue}? Which country is ${town.town_name} located in?`;
           }
           return `Is ${verifyLocation} ${formattedField} really "${values}"? Are there other options that apply?`;
         } else {
           // Special case for country field
           if (fieldName === 'country') {
-            return `Is ${town.name} really in ${currentValue}? Which country is ${town.name} located in?`;
+            return `Is ${town.town_name} really in ${currentValue}? Which country is ${town.town_name} located in?`;
           }
           return `Is ${verifyLocation} ${formattedField} really "${currentValue}"? Check if this is the best match`;
         }
@@ -1179,13 +1179,13 @@ const TownsManager = () => {
         // For multiselect, ask which options apply
         const sampleOptions = fieldOptions.slice(0, 5).join(', ');
         // Don't include country in search when searching for the country field itself!
-        const searchLocation = fieldName === 'country' ? town.name : location;
+        const searchLocation = fieldName === 'country' ? town.town_name : location;
         return `What ${formattedField} best describe ${searchLocation}? Options include: ${sampleOptions}... Which apply?`;
       } else {
         // For single select, ask for the best match
         const sampleOptions = fieldOptions.slice(0, 5).join(', ');
         // Don't include country in search when searching for the country field itself!
-        const searchLocation = fieldName === 'country' ? town.name : location;
+        const searchLocation = fieldName === 'country' ? town.town_name : location;
         return `What is the best ${formattedField} for ${searchLocation}? Options: ${sampleOptions}...`;
       }
     }
@@ -1531,7 +1531,7 @@ const TownsManager = () => {
                       className={`px-3 py-2 hover:${uiConfig.colors.secondary} cursor-pointer`}
                     >
                       <div className={uiConfig.colors.heading}>
-                        {suggestion.name}
+                        {suggestion.town_name}
                         {suggestion.subdivision_code && (
                           <span className={`ml-1 ${uiConfig.colors.subtitle} text-xs`}>
                             {suggestion.subdivision_code}
@@ -1853,7 +1853,7 @@ const TownsManager = () => {
                     <div>
                       <HobbiesDisplay
                         townId={selectedTown.id}
-                        townName={selectedTown.name}
+                        townName={selectedTown.town_name}
                       />
 
                       {/* Legacy Fields */}
@@ -1939,7 +1939,7 @@ const TownsManager = () => {
       {/* Wikipedia Panel */}
       {selectedTown && (
         <WikipediaPanel
-          townName={selectedTown.name}
+          townName={selectedTown.town_name}
           country={selectedTown.country}
           isOpen={wikipediaOpen}
           onClose={() => setWikipediaOpen(false)}
