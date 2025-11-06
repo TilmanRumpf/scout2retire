@@ -66,6 +66,7 @@ const AlgorithmManager = () => {
   const [isCalculating, setIsCalculating] = useState(false);
   const [isRestoringTown, setIsRestoringTown] = useState(false);
   const [isRestoringUser, setIsRestoringUser] = useState(false);
+  const [hasAttemptedUserRestore, setHasAttemptedUserRestore] = useState(false);
 
   // Algorithm configuration state
   const [config, setConfig] = useState({
@@ -286,28 +287,32 @@ const AlgorithmManager = () => {
     }
   }, [selectedTown, isRestoringTown]);
 
-  // Restore last selected user from localStorage when users are loaded
+  // Restore last selected user from localStorage when users are loaded - ONLY ONCE
   useEffect(() => {
     console.log('[User Restore] Checking conditions:', {
       availableUsersCount: availableUsers.length,
-      isRestoringUser: isRestoringUser
+      hasAttemptedUserRestore: hasAttemptedUserRestore
     });
 
     if (availableUsers.length === 0) {
       console.log('[User Restore] No users available yet');
       return;
     }
-    if (isRestoringUser) {
-      console.log('[User Restore] Already restoring');
+
+    // CRITICAL: Only attempt restoration ONCE per session
+    if (hasAttemptedUserRestore) {
+      console.log('[User Restore] Already attempted restoration, skipping to prevent override');
       return;
     }
+
+    // Mark that we've attempted restoration
+    setHasAttemptedUserRestore(true);
 
     try {
       const savedUserId = localStorage.getItem('algorithmManager_lastUserId');
       const savedUserEmail = localStorage.getItem('algorithmManager_lastUserEmail');
 
-
-      console.log('[User Restore] Saved data:', {
+      console.log('[User Restore] ONE-TIME restoration attempt:', {
         savedUserId,
         savedUserEmail
       });
@@ -319,13 +324,9 @@ const AlgorithmManager = () => {
 
         if (user) {
           setIsRestoringUser(true);
-          setUserSearch(user.email);
+          setUserSearch(user.email);  // Show email in the field
           setSelectedTestUser(user);
           console.log('✅ [AlgorithmManager] Restored saved user:', user.email);
-
-          // Save to localStorage for next time
-          localStorage.setItem('algorithmManager_lastUserId', user.id);
-          localStorage.setItem('algorithmManager_lastUserEmail', user.email);
         } else {
           console.log('❌ [User Restore] Could not find saved user with email:', savedUserEmail);
           console.log('Available users:', availableUsers.map(u => ({ id: u.id, email: u.email })));
@@ -337,13 +338,11 @@ const AlgorithmManager = () => {
       } else {
         // No saved user, admin must select one manually
         console.log('[AlgorithmManager] No saved user, waiting for selection');
-        // Don't clear userSearch - let the admin type!
-        setSelectedTestUser(null);
       }
     } catch (error) {
       console.error('[AlgorithmManager] Error restoring last user:', error);
     }
-  }, [availableUsers]); // Removed userSearch - we only want to restore once when users load, not on every keystroke!
+  }, [availableUsers, hasAttemptedUserRestore]); // Only depends on users and the one-time flag
 
   // Reset user restoration flag after restoration is complete
   useEffect(() => {
