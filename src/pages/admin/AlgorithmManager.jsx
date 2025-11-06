@@ -169,6 +169,7 @@ const AlgorithmManager = () => {
   useEffect(() => {
     if (userSearch.trim() === '') {
       setFilteredUsers([]);
+      setShowUserDropdown(false);
     } else {
       const searchLower = userSearch.toLowerCase();
       console.log(`[User Filter] Searching for: "${searchLower}" in ${availableUsers.length} users`);
@@ -183,6 +184,12 @@ const AlgorithmManager = () => {
       );
 
       setFilteredUsers(filtered);
+
+      // Make sure dropdown shows when we have results
+      if (filtered.length > 0) {
+        setShowUserDropdown(true);
+        console.log('[User Filter] Showing dropdown with results');
+      }
     }
   }, [userSearch, availableUsers]);
 
@@ -775,6 +782,12 @@ const AlgorithmManager = () => {
                         setShowUserDropdown(true);
                       }}
                       onFocus={() => setShowUserDropdown(true)}
+                      onBlur={() => {
+                        // Delay hiding dropdown to allow clicking on dropdown items
+                        setTimeout(() => {
+                          setShowUserDropdown(false);
+                        }, 200);
+                      }}
                       placeholder="Type user email or name..."
                       className="flex-1 px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary"
                     />
