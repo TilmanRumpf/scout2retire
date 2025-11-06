@@ -67,6 +67,7 @@ const AlgorithmManager = () => {
   const [isRestoringTown, setIsRestoringTown] = useState(false);
   const [isRestoringUser, setIsRestoringUser] = useState(false);
   const [hasAttemptedUserRestore, setHasAttemptedUserRestore] = useState(false);
+  const [isMouseOverDropdown, setIsMouseOverDropdown] = useState(false);
 
   // Algorithm configuration state
   const [config, setConfig] = useState({
@@ -785,8 +786,10 @@ const AlgorithmManager = () => {
                       onBlur={() => {
                         // Delay hiding dropdown to allow clicking on dropdown items
                         setTimeout(() => {
-                          setShowUserDropdown(false);
-                        }, 300);
+                          if (!isMouseOverDropdown) {
+                            setShowUserDropdown(false);
+                          }
+                        }, 100);
                       }}
                       placeholder="Type user email or name..."
                       className="flex-1 px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary"
@@ -812,7 +815,10 @@ const AlgorithmManager = () => {
 
                   {/* Dropdown for filtered users */}
                   {showUserDropdown && filteredUsers.length > 0 && (
-                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    <div
+                      className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                      onMouseEnter={() => setIsMouseOverDropdown(true)}
+                      onMouseLeave={() => setIsMouseOverDropdown(false)}>
                       {filteredUsers.map(user => (
                         <button
                           key={user.id}
