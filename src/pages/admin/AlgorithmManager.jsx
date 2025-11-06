@@ -822,6 +822,9 @@ const AlgorithmManager = () => {
                       {filteredUsers.map(user => (
                         <button
                           key={user.id}
+                          onMouseDown={(e) => {
+                            e.preventDefault(); // Prevent blur from firing
+                          }}
                           onClick={() => {
                             setSelectedTestUser(user);
                             setUserSearch(user.email);
