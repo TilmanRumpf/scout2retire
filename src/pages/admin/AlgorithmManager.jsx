@@ -306,15 +306,6 @@ const AlgorithmManager = () => {
       const savedUserId = localStorage.getItem('algorithmManager_lastUserId');
       const savedUserEmail = localStorage.getItem('algorithmManager_lastUserEmail');
 
-      // CRITICAL FIX: Clear hardcoded tilman.rumpf@gmail.com from localStorage
-      if (savedUserEmail === 'tilman.rumpf@gmail.com') {
-        console.log('🚨 [CRITICAL FIX] Clearing hardcoded tilman.rumpf@gmail.com from localStorage!');
-        localStorage.removeItem('algorithmManager_lastUserId');
-        localStorage.removeItem('algorithmManager_lastUserEmail');
-        setUserSearch('');
-        setSelectedTestUser(null);
-        return; // Stop here, let admin select a user manually
-      }
 
       console.log('[User Restore] Saved data:', {
         savedUserId,
@@ -748,9 +739,28 @@ const AlgorithmManager = () => {
 
               {/* COLUMN 2: User Selection */}
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                  Select User to Test With:
-                </h3>
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-semibold text-blue-800">
+                    Select User to Test With:
+                  </h3>
+                  {(userSearch || selectedTestUser) && (
+                    <button
+                      onClick={() => {
+                        setUserSearch('');
+                        setSelectedTestUser(null);
+                        setTestResults(null);
+                        localStorage.removeItem('algorithmManager_lastUserId');
+                        localStorage.removeItem('algorithmManager_lastUserEmail');
+                        console.log('✅ Cleared user selection');
+                        toast.info('User selection cleared');
+                      }}
+                      className="text-sm px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md transition-colors"
+                      title="Clear selection and saved preference"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
                 <div className="relative">
                   <div className="flex gap-2">
                     <input
