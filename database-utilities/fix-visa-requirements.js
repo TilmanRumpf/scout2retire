@@ -171,7 +171,7 @@ async function fixVisaRequirements() {
     // Get all towns
     const { data: towns, error } = await supabase
       .from('towns')
-      .select('id, name, country, visa_requirements');
+      .select('id, town_name, country, visa_requirements');
 
     if (error) {
       console.error('Error fetching towns:', error);
@@ -188,7 +188,7 @@ async function fixVisaRequirements() {
       const standardRequirement = VISA_REQUIREMENTS[town.country];
 
       if (!standardRequirement) {
-        console.log(`⚠️ No visa data for ${town.country} - skipping ${town.name}`);
+        console.log(`⚠️ No visa data for ${town.country} - skipping ${town.town_name}`);
         continue;
       }
 
@@ -200,7 +200,7 @@ async function fixVisaRequirements() {
           .eq('id', town.id);
 
         if (updateError) {
-          console.error(`❌ Failed to update ${town.name}:`, updateError.message);
+          console.error(`❌ Failed to update ${town.town_name}:`, updateError.message);
           failedCount++;
         } else {
           updatedCount++;

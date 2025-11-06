@@ -229,7 +229,7 @@ async function importPhotosFromBucket() {
     console.log('🔍 Fetching towns without photos...')
     const { data: townsWithoutPhotos, error: townError } = await adminSupabase
       .from('towns')
-      .select('id, name, country')
+      .select('id, town_name, country')
       .is('image_url_1', null)
     
     if (townError) {
@@ -242,7 +242,7 @@ async function importPhotosFromBucket() {
     // Create a map for quick lookup
     const townMap = new Map()
     townsWithoutPhotos.forEach(town => {
-      const key = `${town.country.toLowerCase()}_${town.name.toLowerCase()}`
+      const key = `${town.country.toLowerCase()}_${town.town_name.toLowerCase()}`
       townMap.set(key, town)
     })
     
@@ -283,7 +283,7 @@ async function importPhotosFromBucket() {
           if (city === formattedCityName.toLowerCase() && 
               country === parsed.countryName.toLowerCase()) {
             town = t
-            console.log(`✅ Matched by exact city: ${file.name} -> ${t.name}, ${t.country}`)
+            console.log(`✅ Matched by exact city: ${file.name} -> ${t.town_name}, ${t.country}`)
             break
           }
           
@@ -291,7 +291,7 @@ async function importPhotosFromBucket() {
           if (city.includes(parsed.cityName.toLowerCase()) && 
               country === parsed.countryName.toLowerCase()) {
             town = t
-            console.log(`✅ Matched by contains: ${file.name} -> ${t.name}, ${t.country}`)
+            console.log(`✅ Matched by contains: ${file.name} -> ${t.town_name}, ${t.country}`)
             break
           }
           
@@ -299,7 +299,7 @@ async function importPhotosFromBucket() {
           if (parsed.cityName.toLowerCase().includes(city) && 
               country === parsed.countryName.toLowerCase()) {
             town = t
-            console.log(`✅ Matched by reverse contains: ${file.name} -> ${t.name}, ${t.country}`)
+            console.log(`✅ Matched by reverse contains: ${file.name} -> ${t.town_name}, ${t.country}`)
             break
           }
         }
@@ -336,10 +336,10 @@ async function importPhotosFromBucket() {
         .eq('id', town.id)
       
       if (updateError) {
-        console.error(`❌ Error updating ${town.name}:`, updateError.message)
+        console.error(`❌ Error updating ${town.town_name}:`, updateError.message)
         errorCount++
       } else {
-        console.log(`✅ Updated ${town.name}, ${town.country} with photo`)
+        console.log(`✅ Updated ${town.town_name}, ${town.country} with photo`)
         successCount++
       }
     }

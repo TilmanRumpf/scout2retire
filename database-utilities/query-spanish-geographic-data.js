@@ -20,7 +20,7 @@ async function querySpanishGeographicData() {
     // Execute the requested query
     const { data: spanishTowns, error } = await supabase
       .from('towns')
-      .select('name, country, region, regions, geo_region, geographic_features_actual, vegetation_type_actual')
+      .select('town_name, country, region, regions, geo_region, geographic_features_actual, vegetation_type_actual')
       .eq('country', 'Spain')
       .limit(5);
 
@@ -38,7 +38,7 @@ async function querySpanishGeographicData() {
     console.log('=' .repeat(80));
 
     spanishTowns.forEach((town, index) => {
-      console.log(`\n${index + 1}. ${town.name}`);
+      console.log(`\n${index + 1}. ${town.town_name}`);
       console.log('   Basic Info:');
       console.log(`   - country: "${town.country}"`);
       console.log(`   - region: "${town.region}"`);

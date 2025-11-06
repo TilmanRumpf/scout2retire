@@ -23,9 +23,9 @@ async function assignCommonHobbies() {
     console.log('📚 Fetching universal hobbies...');
     const { data: universalHobbies, error: hobbyError } = await supabase
       .from('hobbies')
-      .select('id, name')
+      .select('id, town_name')
       .eq('is_universal', true)
-      .order('name');
+      .order('town_name');
     
     if (hobbyError) throw hobbyError;
     console.log(`Found ${universalHobbies.length} universal hobbies\n`);
@@ -46,9 +46,9 @@ async function assignCommonHobbies() {
       
       const { data: moreHobbies } = await supabase
         .from('hobbies')
-        .select('id, name')
+        .select('id, town_name')
         .in('name', additionalCommonNames)
-        .order('name');
+        .order('town_name');
       
       if (moreHobbies) {
         // Add non-duplicate hobbies
@@ -75,8 +75,8 @@ async function assignCommonHobbies() {
     console.log('🏙️  Fetching all towns...');
     const { data: towns, error: townError } = await supabase
       .from('towns')
-      .select('id, name, country')
-      .order('name');
+      .select('id, town_name, country')
+      .order('town_name');
     
     if (townError) throw townError;
     console.log(`Found ${towns.length} towns\n`);
@@ -120,7 +120,7 @@ async function assignCommonHobbies() {
       if (addedForThisTown > 0) {
         townsNeedingHobbies++;
         if (townsNeedingHobbies <= 10) {
-          console.log(`${town.name}: Adding ${addedForThisTown} common hobbies`);
+          console.log(`${town.town_name}: Adding ${addedForThisTown} common hobbies`);
         }
       }
     }

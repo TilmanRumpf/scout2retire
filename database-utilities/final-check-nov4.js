@@ -15,13 +15,13 @@ async function finalCheck() {
   console.log('✓ Checking town names...')
   const { data: towns } = await supabase
     .from('towns')
-    .select('id, name, town_name, country, photos')
+    .select('id, town_name, town_name, country, photos')
     .limit(5)
 
-  if (towns && towns[0].name) {
+  if (towns && towns[0].town_name) {
     console.log('  ✅ Towns have names!')
     towns.forEach(t => {
-      console.log(`     ${t.name} (${t.country})`)
+      console.log(`     ${t.town_name} (${t.country})`)
     })
   } else {
     console.log('  ❌ Towns missing names')

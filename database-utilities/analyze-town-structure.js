@@ -31,7 +31,7 @@ async function analyzeTownStructure() {
 
   towns.forEach((town, i) => {
     console.log(`\n${'='.repeat(80)}`);
-    console.log(`${i + 1}. ${town.name}, ${town.country}`);
+    console.log(`${i + 1}. ${town.town_name}, ${town.country}`);
     console.log('='.repeat(80) + '\n');
 
     Object.keys(town).forEach(field => {
@@ -53,7 +53,7 @@ async function analyzeTownStructure() {
         analysis[field].populatedCount++;
         if (analysis[field].examples.length < 3) {
           analysis[field].examples.push({
-            town: town.name,
+            town: town.town_name,
             value: Array.isArray(value) ? value : String(value).substring(0, 100)
           });
         }
@@ -95,7 +95,7 @@ async function analyzeTownStructure() {
     console.log(`\n${field}:`);
     towns.forEach(town => {
       if (town[field] && Array.isArray(town[field])) {
-        console.log(`  ${town.name}: [${town[field].slice(0, 5).join(', ')}${town[field].length > 5 ? '...' : ''}] (${town[field].length} items)`);
+        console.log(`  ${town.town_name}: [${town[field].slice(0, 5).join(', ')}${town[field].length > 5 ? '...' : ''}] (${town[field].length} items)`);
       }
     });
   });

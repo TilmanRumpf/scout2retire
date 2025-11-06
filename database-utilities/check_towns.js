@@ -61,7 +61,7 @@ async function checkTowns() {
     console.log('------|-----------|-------|--------');
     
     towns.forEach((town, index) => {
-      console.log(`${String(index + 1).padStart(5)} | ${town.name.padEnd(30)} | ${(town.state || '').padEnd(6)} | ${town.country || ''}`);
+      console.log(`${String(index + 1).padStart(5)} | ${town.town_name.padEnd(30)} | ${(town.state || '').padEnd(6)} | ${town.country || ''}`);
     });
 
     // Check for duplicates
@@ -70,11 +70,11 @@ async function checkTowns() {
     const duplicates = [];
 
     towns.forEach(town => {
-      if (nameCount[town.name]) {
-        nameCount[town.name]++;
+      if (nameCount[town.town_name]) {
+        nameCount[town.town_name]++;
         duplicates.push(town);
       } else {
-        nameCount[town.name] = 1;
+        nameCount[town.town_name] = 1;
       }
     });
 
@@ -84,11 +84,11 @@ async function checkTowns() {
       // Group duplicates by name
       const duplicateGroups = {};
       towns.forEach(town => {
-        if (nameCount[town.name] > 1) {
-          if (!duplicateGroups[town.name]) {
-            duplicateGroups[town.name] = [];
+        if (nameCount[town.town_name] > 1) {
+          if (!duplicateGroups[town.town_name]) {
+            duplicateGroups[town.town_name] = [];
           }
-          duplicateGroups[town.name].push(town);
+          duplicateGroups[town.town_name].push(town);
         }
       });
 

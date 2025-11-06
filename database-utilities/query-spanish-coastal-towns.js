@@ -11,9 +11,9 @@ async function querySpanishTowns() {
   // First query: Get all Spanish towns with key fields
   const { data: allSpanishTowns, error: error1 } = await supabase
     .from('towns')
-    .select('id, name, region, regions, geographic_features_actual, description, climate_description')
+    .select('id, town_name, region, regions, geographic_features_actual, description, climate_description')
     .eq('country', 'Spain')
-    .order('name');
+    .order('town_name');
 
   if (error1) {
     console.error('❌ Error fetching Spanish towns:', error1);
@@ -23,7 +23,7 @@ async function querySpanishTowns() {
   console.log(`📊 Found ${allSpanishTowns.length} Spanish towns total`);
   console.log('First 5 towns:');
   allSpanishTowns.slice(0, 5).forEach(town => {
-    console.log(`- ${town.name} (${town.region})`);
+    console.log(`- ${town.town_name} (${town.region})`);
   });
   
   console.log('\n🏖️ Searching for coastal references...\n');
@@ -31,7 +31,7 @@ async function querySpanishTowns() {
   // Second query: Search for coastal references
   const { data: coastalTowns, error: error2 } = await supabase
     .from('towns')
-    .select('id, name, region, regions, description, climate_description')
+    .select('id, town_name, region, regions, description, climate_description')
     .eq('country', 'Spain')
     .or(`description.ilike.%coast%,description.ilike.%beach%,description.ilike.%sea%,description.ilike.%ocean%,description.ilike.%mediterranean%,description.ilike.%atlantic%,description.ilike.%shore%,description.ilike.%marina%,description.ilike.%port%,description.ilike.%harbor%,climate_description.ilike.%coast%,climate_description.ilike.%beach%,climate_description.ilike.%sea%,climate_description.ilike.%mediterranean%,climate_description.ilike.%atlantic%`);
 
@@ -48,7 +48,7 @@ async function querySpanishTowns() {
   }
 
   coastalTowns.forEach((town, index) => {
-    console.log(`\n${index + 1}. ${town.name} (ID: ${town.id})`);
+    console.log(`\n${index + 1}. ${town.town_name} (ID: ${town.id})`);
     console.log(`   Region: ${town.region}`);
     if (town.regions && town.regions.length > 0) {
       console.log(`   Regions array: [${town.regions.join(', ')}]`);

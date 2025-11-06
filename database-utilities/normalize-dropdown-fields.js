@@ -462,14 +462,14 @@ async function fixNormalizationIssues(analysisResults) {
         .eq('id', townId);
 
       if (error) {
-        console.error(`❌ Error updating ${town.name} (${townId}):`, error.message);
+        console.error(`❌ Error updating ${town.town_name} (${townId}):`, error.message);
         errorCount++;
       } else {
         fixedCount++;
-        console.log(`✅ Fixed ${town.name}, ${town.country} (${Object.keys(updates).length} fields)`);
+        console.log(`✅ Fixed ${town.town_name}, ${town.country} (${Object.keys(updates).length} fields)`);
       }
     } catch (error) {
-      console.error(`❌ Exception updating ${town.name} (${townId}):`, error);
+      console.error(`❌ Exception updating ${town.town_name} (${townId}):`, error);
       errorCount++;
     }
   }

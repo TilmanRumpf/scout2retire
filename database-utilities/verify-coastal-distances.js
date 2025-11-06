@@ -23,7 +23,7 @@ async function verifyCoastalDistances() {
 
   const { data: coastalFar } = await supabase
     .from('towns')
-    .select('id, name, country, distance_to_ocean_km, geographic_features_actual')
+    .select('id, town_name, country, distance_to_ocean_km, geographic_features_actual')
     .like('geographic_features_actual', '%coastal%')
     .gt('distance_to_ocean_km', 50)
     .order('distance_to_ocean_km', { ascending: false });
@@ -31,7 +31,7 @@ async function verifyCoastalDistances() {
   console.log(`Found ${coastalFar?.length || 0} coastal towns >50km from ocean:`);
   if (coastalFar && coastalFar.length > 0) {
     coastalFar.forEach(t => {
-      console.log(`  ❌ ${t.name}, ${t.country}: ${t.distance_to_ocean_km}km`);
+      console.log(`  ❌ ${t.town_name}, ${t.country}: ${t.distance_to_ocean_km}km`);
       console.log(`     Features: ${t.geographic_features_actual}`);
     });
     console.log('\n  RECOMMENDATION: These should have distance_to_ocean_km < 50');
@@ -43,7 +43,7 @@ async function verifyCoastalDistances() {
 
   const { data: islandFar } = await supabase
     .from('towns')
-    .select('id, name, country, distance_to_ocean_km, geographic_features_actual')
+    .select('id, town_name, country, distance_to_ocean_km, geographic_features_actual')
     .like('geographic_features_actual', '%island%')
     .gt('distance_to_ocean_km', 10)
     .order('distance_to_ocean_km', { ascending: false });
@@ -51,7 +51,7 @@ async function verifyCoastalDistances() {
   console.log(`Found ${islandFar?.length || 0} island towns >10km from ocean:`);
   if (islandFar && islandFar.length > 0) {
     islandFar.forEach(t => {
-      console.log(`  ❌ ${t.name}, ${t.country}: ${t.distance_to_ocean_km}km`);
+      console.log(`  ❌ ${t.town_name}, ${t.country}: ${t.distance_to_ocean_km}km`);
       console.log(`     Features: ${t.geographic_features_actual}`);
     });
     console.log('\n  RECOMMENDATION: Islands should have distance_to_ocean_km ≤ 5');
@@ -63,7 +63,7 @@ async function verifyCoastalDistances() {
 
   const { data: beachFar } = await supabase
     .from('towns')
-    .select('id, name, country, distance_to_ocean_km, geographic_features_actual')
+    .select('id, town_name, country, distance_to_ocean_km, geographic_features_actual')
     .like('geographic_features_actual', '%beach%')
     .gt('distance_to_ocean_km', 5)
     .order('distance_to_ocean_km', { ascending: false });
@@ -71,7 +71,7 @@ async function verifyCoastalDistances() {
   console.log(`Found ${beachFar?.length || 0} beach towns >5km from ocean:`);
   if (beachFar && beachFar.length > 0) {
     beachFar.forEach(t => {
-      console.log(`  ❌ ${t.name}, ${t.country}: ${t.distance_to_ocean_km}km`);
+      console.log(`  ❌ ${t.town_name}, ${t.country}: ${t.distance_to_ocean_km}km`);
       console.log(`     Features: ${t.geographic_features_actual}`);
     });
     console.log('\n  RECOMMENDATION: Beach towns should have distance_to_ocean_km ≤ 5');
@@ -83,14 +83,14 @@ async function verifyCoastalDistances() {
 
   const { data: coastalNull } = await supabase
     .from('towns')
-    .select('id, name, country, distance_to_ocean_km, geographic_features_actual')
+    .select('id, town_name, country, distance_to_ocean_km, geographic_features_actual')
     .like('geographic_features_actual', '%coastal%')
     .is('distance_to_ocean_km', null);
 
   console.log(`Found ${coastalNull?.length || 0} coastal towns with NULL distance:`);
   if (coastalNull && coastalNull.length > 0) {
     coastalNull.forEach(t => {
-      console.log(`  ⚠️  ${t.name}, ${t.country}: NULL`);
+      console.log(`  ⚠️  ${t.town_name}, ${t.country}: NULL`);
       console.log(`     Features: ${t.geographic_features_actual}`);
     });
     console.log('\n  RECOMMENDATION: Set distance_to_ocean_km to 0-10 for coastal towns');
@@ -102,7 +102,7 @@ async function verifyCoastalDistances() {
 
   const { data: nonCoastalClose } = await supabase
     .from('towns')
-    .select('id, name, country, distance_to_ocean_km, geographic_features_actual')
+    .select('id, town_name, country, distance_to_ocean_km, geographic_features_actual')
     .not('geographic_features_actual', 'like', '%coastal%')
     .not('geographic_features_actual', 'like', '%beach%')
     .not('geographic_features_actual', 'like', '%island%')
@@ -113,7 +113,7 @@ async function verifyCoastalDistances() {
   console.log(`Found ${nonCoastalClose?.length || 0} non-coastal towns <10km from ocean:`);
   if (nonCoastalClose && nonCoastalClose.length > 0) {
     nonCoastalClose.slice(0, 20).forEach(t => {
-      console.log(`  ⚠️  ${t.name}, ${t.country}: ${t.distance_to_ocean_km}km`);
+      console.log(`  ⚠️  ${t.town_name}, ${t.country}: ${t.distance_to_ocean_km}km`);
       console.log(`     Features: ${t.geographic_features_actual || 'NULL'}`);
     });
     if (nonCoastalClose.length > 20) {
@@ -176,7 +176,7 @@ async function verifyCoastalDistances() {
   console.log('\n-- Fix 1: Set coastal towns to reasonable ocean distance (0-5km)');
   if (coastalFar && coastalFar.length > 0) {
     coastalFar.slice(0, 10).forEach(t => {
-      console.log(`UPDATE towns SET distance_to_ocean_km = 2 WHERE id = ${t.id}; -- ${t.name}`);
+      console.log(`UPDATE towns SET distance_to_ocean_km = 2 WHERE id = ${t.id}; -- ${t.town_name}`);
     });
     if (coastalFar.length > 10) {
       console.log(`-- ... and ${coastalFar.length - 10} more coastal towns need fixing`);
@@ -186,7 +186,7 @@ async function verifyCoastalDistances() {
   console.log('\n-- Fix 2: Set island towns to 0-1km from ocean');
   if (islandFar && islandFar.length > 0) {
     islandFar.slice(0, 10).forEach(t => {
-      console.log(`UPDATE towns SET distance_to_ocean_km = 0 WHERE id = ${t.id}; -- ${t.name}`);
+      console.log(`UPDATE towns SET distance_to_ocean_km = 0 WHERE id = ${t.id}; -- ${t.town_name}`);
     });
     if (islandFar.length > 10) {
       console.log(`-- ... and ${islandFar.length - 10} more island towns need fixing`);
@@ -196,7 +196,7 @@ async function verifyCoastalDistances() {
   console.log('\n-- Fix 3: Set beach towns to 0-2km from ocean');
   if (beachFar && beachFar.length > 0) {
     beachFar.slice(0, 10).forEach(t => {
-      console.log(`UPDATE towns SET distance_to_ocean_km = 1 WHERE id = ${t.id}; -- ${t.name}`);
+      console.log(`UPDATE towns SET distance_to_ocean_km = 1 WHERE id = ${t.id}; -- ${t.town_name}`);
     });
     if (beachFar.length > 10) {
       console.log(`-- ... and ${beachFar.length - 10} more beach towns need fixing`);

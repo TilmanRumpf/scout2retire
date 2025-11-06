@@ -17,7 +17,7 @@ async function verifyFixes() {
   console.log('1. Testing towns table columns...')
   const { data: towns, error: townsError } = await supabase
     .from('towns')
-    .select('id, name, town_name, country')
+    .select('id, town_name, town_name, country')
     .limit(3)
 
   if (townsError) {
@@ -56,7 +56,7 @@ async function verifyFixes() {
   console.log('\n3. Testing matching algorithm data...')
   const { data: matchData, error: matchError } = await supabase
     .from('towns')
-    .select('id, name, town_name, country, overall_score')
+    .select('id, town_name, town_name, country, overall_score')
     .not('overall_score', 'is', null)
     .order('overall_score', { ascending: false })
     .limit(3)
@@ -67,7 +67,7 @@ async function verifyFixes() {
   } else if (matchData && matchData.length > 0) {
     console.log('   ✅ PASSED: Towns have scores')
     matchData.forEach(town => {
-      console.log(`   - ${town.name || town.town_name}: ${town.overall_score}%`)
+      console.log(`   - ${town.town_name || town.town_name}: ${town.overall_score}%`)
     })
   } else {
     console.log('   ⚠️  WARNING: No towns with scores found')

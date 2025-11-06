@@ -11,7 +11,7 @@ async function verifyBackfill() {
 
   const { data, error } = await supabase
     .from('towns')
-    .select('name, activity_infrastructure, travel_connectivity_rating, social_atmosphere, traditional_progressive_lean, residency_path_info, emergency_services_quality, typical_rent_1bed, cost_index, climate, description')
+    .select('town_name, activity_infrastructure, travel_connectivity_rating, social_atmosphere, traditional_progressive_lean, residency_path_info, emergency_services_quality, typical_rent_1bed, cost_index, climate, description')
     .eq('name', 'Annapolis Royal')
     .limit(1);
 

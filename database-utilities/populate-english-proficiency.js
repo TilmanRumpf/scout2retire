@@ -265,7 +265,7 @@ async function populateEnglishProficiency() {
     // Get all towns
     const { data: towns, error } = await supabase
       .from('towns')
-      .select('id, name, country');
+      .select('id, town_name, country');
 
     if (error) {
       console.error('Error fetching towns:', error);
@@ -281,8 +281,8 @@ async function populateEnglishProficiency() {
       let proficiency = 0;
 
       // Check for town-specific override first
-      if (TOWN_ADJUSTMENTS[town.name]) {
-        proficiency = TOWN_ADJUSTMENTS[town.name];
+      if (TOWN_ADJUSTMENTS[town.town_name]) {
+        proficiency = TOWN_ADJUSTMENTS[town.town_name];
       } else {
         // Use country default
         proficiency = ENGLISH_PROFICIENCY_DATA[town.country] || 30;
@@ -290,7 +290,7 @@ async function populateEnglishProficiency() {
 
       updates.push({
         id: town.id,
-        name: town.name,
+        name: town.town_name,
         country: town.country,
         proficiency: proficiency
       });
@@ -303,12 +303,12 @@ async function populateEnglishProficiency() {
     console.log('📊 Sample English proficiency values:');
     console.log('\nHighest proficiency:');
     updates.slice(0, 5).forEach(t => {
-      console.log(`  ${t.name}, ${t.country}: ${t.proficiency}%`);
+      console.log(`  ${t.town_name}, ${t.country}: ${t.proficiency}%`);
     });
 
     console.log('\nLowest proficiency:');
     updates.slice(-5).forEach(t => {
-      console.log(`  ${t.name}, ${t.country}: ${t.proficiency}%`);
+      console.log(`  ${t.town_name}, ${t.country}: ${t.proficiency}%`);
     });
 
     // Apply updates in batches

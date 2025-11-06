@@ -32,7 +32,7 @@ async function verifyStatus() {
   for (const name of testTowns) {
     const { data: town } = await supabase
       .from('towns')
-      .select('id, name, country')
+      .select('id, town_name, country')
       .eq('name', name)
       .single();
     
@@ -42,14 +42,14 @@ async function verifyStatus() {
         .select('*', { count: 'exact', head: true })
         .eq('town_id', town.id);
       
-      console.log(`  ${town.name}, ${town.country}: ${count} hobbies`);
+      console.log(`  ${town.town_name}, ${town.country}: ${count} hobbies`);
     }
   }
   
   // Find towns with 0 hobbies
   const { data: allTowns } = await supabase
     .from('towns')
-    .select('id, name, country')
+    .select('id, town_name, country')
     .limit(1000);
   
   const townsWithoutHobbies = [];
@@ -63,7 +63,7 @@ async function verifyStatus() {
   if (townsWithoutHobbies.length > 0) {
     console.log('\n🚨 Towns WITHOUT hobbies (first 5):');
     townsWithoutHobbies.forEach(t => {
-      console.log(`  - ${t.name}, ${t.country} (ID: ${t.id})`);
+      console.log(`  - ${t.town_name}, ${t.country} (ID: ${t.id})`);
     });
   }
   

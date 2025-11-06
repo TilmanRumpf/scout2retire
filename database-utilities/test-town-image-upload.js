@@ -83,7 +83,7 @@ async function testUploadFlow() {
   } else {
     console.log(`✅ Successfully listed files: ${files.length} files found`);
     if (files.length > 0) {
-      console.log('   Sample files:', files.slice(0, 3).map(f => f.name).join(', '));
+      console.log('   Sample files:', files.slice(0, 3).map(f => f.town_name).join(', '));
     }
   }
 

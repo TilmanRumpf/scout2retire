@@ -23,7 +23,7 @@ async function rawCheck() {
       
       const { data: hobbies, error: hobbiesError } = await supabase
         .from('hobbies')
-        .select('id, name');
+        .select('id, town_name');
       
       if (rawError || hobbiesError) {
         console.error('Errors:', rawError, hobbiesError);
@@ -73,13 +73,13 @@ async function rawCheck() {
       // Check town without hobbies
       const { data: townsWithoutHobbies, error: townError } = await supabase
         .from('towns')
-        .select('id, name, country')
+        .select('id, town_name, country')
         .not('id', 'in', rawData.map(r => r.town_id));
       
       console.log(`\nTowns without any hobbies: ${townsWithoutHobbies?.length || 'Error'}`);
       if (townsWithoutHobbies) {
         townsWithoutHobbies.slice(0, 10).forEach(town => {
-          console.log(`  ${town.name}, ${town.country}`);
+          console.log(`  ${town.town_name}, ${town.country}`);
         });
       }
       

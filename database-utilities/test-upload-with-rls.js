@@ -31,7 +31,7 @@ async function testUploadWithRLS() {
     console.log('\n1️⃣  Getting sample town from database...');
     const { data: towns, error: townsError } = await adminClient
       .from('towns')
-      .select('id, town_name, name')
+      .select('id, town_name, town_name')
       .limit(1);
 
     if (townsError) throw townsError;

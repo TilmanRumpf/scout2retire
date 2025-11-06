@@ -24,14 +24,14 @@ async function verifyGoogleMapsUpdate() {
     // Show some updated links
     const { data: updatedTowns } = await supabase
       .from('towns')
-      .select('name, country, google_maps_link')
+      .select('town_name, country, google_maps_link')
       .like('google_maps_link', 'https://www.google.com/maps/search/%')
       .limit(10);
 
     if (updatedTowns && updatedTowns.length > 0) {
       console.log('\nSample of updated Google Maps links:');
       updatedTowns.forEach(town => {
-        console.log(`✓ ${town.name}, ${town.country}`);
+        console.log(`✓ ${town.town_name}, ${town.country}`);
         console.log(`  ${town.google_maps_link}\n`);
       });
     }

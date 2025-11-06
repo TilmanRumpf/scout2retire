@@ -52,8 +52,8 @@ missingTowns.forEach(town => {
   
   sql += `
 INSERT INTO towns (name, country, region, regions, climate_description)
-SELECT '${escapeSql(town.name)}', '${escapeSql(normalizedCountry)}', ${town.region ? `'${escapeSql(town.region)}'` : 'NULL'}, ARRAY[${regions.map(r => `'${escapeSql(r)}'`).join(', ')}], ${climateDesc ? `'${climateDesc}'` : 'NULL'}
-WHERE NOT EXISTS (SELECT 1 FROM towns WHERE name = '${escapeSql(town.name)}' AND country = '${escapeSql(normalizedCountry)}');`;
+SELECT '${escapeSql(town.town_name)}', '${escapeSql(normalizedCountry)}', ${town.region ? `'${escapeSql(town.region)}'` : 'NULL'}, ARRAY[${regions.map(r => `'${escapeSql(r)}'`).join(', ')}], ${climateDesc ? `'${climateDesc}'` : 'NULL'}
+WHERE NOT EXISTS (SELECT 1 FROM towns WHERE name = '${escapeSql(town.town_name)}' AND country = '${escapeSql(normalizedCountry)}');`;
 });
 
 sql += `

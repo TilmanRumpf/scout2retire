@@ -22,13 +22,13 @@ async function checkSpecificIssues() {
   console.log('-'.repeat(100));
   const { data: lowHumidity } = await supabase
     .from('towns')
-    .select('name, country, humidity_average, climate_type')
+    .select('town_name, country, humidity_average, climate_type')
     .eq('humidity_average', 30)
-    .order('name');
+    .order('town_name');
 
   console.log(`Found ${lowHumidity?.length || 0} towns with humidity = 30%:`);
   lowHumidity?.forEach(t => {
-    console.log(`  - ${t.name}, ${t.country} (climate: ${t.climate_type})`);
+    console.log(`  - ${t.town_name}, ${t.country} (climate: ${t.climate_type})`);
   });
 
   // 2. Check healthcare_cost_monthly = 0
@@ -36,13 +36,13 @@ async function checkSpecificIssues() {
   console.log('-'.repeat(100));
   const { data: zeroHealthcare } = await supabase
     .from('towns')
-    .select('name, country, healthcare_cost_monthly, healthcare_score')
+    .select('town_name, country, healthcare_cost_monthly, healthcare_score')
     .eq('healthcare_cost_monthly', 0)
-    .order('name');
+    .order('town_name');
 
   console.log(`Found ${zeroHealthcare?.length || 0} towns with $0 healthcare cost:`);
   zeroHealthcare?.forEach(t => {
-    console.log(`  - ${t.name}, ${t.country} (score: ${t.healthcare_score})`);
+    console.log(`  - ${t.town_name}, ${t.country} (score: ${t.healthcare_score})`);
   });
 
   // 3. Check for very high cost towns
@@ -50,13 +50,13 @@ async function checkSpecificIssues() {
   console.log('-'.repeat(100));
   const { data: highCost } = await supabase
     .from('towns')
-    .select('name, country, cost_of_living_usd, rent_1bed, typical_monthly_living_cost')
+    .select('town_name, country, cost_of_living_usd, rent_1bed, typical_monthly_living_cost')
     .gt('cost_of_living_usd', 4000)
     .order('cost_of_living_usd', { ascending: false });
 
   console.log(`Found ${highCost?.length || 0} towns with cost > $4000:`);
   highCost?.forEach(t => {
-    console.log(`  - ${t.name}, ${t.country}: $${t.cost_of_living_usd}/mo (rent: $${t.rent_1bed})`);
+    console.log(`  - ${t.town_name}, ${t.country}: $${t.cost_of_living_usd}/mo (rent: $${t.rent_1bed})`);
   });
 
   // 4. Check for extremely low healthcare scores
@@ -64,13 +64,13 @@ async function checkSpecificIssues() {
   console.log('-'.repeat(100));
   const { data: lowHealthcare } = await supabase
     .from('towns')
-    .select('name, country, healthcare_score, healthcare_description')
+    .select('town_name, country, healthcare_score, healthcare_description')
     .lt('healthcare_score', 5)
     .order('healthcare_score');
 
   console.log(`Found ${lowHealthcare?.length || 0} towns with healthcare score < 5:`);
   lowHealthcare?.forEach(t => {
-    console.log(`  - ${t.name}, ${t.country}: score ${t.healthcare_score}`);
+    console.log(`  - ${t.town_name}, ${t.country}: score ${t.healthcare_score}`);
   });
 
   // 5. Check for extreme populations (likely data entry errors)
@@ -78,13 +78,13 @@ async function checkSpecificIssues() {
   console.log('-'.repeat(100));
   const { data: extremePop } = await supabase
     .from('towns')
-    .select('name, country, population')
+    .select('town_name, country, population')
     .gt('population', 5000000)
     .order('population', { ascending: false });
 
   console.log(`Found ${extremePop?.length || 0} towns with >5M population (may be city regions):`);
   extremePop?.forEach(t => {
-    console.log(`  - ${t.name}, ${t.country}: ${t.population.toLocaleString()}`);
+    console.log(`  - ${t.town_name}, ${t.country}: ${t.population.toLocaleString()}`);
   });
 
   // 6. Check for suspiciously high sunshine hours (>3500)
@@ -92,13 +92,13 @@ async function checkSpecificIssues() {
   console.log('-'.repeat(100));
   const { data: highSun } = await supabase
     .from('towns')
-    .select('name, country, sunshine_hours, climate_type')
+    .select('town_name, country, sunshine_hours, climate_type')
     .gt('sunshine_hours', 3500)
     .order('sunshine_hours', { ascending: false });
 
   console.log(`Found ${highSun?.length || 0} towns with >3500 sunshine hours:`);
   highSun?.forEach(t => {
-    console.log(`  - ${t.name}, ${t.country}: ${t.sunshine_hours} hrs/yr (${t.climate_type})`);
+    console.log(`  - ${t.town_name}, ${t.country}: ${t.sunshine_hours} hrs/yr (${t.climate_type})`);
   });
 
   // 7. Check for very high rent outliers
@@ -106,13 +106,13 @@ async function checkSpecificIssues() {
   console.log('-'.repeat(100));
   const { data: highRent } = await supabase
     .from('towns')
-    .select('name, country, rent_1bed, cost_of_living_usd')
+    .select('town_name, country, rent_1bed, cost_of_living_usd')
     .gt('rent_1bed', 2000)
     .order('rent_1bed', { ascending: false });
 
   console.log(`Found ${highRent?.length || 0} towns with rent >$2000:`);
   highRent?.forEach(t => {
-    console.log(`  - ${t.name}, ${t.country}: $${t.rent_1bed}/mo (total cost: $${t.cost_of_living_usd})`);
+    console.log(`  - ${t.town_name}, ${t.country}: $${t.rent_1bed}/mo (total cost: $${t.cost_of_living_usd})`);
   });
 
   // 8. Check for duplicate cost_of_living_usd values (may indicate copy-paste)
@@ -137,12 +137,12 @@ async function checkSpecificIssues() {
   for (const [cost, count] of topDuplicates) {
     const { data: towns } = await supabase
       .from('towns')
-      .select('name, country')
+      .select('town_name, country')
       .eq('cost_of_living_usd', cost)
       .limit(5);
 
     console.log(`\n  $${cost}/month appears ${count} times:`);
-    towns?.forEach(t => console.log(`    - ${t.name}, ${t.country}`));
+    towns?.forEach(t => console.log(`    - ${t.town_name}, ${t.country}`));
     if (count > 5) console.log(`    ... and ${count - 5} more`);
   }
 
@@ -151,13 +151,13 @@ async function checkSpecificIssues() {
   console.log('-'.repeat(100));
   const { data: highAQI } = await supabase
     .from('towns')
-    .select('name, country, air_quality_index, population')
+    .select('town_name, country, air_quality_index, population')
     .gt('air_quality_index', 100)
     .order('air_quality_index', { ascending: false });
 
   console.log(`Found ${highAQI?.length || 0} towns with AQI >100 (unhealthy):`);
   highAQI?.forEach(t => {
-    console.log(`  - ${t.name}, ${t.country}: AQI ${t.air_quality_index}`);
+    console.log(`  - ${t.town_name}, ${t.country}: AQI ${t.air_quality_index}`);
   });
 
   // 10. Check for very high elevations
@@ -165,13 +165,13 @@ async function checkSpecificIssues() {
   console.log('-'.repeat(100));
   const { data: highElev } = await supabase
     .from('towns')
-    .select('name, country, elevation_meters, temperature_avg_annual')
+    .select('town_name, country, elevation_meters, temperature_avg_annual')
     .gt('elevation_meters', 2000)
     .order('elevation_meters', { ascending: false });
 
   console.log(`Found ${highElev?.length || 0} towns above 2000m elevation:`);
   highElev?.forEach(t => {
-    console.log(`  - ${t.name}, ${t.country}: ${t.elevation_meters}m (avg temp: ${t.temperature_avg_annual}°C)`);
+    console.log(`  - ${t.town_name}, ${t.country}: ${t.elevation_meters}m (avg temp: ${t.temperature_avg_annual}°C)`);
   });
 
   // 11. Check for extreme distances to ocean
@@ -179,13 +179,13 @@ async function checkSpecificIssues() {
   console.log('-'.repeat(100));
   const { data: farOcean } = await supabase
     .from('towns')
-    .select('name, country, distance_to_ocean_km, geographic_features_actual')
+    .select('town_name, country, distance_to_ocean_km, geographic_features_actual')
     .gt('distance_to_ocean_km', 1000)
     .order('distance_to_ocean_km', { ascending: false });
 
   console.log(`Found ${farOcean?.length || 0} towns >1000km from ocean:`);
   farOcean?.forEach(t => {
-    console.log(`  - ${t.name}, ${t.country}: ${t.distance_to_ocean_km}km (features: ${t.geographic_features_actual})`);
+    console.log(`  - ${t.town_name}, ${t.country}: ${t.distance_to_ocean_km}km (features: ${t.geographic_features_actual})`);
   });
 
   // 12. Check categorical values that appear only once

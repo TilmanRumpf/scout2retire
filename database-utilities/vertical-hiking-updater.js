@@ -139,8 +139,8 @@ async function updateHikingTrails() {
   let estimates = 0;
   
   for (const town of towns) {
-    const nameOnly = town.name;
-    const nameWithRegion = `${town.name}, ${town.region}`;
+    const nameOnly = town.town_name;
+    const nameWithRegion = `${town.town_name}, ${town.region}`;
     
     // Check for exact match
     let trailsKm = HIKING_DATA[nameOnly] || HIKING_DATA[nameWithRegion];
@@ -176,7 +176,7 @@ async function updateHikingTrails() {
     
     updates.push({
       id: town.id,
-      name: town.name,
+      name: town.town_name,
       hiking_trails_km: trailsKm,
       elevation: town.elevation_meters,
       terrain: town.geographic_features

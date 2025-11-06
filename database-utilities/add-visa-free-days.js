@@ -33,7 +33,7 @@ async function addVisaFreeDays() {
     // Get all towns with visa requirements
     const { data: towns, error } = await supabase
       .from('towns')
-      .select('id, name, country, visa_requirements');
+      .select('id, town_name, country, visa_requirements');
 
     if (error) {
       console.error('Error fetching towns:', error);
@@ -94,7 +94,7 @@ async function addVisaFreeDays() {
           .eq('id', town.id);
 
         if (updateError) {
-          console.error(`❌ Failed to update ${town.name}:`, updateError.message);
+          console.error(`❌ Failed to update ${town.town_name}:`, updateError.message);
         } else {
           updatedCount++;
         }

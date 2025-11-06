@@ -71,7 +71,7 @@ async function checkSystemState() {
     // Sample towns
     const { data: towns } = await supabase
       .from('towns')
-      .select('id, name, geographic_features_actual, vegetation_type_actual')
+      .select('id, town_name, geographic_features_actual, vegetation_type_actual')
       .limit(5);
     
     let townCaseIssues = 0;
@@ -83,7 +83,7 @@ async function checkSystemState() {
       
       if (hasGeoCase || hasVegCase) {
         townCaseIssues++;
-        console.log(`  ⚠️ Town ${town.name} has mixed case data`);
+        console.log(`  ⚠️ Town ${town.town_name} has mixed case data`);
       }
     });
     

@@ -49,7 +49,7 @@ async function updateTownWithConsultants() {
   const { data, error } = await supabase
     .from('towns')
     .update(aiGeneratedContent)
-    .eq('name', town.name)
+    .eq('name', town.town_name)
     .eq('country', town.country)
     .select()
   

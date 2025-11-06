@@ -64,7 +64,7 @@ export async function calculateMatchScore(userPrefs, town) {
   return {
     match_score: Math.min(10, score),
     match_factors: factors,
-    town_name: town.name,
+    town_name: town.town_name,
     town_country: town.country
   }
 }
@@ -75,7 +75,7 @@ export async function batchUpdateStrategy(supabase) {
   // Get towns with missing data
   const { data: towns, error } = await supabase
     .from('towns')
-    .select('id, name, country, data_completeness_score, last_ai_update')
+    .select('id, town_name, country, data_completeness_score, last_ai_update')
     .order('data_completeness_score', { ascending: true })
     .limit(10)
   
@@ -93,7 +93,7 @@ export async function batchUpdateStrategy(supabase) {
       ? new Date(town.last_ai_update).toLocaleDateString()
       : 'Never'
     
-    console.log(`${idx + 1}. ${town.name}, ${town.country}`)
+    console.log(`${idx + 1}. ${town.town_name}, ${town.country}`)
     console.log(`   Completeness: ${completeness}%`)
     console.log(`   Last updated: ${lastUpdate}`)
     console.log('')

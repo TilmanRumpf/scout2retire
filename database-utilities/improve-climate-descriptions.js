@@ -154,7 +154,7 @@ function generateNaturalDescription(town) {
   description = description.replace(/\s+/g, ' ').replace(/\.\./g, '.').trim();
   
   // Remove any accidental town name mentions
-  description = description.replace(new RegExp(town.name, 'gi'), '').trim();
+  description = description.replace(new RegExp(town.town_name, 'gi'), '').trim();
   
   return description;
 }
@@ -184,7 +184,7 @@ async function improveClimateDescriptions() {
     const currentDesc = town.climate_description || '';
     const needsUpdate = !currentDesc || 
                        currentDesc.length < 50 || 
-                       currentDesc.includes(town.name) ||
+                       currentDesc.includes(town.town_name) ||
                        currentDesc.toLowerCase().includes('features a') ||
                        currentDesc.toLowerCase().includes('boasts a') ||
                        currentDesc.toLowerCase().includes('enjoys a') ||
@@ -206,7 +206,7 @@ async function improveClimateDescriptions() {
       .eq('id', town.id);
       
     if (updateError) {
-      console.log(`❌ Failed to update ${town.name}: ${updateError.message}`);
+      console.log(`❌ Failed to update ${town.town_name}: ${updateError.message}`);
       errorCount++;
     } else {
       updateCount++;
@@ -227,7 +227,7 @@ async function improveClimateDescriptions() {
   console.log('\n📝 SAMPLE IMPROVEMENTS:');
   const { data: samples } = await supabase
     .from('towns')
-    .select('name, country, climate_description')
+    .select('town_name, country, climate_description')
     .limit(10);
     
   samples.forEach(s => {

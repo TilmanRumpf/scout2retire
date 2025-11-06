@@ -40,25 +40,25 @@ async function preFlightCheck() {
   // Towns WITH photos (to test preservation)
   const { data: townsWithPhotos } = await supabase
     .from('towns')
-    .select('id, name, country, image_url_1')
+    .select('id, town_name, country, image_url_1')
     .not('image_url_1', 'is', null)
     .limit(3)
   
   console.log('Towns WITH photos (good for testing photo preservation):')
   townsWithPhotos?.forEach(t => {
-    console.log(`   - ${t.name}, ${t.country} (${t.id})`)
+    console.log(`   - ${t.town_name}, ${t.country} (${t.id})`)
   })
   
   // Towns WITHOUT photos (safe for other updates)
   const { data: townsWithoutPhotos } = await supabase
     .from('towns')
-    .select('id, name, country')
+    .select('id, town_name, country')
     .is('image_url_1', null)
     .limit(3)
   
   console.log('\nTowns WITHOUT photos (safe for testing updates):')
   townsWithoutPhotos?.forEach(t => {
-    console.log(`   - ${t.name}, ${t.country} (${t.id})`)
+    console.log(`   - ${t.town_name}, ${t.country} (${t.id})`)
   })
   
   // 4. Check for incomplete data

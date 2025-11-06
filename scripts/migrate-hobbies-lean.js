@@ -115,14 +115,14 @@ async function migrateHobbies() {
       if (capabilities.length > 0) {
         updates.push({
           id: town.id,
-          name: town.name,
+          name: town.town_name,
           hobby_capabilities: capabilities,
           hobby_count: capabilities.length
         });
         
         // Log progress for towns with photos
         if (town.image_url_1) {
-          console.log(`  ${town.name}: ${capabilities.length} hobbies - ${capabilities.slice(0, 5).join(', ')}...`);
+          console.log(`  ${town.town_name}: ${capabilities.length} hobbies - ${capabilities.slice(0, 5).join(', ')}...`);
         }
       }
     }

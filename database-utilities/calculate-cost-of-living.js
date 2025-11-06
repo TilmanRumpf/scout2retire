@@ -168,7 +168,7 @@ async function updateCostOfLiving() {
     // Track changes
     if (oldCost !== newCost) {
       changes.push({
-        name: town.name,
+        name: town.town_name,
         country: town.country,
         old: oldCost,
         new: newCost,
@@ -179,7 +179,7 @@ async function updateCostOfLiving() {
     // Collect samples
     if (samples.length < 20) {
       samples.push({
-        name: town.name,
+        name: town.town_name,
         country: town.country,
         cost: newCost,
         rent: town.rent_1bed,
@@ -194,7 +194,7 @@ async function updateCostOfLiving() {
       .eq('id', town.id);
       
     if (updateError) {
-      console.log(`❌ Failed to update ${town.name}: ${updateError.message}`);
+      console.log(`❌ Failed to update ${town.town_name}: ${updateError.message}`);
       errorCount++;
     } else {
       updateCount++;
@@ -254,12 +254,12 @@ async function updateCostOfLiving() {
   for (const name of keyTowns) {
     const { data: town } = await supabase
       .from('towns')
-      .select('name, country, cost_of_living_usd, rent_1bed')
-      .ilike('name', name)
+      .select('town_name, country, cost_of_living_usd, rent_1bed')
+      .ilike('town_name', name)
       .limit(1)
       .single();
     if (town) {
-      console.log(`  ${town.name}, ${town.country}: $${town.cost_of_living_usd}/month (rent: $${town.rent_1bed})`);
+      console.log(`  ${town.town_name}, ${town.country}: $${town.cost_of_living_usd}/month (rent: $${town.rent_1bed})`);
     }
   }
   

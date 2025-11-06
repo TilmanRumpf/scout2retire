@@ -18,8 +18,8 @@ async function debugAIPopulate() {
   // Find Wuppertal
   const { data: town, error: findError } = await supabase
     .from('towns')
-    .select('id, name, country, region')
-    .ilike('name', 'wuppertal')
+    .select('id, town_name, country, region')
+    .ilike('town_name', 'wuppertal')
     .single();
 
   if (findError || !town) {
@@ -29,7 +29,7 @@ async function debugAIPopulate() {
 
   console.log('✅ Found town:', town);
   console.log('📍 Town ID:', town.id);
-  console.log('📍 Town Name:', town.name);
+  console.log('📍 Town Name:', town.town_name);
   console.log('📍 Country:', town.country);
   console.log('\n🤖 Calling AI population function...\n');
 
@@ -54,7 +54,7 @@ async function debugAIPopulate() {
         },
         body: JSON.stringify({
           townId: town.id,
-          townName: town.name,
+          townName: town.town_name,
           country: town.country,
           region: town.region
         })

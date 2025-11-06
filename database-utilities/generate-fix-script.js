@@ -25,7 +25,7 @@ async function generateFixScript() {
 
   const { data: canadianTowns } = await supabase
     .from('towns')
-    .select('id, name, country, healthcare_cost_monthly, healthcare_cost')
+    .select('id, town_name, country, healthcare_cost_monthly, healthcare_cost')
     .eq('country', 'Canada')
     .eq('healthcare_cost_monthly', 0);
 
@@ -36,11 +36,11 @@ async function generateFixScript() {
       issue: 'Canadian Healthcare Cost',
       count: canadianTowns.length,
       sql: `-- Fix Canadian healthcare costs (universal healthcare ≠ zero cost)\nUPDATE towns\nSET healthcare_cost_monthly = 75,\n    healthcare_cost = 75\nWHERE country = 'Canada'\n  AND healthcare_cost_monthly = 0;\n`,
-      towns: canadianTowns.map(t => t.name)
+      towns: canadianTowns.map(t => t.town_name)
     });
 
     canadianTowns.forEach(t => {
-      console.log(`  - ${t.name}: $${t.healthcare_cost_monthly} → $75`);
+      console.log(`  - ${t.town_name}: $${t.healthcare_cost_monthly} → $75`);
     });
   }
 
@@ -50,13 +50,13 @@ async function generateFixScript() {
 
   const { data: allCosts } = await supabase
     .from('towns')
-    .select('name, country, cost_of_living_usd')
+    .select('town_name, country, cost_of_living_usd')
     .not('cost_of_living_usd', 'is', null);
 
   const costCounts = {};
   allCosts?.forEach(t => {
     costCounts[t.cost_of_living_usd] = costCounts[t.cost_of_living_usd] || [];
-    costCounts[t.cost_of_living_usd].push(`${t.name}, ${t.country}`);
+    costCounts[t.cost_of_living_usd].push(`${t.town_name}, ${t.country}`);
   });
 
   const suspiciousDuplicates = Object.entries(costCounts)

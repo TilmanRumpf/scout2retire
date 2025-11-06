@@ -18,12 +18,12 @@ async function diagnoseImageIssues() {
     console.log('1️⃣ Checking St Tropez / Saint-Tropez...');
     const { data: stTropez, error: stError } = await supabase
       .from('towns')
-      .select('id, name, country, image_url_1')
+      .select('id, town_name, country, image_url_1')
       .or('name.eq.Saint-Tropez,name.eq.St Tropez,name.ilike.%tropez%');
     
     if (!stError && stTropez) {
       stTropez.forEach(town => {
-        console.log(`\nFound: ${town.name}, ${town.country}`);
+        console.log(`\nFound: ${town.town_name}, ${town.country}`);
         console.log(`URL: ${town.image_url_1}`);
         if (town.image_url_1) {
           console.log(`Double slash issue: ${town.image_url_1.includes('//') ? '❌ YES' : '✅ NO'}`);
@@ -36,12 +36,12 @@ async function diagnoseImageIssues() {
     console.log('\n2️⃣ Checking Medellin...');
     const { data: medellin, error: medError } = await supabase
       .from('towns')
-      .select('id, name, country, image_url_1')
+      .select('id, town_name, country, image_url_1')
       .eq('name', 'Medellin');
     
     if (!medError && medellin) {
       medellin.forEach(town => {
-        console.log(`\nFound: ${town.name}, ${town.country}`);
+        console.log(`\nFound: ${town.town_name}, ${town.country}`);
         console.log(`URL: ${town.image_url_1}`);
         if (town.image_url_1) {
           console.log(`Double slash issue: ${town.image_url_1.includes('//') ? '❌ YES' : '✅ NO'}`);
@@ -54,14 +54,14 @@ async function diagnoseImageIssues() {
     console.log('\n3️⃣ All towns with double slash issues...');
     const { data: problemTowns, error: problemError } = await supabase
       .from('towns')
-      .select('name, country, image_url_1')
+      .select('town_name, country, image_url_1')
       .or('image_url_1.like.%//%,image_url_2.like.%//%,image_url_3.like.%//%')
-      .order('name');
+      .order('town_name');
     
     if (!problemError && problemTowns) {
       console.log(`\nFound ${problemTowns.length} towns with double slashes:`);
       problemTowns.forEach(town => {
-        console.log(`- ${town.name}, ${town.country}`);
+        console.log(`- ${town.town_name}, ${town.country}`);
       });
     }
     

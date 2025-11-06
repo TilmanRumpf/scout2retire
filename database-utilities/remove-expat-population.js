@@ -38,12 +38,12 @@ console.log('\nOR create a migration file in supabase/migrations/');
 // Verify current state
 const { data } = await supabase
   .from('towns')
-  .select('name, expat_community_size, expat_population')
+  .select('town_name, expat_community_size, expat_population')
   .limit(5);
 
 console.log('\n📊 Current state (first 5 towns):');
 data.forEach(t => {
-  console.log(`${t.name}: community_size="${t.expat_community_size}", population="${t.expat_population}"`);
+  console.log(`${t.town_name}: community_size="${t.expat_community_size}", population="${t.expat_population}"`);
 });
 
 console.log('\n✅ expat_community_size has valid values (small/moderate/large)');

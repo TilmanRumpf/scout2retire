@@ -24,13 +24,13 @@ async function restoreUrls() {
     const { error } = await supabase
       .from('towns')
       .update({ image_url_1: town.url })
-      .eq('name', town.name);
+      .eq('name', town.town_name);
       
     if (!error) {
-      console.log(`✅ Restored ${town.name}`);
+      console.log(`✅ Restored ${town.town_name}`);
       console.log(`   URL: ${town.url}`);
     } else {
-      console.log(`❌ Error restoring ${town.name}:`, error);
+      console.log(`❌ Error restoring ${town.town_name}:`, error);
     }
   }
   
@@ -39,9 +39,9 @@ async function restoreUrls() {
   for (const town of updates) {
     try {
       const response = await fetch(town.url);
-      console.log(`${town.name}: ${response.status} ${response.statusText}`);
+      console.log(`${town.town_name}: ${response.status} ${response.statusText}`);
     } catch (err) {
-      console.log(`${town.name}: ERROR - ${err.message}`);
+      console.log(`${town.town_name}: ERROR - ${err.message}`);
     }
   }
 }

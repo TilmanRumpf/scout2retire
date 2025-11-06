@@ -13,7 +13,7 @@ async function checkNameColumn() {
 
   const { data, error } = await supabase
     .from('towns')
-    .select('id, town_name, name, country')
+    .select('id, town_name, town_name, country')
     .limit(5)
 
   if (error) {
@@ -35,7 +35,7 @@ CREATE INDEX IF NOT EXISTS idx_towns_name ON towns(name);
     data.forEach(town => {
       console.log(`  ID: ${town.id.substring(0, 8)}...`)
       console.log(`    town_name: "${town.town_name}"`)
-      console.log(`    name: "${town.name}"`)
+      console.log(`    name: "${town.town_name}"`)
       console.log(`    country: "${town.country}"`)
       console.log('')
     })

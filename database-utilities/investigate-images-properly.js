@@ -16,7 +16,7 @@ async function investigate() {
     .or('name.eq.Saint-Tropez,name.eq.Medellin,name.ilike.%tropez%,name.ilike.%medellin%');
     
   clearedTowns?.forEach(t => {
-    console.log(`\n${t.name}, ${t.country}`);
+    console.log(`\n${t.town_name}, ${t.country}`);
     console.log(`  ID: ${t.id}`);
     console.log(`  Image 1: ${t.image_url_1 || 'NULL (CLEARED)'}`);
     console.log(`  Image 2: ${t.image_url_2 || 'NULL'}`);
@@ -83,8 +83,7 @@ async function investigate() {
     console.log(`\nTotal files in bucket: ${allFiles.length}`);
     
     // Filter for relevant files
-    const relevant = allFiles.filter(f => 
-      f.name.toLowerCase().includes('tropez') ||
+    const relevant = allFiles.filter(f => f.town_name.toLowerCase().includes('tropez') ||
       f.name.toLowerCase().includes('medellin') ||
       f.name.toLowerCase().includes('fr-') ||
       f.name.toLowerCase().includes('co-')

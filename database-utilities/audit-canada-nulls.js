@@ -15,7 +15,7 @@ async function auditCanadaNulls() {
     .from('towns')
     .select('*')
     .eq('country', 'Canada')
-    .order('name');
+    .order('town_name');
 
   if (error) {
     console.error('❌ Error:', error);
@@ -48,7 +48,7 @@ async function auditCanadaNulls() {
       if (value === null || value === undefined || value === '' ||
           (Array.isArray(value) && value.length === 0)) {
         if (!nullColumns[field]) nullColumns[field] = [];
-        nullColumns[field].push(town.name);
+        nullColumns[field].push(town.town_name);
       }
     });
   });

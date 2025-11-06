@@ -335,7 +335,7 @@ function normalizeCountryName(country) {
 
 // Create a Set of existing towns for fast lookup
 const existingTowns = new Set(
-  dbTowns.map(t => `${t.name.toLowerCase()}|${t.country.toLowerCase()}`)
+  dbTowns.map(t => `${t.town_name.toLowerCase()}|${t.country.toLowerCase()}`)
 );
 
 // Find truly missing towns
@@ -343,15 +343,15 @@ const stillMissing = [];
 
 excelTowns.forEach(town => {
   const normalizedCountry = normalizeCountryName(town.country);
-  const key = `${town.name.toLowerCase()}|${normalizedCountry.toLowerCase()}`;
+  const key = `${town.town_name.toLowerCase()}|${normalizedCountry.toLowerCase()}`;
   
   // Check various variations
   const variations = [
     key,
-    `${town.name.toLowerCase()}|${town.country.toLowerCase()}`,
-    `${town.name.toLowerCase()}|united sainttes`, // The typo in DB
-    `${town.name.toLowerCase()}|u.s. virgin islands`,
-    `${town.name.toLowerCase()}|us virgin islands`
+    `${town.town_name.toLowerCase()}|${town.country.toLowerCase()}`,
+    `${town.town_name.toLowerCase()}|united sainttes`, // The typo in DB
+    `${town.town_name.toLowerCase()}|u.s. virgin islands`,
+    `${town.town_name.toLowerCase()}|us virgin islands`
   ];
   
   const exists = variations.some(v => existingTowns.has(v));
@@ -374,7 +374,7 @@ stillMissing.forEach(t => {
   if (!byCountry[t.normalizedCountry]) {
     byCountry[t.normalizedCountry] = [];
   }
-  byCountry[t.normalizedCountry].push(t.name);
+  byCountry[t.normalizedCountry].push(t.town_name);
 });
 
 console.log('\nMissing towns by country:');
@@ -396,8 +396,8 @@ stillMissing.forEach(town => {
                      null;
   
   sql += `INSERT INTO towns (name, country, region, regions, climate_description)
-SELECT '${town.name.replace(/'/g, "''")}', '${town.normalizedCountry.replace(/'/g, "''")}', ${town.region ? `'${town.region.replace(/'/g, "''")}'` : 'NULL'}, ARRAY[${regions.map(r => `'${r.replace(/'/g, "''")}'`).join(', ')}], ${climateDesc ? `'${climateDesc}'` : 'NULL'}
-WHERE NOT EXISTS (SELECT 1 FROM towns WHERE name = '${town.name.replace(/'/g, "''")}' AND country = '${town.normalizedCountry.replace(/'/g, "''")}');
+SELECT '${town.town_name.replace(/'/g, "''")}', '${town.normalizedCountry.replace(/'/g, "''")}', ${town.region ? `'${town.region.replace(/'/g, "''")}'` : 'NULL'}, ARRAY[${regions.map(r => `'${r.replace(/'/g, "''")}'`).join(', ')}], ${climateDesc ? `'${climateDesc}'` : 'NULL'}
+WHERE NOT EXISTS (SELECT 1 FROM towns WHERE name = '${town.town_name.replace(/'/g, "''")}' AND country = '${town.normalizedCountry.replace(/'/g, "''")}');
 `;
 });
 

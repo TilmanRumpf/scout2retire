@@ -20,7 +20,7 @@ async function roundClimateNumbers() {
   // Get all towns
   const { data: towns, error } = await supabase
     .from('towns')
-    .select('id, name, country, annual_rainfall, sunshine_hours');
+    .select('id, town_name, country, annual_rainfall, sunshine_hours');
     
   if (error) {
     console.error('Error fetching towns:', error);
@@ -65,7 +65,7 @@ async function roundClimateNumbers() {
       .eq('id', town.id);
       
     if (updateError) {
-      console.log(`❌ Failed to update ${town.name}: ${updateError.message}`);
+      console.log(`❌ Failed to update ${town.town_name}: ${updateError.message}`);
       errorCount++;
     } else {
       if (rainfallChanged && sunshineChanged) bothUpdated++;
@@ -75,7 +75,7 @@ async function roundClimateNumbers() {
       // Collect samples for display
       if (samples.length < 15 && (rainfallChanged || sunshineChanged)) {
         samples.push({
-          name: town.name,
+          name: town.town_name,
           country: town.country,
           oldRainfall: oldRainfall,
           newRainfall: newRainfall,

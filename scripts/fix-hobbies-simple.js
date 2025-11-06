@@ -24,7 +24,7 @@ async function fixHobbies() {
     
     const { data: townsWithPhotos } = await supabase
       .from('towns')
-      .select('id, name, country, geographic_features_actual, description')
+      .select('id, town_name, country, geographic_features_actual, description')
       .not('image_url_1', 'is', null);
     
     const { data: townsWithHobbies } = await supabase
@@ -39,7 +39,7 @@ async function fixHobbies() {
     // 2. Get existing hobby IDs we can safely use
     const { data: existingHobbies } = await supabase
       .from('hobbies')
-      .select('id, name')
+      .select('id, town_name')
       .in('name', [
         'Walking', 'Reading', 'Photography', 'Cooking', 
         'Swimming', 'Hiking', 'Cycling', 'Golf', 'Tennis',
@@ -94,7 +94,7 @@ async function fixHobbies() {
         assignments.push({ town_id: town.id, hobby_id: hobbyMap['Markets'] });
       }
       
-      console.log(`${town.name}: Assigning ${assignments.filter(a => a.town_id === town.id).length} hobbies`);
+      console.log(`${town.town_name}: Assigning ${assignments.filter(a => a.town_id === town.id).length} hobbies`);
     }
     
     console.log(`\nTotal assignments to make: ${assignments.length}\n`);

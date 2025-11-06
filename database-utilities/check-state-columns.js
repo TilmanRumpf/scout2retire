@@ -32,15 +32,15 @@ async function checkStateColumns() {
   console.log('\n📍 Searching for all Gainesville towns:');
   const { data: gainesvilles, error: gainesvilleError } = await supabase
     .from('towns')
-    .select('id, name, country, region')
-    .ilike('name', '%gainesville%');
+    .select('id, town_name, country, region')
+    .ilike('town_name', '%gainesville%');
 
   if (gainesvilleError) {
     console.error('❌ Error querying Gainesvilles:', gainesvilleError);
   } else {
     console.log(`Found ${gainesvilles.length} Gainesville(s):`);
     gainesvilles.forEach(town => {
-      console.log(`  - ${town.name}, ${town.country} (region: ${town.region || 'none'})`);
+      console.log(`  - ${town.town_name}, ${town.country} (region: ${town.region || 'none'})`);
     });
   }
 
@@ -71,7 +71,7 @@ async function checkStateColumns() {
   console.log('\n🇺🇸 Sample US towns and their region values:');
   const { data: usSample, error: usError } = await supabase
     .from('towns')
-    .select('name, country, region, geo_region')
+    .select('town_name, country, region, geo_region')
     .eq('country', 'United States')
     .limit(20);
 
@@ -79,7 +79,7 @@ async function checkStateColumns() {
     console.error('❌ Error querying US towns:', usError);
   } else {
     usSample.forEach(town => {
-      console.log(`  - ${town.name}: region="${town.region}", geo_region="${town.geo_region}"`);
+      console.log(`  - ${town.town_name}: region="${town.region}", geo_region="${town.geo_region}"`);
     });
   }
 
@@ -95,7 +95,7 @@ async function checkStateColumns() {
   console.log('\n🌍 Sample international towns and their region values:');
   const { data: intlSample, error: intlError } = await supabase
     .from('towns')
-    .select('name, country, region, geo_region')
+    .select('town_name, country, region, geo_region')
     .neq('country', 'United States')
     .limit(30);
 
@@ -103,7 +103,7 @@ async function checkStateColumns() {
     console.error('❌ Error querying international towns:', intlError);
   } else {
     intlSample.forEach(town => {
-      console.log(`  - ${town.name}, ${town.country}: region="${town.region || 'NULL'}", geo_region="${town.geo_region || 'NULL'}"`);
+      console.log(`  - ${town.town_name}, ${town.country}: region="${town.region || 'NULL'}", geo_region="${town.geo_region || 'NULL'}"`);
     });
   }
 
@@ -130,13 +130,13 @@ async function checkStateColumns() {
   console.log('\n🔍 Checking for duplicate town names in US:');
   const { data: allUSTowns } = await supabase
     .from('towns')
-    .select('name, region')
+    .select('town_name, region')
     .eq('country', 'United States');
 
   if (allUSTowns) {
     const nameCounts = {};
     allUSTowns.forEach(town => {
-      nameCounts[town.name] = (nameCounts[town.name] || 0) + 1;
+      nameCounts[town.town_name] = (nameCounts[town.town_name] || 0) + 1;
     });
 
     const duplicates = Object.entries(nameCounts).filter(([_, count]) => count > 1);
@@ -144,7 +144,7 @@ async function checkStateColumns() {
       console.log('US towns with duplicate names:');
       duplicates.forEach(([name, count]) => {
         console.log(`  - ${name}: ${count} occurrences`);
-        const instances = allUSTowns.filter(t => t.name === name);
+        const instances = allUSTowns.filter(t => t.town_name === name);
         instances.forEach(inst => console.log(`    → ${inst.region}`));
       });
     } else {
@@ -157,12 +157,12 @@ async function checkStateColumns() {
   if (allTowns) {
     const { data: allTownsWithDetails } = await supabase
       .from('towns')
-      .select('name, country, region');
+      .select('town_name, country, region');
 
     if (allTownsWithDetails) {
       const globalNameCounts = {};
       allTownsWithDetails.forEach(town => {
-        globalNameCounts[town.name] = (globalNameCounts[town.name] || 0) + 1;
+        globalNameCounts[town.town_name] = (globalNameCounts[town.town_name] || 0) + 1;
       });
 
       const globalDuplicates = Object.entries(globalNameCounts).filter(([_, count]) => count > 1);
@@ -170,7 +170,7 @@ async function checkStateColumns() {
         console.log('Towns with duplicate names across countries:');
         globalDuplicates.forEach(([name, count]) => {
           console.log(`  - ${name}: ${count} occurrences`);
-          const instances = allTownsWithDetails.filter(t => t.name === name);
+          const instances = allTownsWithDetails.filter(t => t.town_name === name);
           instances.forEach(inst => console.log(`    → ${inst.country}, ${inst.region || 'no region'}`));
         });
       } else {

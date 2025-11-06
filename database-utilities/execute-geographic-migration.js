@@ -111,7 +111,7 @@ async function runGeographicMigration() {
     // Verify data was copied
     const { data: towns, error: townsError } = await supabase
       .from('towns')
-      .select('id, name, town_name, country, country_code, region, subdivision_code')
+      .select('id, town_name, town_name, country, country_code, region, subdivision_code')
       .limit(5);
 
     if (townsError) {
@@ -120,7 +120,7 @@ async function runGeographicMigration() {
 
     console.log('\n📊 Sample data after migration:');
     towns.forEach(town => {
-      console.log(`  - ${town.town_name} (name: "${town.name}", matches: ${town.name === town.town_name ? '✅' : '❌'})`);
+      console.log(`  - ${town.town_name} (name: "${town.town_name}", matches: ${town.town_name === town.town_name ? '✅' : '❌'})`);
     });
 
     // Count verification

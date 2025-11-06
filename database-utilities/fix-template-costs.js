@@ -61,7 +61,7 @@ async function fixTemplateCosts() {
     // Get all towns with the template $2,793 cost
     const { data: templateTowns, error } = await supabase
       .from('towns')
-      .select('id, name, region, cost_of_living_usd, typical_monthly_living_cost')
+      .select('id, town_name, region, cost_of_living_usd, typical_monthly_living_cost')
       .eq('cost_of_living_usd', 2793);
 
     if (error) {
@@ -77,7 +77,7 @@ async function fixTemplateCosts() {
 
     templateTowns.forEach(town => {
       // Get modifier for this city
-      const modifier = CITY_COST_MODIFIERS[town.name] || CITY_COST_MODIFIERS.default;
+      const modifier = CITY_COST_MODIFIERS[town.town_name] || CITY_COST_MODIFIERS.default;
 
       // Add some random variance (±5% to make it realistic)
       const randomVariance = 0.95 + (Math.random() * 0.10);
@@ -90,7 +90,7 @@ async function fixTemplateCosts() {
 
       updates.push({
         id: town.id,
-        name: town.name,
+        name: town.town_name,
         oldCost: 2793,
         newCost: newCost,
         change: newCost - 2793
@@ -136,7 +136,7 @@ async function fixTemplateCosts() {
     // Fix $998 template (mostly island nations)
     const { data: islandTowns } = await supabase
       .from('towns')
-      .select('id, name, country')
+      .select('id, town_name, country')
       .eq('cost_of_living_usd', 998);
 
     if (islandTowns && islandTowns.length > 0) {
@@ -162,14 +162,14 @@ async function fixTemplateCosts() {
     // Verify the fix
     const { data: verifyData } = await supabase
       .from('towns')
-      .select('cost_of_living_usd, name')
+      .select('cost_of_living_usd, town_name')
       .eq('country', 'United States')
       .order('cost_of_living_usd', { ascending: false })
       .limit(10);
 
     console.log('🎯 VERIFICATION - Top 10 US cities by cost:');
     verifyData.forEach((town, i) => {
-      console.log(`  ${i + 1}. ${town.name}: $${town.cost_of_living_usd}`);
+      console.log(`  ${i + 1}. ${town.town_name}: $${town.cost_of_living_usd}`);
     });
 
     console.log('\n🔥 TEMPLATE DATA DESTROYED!');

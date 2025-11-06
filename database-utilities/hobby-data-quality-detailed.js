@@ -101,7 +101,7 @@ async function detailedAnalysis() {
 
     if (!sampleError && sampleTowns) {
       sampleTowns.forEach(town => {
-        console.log(`${town.name}, ${town.country}:`);
+        console.log(`${town.town_name}, ${town.country}:`);
         const hobbies = town.town_hobbies.map(th => th.hobbies.name);
         console.log(`  Has ${hobbies.length} hobbies: ${hobbies.slice(0, 10).join(', ')}${hobbies.length > 10 ? '...' : ''}`);
       });
@@ -166,7 +166,7 @@ async function detailedAnalysis() {
       if (!skiError && townsWithSkiing && townsWithSkiing.length > 0) {
         console.log(`\n${skiHobby} assigned to:`);
         townsWithSkiing.forEach(town => {
-          console.log(`  ${town.name}, ${town.country} (${town.climate_zone}, Winter: ${town.average_temp_winter}°C)`);
+          console.log(`  ${town.town_name}, ${town.country} (${town.climate_zone}, Winter: ${town.average_temp_winter}°C)`);
         });
       }
     }

@@ -200,7 +200,7 @@ async function improveLifestyleDescriptions() {
     // Collect varied samples
     if (samples.length < 20) {
       samples.push({
-        name: town.name,
+        name: town.town_name,
         country: town.country,
         description: newDescription,
         population: town.population,
@@ -217,7 +217,7 @@ async function improveLifestyleDescriptions() {
       .eq('id', town.id);
       
     if (updateError) {
-      console.log(`❌ Failed to update ${town.name}: ${updateError.message}`);
+      console.log(`❌ Failed to update ${town.town_name}: ${updateError.message}`);
       errorCount++;
     } else {
       updateCount++;

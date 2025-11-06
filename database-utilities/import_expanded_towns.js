@@ -34,7 +34,7 @@ async function importTowns() {
   // 2. Show which towns we're about to import
   console.log('\nTowns to import:');
   expandedTownData.forEach((town, index) => {
-    console.log(`${index + 1}. ${town.name}, ${town.country}`);
+    console.log(`${index + 1}. ${town.town_name}, ${town.country}`);
   });
   
   // 3. Import the towns
@@ -61,13 +61,13 @@ async function importTowns() {
   // 5. List all towns alphabetically
   const { data: allTowns, error: listError } = await supabase
     .from('towns')
-    .select('name, country')
-    .order('name');
+    .select('town_name, country')
+    .order('town_name');
     
   if (!listError && allTowns) {
     console.log('\n=== Complete Town List ===');
     allTowns.forEach((town, index) => {
-      console.log(`${index + 1}. ${town.name}, ${town.country}`);
+      console.log(`${index + 1}. ${town.town_name}, ${town.country}`);
     });
   }
 }

@@ -285,7 +285,7 @@ async function processHobbies() {
   const { data: hobbies, error } = await supabase
     .from('hobbies')
     .select('*')
-    .order('name')
+    .order('town_name')
     .range(offset, offset + limit - 1);
   
   if (error) {

@@ -21,7 +21,7 @@ async function roundCostFields() {
   // Get all towns
   const { data: towns, error } = await supabase
     .from('towns')
-    .select('id, name, country, rent_1bed, meal_cost, groceries_cost, utilities_cost');
+    .select('id, town_name, country, rent_1bed, meal_cost, groceries_cost, utilities_cost');
     
   if (error) {
     console.error('Error fetching towns:', error);
@@ -87,13 +87,13 @@ async function roundCostFields() {
       .eq('id', town.id);
       
     if (updateError) {
-      console.log(`❌ Failed to update ${town.name}: ${updateError.message}`);
+      console.log(`❌ Failed to update ${town.town_name}: ${updateError.message}`);
       errorCount++;
     } else {
       // Collect samples for display
       if (samples.length < 15 && (rentChanged || mealChanged || groceriesChanged || utilitiesChanged)) {
         samples.push({
-          name: town.name,
+          name: town.town_name,
           country: town.country,
           oldRent: oldRent,
           newRent: newRent,

@@ -45,7 +45,7 @@ async function verifyImages() {
     // Get all towns from database
     const { data: towns, error } = await supabase
       .from('towns')
-      .select('id, name, country')
+      .select('id, town_name, country')
       .order('country, name');
     
     if (error) {
@@ -64,14 +64,14 @@ async function verifyImages() {
     };
     
     for (const town of towns) {
-      const filename = generateImageFilename(town.country, town.name);
+      const filename = generateImageFilename(town.country, town.town_name);
       
       // Track by country
       if (!report.byCountry[town.country]) {
         report.byCountry[town.country] = [];
       }
       report.byCountry[town.country].push({
-        name: town.name,
+        name: town.town_name,
         filename: filename
       });
       
@@ -79,16 +79,16 @@ async function verifyImages() {
       if (expectedFiles.has(filename)) {
         report.duplicates.push({
           filename,
-          towns: [expectedFiles.get(filename), `${town.country} - ${town.name}`]
+          towns: [expectedFiles.get(filename), `${town.country} - ${town.town_name}`]
         });
       } else {
-        expectedFiles.set(filename, `${town.country} - ${town.name}`);
+        expectedFiles.set(filename, `${town.country} - ${town.town_name}`);
       }
       
       // Flag special cases
       if (filename.includes('---') || filename.endsWith('-.jpg') || filename.length > 50) {
         report.special.push({
-          town: `${town.country} - ${town.name}`,
+          town: `${town.country} - ${town.town_name}`,
           filename,
           issue: 'Unusual filename pattern'
         });
@@ -102,7 +102,7 @@ async function verifyImages() {
     for (const [country, townList] of Object.entries(report.byCountry)) {
       console.log(`${country} (${townList.length} towns):`);
       townList.forEach(t => {
-        console.log(`  ${t.name.padEnd(25)} → ${t.filename}`);
+        console.log(`  ${t.town_name.padEnd(25)} → ${t.filename}`);
       });
       console.log('');
     }

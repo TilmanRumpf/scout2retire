@@ -73,7 +73,7 @@ async function verifyHobbiesSetup() {
     console.log('\n📝 Sample hobbies by category:');
     const { data: samples, error: sampleError } = await supabase
       .from('hobbies')
-      .select('name, category, description, icon')
+      .select('town_name, category, description, icon')
       .order('category, name');
     
     if (!sampleError && samples) {
@@ -97,7 +97,7 @@ async function verifyHobbiesSetup() {
     console.log('\n🔍 Checking for duplicate hobby names...');
     const { data: allHobbies, error: allError } = await supabase
       .from('hobbies')
-      .select('name');
+      .select('town_name');
     
     if (!allError && allHobbies) {
       const nameSet = new Set();

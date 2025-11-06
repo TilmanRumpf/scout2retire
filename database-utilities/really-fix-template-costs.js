@@ -54,7 +54,7 @@ async function reallyFixTemplateCosts() {
     // Get all towns with template cost
     const { data: towns, error } = await supabase
       .from('towns')
-      .select('id, name, cost_of_living_usd')
+      .select('id, town_name, cost_of_living_usd')
       .eq('cost_of_living_usd', 2793);
 
     if (error) {
@@ -68,7 +68,7 @@ async function reallyFixTemplateCosts() {
     let failCount = 0;
 
     for (const town of towns) {
-      const newCost = REALISTIC_COSTS[town.name] || 2200; // Default if not in list
+      const newCost = REALISTIC_COSTS[town.town_name] || 2200; // Default if not in list
 
       const { error: updateError } = await supabase
         .from('towns')
@@ -79,10 +79,10 @@ async function reallyFixTemplateCosts() {
         .eq('id', town.id);
 
       if (updateError) {
-        console.error(`❌ Failed to update ${town.name}:`, updateError.message);
+        console.error(`❌ Failed to update ${town.town_name}:`, updateError.message);
         failCount++;
       } else {
-        console.log(`✅ ${town.name}: $2,793 → $${newCost}`);
+        console.log(`✅ ${town.town_name}: $2,793 → $${newCost}`);
         successCount++;
       }
     }
@@ -96,12 +96,12 @@ async function reallyFixTemplateCosts() {
 
     const { data: stillTemplate } = await supabase
       .from('towns')
-      .select('name')
+      .select('town_name')
       .eq('cost_of_living_usd', 2793);
 
     if (stillTemplate && stillTemplate.length > 0) {
       console.log(`\n⚠️ WARNING: Still ${stillTemplate.length} towns with $2,793!`);
-      console.log('These failed to update:', stillTemplate.map(t => t.name).join(', '));
+      console.log('These failed to update:', stillTemplate.map(t => t.town_name).join(', '));
     } else {
       console.log('\n🎉 SUCCESS! No more $2,793 template costs!');
     }
@@ -109,14 +109,14 @@ async function reallyFixTemplateCosts() {
     // Show new distribution
     const { data: usCosts } = await supabase
       .from('towns')
-      .select('name, cost_of_living_usd')
+      .select('town_name, cost_of_living_usd')
       .eq('country', 'United States')
       .order('cost_of_living_usd', { ascending: false })
       .limit(10);
 
     console.log('\n📊 NEW TOP 10 MOST EXPENSIVE US CITIES:');
     usCosts.forEach((town, i) => {
-      console.log(`  ${i + 1}. ${town.name}: $${town.cost_of_living_usd}`);
+      console.log(`  ${i + 1}. ${town.town_name}: $${town.cost_of_living_usd}`);
     });
 
     console.log('\n💪 TEMPLATE DATA OBLITERATED!');

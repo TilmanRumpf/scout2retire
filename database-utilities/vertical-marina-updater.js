@@ -97,7 +97,7 @@ async function updateMarinas() {
   console.log('Step 1: Fetching water towns with 0 marinas...');
   const { data: waterTowns, error } = await supabase
     .from('towns')
-    .select('id, name, region, country, water_bodies, distance_to_ocean_km')
+    .select('id, town_name, region, country, water_bodies, distance_to_ocean_km')
     .not('water_bodies', 'is', null)
     .eq('marinas_count', 0)
     .order('country', { ascending: true })
@@ -117,8 +117,8 @@ async function updateMarinas() {
   let estimates = 0;
   
   for (const town of waterTowns) {
-    const fullName = `${town.name}, ${town.region || town.country}`;
-    const nameOnly = town.name;
+    const fullName = `${town.town_name}, ${town.region || town.country}`;
+    const nameOnly = town.town_name;
     
     // Check for exact match
     let marinaCount = MARINA_DATA[fullName] || MARINA_DATA[nameOnly];
@@ -140,7 +140,7 @@ async function updateMarinas() {
       
       if (isCoastal || hasOcean) {
         // Coastal town - estimate based on size (using name as proxy)
-        marinaCount = town.name.length > 10 ? 3 : 2;
+        marinaCount = town.town_name.length > 10 ? 3 : 2;
       } else if (hasLake) {
         marinaCount = 1;
       } else if (hasRiver) {
@@ -153,7 +153,7 @@ async function updateMarinas() {
     
     updates.push({
       id: town.id,
-      name: town.name,
+      name: town.town_name,
       marinas_count: marinaCount
     });
   }

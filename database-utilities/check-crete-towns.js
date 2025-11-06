@@ -9,7 +9,7 @@ const supabase = createClient(
 async function checkCrete() {
   const { data, error } = await supabase
     .from('towns')
-    .select('name, country, regions')
+    .select('town_name, country, regions')
     .ilike('country', '%greece%');
 
   if (error) {
@@ -26,7 +26,7 @@ async function checkCrete() {
 
   creteTowns.forEach(town => {
     const hasIsland = (town.regions || []).includes('Island');
-    console.log(`${town.name}:`);
+    console.log(`${town.town_name}:`);
     console.log(`  Regions: ${JSON.stringify(town.regions)}`);
     console.log(`  Has "Island": ${hasIsland ? 'YES ✅' : 'NO ❌'}`);
     console.log('');

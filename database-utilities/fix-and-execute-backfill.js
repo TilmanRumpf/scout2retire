@@ -16,7 +16,7 @@ async function testServiceRole() {
       activity_infrastructure: ["parks","trails","beaches","cultural_sites","shopping","dining"]
     })
     .eq('name', 'Annapolis Royal')
-    .select('name, activity_infrastructure');
+    .select('town_name, activity_infrastructure');
 
   if (error) {
     console.error('❌ Error:', error);

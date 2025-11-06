@@ -17,7 +17,7 @@ async function checkWuppertal() {
   const { data, error } = await supabase
     .from('towns')
     .select('*')
-    .ilike('name', 'wuppertal')
+    .ilike('town_name', 'wuppertal')
     .single();
 
   if (error) {

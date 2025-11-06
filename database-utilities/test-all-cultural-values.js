@@ -19,7 +19,7 @@ async function testAllValues() {
   // Get Wuppertal's ID
   const { data: town } = await supabase
     .from('towns')
-    .select('id, name')
+    .select('id, town_name')
     .eq('name', 'Wuppertal')
     .single();
 

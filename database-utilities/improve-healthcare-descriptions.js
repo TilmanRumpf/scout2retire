@@ -178,7 +178,7 @@ async function improveHealthcareDescriptions() {
     // Collect samples
     if (samples.length < 15) {
       samples.push({
-        name: town.name,
+        name: town.town_name,
         country: town.country,
         description: newDescription,
         rating: town.healthcare_quality,
@@ -193,7 +193,7 @@ async function improveHealthcareDescriptions() {
       .eq('id', town.id);
       
     if (updateError) {
-      console.log(`❌ Failed to update ${town.name}: ${updateError.message}`);
+      console.log(`❌ Failed to update ${town.town_name}: ${updateError.message}`);
       errorCount++;
     } else {
       updateCount++;

@@ -47,7 +47,7 @@ async function addMetadataToExistingImages() {
     console.log('\n📊 Loading towns from database...');
     const { data: towns, error: townsError } = await supabase
       .from('towns')
-      .select('id, town_name, name, country');
+      .select('id, town_name, town_name, country');
 
     if (townsError) throw townsError;
 
@@ -57,7 +57,7 @@ async function addMetadataToExistingImages() {
     // Map by normalized name (lowercase, no spaces, no special chars)
     const townMap = new Map();
     towns.forEach(town => {
-      const normalizedName = (town.town_name || town.name || '')
+      const normalizedName = (town.town_name || town.town_name || '')
         .toLowerCase()
         .replace(/\s+/g, '-')
         .replace(/[^a-z0-9-]/g, '');

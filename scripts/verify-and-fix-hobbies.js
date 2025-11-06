@@ -193,14 +193,14 @@ async function verifyAndFixHobbies() {
         beaches_nearby,
         image_url_1
       `)
-      .order('name');
+      .order('town_name');
     
     if (townsError) throw townsError;
     
     // 2. Get all hobbies and create lookup
     const { data: allHobbies, error: hobbiesError } = await supabase
       .from('hobbies')
-      .select('id, name');
+      .select('id, town_name');
     
     if (hobbiesError) throw hobbiesError;
     
@@ -247,7 +247,7 @@ async function verifyAndFixHobbies() {
             if (hobbyId) {
               fixes.push({
                 town_id: town.id,
-                town_name: town.name,
+                town_name: town.town_name,
                 hobby_id: hobbyId,
                 hobby_name: hobbyName
               });
@@ -255,7 +255,7 @@ async function verifyAndFixHobbies() {
           });
           
           issues.push({
-            town: town.name,
+            town: town.town_name,
             country: town.country,
             issue: 'NO HOBBIES ASSIGNED',
             shouldHave: appropriateHobbies.length,

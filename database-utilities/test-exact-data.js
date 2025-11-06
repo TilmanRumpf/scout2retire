@@ -19,7 +19,7 @@ async function testExactData() {
   // Get Wuppertal's ID
   const { data: town } = await supabase
     .from('towns')
-    .select('id, name')
+    .select('id, town_name')
     .eq('name', 'Wuppertal')
     .single();
 
@@ -28,7 +28,7 @@ async function testExactData() {
     return;
   }
 
-  console.log(`Testing on: ${town.name} (${town.id})\n`);
+  console.log(`Testing on: ${town.town_name} (${town.id})\n`);
 
   // Try ALL Culture fields at once
   const testData = {

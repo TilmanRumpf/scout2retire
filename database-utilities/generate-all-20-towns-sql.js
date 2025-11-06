@@ -26,9 +26,9 @@ async function generateSQL() {
   
   const { data: towns, error } = await supabase
     .from('towns')
-    .select('name')
+    .select('town_name')
     .eq('country', 'Canada')
-    .order('name');
+    .order('town_name');
 
   if (error) {
     console.error('Error:', error);
@@ -46,10 +46,10 @@ async function generateSQL() {
 `;
 
   for (const town of towns) {
-    const data = townData[town.name] || { cost_index: 85, pop: 5000, nightlife: 5, museums: 6, restaurants: 6, cultural: 6 };
+    const data = townData[town.town_name] || { cost_index: 85, pop: 5000, nightlife: 5, museums: 6, restaurants: 6, cultural: 6 };
     
     sql += `
--- ${town.name}
+-- ${town.town_name}
 UPDATE towns
 SET
     activity_infrastructure = jsonb_build_array('parks','trails','beaches','cultural_sites','shopping','dining'),
@@ -93,7 +93,7 @@ SET
     restaurants_rating = ${data.restaurants},
     cultural_rating = ${data.cultural},
     last_verified_date = '2025-01-15'
-WHERE name = '${town.name.replace(/'/g, "''")}';
+WHERE name = '${town.town_name.replace(/'/g, "''")}';
 
 `;
   }

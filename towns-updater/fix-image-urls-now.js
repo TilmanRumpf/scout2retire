@@ -18,7 +18,7 @@ async function fixImageUrls() {
     // Get all towns with double slash issues
     const { data: towns, error: fetchError } = await supabase
       .from('towns')
-      .select('id, name, country, image_url_1, image_url_2, image_url_3')
+      .select('id, town_name, country, image_url_1, image_url_2, image_url_3')
       .or('image_url_1.like.%town-images//%,image_url_2.like.%town-images//%,image_url_3.like.%town-images//%');
     
     if (fetchError) throw fetchError;
@@ -46,9 +46,9 @@ async function fixImageUrls() {
           .eq('id', town.id);
         
         if (updateError) {
-          console.error(`❌ Failed to update ${town.name}:`, updateError);
+          console.error(`❌ Failed to update ${town.town_name}:`, updateError);
         } else {
-          console.log(`✅ Fixed ${town.name}, ${town.country}`);
+          console.log(`✅ Fixed ${town.town_name}, ${town.country}`);
           if (updates.image_url_1) {
             console.log(`   New URL: ${updates.image_url_1}`);
           }

@@ -65,7 +65,7 @@ async function finalQualityCheck() {
       console.log(`${status} ${col}: ${percentage}% complete (${nullCount} missing)`);
 
       if (nullCount > 0) {
-        const missing = towns.filter(t => !t[col]).slice(0, 3).map(t => `${t.name}, ${t.country}`);
+        const missing = towns.filter(t => !t[col]).slice(0, 3).map(t => `${t.town_name}, ${t.country}`);
         console.log(`   Missing in: ${missing.join(' | ')}${nullCount > 3 ? ` ... +${nullCount - 3} more` : ''}`);
       }
     }
@@ -194,11 +194,11 @@ async function finalQualityCheck() {
       });
 
       if (missingCritical === 0) {
-        stats.perfect.push(town.name);
+        stats.perfect.push(town.town_name);
       } else if (missingCritical <= 2) {
-        stats.minor_issues.push(town.name);
+        stats.minor_issues.push(town.town_name);
       } else {
-        stats.major_issues.push(town.name);
+        stats.major_issues.push(town.town_name);
       }
     }
 
@@ -209,7 +209,7 @@ async function finalQualityCheck() {
     if (stats.major_issues.length > 0) {
       console.log(`\n  Towns with major issues:`);
       stats.major_issues.slice(0, 5).forEach(name => {
-        const town = towns.find(t => t.name === name);
+        const town = towns.find(t => t.town_name === name);
         console.log(`    - ${name}, ${town.country}`);
       });
       if (stats.major_issues.length > 5) {

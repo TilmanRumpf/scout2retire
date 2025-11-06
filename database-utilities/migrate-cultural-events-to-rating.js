@@ -16,7 +16,7 @@ async function migrateCulturalEvents() {
   // First, check current state
   const { data: needsMigration, error: fetchError } = await supabase
     .from('towns')
-    .select('id, name, cultural_events_level, cultural_events_rating')
+    .select('id, town_name, cultural_events_level, cultural_events_rating')
     .not('cultural_events_level', 'is', null)
     .is('cultural_events_rating', null);
   
@@ -35,7 +35,7 @@ async function migrateCulturalEvents() {
   // Show sample of data to be migrated
   console.log('Sample of data to be migrated:');
   needsMigration.slice(0, 5).forEach(town => {
-    console.log(`  ${town.name}: cultural_events_level = ${town.cultural_events_level}`);
+    console.log(`  ${town.town_name}: cultural_events_level = ${town.cultural_events_level}`);
   });
   console.log();
   
@@ -50,7 +50,7 @@ async function migrateCulturalEvents() {
       .eq('id', town.id);
     
     if (updateError) {
-      console.error(`❌ Error updating ${town.name}:`, updateError);
+      console.error(`❌ Error updating ${town.town_name}:`, updateError);
       errorCount++;
     } else {
       successCount++;

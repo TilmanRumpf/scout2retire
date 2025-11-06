@@ -16,7 +16,7 @@ async function checkRegion() {
   for (const town of nsTowns) {
     const { data } = await supabase
       .from('towns')
-      .select('name, region, country')
+      .select('town_name, region, country')
       .eq('name', town)
       .limit(1);
 

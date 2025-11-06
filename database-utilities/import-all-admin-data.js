@@ -378,14 +378,14 @@ async function importAllData() {
         government_efficiency_rating: govRating,
         political_stability_rating: polRating
       })
-      .eq('name', town.name)
+      .eq('name', town.town_name)
       .eq('country', town.country)
     
     if (error) {
-      console.error(`❌ ${town.name}, ${town.country}: ${error.message}`)
+      console.error(`❌ ${town.town_name}, ${town.country}: ${error.message}`)
       errorCount++
     } else {
-      console.log(`✅ ${town.name}, ${town.country}: gov=${govRating}, pol=${polRating}`)
+      console.log(`✅ ${town.town_name}, ${town.country}: gov=${govRating}, pol=${polRating}`)
       successCount++
     }
   }

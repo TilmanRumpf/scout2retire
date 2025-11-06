@@ -41,7 +41,7 @@ async function generateDataQualityReport() {
 
   const { data: englishData } = await supabase
     .from('towns')
-    .select('id, name, country, english_proficiency_level');
+    .select('id, town_name, country, english_proficiency_level');
 
   const nativeCount = englishData.filter(t => t.english_proficiency_level === 'native').length;
   console.log(`✅ "native" value is valid and used by ${nativeCount} towns (${(nativeCount/englishData.length*100).toFixed(1)}%)`);
@@ -152,7 +152,7 @@ async function generateDataQualityReport() {
 
   const { data: allTowns, error: allTownsError } = await supabase
     .from('towns')
-    .select('id, name, country, region, social_atmosphere, traditional_progressive_lean, cultural_events_frequency, healthcare_score, safety_score');
+    .select('id, town_name, country, region, social_atmosphere, traditional_progressive_lean, cultural_events_frequency, healthcare_score, safety_score');
 
   if (allTownsError || !allTowns) {
     console.error('❌ Error fetching all towns:', allTownsError);
@@ -179,12 +179,12 @@ async function generateDataQualityReport() {
 
   console.log('\nTop 20 towns needing cultural data (sorted by healthcare+safety scores):');
   sortedByScore.slice(0, 20).forEach((town, idx) => {
-    console.log(`  ${idx + 1}. ${town.name}, ${town.country} (Avg Score: ${town.avg_score.toFixed(1)})`);
+    console.log(`  ${idx + 1}. ${town.town_name}, ${town.country} (Avg Score: ${town.avg_score.toFixed(1)})`);
   });
 
   report.townsNeedingAttention = sortedByScore.slice(0, 50).map(t => ({
     id: t.id,
-    name: t.name,
+    name: t.town_name,
     country: t.country,
     region: t.region,
     avg_score: t.avg_score,

@@ -30,7 +30,7 @@ async function verifyEnglishProficiency() {
     // Check current data state
     const { data: sampleData, error: sampleError } = await supabase
       .from('towns')
-      .select('id, name, country, english_proficiency')
+      .select('id, town_name, country, english_proficiency')
       .limit(20);
 
     if (sampleError) {
@@ -40,7 +40,7 @@ async function verifyEnglishProficiency() {
 
     console.log('Sample of current data:');
     sampleData.forEach(town => {
-      console.log(`  ${town.name}, ${town.country}: ${town.english_proficiency || 'NULL'}`);
+      console.log(`  ${town.town_name}, ${town.country}: ${town.english_proficiency || 'NULL'}`);
     });
 
     // Count NULL values

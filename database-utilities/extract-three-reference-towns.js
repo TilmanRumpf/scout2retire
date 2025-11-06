@@ -29,7 +29,7 @@ async function extractReferenceTowns() {
     const { data: towns, error } = await supabase
       .from('towns')
       .select('*')
-      .ilike('name', ref.name)
+      .ilike('town_name', ref.name)
       .limit(1);
 
     if (error || !towns || towns.length === 0) {
@@ -39,7 +39,7 @@ async function extractReferenceTowns() {
 
     const town = towns[0];
 
-    analysis += `\n## ${town.name}, ${town.country}\n\n`;
+    analysis += `\n## ${town.town_name}, ${town.country}\n\n`;
     analysis += `**Why this reference:** ${ref.reason}\n\n`;
 
     // Critical array fields

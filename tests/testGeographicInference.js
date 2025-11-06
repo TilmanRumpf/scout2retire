@@ -49,7 +49,7 @@ async function testInference() {
       continue;
     }
     
-    console.log(`📍 ${town.name}, ${town.country}`);
+    console.log(`📍 ${town.town_name}, ${town.country}`);
     console.log('-'.repeat(40));
     
     // Show town characteristics
@@ -98,7 +98,7 @@ async function testInference() {
     .from('towns')
     .select('*')
     .in('name', ['Barcelona', 'Dubai', 'Aspen', 'Bath', 'Singapore'])
-    .order('name');
+    .order('town_name');
   
   const testHobbies = ['Swimming', 'Golf', 'Museums', 'Skiing', 'Wine Tasting'];
   
@@ -107,7 +107,7 @@ async function testInference() {
   console.log('-'.repeat(70));
   
   for (const town of sampleTowns) {
-    const row = town.name.padEnd(20);
+    const row = town.town_name.padEnd(20);
     const results = [];
     
     for (const hobby of testHobbies) {

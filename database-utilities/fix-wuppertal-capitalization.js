@@ -18,8 +18,8 @@ async function fixWuppertal() {
   
   const { data: towns, error: searchError } = await supabase
     .from('towns')
-    .select('id, name, country')
-    .ilike('name', 'wuppertal');
+    .select('id, town_name, country')
+    .ilike('town_name', 'wuppertal');
   
   if (searchError) {
     console.error('Error:', searchError);
@@ -34,7 +34,7 @@ async function fixWuppertal() {
   console.log(`Found ${towns.length} wuppertal entry/entries`);
   
   for (const town of towns) {
-    console.log(`\n🔧 Fixing: ${town.name} → Wuppertal`);
+    console.log(`\n🔧 Fixing: ${town.town_name} → Wuppertal`);
     
     const { error: updateError } = await supabase
       .from('towns')

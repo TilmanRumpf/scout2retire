@@ -27,9 +27,9 @@ console.log('='.repeat(60));
 for (const [buttonId, groupName] of Object.entries(buttonToGroupMapping)) {
   const { data, error } = await supabase
     .from('hobbies')
-    .select('name')
+    .select('town_name')
     .eq('group_name', groupName)
-    .order('name');
+    .order('town_name');
   
   if (error) {
     console.log(`❌ Error for ${buttonId}: ${error.message}`);

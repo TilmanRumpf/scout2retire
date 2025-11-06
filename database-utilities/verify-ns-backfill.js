@@ -12,9 +12,9 @@ async function verifyNSBackfill() {
 
   const { data: towns, error } = await supabase
     .from('towns')
-    .select('name, image_url_1, description, regions, activities_available, interests_supported, summer_climate_actual, winter_climate_actual, pace_of_life_actual, typical_monthly_living_cost, water_bodies')
+    .select('town_name, image_url_1, description, regions, activities_available, interests_supported, summer_climate_actual, winter_climate_actual, pace_of_life_actual, typical_monthly_living_cost, water_bodies')
     .eq('region', 'Nova Scotia')
-    .order('name');
+    .order('town_name');
 
   if (error) {
     console.error('❌ Error:', error.message);
@@ -24,7 +24,7 @@ async function verifyNSBackfill() {
   console.log(`📊 Found ${towns.length} Nova Scotia towns\n`);
 
   towns.forEach((town, i) => {
-    console.log(`${i + 1}. ${town.name}`);
+    console.log(`${i + 1}. ${town.town_name}`);
     console.log(`   Image: ${town.image_url_1 ? '✅ YES' : '❌ NO'}`);
     console.log(`   Description: ${town.description ? '✅ YES' : '❌ NO'}`);
     console.log(`   Regions array: ${town.regions && town.regions.length > 0 ? `✅ ${town.regions.length} items` : '❌ EMPTY'}`);

@@ -48,7 +48,7 @@ async function executeSQLMigration() {
         
         const updates = batch.map(town => ({
           id: town.id,
-          google_maps_link: `https://www.google.com/maps/search/${encodeURIComponent(town.name + ' ' + town.country)}`
+          google_maps_link: `https://www.google.com/maps/search/${encodeURIComponent(town.town_name + ' ' + town.country)}`
         }));
 
         // Use upsert to update multiple records

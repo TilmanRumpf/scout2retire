@@ -20,7 +20,7 @@ async function verifyDuplicateCosts() {
     // Get all towns with cost data
     const { data: towns, error } = await supabase
       .from('towns')
-      .select('id, name, country, region, cost_of_living_usd, typical_monthly_living_cost')
+      .select('id, town_name, country, region, cost_of_living_usd, typical_monthly_living_cost')
       .order('cost_of_living_usd', { ascending: false });
 
     if (error) {
@@ -66,7 +66,7 @@ async function verifyDuplicateCosts() {
       Object.entries(byCountry).forEach(([country, countryTowns]) => {
         console.log(`    ${country} (${countryTowns.length} towns):`);
         countryTowns.slice(0, 5).forEach(town => {
-          console.log(`      - ${town.name}${town.region ? ', ' + town.region : ''}`);
+          console.log(`      - ${town.town_name}${town.region ? ', ' + town.region : ''}`);
         });
         if (countryTowns.length > 5) {
           console.log(`      ... and ${countryTowns.length - 5} more`);
@@ -92,7 +92,7 @@ async function verifyDuplicateCosts() {
       });
 
       Object.entries(byRegion).forEach(([region, regionTowns]) => {
-        console.log(`  ${region}: ${regionTowns.map(t => t.name).join(', ')}`);
+        console.log(`  ${region}: ${regionTowns.map(t => t.town_name).join(', ')}`);
       });
     } else {
       console.log('No towns found with exactly $2,793');

@@ -260,7 +260,7 @@ async function updateTownBatch(townBatch) {
       // Find the town
       const { data: towns, error: findError } = await adminSupabase
         .from('towns')
-        .select('id, name, country')
+        .select('id, town_name, country')
         .eq('name', name)
         .eq('country', country)
         .single()

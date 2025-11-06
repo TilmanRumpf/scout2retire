@@ -456,7 +456,7 @@ async function applyUltimateRealisticActivities() {
       .eq('id', town.id);
       
     if (updateError) {
-      console.error(`Failed to update ${town.name}: ${updateError.message}`);
+      console.error(`Failed to update ${town.town_name}: ${updateError.message}`);
     } else {
       updateCount++;
       if (updateCount % 50 === 0) {
@@ -497,12 +497,12 @@ async function applyUltimateRealisticActivities() {
   for (const { name, desc } of samples) {
     const { data: town } = await supabase
       .from('towns')
-      .select('name, country, activities_available, golf_courses_count, beaches_nearby, ski_resorts_within_100km, cultural_rating, hiking_trails_km')
+      .select('town_name, country, activities_available, golf_courses_count, beaches_nearby, ski_resorts_within_100km, cultural_rating, hiking_trails_km')
       .eq('name', name)
       .single();
     
     if (town) {
-      console.log(`\n${town.name}, ${town.country} (${desc}):`);
+      console.log(`\n${town.town_name}, ${town.country} (${desc}):`);
       console.log(`  Infrastructure: Golf:${town.golf_courses_count}, Beach:${town.beaches_nearby}, Ski:${town.ski_resorts_within_100km}, Culture:${town.cultural_rating}, Trails:${town.hiking_trails_km}km`);
       
       // Show key non-universal activities

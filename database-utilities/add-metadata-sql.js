@@ -33,7 +33,7 @@ SET metadata = COALESCE(metadata, '{}'::jsonb) || jsonb_build_object(
     FROM towns t
     WHERE (
       -- Match by normalized town name from filename
-      LOWER(REPLACE(REPLACE(COALESCE(t.town_name, t.name), ' ', '-'), '_', '-'))
+      LOWER(REPLACE(REPLACE(COALESCE(t.town_name, t.town_name), ' ', '-'), '_', '-'))
       =
       -- Extract town slug from filename (between first '-' and last '-')
       SUBSTRING(

@@ -199,7 +199,7 @@ async function improveCostDescriptions() {
       .eq('id', town.id);
       
     if (updateError) {
-      console.log(`❌ Failed to update ${town.name}: ${updateError.message}`);
+      console.log(`❌ Failed to update ${town.town_name}: ${updateError.message}`);
       errorCount++;
     } else {
       updateCount++;
@@ -219,7 +219,7 @@ async function improveCostDescriptions() {
   console.log('\n📝 SAMPLE IMPROVED DESCRIPTIONS:');
   const { data: samples } = await supabase
     .from('towns')
-    .select('name, country, cost_description, rent_1bed, meal_cost')
+    .select('town_name, country, cost_description, rent_1bed, meal_cost')
     .not('cost_description', 'is', null)
     .limit(10);
     

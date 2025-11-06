@@ -269,7 +269,7 @@ async function applyRealisticActivities() {
       .eq('id', town.id);
       
     if (updateError) {
-      console.error(`Failed to update ${town.name}: ${updateError.message}`);
+      console.error(`Failed to update ${town.town_name}: ${updateError.message}`);
     } else {
       updateCount++;
       if (updateCount % 50 === 0) {
@@ -299,12 +299,12 @@ async function applyRealisticActivities() {
   for (const name of samples) {
     const { data: town } = await supabase
       .from('towns')
-      .select('name, country, activities_available, golf_courses_count, beaches_nearby, ski_resorts_within_100km')
+      .select('town_name, country, activities_available, golf_courses_count, beaches_nearby, ski_resorts_within_100km')
       .eq('name', name)
       .single();
     
     if (town) {
-      console.log(`\n${town.name}, ${town.country}:`);
+      console.log(`\n${town.town_name}, ${town.country}:`);
       console.log(`  Infrastructure: ${town.golf_courses_count || 0} golf, ${town.beaches_nearby ? 'beach' : 'no beach'}, ${town.ski_resorts_within_100km || 0} ski resorts`);
       
       const specificActivities = town.activities_available.filter(a => 

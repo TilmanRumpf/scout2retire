@@ -183,7 +183,7 @@ async function improveQualityScores() {
       if (newScore !== baseScore) {
         updates.push({
           id: town.id,
-          name: town.name,
+          name: town.town_name,
           oldScore: baseScore,
           newScore: newScore,
           change: (newScore - baseScore).toFixed(1)

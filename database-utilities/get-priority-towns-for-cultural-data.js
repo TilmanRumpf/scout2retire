@@ -24,7 +24,7 @@ async function getPriorityTowns(limit = 20) {
   // Fetch towns missing all three cultural fields
   const { data: towns, error } = await supabase
     .from('towns')
-    .select('id, name, country, region, social_atmosphere, traditional_progressive_lean, cultural_events_frequency, healthcare_score, safety_score, primary_language, pace_of_life_actual, expat_community_size')
+    .select('id, town_name, country, region, social_atmosphere, traditional_progressive_lean, cultural_events_frequency, healthcare_score, safety_score, primary_language, pace_of_life_actual, expat_community_size')
     .is('social_atmosphere', null)
     .is('traditional_progressive_lean', null)
     .is('cultural_events_frequency', null);
@@ -55,14 +55,14 @@ async function getPriorityTowns(limit = 20) {
     const priority = town.priority_score >= 9.0 ? '🔴 HIGH' :
                     town.priority_score >= 8.0 ? '🟡 MED' : '🟢 LOW';
 
-    console.log(`\n${idx + 1}. ${priority} | ${town.name}, ${town.country}`);
+    console.log(`\n${idx + 1}. ${priority} | ${town.town_name}, ${town.country}`);
     console.log(`   Priority Score: ${town.priority_score.toFixed(1)} (healthcare: ${town.healthcare_score}, safety: ${town.safety_score})`);
     console.log(`   Region: ${town.region || 'N/A'}`);
     console.log(`   Language: ${town.primary_language || 'N/A'}`);
     console.log(`   Pace of Life: ${town.pace_of_life_actual || 'N/A'}`);
     console.log(`   Expat Community: ${town.expat_community_size || 'N/A'}`);
     console.log(`   Town ID: ${town.id}`);
-    console.log(`   🔗 Edit at: http://localhost:5173/admin/towns (search "${town.name}")`);
+    console.log(`   🔗 Edit at: http://localhost:5173/admin/towns (search "${town.town_name}")`);
   });
 
   console.log('\n' + '='.repeat(80));

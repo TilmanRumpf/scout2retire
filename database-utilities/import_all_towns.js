@@ -60,19 +60,19 @@ async function importTowns() {
       const { data: existing } = await supabase
         .from('towns')
         .select('id')
-        .eq('name', town.name)
+        .eq('name', town.town_name)
         .eq('country', normalizedCountry)
         .single();
         
       if (existing) {
-        console.log(`⏭️  Skipping ${town.name}, ${normalizedCountry} (already exists)`);
+        console.log(`⏭️  Skipping ${town.town_name}, ${normalizedCountry} (already exists)`);
         skipped++;
         continue;
       }
       
       // Insert the town
       const townData = {
-        name: town.name,
+        name: town.town_name,
         country: normalizedCountry,
         region: town.region || town.continent || null,
         regions: [town.continent, town.category].filter(Boolean),
@@ -88,10 +88,10 @@ async function importTowns() {
         .insert(townData);
         
       if (error) {
-        console.error(`❌ Error importing ${town.name}, ${normalizedCountry}:`, error.message);
+        console.error(`❌ Error importing ${town.town_name}, ${normalizedCountry}:`, error.message);
         errors++;
       } else {
-        console.log(`✅ Imported ${town.name}, ${normalizedCountry}`);
+        console.log(`✅ Imported ${town.town_name}, ${normalizedCountry}`);
         imported++;
       }
     }

@@ -12,9 +12,9 @@ async function generateSQL() {
 
   const { data: towns, error } = await supabase
     .from('towns')
-    .select('name')
+    .select('town_name')
     .eq('country', 'Canada')
-    .order('name');
+    .order('town_name');
 
   if (error) {
     console.error('Error:', error);
@@ -26,9 +26,9 @@ async function generateSQL() {
   let sql = `-- ALL CANADIAN TOWNS BACKFILL\n\n`;
 
   for (const town of towns) {
-    const escapedName = town.name.replace(/'/g, "''");
+    const escapedName = town.town_name.replace(/'/g, "''");
 
-    sql += `-- ${town.name}\nUPDATE towns SET\n`;
+    sql += `-- ${town.town_name}\nUPDATE towns SET\n`;
     sql += `    activity_infrastructure = jsonb_build_array('parks','trails','beaches','cultural_sites','shopping','dining'),\n`;
     sql += `    environmental_factors = jsonb_build_array('clean_air','green_spaces','low_pollution','four_seasons'),\n`;
     sql += `    pet_friendliness = to_jsonb(8),\n`;

@@ -49,7 +49,7 @@ const supabase = createClient(
 async function validateInput(townData) {
   console.log('\n📋 STEP 1: Validating input...');
 
-  const { name, country } = townData;
+  const { town_name, country  } = townData;
 
   // Check required fields
   if (!name || !country) {

@@ -10,7 +10,7 @@ async function estimateHospitalDistances() {
   
   const { data: towns, error } = await supabase
     .from('towns')
-    .select('id, name, country, population, nearest_major_hospital_km, geographic_features')
+    .select('id, town_name, country, population, nearest_major_hospital_km, geographic_features')
     .is('nearest_major_hospital_km', null)
     .order('country, name');
     
@@ -71,36 +71,36 @@ async function estimateHospitalDistances() {
     const isIsland = town.geographic_features?.includes('Island') || false;
     
     // Check if it's a known medical hub
-    if (MEDICAL_HUBS[town.name]) {
-      distance = MEDICAL_HUBS[town.name];
-      console.log(`🏛️  ${town.name}, ${town.country}: ${distance} km (medical hub)`);
+    if (MEDICAL_HUBS[town.town_name]) {
+      distance = MEDICAL_HUBS[town.town_name];
+      console.log(`🏛️  ${town.town_name}, ${town.country}: ${distance} km (medical hub)`);
     }
     // Large cities (>500k) - always have hospitals
     else if (town.population > 500000) {
       distance = Math.round(2 + Math.random() * 3); // 2-5 km
-      console.log(`🌆 ${town.name}, ${town.country}: ${distance} km (large city)`);
+      console.log(`🌆 ${town.town_name}, ${town.country}: ${distance} km (large city)`);
     }
     // Medium cities (100k-500k)
     else if (town.population > 100000) {
       distance = Math.round(5 + Math.random() * 10); // 5-15 km
-      console.log(`🏙️  ${town.name}, ${town.country}: ${distance} km (medium city)`);
+      console.log(`🏙️  ${town.town_name}, ${town.country}: ${distance} km (medium city)`);
     }
     // Small cities (50k-100k)
     else if (town.population > 50000) {
       distance = Math.round(10 + Math.random() * 15); // 10-25 km
-      console.log(`🏘️  ${town.name}, ${town.country}: ${distance} km (small city)`);
+      console.log(`🏘️  ${town.town_name}, ${town.country}: ${distance} km (small city)`);
     }
     // Towns (20k-50k)
     else if (town.population > 20000) {
       distance = Math.round(15 + Math.random() * 20); // 15-35 km
       if (isIsland) distance = Math.round(distance * 1.5); // Islands typically farther
-      console.log(`🏡 ${town.name}, ${town.country}: ${distance} km (town${isIsland ? ', island' : ''})`);
+      console.log(`🏡 ${town.town_name}, ${town.country}: ${distance} km (town${isIsland ? ', island' : ''})`);
     }
     // Small towns (<20k)
     else {
       distance = Math.round(25 + Math.random() * 25); // 25-50 km
       if (isIsland) distance = Math.round(distance * 2); // Islands much farther
-      console.log(`🏞️  ${town.name}, ${town.country}: ${distance} km (small town${isIsland ? ', island' : ''})`);
+      console.log(`🏞️  ${town.town_name}, ${town.country}: ${distance} km (small town${isIsland ? ', island' : ''})`);
     }
     
     updates.push({

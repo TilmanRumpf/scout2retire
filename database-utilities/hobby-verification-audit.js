@@ -21,7 +21,7 @@ async function generateAuditReport() {
   const { data: hobbies, error } = await supabase
     .from('hobbies')
     .select('*')
-    .order('name');
+    .order('town_name');
   
   if (error) {
     console.error('❌ Error fetching hobbies:', error);

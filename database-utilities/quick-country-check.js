@@ -13,7 +13,7 @@ async function quickCheck() {
   // Get all towns grouped by country
   const { data: towns, error } = await supabase
     .from('towns')
-    .select('name, country, state_code')
+    .select('town_name, country, state_code')
     .order('country, name');
 
   if (error) {
@@ -27,10 +27,10 @@ async function quickCheck() {
   
   towns.forEach(town => {
     if (!town.country || town.country.trim() === '') {
-      noCountry.push(town.name);
+      noCountry.push(town.town_name);
     } else {
       if (!byCountry[town.country]) byCountry[town.country] = [];
-      byCountry[town.country].push(town.name);
+      byCountry[town.country].push(town.town_name);
     }
   });
 
@@ -55,7 +55,7 @@ async function quickCheck() {
   // Check if US cities have correct country
   const usCities = ['New Port Richey', 'Gainesville, FL'];
   usCities.forEach(city => {
-    const town = towns.find(t => t.name === city);
+    const town = towns.find(t => t.town_name === city);
     if (town && town.country !== 'United States') {
       console.log(`❌ ${city} is listed as ${town.country}, should be United States`);
     }
@@ -65,7 +65,7 @@ async function quickCheck() {
   const flCities = towns.filter(t => t.state_code === 'FL');
   flCities.forEach(town => {
     if (town.country !== 'United States') {
-      console.log(`❌ ${town.name} has FL state code but country is ${town.country}`);
+      console.log(`❌ ${town.town_name} has FL state code but country is ${town.country}`);
     }
   });
 }

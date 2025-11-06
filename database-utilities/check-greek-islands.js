@@ -9,7 +9,7 @@ const supabase = createClient(
 async function checkGreekTowns() {
   const { data, error } = await supabase
     .from('towns')
-    .select('name, country, geographic_features_actual, regions')
+    .select('town_name, country, geographic_features_actual, regions')
     .ilike('country', '%greece%');
 
   if (error) {
@@ -30,12 +30,12 @@ async function checkGreekTowns() {
     const isIsland = regions.includes('Island');
 
     if (isIsland) {
-      islands.push(town.name);
+      islands.push(town.town_name);
     } else {
-      mainland.push(town.name);
+      mainland.push(town.town_name);
     }
 
-    console.log(`${town.name}:`);
+    console.log(`${town.town_name}:`);
     console.log(`  Features: ${JSON.stringify(town.geographic_features_actual)}`);
     console.log(`  Regions: ${JSON.stringify(town.regions)}`);
     console.log(`  Is Island: ${isIsland ? 'YES ✅' : 'NO ❌'}`);

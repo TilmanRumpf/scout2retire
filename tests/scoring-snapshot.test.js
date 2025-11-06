@@ -278,7 +278,7 @@ const TEST_RESULTS = {
 
 async function runTest(testName, town, preferences) {
   console.log(`\n🧪 Running: ${testName}`);
-  console.log(`   Town: ${town.name} (${town.country})`);
+  console.log(`   Town: ${town.town_name} (${town.country})`);
 
   try {
     const result = await calculateEnhancedMatch(preferences, town);
@@ -286,7 +286,7 @@ async function runTest(testName, town, preferences) {
     const snapshot = {
       testName,
       town: {
-        name: town.name,
+        name: town.town_name,
         country: town.country,
         region: town.region
       },

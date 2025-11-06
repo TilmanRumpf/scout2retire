@@ -9,7 +9,7 @@ const supabase = createClient(
 async function checkTurkeyTowns() {
   const { data, error } = await supabase
     .from('towns')
-    .select('name, country, geographic_features_actual, water_bodies, distance_to_ocean_km')
+    .select('town_name, country, geographic_features_actual, water_bodies, distance_to_ocean_km')
     .ilike('country', '%turkey%');
 
   if (error) {
@@ -19,7 +19,7 @@ async function checkTurkeyTowns() {
 
   console.log('\n=== TURKISH TOWNS ===\n');
   data.forEach(town => {
-    console.log(`${town.name}:`);
+    console.log(`${town.town_name}:`);
     console.log(`  Geographic features: ${town.geographic_features_actual || 'NONE'}`);
     console.log(`  Water bodies: ${town.water_bodies || 'NONE'}`);
     console.log(`  Distance to ocean: ${town.distance_to_ocean_km || 'UNKNOWN'} km`);
@@ -27,7 +27,7 @@ async function checkTurkeyTowns() {
   });
 
   // Check if Antalya exists and is coastal
-  const antalya = data.find(t => t.name.toLowerCase().includes('antalya'));
+  const antalya = data.find(t => t.town_name.toLowerCase().includes('antalya'));
   if (antalya) {
     const isCoastal = antalya.geographic_features_actual?.toLowerCase().includes('coastal') ||
                      antalya.water_bodies?.toLowerCase().includes('mediterranean') ||

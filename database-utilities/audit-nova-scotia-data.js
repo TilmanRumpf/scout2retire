@@ -15,7 +15,7 @@ async function auditNovaScotia() {
     .from('towns')
     .select('*')
     .eq('region', 'Nova Scotia')
-    .order('name');
+    .order('town_name');
 
   if (error) {
     console.error('❌ ERROR:', error.message);
@@ -55,7 +55,7 @@ async function auditNovaScotia() {
   console.log('\n📋 TOWN INVENTORY:\n');
   towns.forEach((town, i) => {
     const hasImage = town.image_url_1 && town.image_url_1 !== '' && town.image_url_1.toLowerCase() !== 'null';
-    console.log(`${i + 1}. ${town.name}`);
+    console.log(`${i + 1}. ${town.town_name}`);
     console.log(`   Image: ${hasImage ? '✅ YES' : '❌ NO'}`);
     console.log(`   Description: ${town.description ? `✅ ${town.description.substring(0, 80)}...` : '❌ Missing'}`);
     console.log(`   Climate: ${town.summer_climate_actual ? '✅' : '❌'} Summer: ${town.summer_climate_actual || 'N/A'}, Winter: ${town.winter_climate_actual || 'N/A'}`);
@@ -77,7 +77,7 @@ async function auditNovaScotia() {
     console.log('✅ SAFE TO CREATE INSPIRATION');
     console.log(`   ${withImages.length} towns with images will display`);
     console.log('\n📝 Suggested towns to highlight:');
-    withImages.slice(0, 5).forEach(t => console.log(`   • ${t.name}`));
+    withImages.slice(0, 5).forEach(t => console.log(`   • ${t.town_name}`));
   }
 
   console.log('\n' + '='.repeat(70));

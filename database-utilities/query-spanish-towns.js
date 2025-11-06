@@ -10,7 +10,7 @@ async function querySpanishTowns() {
   
   const { data, error } = await supabase
     .from('towns')
-    .select('name, country, region, regions, geo_region, geographic_features_actual, vegetation_type_actual')
+    .select('town_name, country, region, regions, geo_region, geographic_features_actual, vegetation_type_actual')
     .eq('country', 'Spain')
     .limit(5);
   
@@ -23,7 +23,7 @@ async function querySpanishTowns() {
   console.log('================================\n');
   
   data.forEach((town, index) => {
-    console.log(`${index + 1}. ${town.name}`);
+    console.log(`${index + 1}. ${town.town_name}`);
     console.log('   Country:', town.country);
     console.log('   Region:', town.region);
     console.log('   Regions array:', JSON.stringify(town.regions));
@@ -36,18 +36,18 @@ async function querySpanishTowns() {
   // Check if any have empty geographic features
   const { data: allSpain, error: error2 } = await supabase
     .from('towns')
-    .select('name')
+    .select('town_name')
     .eq('country', 'Spain');
     
   const { data: withFeatures, error: error3 } = await supabase
     .from('towns')
-    .select('name')
+    .select('town_name')
     .eq('country', 'Spain')
     .not('geographic_features_actual', 'is', null);
     
   const { data: withVeg, error: error4 } = await supabase
     .from('towns')
-    .select('name')
+    .select('town_name')
     .eq('country', 'Spain')
     .not('vegetation_type_actual', 'is', null);
   

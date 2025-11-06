@@ -21,7 +21,7 @@ async function fixGoogleMapsLinks() {
     // First, get all towns with broken links
     const { data: towns, error: fetchError } = await supabase
       .from('towns')
-      .select('id, name, country, google_maps_link')
+      .select('id, town_name, country, google_maps_link')
       .or('google_maps_link.like.%goo.gl%,google_maps_link.like.%maps.app.goo.gl%,google_maps_link.is.null,google_maps_link.eq.');
 
     if (fetchError) throw fetchError;
@@ -34,7 +34,7 @@ async function fixGoogleMapsLinks() {
 
     for (const town of towns) {
       // Create the new Google Maps search URL
-      const searchQuery = `${town.name} ${town.country}`
+      const searchQuery = `${town.town_name} ${town.country}`
         .replace(/'/g, '') // Remove apostrophes
         .replace(/,/g, ''); // Remove commas
       
@@ -47,10 +47,10 @@ async function fixGoogleMapsLinks() {
         .eq('id', town.id);
 
       if (updateError) {
-        console.error(`Error updating ${town.name}, ${town.country}:`, updateError.message);
+        console.error(`Error updating ${town.town_name}, ${town.country}:`, updateError.message);
         errorCount++;
       } else {
-        console.log(`✓ Updated ${town.name}, ${town.country}`);
+        console.log(`✓ Updated ${town.town_name}, ${town.country}`);
         successCount++;
       }
     }
@@ -64,13 +64,13 @@ async function fixGoogleMapsLinks() {
     console.log('\nVerifying some updated links:');
     const { data: verified } = await supabase
       .from('towns')
-      .select('name, country, google_maps_link')
+      .select('town_name, country, google_maps_link')
       .like('google_maps_link', 'https://www.google.com/maps/search/%')
       .limit(5);
 
     if (verified) {
       verified.forEach(town => {
-        console.log(`- ${town.name}, ${town.country}: ${town.google_maps_link}`);
+        console.log(`- ${town.town_name}, ${town.country}: ${town.google_maps_link}`);
       });
     }
 

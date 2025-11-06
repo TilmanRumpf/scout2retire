@@ -53,7 +53,7 @@ const TYPE_MAPPINGS = {
 // Get all towns with vegetation types
 const { data: towns } = await supabase
   .from('towns')
-  .select('id, name, vegetation_type_actual')
+  .select('id, town_name, vegetation_type_actual')
   .not('vegetation_type_actual', 'is', null);
 
 console.log(`\n📊 Processing ${towns.length} towns with vegetation types`);
@@ -77,7 +77,7 @@ for (const town of towns) {
       // Already valid
       normalizedTypes.add(lowerType);
     } else {
-      console.log(`  ⚠️ Unknown vegetation type "${type}" in ${town.name} - will try to map`);
+      console.log(`  ⚠️ Unknown vegetation type "${type}" in ${town.town_name} - will try to map`);
       // Try to extract base type
       if (lowerType.includes('tropical')) normalizedTypes.add('tropical');
       else if (lowerType.includes('subtropical')) normalizedTypes.add('subtropical');
@@ -103,11 +103,11 @@ for (const town of towns) {
       .eq('id', town.id);
     
     if (error) {
-      console.error(`❌ Error updating ${town.name}:`, error);
+      console.error(`❌ Error updating ${town.town_name}:`, error);
     } else {
       updatedCount++;
       if (updatedCount <= 5) {
-        console.log(`  ✅ ${town.name}: [${originalTypes}] → [${newTypes}]`);
+        console.log(`  ✅ ${town.town_name}: [${originalTypes}] → [${newTypes}]`);
       }
     }
   } else {

@@ -37,7 +37,7 @@ const FEATURE_MAPPINGS = {
 // Get all towns with geographic features
 const { data: towns } = await supabase
   .from('towns')
-  .select('id, name, geographic_features_actual')
+  .select('id, town_name, geographic_features_actual')
   .not('geographic_features_actual', 'is', null);
 
 console.log(`\n📊 Processing ${towns.length} towns with geographic features`);
@@ -70,7 +70,7 @@ for (const town of towns) {
       // Already valid
       normalizedFeatures.add(lowerFeature);
     } else {
-      console.log(`  ⚠️ Unknown feature "${feature}" in ${town.name} - removing`);
+      console.log(`  ⚠️ Unknown feature "${feature}" in ${town.town_name} - removing`);
     }
   }
   
@@ -88,11 +88,11 @@ for (const town of towns) {
       .eq('id', town.id);
     
     if (error) {
-      console.error(`❌ Error updating ${town.name}:`, error);
+      console.error(`❌ Error updating ${town.town_name}:`, error);
     } else {
       updatedCount++;
       if (updatedCount <= 5) {
-        console.log(`  ✅ ${town.name}: [${originalFeatures}] → [${newFeatures}]`);
+        console.log(`  ✅ ${town.town_name}: [${originalFeatures}] → [${newFeatures}]`);
       }
     }
   } else {

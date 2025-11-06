@@ -78,7 +78,7 @@ async function executeViaDirectUpdate() {
     .from('towns')
     .select('*')
     .eq('country', 'Canada')
-    .order('name');
+    .order('town_name');
 
   if (error) {
     console.error('❌ Error fetching towns:', error);
@@ -91,7 +91,7 @@ async function executeViaDirectUpdate() {
   let errorCount = 0;
 
   for (const town of towns) {
-    console.log(`Processing ${town.name}...`);
+    console.log(`Processing ${town.town_name}...`);
 
     const updates = {};
 
@@ -101,24 +101,24 @@ async function executeViaDirectUpdate() {
     // CRITICAL FIELDS - ALWAYS NULL
     if (!town.activity_infrastructure) updates.activity_infrastructure = ["parks","trails","beaches","cultural_sites","shopping","dining"];
     if (!town.travel_connectivity_rating) {
-      const isUrban = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.name);
+      const isUrban = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.town_name);
       updates.travel_connectivity_rating = isUrban ? 8 : 6;
     }
     if (!town.social_atmosphere) {
-      const isVibrant = ['Calgary', 'Halifax', 'Quebec City', 'Victoria'].includes(town.name);
+      const isVibrant = ['Calgary', 'Halifax', 'Quebec City', 'Victoria'].includes(town.town_name);
       updates.social_atmosphere = isVibrant ? 'friendly' : 'moderate';
     }
     if (!town.traditional_progressive_lean) {
-      const isProgressive = ['Calgary', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria'].includes(town.name);
+      const isProgressive = ['Calgary', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria'].includes(town.town_name);
       updates.traditional_progressive_lean = isProgressive ? 'progressive' : 'balanced';
     }
     if (!town.residency_path_info) updates.residency_path_info = "Canadian permanent residence available through Federal Skilled Worker Program, Provincial Nominee Programs, or Express Entry system. Processing time: 6-12 months. Consult official IRCC website.";
     if (!town.emergency_services_quality) {
-      const isUrban = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.name);
+      const isUrban = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.town_name);
       updates.emergency_services_quality = isUrban ? 9 : 8;
     }
     if (!town.medical_specialties_rating) {
-      const isUrban = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.name);
+      const isUrban = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.town_name);
       updates.medical_specialties_rating = isUrban ? 8 : 6;
     }
     if (!town.environmental_health_rating) updates.environmental_health_rating = 9;
@@ -126,17 +126,17 @@ async function executeViaDirectUpdate() {
     if (!town.local_mobility_options) updates.local_mobility_options = ["walking","cycling","public_transit","ride_sharing","car_rental"];
     if (!town.regional_connectivity) updates.regional_connectivity = ["highways","regional_bus","regional_rail","domestic_flights"];
     if (!town.international_access) {
-      const hasIntl = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.name);
+      const hasIntl = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.town_name);
       updates.international_access = hasIntl ? ["direct_international_flights","connecting_international_flights","visa_free_travel_to_185_countries"] : ["connecting_international_flights","visa_free_travel_to_185_countries"];
     }
     if (!town.environmental_factors) updates.environmental_factors = ["clean_air","green_spaces","low_pollution","four_seasons"];
     if (!town.pet_friendliness) updates.pet_friendliness = 8;
     if (!town.solo_living_support) {
-      const isUrban = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.name);
+      const isUrban = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.town_name);
       updates.solo_living_support = isUrban ? 8 : 7;
     }
     if (!town.secondary_languages) {
-      const isFrench = ['Quebec City'].includes(town.name);
+      const isFrench = ['Quebec City'].includes(town.town_name);
       updates.secondary_languages = isFrench ? ['French'] : ['none'];
     }
     if (!town.visa_on_arrival_countries) updates.visa_on_arrival_countries = 185;
@@ -145,17 +145,17 @@ async function executeViaDirectUpdate() {
     if (!town.pollen_levels) updates.pollen_levels = 'moderate';
     if (!town.natural_disaster_risk_score) updates.natural_disaster_risk_score = 2;
     if (!town.medical_specialties_available) {
-      const isUrban = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.name);
+      const isUrban = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.town_name);
       updates.medical_specialties_available = isUrban ? ["cardiology","oncology","orthopedics","general surgery","neurology","pediatrics"] : ["cardiology","oncology","orthopedics","general surgery"];
     }
     if (!town.private_healthcare_cost_index) updates.private_healthcare_cost_index = 85;
     if (!town.swimming_facilities) updates.swimming_facilities = ["public_pools","private_clubs","ocean_beaches"];
     if (!town.expat_groups) {
-      const isUrban = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.name);
+      const isUrban = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.town_name);
       updates.expat_groups = isUrban ? 8 : 5;
     }
     if (!town.cultural_events_frequency) {
-      const isUrban = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.name);
+      const isUrban = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.town_name);
       updates.cultural_events_frequency = isUrban ? 'frequent' : 'monthly';
     }
     if (!town.purchase_apartment_sqm_usd) {
@@ -164,7 +164,7 @@ async function executeViaDirectUpdate() {
         'Quebec City': 3200, 'Victoria': 6500, 'Winnipeg': 3000,
         'Chester': 5000, 'Lunenburg': 5000, 'Mahone Bay': 4800
       };
-      updates.purchase_apartment_sqm_usd = costs[town.name] || 3500;
+      updates.purchase_apartment_sqm_usd = costs[town.town_name] || 3500;
     }
     if (!town.purchase_house_avg_usd) {
       const costs = {
@@ -172,19 +172,19 @@ async function executeViaDirectUpdate() {
         'Quebec City': 380000, 'Victoria': 850000, 'Winnipeg': 350000,
         'Chester': 650000, 'Lunenburg': 600000, 'Mahone Bay': 580000
       };
-      updates.purchase_house_avg_usd = costs[town.name] || 400000;
+      updates.purchase_house_avg_usd = costs[town.town_name] || 400000;
     }
     if (!town.property_appreciation_rate_pct) updates.property_appreciation_rate_pct = 3.5;
     if (!town.international_flights_direct) {
-      const hasIntl = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.name);
+      const hasIntl = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.town_name);
       updates.international_flights_direct = hasIntl;
     }
     if (!town.tourist_season_impact) {
-      const highTourism = ['Chester', 'Lunenburg', 'Mahone Bay', "Peggy's Cove", 'Quebec City', 'Victoria'].includes(town.name);
+      const highTourism = ['Chester', 'Lunenburg', 'Mahone Bay', "Peggy's Cove", 'Quebec City', 'Victoria'].includes(town.town_name);
       updates.tourist_season_impact = highTourism ? 'high' : 'moderate';
     }
     if (!town.startup_ecosystem_rating) {
-      const isUrban = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.name);
+      const isUrban = ['Calgary', 'Edmonton', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria', 'Winnipeg'].includes(town.town_name);
       updates.startup_ecosystem_rating = isUrban ? 7 : 4;
     }
     if (!town.last_verified_date) updates.last_verified_date = '2025-01-15';
@@ -194,7 +194,7 @@ async function executeViaDirectUpdate() {
     // 19/20 NULL fields
     if (town.pet_friendly_rating === null || town.pet_friendly_rating === undefined) updates.pet_friendly_rating = 8;
     if (town.lgbtq_friendly_rating === null || town.lgbtq_friendly_rating === undefined) {
-      const isProgressive = ['Calgary', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria'].includes(town.name);
+      const isProgressive = ['Calgary', 'Halifax', 'Ottawa', 'Quebec City', 'Victoria'].includes(town.town_name);
       updates.lgbtq_friendly_rating = isProgressive ? 9 : 8;
     }
 
@@ -208,7 +208,7 @@ async function executeViaDirectUpdate() {
         'Annapolis Royal': 1200, 'Bridgewater': 1100, 'Digby': 1100,
         'Lockeport': 1000, 'Truro': 1100, 'Yarmouth': 1100
       };
-      updates.typical_rent_1bed = costs[town.name] || 1200;
+      updates.typical_rent_1bed = costs[town.town_name] || 1200;
     }
     if (!town.typical_home_price) {
       const costs = {
@@ -218,7 +218,7 @@ async function executeViaDirectUpdate() {
         'Annapolis Royal': 420000, 'Bridgewater': 380000, 'Digby': 350000,
         'Lockeport': 320000, 'Truro': 360000, 'Yarmouth': 340000
       };
-      updates.typical_home_price = costs[town.name] || 400000;
+      updates.typical_home_price = costs[town.town_name] || 400000;
     }
     if (town.family_friendliness_rating === null || town.family_friendliness_rating === undefined) updates.family_friendliness_rating = 8;
     if (town.senior_friendly_rating === null || town.senior_friendly_rating === undefined) updates.senior_friendly_rating = 8;
@@ -230,7 +230,7 @@ async function executeViaDirectUpdate() {
         'Annapolis Royal': 1500, 'Bridgewater': 1400, 'Digby': 1400,
         'Lockeport': 1300, 'Truro': 1400, 'Yarmouth': 1400
       };
-      updates.rent_2bed_usd = costs[town.name] || 1500;
+      updates.rent_2bed_usd = costs[town.town_name] || 1500;
     }
     if (!town.rent_house_usd) {
       const costs = {
@@ -240,7 +240,7 @@ async function executeViaDirectUpdate() {
         'Annapolis Royal': 2000, 'Bridgewater': 1900, 'Digby': 1800,
         'Lockeport': 1700, 'Truro': 1900, 'Yarmouth': 1800
       };
-      updates.rent_house_usd = costs[town.name] || 2000;
+      updates.rent_house_usd = costs[town.town_name] || 2000;
     }
 
     // Small NS towns - additional fields
@@ -248,14 +248,14 @@ async function executeViaDirectUpdate() {
                           'Lockeport', 'Lunenburg', 'Mahone Bay', "Peggy's Cove",
                           'Truro', 'Yarmouth'];
 
-    if (smallNSTowns.includes(town.name)) {
+    if (smallNSTowns.includes(town.town_name)) {
       if (!town.cost_index) {
         const costs = {
           'Chester': 95, 'Lunenburg': 92, 'Mahone Bay': 90,
           'Annapolis Royal': 80, 'Bridgewater': 78, 'Digby': 76,
           'Lockeport': 74, "Peggy's Cove": 88, 'Truro': 79, 'Yarmouth': 77
         };
-        updates.cost_index = costs[town.name] || 80;
+        updates.cost_index = costs[town.town_name] || 80;
       }
       if (!town.climate) updates.climate = 'Maritime temperate';
       if (!town.cost_of_living_usd) {
@@ -264,7 +264,7 @@ async function executeViaDirectUpdate() {
           'Annapolis Royal': 2600, 'Bridgewater': 2500, 'Digby': 2400,
           'Lockeport': 2300, "Peggy's Cove": 2900, 'Truro': 2600, 'Yarmouth': 2500
         };
-        updates.cost_of_living_usd = costs[town.name] || 2600;
+        updates.cost_of_living_usd = costs[town.town_name] || 2600;
       }
       if (!town.population) {
         const pops = {
@@ -272,7 +272,7 @@ async function executeViaDirectUpdate() {
           'Annapolis Royal': 500, 'Bridgewater': 8800, 'Digby': 2100,
           'Lockeport': 600, "Peggy's Cove": 35, 'Truro': 12000, 'Yarmouth': 6600
         };
-        updates.population = pops[town.name] || 1000;
+        updates.population = pops[town.town_name] || 1000;
       }
     }
 

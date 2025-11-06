@@ -113,7 +113,7 @@ async function standardizeInterests() {
   // Check a sample town
   const { data: sampleTown } = await supabase
     .from('towns')
-    .select('name, interests_supported')
+    .select('town_name, interests_supported')
     .eq('name', 'Barcelona')
     .single();
   

@@ -19,7 +19,7 @@ async function testOnlyCultural() {
   // Get Wuppertal's ID
   const { data: town } = await supabase
     .from('towns')
-    .select('id, name')
+    .select('id, town_name')
     .eq('name', 'Wuppertal')
     .single();
 
@@ -28,7 +28,7 @@ async function testOnlyCultural() {
     return;
   }
 
-  console.log(`Testing on: ${town.name} (${town.id})\n`);
+  console.log(`Testing on: ${town.town_name} (${town.id})\n`);
 
   // Try ONLY cultural_events_frequency
   const testData = {

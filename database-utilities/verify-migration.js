@@ -14,7 +14,7 @@ async function verifyMigration() {
   // Check sample data
   const { data: sample, error: sampleError } = await supabase
     .from('towns')
-    .select('id, name, town_name, country, country_code, region, subdivision_code')
+    .select('id, town_name, town_name, country, country_code, region, subdivision_code')
     .limit(10);
 
   if (sampleError) {
@@ -24,9 +24,9 @@ async function verifyMigration() {
 
   console.log('📊 Sample towns after migration:');
   sample.forEach(town => {
-    const match = town.name === town.town_name ? '✅' : '❌';
+    const match = town.town_name === town.town_name ? '✅' : '❌';
     console.log(`  ${match} ${town.town_name}`);
-    console.log(`      name: "${town.name}"`);
+    console.log(`      name: "${town.town_name}"`);
     console.log(`      town_name: "${town.town_name}"`);
     console.log(`      country: ${town.country}, code: ${town.country_code || 'NULL'}`);
     console.log(`      region: ${town.region}, code: ${town.subdivision_code || 'NULL'}`);

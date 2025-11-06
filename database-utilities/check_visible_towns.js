@@ -19,10 +19,10 @@ async function checkVisibleTowns() {
   
   const { data: towns, error } = await supabase
     .from('towns')
-    .select('name, country, cost_index, healthcare_score, data_completeness_score')
+    .select('town_name, country, cost_index, healthcare_score, data_completeness_score')
     .not('image_url_1', 'is', null)
     .order('country')
-    .order('name')
+    .order('town_name')
   
   if (error) {
     console.error('Error:', error)
@@ -47,7 +47,7 @@ async function checkVisibleTowns() {
       const completeness = town.data_completeness_score || 0
       const cost = town.cost_index || 'N/A'
       const health = town.healthcare_score || 'N/A'
-      console.log(`  - ${town.name}: Cost ${cost}, Health ${health}, Complete ${completeness}%`)
+      console.log(`  - ${town.town_name}: Cost ${cost}, Health ${health}, Complete ${completeness}%`)
     })
   })
   

@@ -17,13 +17,13 @@ function simulateAIResponse(consultant, prompt, town, citizenship) {
     healthcare: {
       healthcare_score: 8,
       healthcare_description: {
-        US: `Healthcare in ${town.name} offers excellent private options for US retirees. Private insurance runs €50-150/month with English-speaking doctors readily available.`,
-        UK: `UK retirees with S1 forms access public healthcare immediately in ${town.name}. Private insurance adds faster specialist access.`,
-        EU: `EU citizens use EHIC for emergencies and register for full public healthcare after obtaining residency in ${town.name}.`
+        US: `Healthcare in ${town.town_name} offers excellent private options for US retirees. Private insurance runs €50-150/month with English-speaking doctors readily available.`,
+        UK: `UK retirees with S1 forms access public healthcare immediately in ${town.town_name}. Private insurance adds faster specialist access.`,
+        EU: `EU citizens use EHIC for emergencies and register for full public healthcare after obtaining residency in ${town.town_name}.`
       }
     },
     retirement: {
-      description: `${town.name} offers retirees a perfect blend of modern amenities and cultural heritage, with a thriving expat community and excellent infrastructure.`,
+      description: `${town.town_name} offers retirees a perfect blend of modern amenities and cultural heritage, with a thriving expat community and excellent infrastructure.`,
       pace_of_life: Math.floor(Math.random() * 5) + 3,
       expat_community_size: ['Small', 'Medium', 'Large'][Math.floor(Math.random() * 3)]
     },
@@ -40,7 +40,7 @@ function simulateAIResponse(consultant, prompt, town, citizenship) {
 }
 
 async function updateTownWithSmartData(town) {
-  console.log(`\n🏙️  Updating ${town.name}, ${town.country}...`)
+  console.log(`\n🏙️  Updating ${town.town_name}, ${town.country}...`)
   
   const updates = {
     // Track what we're updating
@@ -86,9 +86,9 @@ async function updateTownWithSmartData(town) {
     .select()
   
   if (error) {
-    console.error(`❌ Error updating ${town.name}:`, error)
+    console.error(`❌ Error updating ${town.town_name}:`, error)
   } else {
-    console.log(`✅ Updated ${town.name} - Completeness: ${updates.data_completeness_score}%`)
+    console.log(`✅ Updated ${town.town_name} - Completeness: ${updates.data_completeness_score}%`)
     console.log(`   Added: healthcare, visa requirements, lifestyle data`)
   }
   

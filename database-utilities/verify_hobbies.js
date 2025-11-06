@@ -33,7 +33,7 @@ async function verifyHobbies() {
   // Show sample hobbies
   const { data: samples, error: sampleError } = await supabase
     .from('hobbies')
-    .select('name, category, description')
+    .select('town_name, category, description')
     .limit(10);
   
   if (!sampleError && samples) {

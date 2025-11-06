@@ -147,14 +147,14 @@ async function investigateDataQuality() {
 
   const { data: sampleData, error: sampleError } = await supabase
     .from('towns')
-    .select('id, name, country, english_proficiency_level, social_atmosphere, traditional_progressive_lean, cultural_events_frequency')
+    .select('id, town_name, country, english_proficiency_level, social_atmosphere, traditional_progressive_lean, cultural_events_frequency')
     .limit(5);
 
   if (sampleError) {
     console.error('❌ Error fetching sample:', sampleError);
   } else {
     sampleData.forEach((town, idx) => {
-      console.log(`\n${idx + 1}. ${town.name}, ${town.country} (ID: ${town.id})`);
+      console.log(`\n${idx + 1}. ${town.town_name}, ${town.country} (ID: ${town.id})`);
       console.log(`   english_proficiency_level: ${town.english_proficiency_level || 'NULL'}`);
       console.log(`   social_atmosphere: ${town.social_atmosphere || 'NULL'}`);
       console.log(`   traditional_progressive_lean: ${town.traditional_progressive_lean || 'NULL'}`);

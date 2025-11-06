@@ -11,17 +11,17 @@ export const AI_CONSULTANTS = {
     persona: `You are a seasoned retirement consultant with 20 years of experience helping retirees find their perfect destinations. You've personally lived in and guided tours in each town, understanding the day-to-day realities of expat life.`,
     
     prompts: {
-      description: (town, citizenship) => `As a retirement consultant who has lived in ${town.name}, ${town.country}, write a compelling 2-3 sentence description that captures what makes this town special for retirees. Focus on unique qualities that set it apart.`,
+      description: (town, citizenship) => `As a retirement consultant who has lived in ${town.town_name}, ${town.country}, write a compelling 2-3 sentence description that captures what makes this town special for retirees. Focus on unique qualities that set it apart.`,
       
-      lifestyle_description: (town, citizenship) => `Based on your experience living in ${town.name}, describe the lifestyle in 3-4 sentences. Cover daily rhythm, social scene, cultural offerings, and what a typical week looks like for an expat retiree.`,
+      lifestyle_description: (town, citizenship) => `Based on your experience living in ${town.town_name}, describe the lifestyle in 3-4 sentences. Cover daily rhythm, social scene, cultural offerings, and what a typical week looks like for an expat retiree.`,
       
-      pace_of_life: (town, citizenship) => `Rate the pace of life in ${town.name} on a scale of 1-10 (1=very slow/relaxed, 10=fast-paced/bustling). Give just the number.`,
+      pace_of_life: (town, citizenship) => `Rate the pace of life in ${town.town_name} on a scale of 1-10 (1=very slow/relaxed, 10=fast-paced/bustling). Give just the number.`,
       
-      expat_community_size: (town, citizenship) => `Estimate the expat community size in ${town.name}: "None", "Small", "Medium", "Large", or "Very Large".`,
+      expat_community_size: (town, citizenship) => `Estimate the expat community size in ${town.town_name}: "None", "Small", "Medium", "Large", or "Very Large".`,
       
-      cultural_rating: (town, citizenship) => `Rate the cultural richness of ${town.name} for retirees on a scale of 1-10. Consider museums, concerts, festivals, and cultural activities. Give just the number.`,
+      cultural_rating: (town, citizenship) => `Rate the cultural richness of ${town.town_name} for retirees on a scale of 1-10. Consider museums, concerts, festivals, and cultural activities. Give just the number.`,
       
-      social_atmosphere: (town, citizenship) => `Describe the social atmosphere in ${town.name} in 2 sentences. Is it easy to make friends? Are locals welcoming to expats?`
+      social_atmosphere: (town, citizenship) => `Describe the social atmosphere in ${town.town_name} in 2 sentences. Is it easy to make friends? Are locals welcoming to expats?`
     }
   },
   
@@ -30,7 +30,7 @@ export const AI_CONSULTANTS = {
     persona: `You are an immigration attorney with 15 years specializing in retirement and expat visas. You have deep knowledge of visa requirements, residency paths, and immigration procedures for every country, and understand how these differ based on citizenship.`,
     
     prompts: {
-      visa_requirements: (town, citizenship) => `As an immigration expert, summarize in 2-3 sentences the visa requirements for ${citizenship} citizens wanting to retire in ${town.name}, ${town.country}. Be specific to ${citizenship} passport holders.`,
+      visa_requirements: (town, citizenship) => `As an immigration expert, summarize in 2-3 sentences the visa requirements for ${citizenship} citizens wanting to retire in ${town.town_name}, ${town.country}. Be specific to ${citizenship} passport holders.`,
       
       residency_path_info: (town, citizenship) => `Explain in 2-3 sentences the path to permanent residency in ${town.country} specifically for ${citizenship} citizens, including timeline and key requirements.`,
       
@@ -49,7 +49,7 @@ export const AI_CONSULTANTS = {
     persona: `You are an international tax advisor with expertise in expat taxation, specializing in helping retirees optimize their tax situation across different countries. You understand tax treaties, foreign income rules, and retirement income taxation.`,
     
     prompts: {
-      tax_implications: (town, citizenship) => `As a tax expert, summarize in 2-3 sentences the key tax considerations for ${citizenship} citizen retirees living in ${town.name}, ${town.country}, including any relevant tax treaties and how retirement income is taxed.`,
+      tax_implications: (town, citizenship) => `As a tax expert, summarize in 2-3 sentences the key tax considerations for ${citizenship} citizen retirees living in ${town.town_name}, ${town.country}, including any relevant tax treaties and how retirement income is taxed.`,
       
       income_tax_rate_pct: (town, citizenship) => `What is the typical income tax rate percentage for ${citizenship} retiree's pension income in ${town.country}? Give just the number.`,
       
@@ -68,19 +68,19 @@ export const AI_CONSULTANTS = {
     persona: `You are a healthcare consultant specializing in international medical systems, with deep knowledge of healthcare quality, costs, and accessibility for expats in different countries. You've evaluated hospitals and clinics worldwide and understand how citizenship affects healthcare access.`,
     
     prompts: {
-      healthcare_description: (town, citizenship) => `As a healthcare expert, describe in 2-3 sentences the healthcare quality and accessibility for ${citizenship} retirees in ${town.name}, including English-speaking doctor availability and typical costs.`,
+      healthcare_description: (town, citizenship) => `As a healthcare expert, describe in 2-3 sentences the healthcare quality and accessibility for ${citizenship} retirees in ${town.town_name}, including English-speaking doctor availability and typical costs.`,
       
-      healthcare_score: (town, citizenship) => `Rate the overall healthcare quality in ${town.name} for ${citizenship} retirees on a scale of 1-10. Give just the number.`,
+      healthcare_score: (town, citizenship) => `Rate the overall healthcare quality in ${town.town_name} for ${citizenship} retirees on a scale of 1-10. Give just the number.`,
       
       public_healthcare_eligible: (town, citizenship) => `Are ${citizenship} citizen retirees eligible for public healthcare in ${town.country}? Answer "Yes immediately", "Yes after residency period", "No", or "EU reciprocal rights only".`,
       
-      health_insurance_cost: (town, citizenship) => `What is the typical monthly health insurance cost in USD for a 65-year-old ${citizenship} citizen in ${town.name}? Give a range like "100-200".`,
+      health_insurance_cost: (town, citizenship) => `What is the typical monthly health insurance cost in USD for a 65-year-old ${citizenship} citizen in ${town.town_name}? Give a range like "100-200".`,
       
-      english_speaking_doctors: (town, citizenship) => `How available are English-speaking doctors in ${town.name}? Answer: "None", "Few", "Some", "Many", or "Abundant".`,
+      english_speaking_doctors: (town, citizenship) => `How available are English-speaking doctors in ${town.town_name}? Answer: "None", "Few", "Some", "Many", or "Abundant".`,
       
-      medical_specialties_available: (town, citizenship) => `List the main medical specialties with good availability in ${town.name} (e.g., "Cardiology, Oncology, Orthopedics"). Maximum 5 specialties.`,
+      medical_specialties_available: (town, citizenship) => `List the main medical specialties with good availability in ${town.town_name} (e.g., "Cardiology, Oncology, Orthopedics"). Maximum 5 specialties.`,
       
-      prescription_drug_costs: (town, citizenship) => `How do prescription drug costs in ${town.name} compare to the ${citizenship === 'US' ? 'US' : citizenship}? Answer "Much cheaper", "Somewhat cheaper", "Similar", or "More expensive".`
+      prescription_drug_costs: (town, citizenship) => `How do prescription drug costs in ${town.town_name} compare to the ${citizenship === 'US' ? 'US' : citizenship}? Answer "Much cheaper", "Somewhat cheaper", "Similar", or "More expensive".`
     }
   },
   
@@ -89,19 +89,19 @@ export const AI_CONSULTANTS = {
     persona: `You are a real estate consultant with expertise in international property markets, specializing in helping retirees find suitable housing. You understand rental markets, purchase regulations for foreigners, and property trends.`,
     
     prompts: {
-      infrastructure_description: (town, citizenship) => `As a real estate expert, describe in 2-3 sentences the housing market and infrastructure in ${town.name} from a ${citizenship} retiree's perspective.`,
+      infrastructure_description: (town, citizenship) => `As a real estate expert, describe in 2-3 sentences the housing market and infrastructure in ${town.town_name} from a ${citizenship} retiree's perspective.`,
       
       foreign_ownership_allowed: (town, citizenship) => `Can ${citizenship} citizens purchase property in ${town.country}? Answer "Yes", "Yes with restrictions", or "No".`,
       
-      property_purchase_process: (town, citizenship) => `Briefly describe in 2 sentences the process for a ${citizenship} citizen to buy property in ${town.name}, including any restrictions.`,
+      property_purchase_process: (town, citizenship) => `Briefly describe in 2 sentences the process for a ${citizenship} citizen to buy property in ${town.town_name}, including any restrictions.`,
       
-      rental_market_description: (town, citizenship) => `Describe the rental market in ${town.name} for ${citizenship} retirees in 2 sentences. Include availability and typical lease terms.`,
+      rental_market_description: (town, citizenship) => `Describe the rental market in ${town.town_name} for ${citizenship} retirees in 2 sentences. Include availability and typical lease terms.`,
       
-      property_taxes_annual: (town, citizenship) => `What is the typical annual property tax rate in ${town.name} as a percentage of property value? Give just the number.`,
+      property_taxes_annual: (town, citizenship) => `What is the typical annual property tax rate in ${town.town_name} as a percentage of property value? Give just the number.`,
       
-      utilities_reliability: (town, citizenship) => `Rate the reliability of utilities (electricity, water, internet) in ${town.name} on a scale of 1-10. Give just the number.`,
+      utilities_reliability: (town, citizenship) => `Rate the reliability of utilities (electricity, water, internet) in ${town.town_name} on a scale of 1-10. Give just the number.`,
       
-      neighborhoods_recommended: (town, citizenship) => `Name 2-3 neighborhoods in ${town.name} that are popular with expat retirees, with a brief reason for each.`
+      neighborhoods_recommended: (town, citizenship) => `Name 2-3 neighborhoods in ${town.town_name} that are popular with expat retirees, with a brief reason for each.`
     }
   },
   
@@ -114,13 +114,13 @@ export const AI_CONSULTANTS = {
       
       pet_import_restrictions: (town, citizenship) => `List any breed restrictions or banned animals in ${town.country}. Be specific about which dog breeds are prohibited or restricted.`,
       
-      local_pet_diseases: (town, citizenship) => `What endemic diseases or parasites in ${town.name} pose risks to pets? List the top 3-4 health threats to dogs and cats, including prevention measures.`,
+      local_pet_diseases: (town, citizenship) => `What endemic diseases or parasites in ${town.town_name} pose risks to pets? List the top 3-4 health threats to dogs and cats, including prevention measures.`,
       
-      pet_healthcare_quality: (town, citizenship) => `Describe the quality and availability of veterinary care in ${town.name} in 2 sentences. Include typical costs and availability of emergency services.`,
+      pet_healthcare_quality: (town, citizenship) => `Describe the quality and availability of veterinary care in ${town.town_name} in 2 sentences. Include typical costs and availability of emergency services.`,
       
-      pet_friendly_rating: (town, citizenship) => `Rate how pet-friendly ${town.name} is for retirees with pets on a scale of 1-10. Consider housing, public spaces, and general attitude toward pets. Give just the number.`,
+      pet_friendly_rating: (town, citizenship) => `Rate how pet-friendly ${town.town_name} is for retirees with pets on a scale of 1-10. Consider housing, public spaces, and general attitude toward pets. Give just the number.`,
       
-      pet_costs_monthly: (town, citizenship) => `Estimate the average monthly cost in USD for maintaining a medium-sized dog in ${town.name}, including food, routine vet care, and supplies. Give a range like "50-100".`,
+      pet_costs_monthly: (town, citizenship) => `Estimate the average monthly cost in USD for maintaining a medium-sized dog in ${town.town_name}, including food, routine vet care, and supplies. Give a range like "50-100".`,
       
       pet_travel_requirements: (town, citizenship) => `What are the requirements for traveling with pets FROM ${town.country} to other EU countries or back to ${citizenship === 'US' ? 'the US' : citizenship}? Cover pet passports and health certificates in 2 sentences.`
     }
@@ -131,7 +131,7 @@ export const AI_CONSULTANTS = {
     persona: `You are a climate and environmental consultant specializing in how weather and environmental factors affect retiree quality of life. You understand seasonal patterns, natural disaster risks, and climate-related health considerations.`,
     
     prompts: {
-      climate_description: (town, citizenship) => `Describe ${town.name}'s climate throughout the year in 2-3 sentences, focusing on what ${citizenship} retirees would experience. Include any extreme weather considerations.`,
+      climate_description: (town, citizenship) => `Describe ${town.town_name}'s climate throughout the year in 2-3 sentences, focusing on what ${citizenship} retirees would experience. Include any extreme weather considerations.`,
       
       climate_comparison: (town, citizenship) => {
         const climateComparisons = {
@@ -141,16 +141,16 @@ export const AI_CONSULTANTS = {
           'Australia': 'Compare to Australian climate',
           'EU': 'Compare to Central European climate'
         }
-        return `How does ${town.name}'s climate compare to what ${citizenship} retirees are used to? ${climateComparisons[citizenship] || 'Compare to their home climate'}.`
+        return `How does ${town.town_name}'s climate compare to what ${citizenship} retirees are used to? ${climateComparisons[citizenship] || 'Compare to their home climate'}.`
       },
       
-      air_quality_assessment: (town, citizenship) => `Assess the air quality in ${town.name} for retirees with respiratory concerns. Include pollution levels and seasonal variations in 2 sentences.`,
+      air_quality_assessment: (town, citizenship) => `Assess the air quality in ${town.town_name} for retirees with respiratory concerns. Include pollution levels and seasonal variations in 2 sentences.`,
       
-      natural_disaster_risk: (town, citizenship) => `What natural disaster risks exist in ${town.name}? List any significant risks (earthquakes, floods, fires, etc.) and their likelihood.`,
+      natural_disaster_risk: (town, citizenship) => `What natural disaster risks exist in ${town.town_name}? List any significant risks (earthquakes, floods, fires, etc.) and their likelihood.`,
       
-      climate_health_impact: (town, citizenship) => `How might ${town.name}'s climate affect common retiree health conditions (arthritis, respiratory issues, etc.)? Provide assessment in 2 sentences.`,
+      climate_health_impact: (town, citizenship) => `How might ${town.town_name}'s climate affect common retiree health conditions (arthritis, respiratory issues, etc.)? Provide assessment in 2 sentences.`,
       
-      best_seasons: (town, citizenship) => `What are the best and worst seasons for ${citizenship} retirees in ${town.name}? Explain briefly in 2 sentences.`
+      best_seasons: (town, citizenship) => `What are the best and worst seasons for ${citizenship} retirees in ${town.town_name}? Explain briefly in 2 sentences.`
     }
   },
   
@@ -159,17 +159,17 @@ export const AI_CONSULTANTS = {
     persona: `You are a cultural integration specialist who helps expats navigate social customs, language barriers, and cultural adaptation. You have deep knowledge of local customs and expat integration challenges.`,
     
     prompts: {
-      language_barrier_assessment: (town, citizenship) => `How challenging is the language barrier in ${town.name} for English-speaking ${citizenship} retirees? Assess in 2 sentences including local English proficiency.`,
+      language_barrier_assessment: (town, citizenship) => `How challenging is the language barrier in ${town.town_name} for English-speaking ${citizenship} retirees? Assess in 2 sentences including local English proficiency.`,
       
-      cultural_adaptation_challenges: (town, citizenship) => `What are the main cultural adaptation challenges ${citizenship} retirees face in ${town.name}? List 2-3 key challenges with brief explanations.`,
+      cultural_adaptation_challenges: (town, citizenship) => `What are the main cultural adaptation challenges ${citizenship} retirees face in ${town.town_name}? List 2-3 key challenges with brief explanations.`,
       
-      social_integration_ease: (town, citizenship) => `Rate how easy it is for ${citizenship} retirees to integrate socially in ${town.name} on a scale of 1-10. Give just the number.`,
+      social_integration_ease: (town, citizenship) => `Rate how easy it is for ${citizenship} retirees to integrate socially in ${town.town_name} on a scale of 1-10. Give just the number.`,
       
-      expat_support_resources: (town, citizenship) => `What expat support resources exist in ${town.name} for ${citizenship} retirees? List key organizations, groups, or services in 2 sentences.`,
+      expat_support_resources: (town, citizenship) => `What expat support resources exist in ${town.town_name} for ${citizenship} retirees? List key organizations, groups, or services in 2 sentences.`,
       
-      local_customs_important: (town, citizenship) => `What 2-3 local customs or cultural norms should ${citizenship} retirees be aware of in ${town.name} to avoid cultural faux pas?`,
+      local_customs_important: (town, citizenship) => `What 2-3 local customs or cultural norms should ${citizenship} retirees be aware of in ${town.town_name} to avoid cultural faux pas?`,
       
-      religious_considerations: (town, citizenship) => `Are there any religious or cultural considerations that might affect ${citizenship} retirees in ${town.name}? Explain briefly.`
+      religious_considerations: (town, citizenship) => `Are there any religious or cultural considerations that might affect ${citizenship} retirees in ${town.town_name}? Explain briefly.`
     }
   },
   
@@ -178,17 +178,17 @@ export const AI_CONSULTANTS = {
     persona: `You are a security consultant specializing in expat safety, with expertise in crime patterns, scam prevention, and emergency preparedness for retirees living abroad.`,
     
     prompts: {
-      safety_description: (town, citizenship) => `As a security expert, assess the safety of ${town.name} for ${citizenship} retirees in 2-3 sentences. Cover crime levels, areas to avoid, and specific risks for older expats.`,
+      safety_description: (town, citizenship) => `As a security expert, assess the safety of ${town.town_name} for ${citizenship} retirees in 2-3 sentences. Cover crime levels, areas to avoid, and specific risks for older expats.`,
       
-      crime_types_common: (town, citizenship) => `What types of crime are most common in ${town.name} that might affect ${citizenship} retirees? List 2-3 with prevention tips.`,
+      crime_types_common: (town, citizenship) => `What types of crime are most common in ${town.town_name} that might affect ${citizenship} retirees? List 2-3 with prevention tips.`,
       
-      scam_risks: (town, citizenship) => `What scams specifically target ${citizenship} expat retirees in ${town.name}? Describe 1-2 common scams and how to avoid them.`,
+      scam_risks: (town, citizenship) => `What scams specifically target ${citizenship} expat retirees in ${town.town_name}? Describe 1-2 common scams and how to avoid them.`,
       
-      emergency_services_quality: (town, citizenship) => `Rate the quality and responsiveness of emergency services (police, fire, ambulance) in ${town.name} on a scale of 1-10. Give just the number.`,
+      emergency_services_quality: (town, citizenship) => `Rate the quality and responsiveness of emergency services (police, fire, ambulance) in ${town.town_name} on a scale of 1-10. Give just the number.`,
       
-      safety_precautions: (town, citizenship) => `What specific safety precautions should ${citizenship} retirees take in ${town.name}? Provide 2-3 practical recommendations.`,
+      safety_precautions: (town, citizenship) => `What specific safety precautions should ${citizenship} retirees take in ${town.town_name}? Provide 2-3 practical recommendations.`,
       
-      safe_neighborhoods: (town, citizenship) => `Which neighborhoods in ${town.name} are safest for ${citizenship} retirees? Name 2-3 areas with brief explanations.`
+      safe_neighborhoods: (town, citizenship) => `Which neighborhoods in ${town.town_name} are safest for ${citizenship} retirees? Name 2-3 areas with brief explanations.`
     }
   },
   
@@ -197,15 +197,15 @@ export const AI_CONSULTANTS = {
     persona: `You are an international banking and financial services consultant who helps expats manage their finances across borders, understanding banking regulations, currency exchange, and financial access for foreigners.`,
     
     prompts: {
-      banking_ease: (town, citizenship) => `How easy is it for ${citizenship} retirees to open bank accounts and access financial services in ${town.name}? Describe in 2 sentences including any restrictions.`,
+      banking_ease: (town, citizenship) => `How easy is it for ${citizenship} retirees to open bank accounts and access financial services in ${town.town_name}? Describe in 2 sentences including any restrictions.`,
       
       currency_considerations: (town, citizenship) => `What currency and exchange rate considerations should ${citizenship} retirees be aware of in ${town.country}? Include stability and conversion costs in 2 sentences.`,
       
-      atm_credit_card_access: (town, citizenship) => `How accessible are ATMs and how widely accepted are international credit cards in ${town.name}? Rate accessibility for ${citizenship} retirees.`,
+      atm_credit_card_access: (town, citizenship) => `How accessible are ATMs and how widely accepted are international credit cards in ${town.town_name}? Rate accessibility for ${citizenship} retirees.`,
       
       money_transfer_options: (town, citizenship) => `What are the best options for ${citizenship} retirees to transfer money to/from ${town.country}? List 2-3 methods with typical costs.`,
       
-      local_banking_requirements: (town, citizenship) => `What documents do ${citizenship} retirees need to open a bank account in ${town.name}? List key requirements.`,
+      local_banking_requirements: (town, citizenship) => `What documents do ${citizenship} retirees need to open a bank account in ${town.town_name}? List key requirements.`,
       
       financial_scam_protection: (town, citizenship) => `What financial protections exist for ${citizenship} retirees' bank accounts and investments in ${town.country}? Explain briefly.`
     }

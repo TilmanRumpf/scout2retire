@@ -20,7 +20,7 @@ async function roundPopulation() {
   // Get all towns
   const { data: towns, error } = await supabase
     .from('towns')
-    .select('id, name, country, population');
+    .select('id, town_name, country, population');
     
   if (error) {
     console.error('Error fetching towns:', error);
@@ -60,7 +60,7 @@ async function roundPopulation() {
       .eq('id', town.id);
       
     if (updateError) {
-      console.log(`❌ Failed to update ${town.name}: ${updateError.message}`);
+      console.log(`❌ Failed to update ${town.town_name}: ${updateError.message}`);
       errorCount++;
     } else {
       updated++;
@@ -68,7 +68,7 @@ async function roundPopulation() {
       // Collect samples for display
       if (samples.length < 15) {
         samples.push({
-          name: town.name,
+          name: town.town_name,
           country: town.country,
           oldPopulation: oldPopulation,
           newPopulation: newPopulation,

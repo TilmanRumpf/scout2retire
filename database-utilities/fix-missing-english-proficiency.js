@@ -127,7 +127,7 @@ async function fixMissingEnglishProficiency() {
     // Get towns with NULL english_proficiency
     const { data: missingTowns, error } = await supabase
       .from('towns')
-      .select('id, name, country')
+      .select('id, town_name, country')
       .is('english_proficiency', null);
 
     if (error) {
@@ -145,7 +145,7 @@ async function fixMissingEnglishProficiency() {
     let fixedCount = 0;
 
     for (const town of missingTowns) {
-      console.log(`- ${town.name}, ${town.country}`);
+      console.log(`- ${town.town_name}, ${town.country}`);
 
       // Get country default or use 30 as fallback
       const proficiency = COUNTRY_DEFAULTS[town.country] || 30;
@@ -157,7 +157,7 @@ async function fixMissingEnglishProficiency() {
         .eq('id', town.id);
 
       if (updateError) {
-        console.error(`  ❌ Failed to update ${town.name}:`, updateError.message);
+        console.error(`  ❌ Failed to update ${town.town_name}:`, updateError.message);
       } else {
         console.log(`  ✅ Set to ${proficiency}% (${town.country} default)`);
         fixedCount++;

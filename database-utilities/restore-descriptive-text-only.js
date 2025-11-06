@@ -104,7 +104,7 @@ async function restoreDescriptiveText() {
     // Verify critical fields remain lowercase
     const { data: sampleTown } = await supabase
       .from('towns')
-      .select('name, geographic_features_actual, vegetation_type_actual, description')
+      .select('town_name, geographic_features_actual, vegetation_type_actual, description')
       .limit(1)
       .single();
     

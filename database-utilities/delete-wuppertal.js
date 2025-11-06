@@ -19,7 +19,7 @@ async function deleteWuppertal() {
   const { error } = await supabase
     .from('towns')
     .delete()
-    .ilike('name', 'wuppertal');
+    .ilike('town_name', 'wuppertal');
 
   if (error) {
     console.error('Error:', error);

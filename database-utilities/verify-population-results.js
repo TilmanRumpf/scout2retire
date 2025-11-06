@@ -41,7 +41,7 @@ async function verifyResults() {
     sampleTowns.forEach(town => {
       console.log(
         (town.country || 'N/A').padEnd(15) +
-        (town.name || 'N/A').padEnd(25) +
+        (town.town_name || 'N/A').padEnd(25) +
         (town.climate || 'N/A').padEnd(15) +
         (town.geographic_features_actual ? `[${town.geographic_features_actual.join(', ')}]` : 'NULL').padEnd(35) +
         (town.vegetation_type_actual ? `[${town.vegetation_type_actual.join(', ')}]` : 'NULL')
@@ -85,7 +85,7 @@ async function verifyResults() {
     for (const climate of climateTypes) {
       const { data: climateExamples, error: climateError } = await supabase
         .from('towns')
-        .select('name, country, geographic_features_actual, vegetation_type_actual')
+        .select('town_name, country, geographic_features_actual, vegetation_type_actual')
         .ilike('climate', climate)
         .not('geographic_features_actual', 'is', null)
         .limit(2);
@@ -93,7 +93,7 @@ async function verifyResults() {
       if (!climateError && climateExamples.length > 0) {
         console.log(`🌤️  ${climate.toUpperCase()} Climate Examples:`);
         climateExamples.forEach(town => {
-          console.log(`   ${town.name}, ${town.country}`);
+          console.log(`   ${town.town_name}, ${town.country}`);
           console.log(`      🏔️  Geographic: [${town.geographic_features_actual.join(', ')}]`);
           console.log(`      🌿 Vegetation: [${town.vegetation_type_actual.join(', ')}]`);
         });

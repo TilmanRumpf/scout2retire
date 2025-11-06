@@ -57,7 +57,7 @@ async function findTownsWithoutHobbies() {
     
     const { data: allTowns, error: allTownsError } = await supabase
       .from('towns')
-      .select('id, name, state, country')
+      .select('id, town_name, state, country')
       .order('id');
     
     if (allTownsError) {
@@ -81,7 +81,7 @@ async function findTownsWithoutHobbies() {
       console.log('-'.repeat(60));
       
       townsWithoutHobbies.slice(0, 10).forEach((town, index) => {
-        console.log(`${index + 1}. ID: ${town.id} | Name: ${town.name} | State: ${town.state_code} | Country: ${town.country}`);
+        console.log(`${index + 1}. ID: ${town.id} | Name: ${town.town_name} | State: ${town.state_code} | Country: ${town.country}`);
       });
       
       if (townsWithoutHobbies.length > 10) {
@@ -125,7 +125,7 @@ async function findTownsWithoutHobbies() {
       console.log('='.repeat(80));
       
       townsWithoutHobbies.forEach((town, index) => {
-        console.log(`${index + 1}. ID: ${town.id} | Name: ${town.name} | State: ${town.state_code} | Country: ${town.country}`);
+        console.log(`${index + 1}. ID: ${town.id} | Name: ${town.town_name} | State: ${town.state_code} | Country: ${town.country}`);
       });
     }
     

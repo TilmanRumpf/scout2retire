@@ -34,7 +34,7 @@ async function updateVisibleEuropeanTowns() {
   }
   
   console.log(`Found ${europeanTowns.length} visible European towns to update:\n`)
-  europeanTowns.forEach(t => console.log(`- ${t.name}, ${t.country}`))
+  europeanTowns.forEach(t => console.log(`- ${t.town_name}, ${t.country}`))
   
   // Check if we have Claude API key
   if (!process.env.CLAUDE_API_KEY) {
@@ -47,7 +47,7 @@ async function updateVisibleEuropeanTowns() {
   let successCount = 0
   
   for (const town of europeanTowns) {
-    console.log(`\n📍 Updating ${town.name}, ${town.country}...`)
+    console.log(`\n📍 Updating ${town.town_name}, ${town.country}...`)
     
     try {
       const updates = {
@@ -116,7 +116,7 @@ async function updateVisibleEuropeanTowns() {
         .eq('id', town.id)
       
       if (updateError) {
-        console.error(`  ❌ Error updating ${town.name}:`, updateError.message)
+        console.error(`  ❌ Error updating ${town.town_name}:`, updateError.message)
       } else {
         successCount++
         console.log(`  ✅ Successfully updated (completeness: ${updates.data_completeness_score}%)`)
@@ -126,7 +126,7 @@ async function updateVisibleEuropeanTowns() {
       await new Promise(resolve => setTimeout(resolve, 1500))
       
     } catch (error) {
-      console.error(`  ❌ Error processing ${town.name}:`, error.message)
+      console.error(`  ❌ Error processing ${town.town_name}:`, error.message)
     }
   }
   

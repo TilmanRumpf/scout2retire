@@ -16,8 +16,8 @@ const supabase = createClient(
 async function checkAllWuppertals() {
   const { data, error } = await supabase
     .from('towns')
-    .select('id, name, country, created_at, summer_climate_actual, description')
-    .ilike('name', '%wuppertal%')
+    .select('id, town_name, country, created_at, summer_climate_actual, description')
+    .ilike('town_name', '%wuppertal%')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -35,7 +35,7 @@ async function checkAllWuppertals() {
   
   data.forEach((town, idx) => {
     console.log(`\n#${idx + 1} - ID: ${town.id}`);
-    console.log('  Name:', town.name);
+    console.log('  Name:', town.town_name);
     console.log('  Country:', town.country);
     console.log('  Created:', town.created_at);
     console.log('  summer_climate_actual:', town.summer_climate_actual || 'NULL');

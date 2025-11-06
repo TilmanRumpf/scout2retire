@@ -18,7 +18,7 @@ async function fixImageUrls() {
     // First, let's check all towns with double slashes
     const { data: townsWithIssue, error: fetchError } = await supabase
       .from('towns')
-      .select('id, name, country, image_url_1, image_url_2, image_url_3')
+      .select('id, town_name, country, image_url_1, image_url_2, image_url_3')
       .or('image_url_1.like.%//%,image_url_2.like.%//%,image_url_3.like.%//%');
     
     if (fetchError) throw fetchError;
@@ -27,7 +27,7 @@ async function fixImageUrls() {
     
     // Show which towns have the issue
     townsWithIssue.forEach(town => {
-      console.log(`- ${town.name}, ${town.country}`);
+      console.log(`- ${town.town_name}, ${town.country}`);
       if (town.image_url_1?.includes('//')) console.log(`  URL 1: ${town.image_url_1}`);
       if (town.image_url_2?.includes('//')) console.log(`  URL 2: ${town.image_url_2}`);
       if (town.image_url_3?.includes('//')) console.log(`  URL 3: ${town.image_url_3}`);
@@ -57,9 +57,9 @@ async function fixImageUrls() {
           .eq('id', town.id);
         
         if (updateError) {
-          console.error(`❌ Failed to update ${town.name}:`, updateError);
+          console.error(`❌ Failed to update ${town.town_name}:`, updateError);
         } else {
-          console.log(`✅ Fixed ${town.name}, ${town.country}`);
+          console.log(`✅ Fixed ${town.town_name}, ${town.country}`);
           Object.entries(updates).forEach(([key, value]) => {
             console.log(`   ${key}: ${value}`);
           });
@@ -72,12 +72,12 @@ async function fixImageUrls() {
     
     const { data: verifyTowns, error: verifyError } = await supabase
       .from('towns')
-      .select('name, country, image_url_1')
+      .select('town_name, country, image_url_1')
       .or('name.eq.Saint-Tropez,name.eq.Medellin,name.eq.St Tropez');
     
     if (!verifyError && verifyTowns) {
       verifyTowns.forEach(town => {
-        console.log(`${town.name}, ${town.country}:`);
+        console.log(`${town.town_name}, ${town.country}:`);
         console.log(`  URL: ${town.image_url_1}`);
         console.log(`  Status: ${town.image_url_1?.includes('//') ? '❌ Still has double slash' : '✅ Fixed'}`);
       });

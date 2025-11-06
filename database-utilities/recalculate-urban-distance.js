@@ -42,7 +42,7 @@ async function recalculateUrbanDistance() {
     console.log('1. Finding TRUE urban centers (population ≥ 100,000)...');
     const { data: urbanCenters, error: urbanError } = await supabase
       .from('towns')
-      .select('id, name, country, latitude, longitude, population')
+      .select('id, town_name, country, latitude, longitude, population')
       .gte('population', URBAN_THRESHOLD)
       .not('latitude', 'is', null)
       .not('longitude', 'is', null)
@@ -79,7 +79,7 @@ async function recalculateUrbanDistance() {
     console.log('\n2. Fetching all towns for distance calculation...');
     const { data: allTowns, error: townsError } = await supabase
       .from('towns')
-      .select('id, name, country, latitude, longitude, population')
+      .select('id, town_name, country, latitude, longitude, population')
       .not('latitude', 'is', null)
       .not('longitude', 'is', null);
     
@@ -226,34 +226,34 @@ async function recalculateUrbanDistance() {
     console.log('URBAN CENTERS (population ≥100k):');
     const { data: urbanExamples } = await supabase
       .from('towns')
-      .select('name, country, population')
+      .select('town_name, country, population')
       .gte('population', URBAN_THRESHOLD)
       .order('population', { ascending: false })
       .limit(5);
     
     urbanExamples?.forEach(t => {
-      console.log(`  - ${t.name}, ${t.country}: ${t.population.toLocaleString()}`);
+      console.log(`  - ${t.town_name}, ${t.country}: ${t.population.toLocaleString()}`);
     });
     
     // Suburban examples
     console.log('\nSUBURBAN TOWNS (20k-99k):');
     const { data: suburbanExamples } = await supabase
       .from('towns')
-      .select('name, country, population, distance_to_urban_center')
+      .select('town_name, country, population, distance_to_urban_center')
       .gte('population', SUBURBAN_THRESHOLD)
       .lt('population', URBAN_THRESHOLD)
       .order('population', { ascending: false })
       .limit(5);
     
     suburbanExamples?.forEach(t => {
-      console.log(`  - ${t.name}, ${t.country}: ${t.population.toLocaleString()} (${t.distance_to_urban_center}km to urban)`);
+      console.log(`  - ${t.town_name}, ${t.country}: ${t.population.toLocaleString()} (${t.distance_to_urban_center}km to urban)`);
     });
     
     // Rural near urban
     console.log('\nRURAL NEAR URBAN (<20k, within 40km):');
     const { data: ruralNearUrban } = await supabase
       .from('towns')
-      .select('name, country, population, distance_to_urban_center')
+      .select('town_name, country, population, distance_to_urban_center')
       .lt('population', SUBURBAN_THRESHOLD)
       .gt('distance_to_urban_center', 0)
       .lte('distance_to_urban_center', 40)
@@ -261,7 +261,7 @@ async function recalculateUrbanDistance() {
       .limit(5);
     
     ruralNearUrban?.forEach(t => {
-      console.log(`  - ${t.name}, ${t.country}: ${t.population?.toLocaleString() || 'N/A'} (${t.distance_to_urban_center}km to urban)`);
+      console.log(`  - ${t.town_name}, ${t.country}: ${t.population?.toLocaleString() || 'N/A'} (${t.distance_to_urban_center}km to urban)`);
     });
     
     console.log('\n✅ RECALCULATION COMPLETE!');

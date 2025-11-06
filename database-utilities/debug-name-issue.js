@@ -13,7 +13,7 @@ async function debugNameIssue() {
 
   const { data: towns, error } = await supabase
     .from('towns')
-    .select('id, name, town_name, country')
+    .select('id, town_name, town_name, country')
     .limit(3)
 
   if (error) {
@@ -27,9 +27,9 @@ async function debugNameIssue() {
   towns.forEach(town => {
     console.log('\nTown analysis:')
     console.log('- Has id?', !!town.id)
-    console.log('- Has name?', !!town.name)
+    console.log('- Has name?', !!town.town_name)
     console.log('- Has town_name?', !!town.town_name)
-    console.log('- name value:', town.name)
+    console.log('- name value:', town.town_name)
     console.log('- town_name value:', town.town_name)
   })
 

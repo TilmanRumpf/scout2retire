@@ -28,7 +28,7 @@ async function checkAuthStatus() {
   console.log('\nQuerying towns table...')
   const { data: towns, error: townsError } = await supabase
     .from('towns')
-    .select('id, name, town_name')
+    .select('id, town_name, town_name')
     .limit(3)
 
   if (townsError) {
@@ -36,7 +36,7 @@ async function checkAuthStatus() {
     console.log('Code:', townsError.code)
   } else if (towns && towns.length > 0) {
     console.log('✅ Got', towns.length, 'towns:')
-    towns.forEach(t => console.log(`  - ${t.name || t.town_name}`))
+    towns.forEach(t => console.log(`  - ${t.town_name || t.town_name}`))
   } else {
     console.log('❌ Empty result (RLS might be blocking access)')
     console.log('This happens when:')
