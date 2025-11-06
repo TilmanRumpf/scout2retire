@@ -306,6 +306,16 @@ const AlgorithmManager = () => {
       const savedUserId = localStorage.getItem('algorithmManager_lastUserId');
       const savedUserEmail = localStorage.getItem('algorithmManager_lastUserEmail');
 
+      // CRITICAL FIX: Clear hardcoded tilman.rumpf@gmail.com from localStorage
+      if (savedUserEmail === 'tilman.rumpf@gmail.com') {
+        console.log('🚨 [CRITICAL FIX] Clearing hardcoded tilman.rumpf@gmail.com from localStorage!');
+        localStorage.removeItem('algorithmManager_lastUserId');
+        localStorage.removeItem('algorithmManager_lastUserEmail');
+        setUserSearch('');
+        setSelectedTestUser(null);
+        return; // Stop here, let admin select a user manually
+      }
+
       console.log('[User Restore] Saved data:', {
         savedUserId,
         savedUserEmail
