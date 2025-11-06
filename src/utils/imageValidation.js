@@ -56,7 +56,7 @@ export function filterTownsWithImagesDebug(towns, context = 'Unknown') {
   
   if (removedCount > 0) {
     console.warn(`[${context}] Filtered out ${removedCount} towns without valid images:`, 
-      towns.filter(t => !hasValidImage(t)).map(t => t.name)
+      towns.filter(t => !hasValidImage(t)).map(t => t.town_name)
     );
   }
   

@@ -62,7 +62,7 @@ export default function OverviewPanel({ town, onTownUpdate, auditResults = {} })
         value={value}
         field={field}
         townId={town.id}
-        townName={town.name}
+        townName={town.town_name}
         countryName={town.country}
         subdivisionCode={town.region}
         type={type}
@@ -126,7 +126,7 @@ export default function OverviewPanel({ town, onTownUpdate, auditResults = {} })
               </div>
               <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
                 <div className="text-sm font-bold text-gray-900 dark:text-gray-100">
-                  {town.name}
+                  {town.town_name}
                 </div>
               </div>
             </div>

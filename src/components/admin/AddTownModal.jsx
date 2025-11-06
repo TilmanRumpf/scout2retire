@@ -417,7 +417,7 @@ export default function AddTownModal({ isOpen, onClose, onTownAdded }) {
                   A town named <strong>{townName}</strong> already exists in <strong>{country}</strong>. Please specify the region to differentiate this town.
                 </p>
                 <p className="text-xs text-blue-600 dark:text-blue-300">
-                  Existing towns with same name: {existingTowns.map(t => `${t.name}${t.region ? ` (${t.region})` : ''}`).join(', ')}
+                  Existing towns with same name: {existingTowns.map(t => `${t.town_name}${t.region ? ` (${t.region})` : ''}`).join(', ')}
                 </p>
               </div>
 

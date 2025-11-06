@@ -260,7 +260,7 @@ export function validateImageFile(file) {
  */
 export function generateTownImageFilename(town, slot = 1) {
   const countryCode = (town.country || 'unknown').toLowerCase().substring(0, 2);
-  const townSlug = (town.name || 'unknown')
+  const townSlug = (town.town_name || 'unknown')
     .toLowerCase()
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9-]/g, '')

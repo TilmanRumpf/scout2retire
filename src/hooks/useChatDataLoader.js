@@ -208,7 +208,7 @@ export function useChatDataLoader(props) {
                 .from('chat_threads')
                 .insert([{
                   town_id: townId,
-                  topic: towns[0].name,
+                  topic: towns[0].town_name,
                   created_by: currentUser.id
                 }])
                 .select();
