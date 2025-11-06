@@ -811,14 +811,13 @@ const AlgorithmManager = () => {
                   </div>
 
                   {/* DEBUG: Show dropdown state */}
-                  {userSearch && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      Debug: showDropdown={String(showUserDropdown)}, filteredUsers={filteredUsers.length}, search="{userSearch}"
-                    </div>
-                  )}
+                  <div className="text-sm font-bold text-red-600 mt-1">
+                    DEBUG: showDropdown={String(showUserDropdown)}, filteredUsers={filteredUsers.length}, search="{userSearch}"
+                  </div>
 
-                  {showUserDropdown && filteredUsers.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {/* Force show for debugging */}
+                  {filteredUsers.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto" style={{ display: filteredUsers.length > 0 ? 'block' : 'none' }}>
                       {filteredUsers.map(user => (
                         <button
                           key={user.id}
