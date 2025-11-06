@@ -312,40 +312,38 @@ const AlgorithmManager = () => {
         savedUserEmail
       });
 
-      // Also check if userSearch has a value (from saved state)
-      const emailToFind = savedUserEmail || userSearch;
-
-      if (emailToFind) {
+      // ONLY restore from saved values, not from current typing
+      if (savedUserEmail) {
         // Find the user by email (most reliable method)
-        const user = availableUsers.find(u => u.email === emailToFind);
+        const user = availableUsers.find(u => u.email === savedUserEmail);
 
         if (user) {
           setIsRestoringUser(true);
           setUserSearch(user.email);
           setSelectedTestUser(user);
-          console.log('✅ [AlgorithmManager] Selected user:', user.email);
+          console.log('✅ [AlgorithmManager] Restored saved user:', user.email);
 
           // Save to localStorage for next time
           localStorage.setItem('algorithmManager_lastUserId', user.id);
           localStorage.setItem('algorithmManager_lastUserEmail', user.email);
         } else {
-          console.log('❌ [User Restore] Could not find user with email:', emailToFind);
+          console.log('❌ [User Restore] Could not find saved user with email:', savedUserEmail);
           console.log('Available users:', availableUsers.map(u => ({ id: u.id, email: u.email })));
 
-          // Clear the invalid search
-          setUserSearch('');
-          setSelectedTestUser(null);
+          // Clear the invalid saved data
+          localStorage.removeItem('algorithmManager_lastUserId');
+          localStorage.removeItem('algorithmManager_lastUserEmail');
         }
       } else {
         // No saved user, admin must select one manually
         console.log('[AlgorithmManager] No saved user, waiting for selection');
-        setUserSearch('');
+        // Don't clear userSearch - let the admin type!
         setSelectedTestUser(null);
       }
     } catch (error) {
       console.error('[AlgorithmManager] Error restoring last user:', error);
     }
-  }, [availableUsers, userSearch]);
+  }, [availableUsers]); // Removed userSearch - we only want to restore once when users load, not on every keystroke!
 
   // Reset user restoration flag after restoration is complete
   useEffect(() => {
