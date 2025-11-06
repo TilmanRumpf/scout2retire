@@ -789,7 +789,7 @@ const AlgorithmManager = () => {
                           if (!isMouseOverDropdown) {
                             setShowUserDropdown(false);
                           }
-                        }, 100);
+                        }, 300);
                       }}
                       placeholder="Type user email or name..."
                       className="flex-1 px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary"
@@ -824,14 +824,16 @@ const AlgorithmManager = () => {
                           key={user.id}
                           onMouseDown={(e) => {
                             e.preventDefault(); // Prevent blur from firing
-                          }}
-                          onClick={() => {
+                            e.stopPropagation(); // Stop event from bubbling
+                            // Handle selection immediately in mousedown
                             setSelectedTestUser(user);
                             setUserSearch(user.email);
                             setShowUserDropdown(false);
                             setTestResults(null);
+                            setIsMouseOverDropdown(false);
+                            console.log('✅ Selected user:', user.email);
                           }}
-                          className="w-full text-left px-3 py-2 hover:bg-blue-100 focus:bg-blue-100 dark:hover:bg-gray-700 transition-colors bg-white dark:bg-gray-800"
+                          className="w-full text-left px-3 py-2 hover:bg-blue-100 focus:bg-blue-100 dark:hover:bg-gray-700 transition-colors bg-white dark:bg-gray-800 cursor-pointer"
                         >
                           <div className="font-medium">
                             {user.email}

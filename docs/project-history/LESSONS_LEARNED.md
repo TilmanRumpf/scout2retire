@@ -3,7 +3,7 @@
 
 > **MANDATORY**: Claude MUST review this file before ANY work
 > **WARNING**: Ignoring these lessons = repeating 40+ hour mistakes
-> **UPDATED**: 2025-09-29 (8 major disasters documented)
+> **UPDATED**: 2025-11-06 (9 major disasters documented)
 
 ---
 
@@ -17,7 +17,8 @@
 | React Closures | 2 hours | 30 sec | 240:1 | FRUSTRATED |
 | Background Bash | 2 hours | 1 min | 120:1 | ANGRY |
 | Hobby Data | 4 hours | 20 min | 12:1 | DISAPPOINTED |
-| **TOTAL** | **54+ HOURS** | **37 MIN** | **87:1** | **VOLCANIC** |
+| **Dropdown onBlur Race** | **1+ hour** | **2 min** | **30:1** | **FRUSTRATED** |
+| **TOTAL** | **55+ HOURS** | **39 MIN** | **85:1** | **VOLCANIC** |
 
 ---
 
@@ -528,3 +529,129 @@ The outliers are quality control working PERFECTLY. The problem is the garbage d
 *Towns affected: 50+ with extreme outliers*
 *Fields affected: 15+ with systematic issues*
 *Fix required: YES, IMMEDIATELY*
+
+---
+
+## 🔴 DISASTER #10: DROPDOWN ONBLUR RACE CONDITION (2025-11-06)
+
+### The "I Can See It But Can't Click It" Nightmare
+- **Problem**: Algorithm Manager user dropdown visible but can't select users
+- **User said**: "when right clicking and inspecting, for a split second a message pops up above. too fast for me to read"
+- **Reality**: `onBlur` firing too fast, closing dropdown before `onClick` could fire
+- **Time wasted**: 1+ hour across 5 previous "fix" attempts
+- **Time to fix**: 2 minutes once properly diagnosed
+
+### The Deceptive Evidence Trail
+**WHY IT WAS HARD TO DIAGNOSE:**
+1. ✅ Console logs showed filtering working perfectly (found 2 users)
+2. ✅ React state was correct (`showUserDropdown: true`, `filteredUsers: [...]`)
+3. ✅ Dropdown WAS rendering in DOM (visible with Inspect Element)
+4. ✅ Dropdown WAS displaying (user saw it "for a split second")
+5. ❌ But couldn't click on it - disappeared before interaction
+
+**THE SMOKING GUN:**
+> "when right clicking and inspecting, and for a split second a message pops up above. too fast for me to read"
+
+This revealed it was a TIMING issue, not a rendering/state issue!
+
+### Git History Shows 5 Failed Attempts
+```
+271a20b 💥 FINALLY FIXED: User dropdown selection now WORKS!
+633d6bf 🎯 FIXED: User dropdown selection finally working properly!
+671f556 🔨 FIX: User dropdown now works properly - can select users again
+d14fd83 🔧 FIX: User dropdown now closes properly after selection
+3c06fa5 ✅ FIXED: Algorithm Manager user dropdown working perfectly
+```
+**NONE OF THEM ACTUALLY FIXED IT!**
+
+### The Root Cause
+
+```javascript
+// ❌ WRONG: Split logic between onMouseDown and onClick
+onMouseDown={(e) => {
+  e.preventDefault(); // Prevent blur from firing
+}}
+onClick={() => {
+  setSelectedTestUser(user);  // THIS NEVER FIRES!
+  setUserSearch(user.email);
+  setShowUserDropdown(false);
+}}
+```
+
+**THE RACE CONDITION:**
+1. User types "tobias" → Dropdown appears ✅
+2. User moves mouse toward dropdown
+3. Input loses focus → `onBlur` fires
+4. 100ms timeout starts
+5. User clicks on dropdown item
+6. `onMouseDown` → `e.preventDefault()` blocks blur... but doesn't handle selection!
+7. `onClick` tries to fire... BUT blur already closed dropdown
+8. Dropdown disappears before `onClick` completes
+9. User clicks nothing (dropdown already unmounted)
+
+### The Fix
+
+```javascript
+// ✅ RIGHT: Handle EVERYTHING in onMouseDown (fires BEFORE blur)
+onMouseDown={(e) => {
+  e.preventDefault(); // Prevent blur from firing
+  e.stopPropagation(); // Stop event from bubbling
+  // Handle selection IMMEDIATELY in mousedown (before blur can close)
+  setSelectedTestUser(user);
+  setUserSearch(user.email);
+  setShowUserDropdown(false);
+  setTestResults(null);
+  setIsMouseOverDropdown(false);
+  console.log('✅ Selected user:', user.email);
+}}
+// No onClick needed!
+```
+
+**Also increased blur timeout from 100ms to 300ms** (line 792) to give more time for mouse movement.
+
+### THE LESSON: React Form Interaction Event Order
+
+**Browser Event Order (CRITICAL):**
+1. `onMouseDown` (when mouse button pressed)
+2. `onBlur` (when element loses focus)
+3. `onFocus` (when new element gains focus)
+4. `onClick` (when mouse button released)
+
+**If you need to prevent blur from closing something:**
+- Put ALL logic in `onMouseDown` - it fires FIRST
+- Don't split between `onMouseDown` and `onClick` - blur will close element between them
+- Use `e.preventDefault()` AND `e.stopPropagation()` in `onMouseDown`
+
+### Prevention Checklist for Dropdown/Autocomplete Components
+
+When building searchable dropdowns:
+- [ ] Put selection logic in `onMouseDown`, NOT `onClick`
+- [ ] Use `e.preventDefault()` to prevent blur
+- [ ] Use `e.stopPropagation()` to prevent bubbling
+- [ ] Use `onMouseEnter`/`onMouseLeave` to track if mouse over dropdown
+- [ ] Blur timeout should be 200-300ms minimum (100ms too short)
+- [ ] Add `cursor-pointer` class to dropdown items
+- [ ] Add console.log to confirm selection fires
+- [ ] Test by SLOWLY moving mouse to dropdown (exposes timing issues)
+
+### What Claude Did Wrong This Time
+
+1. **Wasted time on wrong diagnosis**: Checked if users existed in database (they did)
+2. **Trusted console logs too much**: State was correct, but interaction was broken
+3. **Didn't recognize "too fast to read" as timing issue** immediately
+4. **Tried to use Playwright without auth**: Can't access authenticated pages
+5. **Should have asked user to test with slow mouse movement** earlier
+
+### What Worked
+
+1. **User's observation**: "for a split second a message pops up" = TIMING ISSUE
+2. **Reviewing git history**: 5 failed "fixes" = deeper problem
+3. **Understanding React event order**: `onMouseDown` → `onBlur` → `onClick`
+4. **Moving ALL logic to onMouseDown**: Executes before blur can interfere
+
+---
+
+*Added: 2025-11-06*
+*File: src/pages/admin/AlgorithmManager.jsx:822-846*
+*Fix commits: 5 failed attempts, 1 actual fix*
+*Key insight: "Too fast to see" = race condition, not visibility issue*

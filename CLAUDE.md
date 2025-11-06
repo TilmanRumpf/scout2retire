@@ -57,6 +57,7 @@ Please run this now. I'll wait for your confirmation, then verify it worked.
 6. **THIS IS A DYNAMIC CODEBASE** - Code changes CONSTANTLY, NEVER assume static
 7. **TRACE DATA FLOW FIRST** - Deploy subagent to analyze actual data flow before debugging
 8. **September 30, 2025 Disaster**: Spent hours on RLS/database when bug was simple destructuring error in QuickNav - ALWAYS trace data flow from source to destination FIRST
+9. **November 6, 2025**: Dropdown onBlur race condition - "too fast to see" means TIMING ISSUE not visibility. Put ALL selection logic in onMouseDown, NOT onClick (blur fires between them)
 
 # 🔴 CRITICAL: DYNAMIC CODEBASE - NEVER ASSUME ANYTHING IS STATIC!
 
