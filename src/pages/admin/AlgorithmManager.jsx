@@ -811,7 +811,7 @@ const AlgorithmManager = () => {
                   </div>
 
                   {/* Dropdown for filtered users */}
-                  {filteredUsers.length > 0 && (
+                  {showUserDropdown && filteredUsers.length > 0 && (
                     <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
                       {filteredUsers.map(user => (
                         <button
