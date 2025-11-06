@@ -311,8 +311,8 @@ const AlgorithmManager = () => {
         savedUserEmail
       });
 
-      // Also check if userSearch has a value (from default or previous state)
-      const emailToFind = savedUserEmail || userSearch || 'tilman.rumpf@gmail.com';
+      // Also check if userSearch has a value (from saved state)
+      const emailToFind = savedUserEmail || userSearch;
 
       if (emailToFind) {
         // Find the user by email (most reliable method)
@@ -331,15 +331,15 @@ const AlgorithmManager = () => {
           console.log('❌ [User Restore] Could not find user with email:', emailToFind);
           console.log('Available users:', availableUsers.map(u => ({ id: u.id, email: u.email })));
 
-          // Try to select tilman.rumpf@gmail.com as default
-          const defaultUser = availableUsers.find(u => u.email === 'tilman.rumpf@gmail.com');
-          if (defaultUser) {
-            setIsRestoringUser(true);
-            setUserSearch(defaultUser.email);
-            setSelectedTestUser(defaultUser);
-            console.log('✅ [AlgorithmManager] Selected default user:', defaultUser.email);
-          }
+          // Clear the invalid search
+          setUserSearch('');
+          setSelectedTestUser(null);
         }
+      } else {
+        // No saved user, admin must select one manually
+        console.log('[AlgorithmManager] No saved user, waiting for selection');
+        setUserSearch('');
+        setSelectedTestUser(null);
       }
     } catch (error) {
       console.error('[AlgorithmManager] Error restoring last user:', error);
