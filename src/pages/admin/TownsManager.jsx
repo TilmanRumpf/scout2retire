@@ -373,7 +373,7 @@ const TownsManager = () => {
     const { data, error } = await supabase
       .from('towns')
       .select('*')
-      .order('name');  // FIXED: was town_name, database column is 'name'
+      .order('town_name');  // Database column is 'town_name', not 'name'
 
     if (error) {
       console.error('Error loading towns:', error);

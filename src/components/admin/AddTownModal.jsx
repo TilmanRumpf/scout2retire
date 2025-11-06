@@ -84,8 +84,8 @@ export default function AddTownModal({ isOpen, onClose, onTownAdded }) {
       // Check for towns with the SAME NAME in this country (case-insensitive)
       const { data: existingTownsWithSameName, error } = await supabase
         .from('towns')
-        .select('id, name, country, region')
-        .ilike('name', townName)
+        .select('id, town_name, country, region')
+        .ilike('town_name', townName)
         .eq('country', country);
 
       if (error) throw error;
