@@ -1,11 +1,11 @@
-# LATEST CHECKPOINT - 2025-11-07 🔥 CRITICAL FIX
+# LATEST CHECKPOINT - 2025-11-07 🔥 DOUBLE FIX
 
-## 🔥 CURRENT: Match Scores After Onboarding - CRITICAL BUG FIXED
+## 🔥 CURRENT: Match Scores + Algorithm Manager - BOTH FIXED
 
 ### Quick Restore Commands
 ```bash
-# Current checkpoint (Match Scores Fix)
-git checkout 76bc194
+# Current checkpoint (Both Fixes)
+git checkout cedf629
 
 # Previous checkpoint (Startup Screen)
 git checkout e341f3a
@@ -15,10 +15,18 @@ node restore-database-snapshot.js 2025-11-07T12-54-14
 ```
 
 ### What Was Fixed
+
+**FIX #1: Match Scores After Onboarding**
 - 🔥 **CRITICAL**: Users completing onboarding now see personalized match scores
 - 🔥 **ROOT CAUSE**: Onboarding saved to `onboarding_responses` but scoring read from empty `user_preferences`
 - ✅ **SOLUTION**: Changed `getOnboardingProgress()` to read from correct table
 - ✅ **IMPACT**: All users will now see proper match percentages (85%, 72%, etc.) after onboarding
+
+**FIX #2: Algorithm Manager Broken**
+- 🔥 **CRITICAL**: Algorithm Manager showing "data: null" for all users
+- 🔥 **ROOT CAUSE**: Missing `skipAuthCheck` parameter blocked admin access to user preferences
+- ✅ **SOLUTION**: Added `skipAuthCheck=true` to AlgorithmManager.jsx:211
+- ✅ **IMPACT**: Admins can now view and test user preferences in Algorithm Manager
 
 ### The Problem
 Users reported: "all towns o not have an overall rating" after completing onboarding.
@@ -70,7 +78,9 @@ const { data: responsesData, error: responsesError } = await supabase
 - ✅ **Daily Page** (/daily): Shows "Your Top Matches" with scores
 - ✅ **Discover Page** (/discover): Shows match badges on all towns
 - ✅ **OnboardingComplete**: Shows top 3 matches immediately
-- ✅ **Algorithm Manager**: Admin tool still works (uses same function)
+- ✅ **Algorithm Manager**: Now loads user preferences correctly (was broken, now fixed!)
+- ✅ **Admin Tools**: Can view and test any user's preferences with skipAuthCheck
+- ✅ **Backward Compatibility**: Supports both onboarding_responses and user_preferences tables
 - ✅ **No Breaking Changes**: All existing features remain functional
 
 ### Critical Learnings
@@ -217,10 +227,11 @@ const { data: responsesData, error: responsesError } = await supabase
 ---
 
 **Last Updated:** November 7, 2025
-**Git Commit:** 76bc194 (Critical Fix)
-**Previous Commit:** e341f3a (Startup Screen)
+**Git Commit:** cedf629 (Double Fix: Match Scores + Algorithm Manager)
+**Previous Commit:** 76bc194 (Match Scores Only)
 **Database Snapshot:** 2025-11-07T12-54-14 (partial)
-**System Status:** 🟢 CRITICAL BUG FIXED
+**System Status:** 🟢 BOTH CRITICAL BUGS FIXED
 **Match Scores:** ✅ WORKING (personalization functional)
+**Algorithm Manager:** ✅ WORKING (admin tool restored)
 **Breaking Changes:** NONE
 **Production Ready:** YES - Deploy immediately
