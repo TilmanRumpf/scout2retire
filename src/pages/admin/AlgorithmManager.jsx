@@ -208,7 +208,7 @@ const AlgorithmManager = () => {
       console.log('[loadUserPreferences] Loading for user:', selectedTestUser.email, 'ID:', selectedTestUser.id);
 
       try {
-        const result = await getOnboardingProgress(selectedTestUser.id);
+        const result = await getOnboardingProgress(selectedTestUser.id, true); // Skip auth check for admin tool
         console.log('[loadUserPreferences] getOnboardingProgress result:', result);
 
         if (result.success && result.data) {

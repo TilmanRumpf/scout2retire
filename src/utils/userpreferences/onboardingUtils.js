@@ -176,15 +176,33 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
       .eq('user_id', userId)
       .maybeSingle();  // Use maybeSingle() to avoid error if no data exists
 
-    // Also check onboarding_completed flag from user_preferences
-    const { data: prefsData } = await supabase
-      .from('user_preferences')
-      .select('onboarding_completed')
-      .eq('user_id', userId)
-      .maybeSingle();
+    // FALLBACK: If no data in onboarding_responses, check user_preferences (backward compatibility)
+    let data = responsesData;
+    let error = responsesError;
 
-    const data = responsesData;
-    const error = responsesError;
+    if (!responsesData && !responsesError) {
+      console.log('[getOnboardingProgress] No data in onboarding_responses, checking user_preferences as fallback');
+      const { data: prefsData, error: prefsError } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (prefsData) {
+        console.log('[getOnboardingProgress] Found data in user_preferences, using fallback');
+        // Transform flat user_preferences format to section format
+        data = {
+          current_status: prefsData.current_status || null,
+          region_preferences: prefsData.region_preferences || null,
+          climate_preferences: prefsData.climate_preferences || null,
+          culture_preferences: prefsData.culture_preferences || null,
+          hobbies: prefsData.hobbies || null,
+          administration: prefsData.administration || null,
+          costs: prefsData.costs || null
+        };
+      }
+      error = prefsError;
+    }
     
     
     // Define the expected steps - Updated 19JUN25: Using 'costs' to match database
