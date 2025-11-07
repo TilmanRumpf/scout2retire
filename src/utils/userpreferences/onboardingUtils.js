@@ -165,15 +165,26 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
         return { success: false, error: 'Not authenticated' };
       }
     }
-    
+
     // Getting onboarding progress
-    
-    // Remove .single() to avoid 406 error
-    const { data, error } = await supabase
-      .from('user_preferences')
+
+    // FIX: Read from onboarding_responses instead of user_preferences
+    // The onboarding pages save to onboarding_responses, so we must read from there!
+    const { data: responsesData, error: responsesError } = await supabase
+      .from('onboarding_responses')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();  // Use maybeSingle() to avoid error if no data exists
+
+    // Also check onboarding_completed flag from user_preferences
+    const { data: prefsData } = await supabase
+      .from('user_preferences')
+      .select('onboarding_completed')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    const data = responsesData;
+    const error = responsesError;
     
     
     // Define the expected steps - Updated 19JUN25: Using 'costs' to match database
@@ -226,99 +237,16 @@ export const getOnboardingProgress = async (userId, skipAuthCheck = false) => {
       return { success: false, error };
     }
     
-    // Transform user_preferences data into section format for display
+    // FIX: data now comes from onboarding_responses which has section-based structure
+    // Simply return the sections directly! They're already in the right format.
     const userData = {
-      current_status: {
-        retirement_timeline: {
-          status: typeof data.retirement_status === 'object' 
-            ? (data.retirement_status?.value || data.retirement_status?.status || 'Not specified')
-            : (data.retirement_status || 'Not specified'),
-          target_year: data.target_retirement_year,
-          target_month: data.target_retirement_month,
-          target_day: data.target_retirement_day,
-          flexibility: data.timeline_flexibility
-        },
-        family_situation: typeof data.family_status === 'object'
-          ? (data.family_status?.situation || data.family_status?.value || data.family_status?.status || 'solo')
-          : (data.family_status || 'solo'),
-        citizenship: {
-          primary_citizenship: data.primary_citizenship,
-          secondary_citizenship: data.secondary_citizenship,
-          dual_citizenship: !!data.secondary_citizenship
-        },
-        partner_citizenship: (data.family_status === 'couple' || data.family_status === 'family') ? {
-          primary_citizenship: data.partner_primary_citizenship,
-          secondary_citizenship: data.partner_secondary_citizenship,
-          dual_citizenship: !!data.partner_secondary_citizenship
-        } : undefined,
-        children_citizenship: data.family_status === 'family' ? {
-          primary_citizenship: data.children_primary_citizenship,
-          secondary_citizenship: data.children_secondary_citizenship,
-          dual_citizenship: !!data.children_secondary_citizenship
-        } : undefined,
-        pet_owner: data.pet_types || [],  // Use actual saved pet types
-        partner_agreement: data.partner_agreement,
-        bringing_children: data.bringing_children,
-        bringing_pets: data.bringing_pets,
-        current_location: data.current_location,
-        moving_motivation: data.moving_motivation
-      },
-      region_preferences: {
-        regions: data.regions || [],
-        countries: data.countries || [],
-        provinces: data.provinces || [],
-        geographic_features: data.geographic_features || [],
-        vegetation_types: data.vegetation_types || [],
-        mobility: data.mobility || { local: [], regional: [], international: [] }
-      },
-      climate_preferences: {
-        summer_climate_preference: data.summer_climate_preference || [],
-        winter_climate_preference: data.winter_climate_preference || [],
-        humidity_level: data.humidity_level || [],
-        sunshine: data.sunshine || [],
-        precipitation: data.precipitation || [],
-        seasonal_preference: data.seasonal_preference
-      },
-      culture_preferences: {
-        expat_community_preference: data.expat_community_preference || [],
-        language_comfort: data.language_comfort || {},
-        cultural_importance: data.cultural_importance || {},
-        lifestyle_preferences: data.lifestyle_preferences || {}
-      },
-      hobbies: {
-        activities: data.activities || [],
-        interests: data.interests || [],
-        custom_physical: data.custom_physical || [],
-        custom_hobbies: data.custom_hobbies || [],
-        custom_activities: data.custom_activities || [],  // CRITICAL: Include compound button IDs
-        travel_frequency: data.travel_frequency,
-        lifestyle_importance: data.lifestyle_importance || {}
-      },
-      administration: {
-        healthcare_quality: data.healthcare_quality || [],
-        health_considerations: data.health_considerations || {},
-        insurance_importance: data.insurance_importance || [],
-        safety_importance: data.safety_importance || [],
-        emergency_services: data.emergency_services || [],
-        political_stability: data.political_stability || [],
-        tax_preference: data.tax_preference || [],
-        government_efficiency: data.government_efficiency || [],
-        visa_preference: data.visa_preference || [],
-        stay_duration: data.stay_duration || [],
-        residency_path: data.residency_path || [],
-        special_medical_needs: data.health_considerations?.ongoing_treatment
-      },
-      costs: {
-        total_monthly_budget: data.total_monthly_budget,
-        housing_preference: data.housing_preference || 'both',
-        max_monthly_rent: data.max_monthly_rent,
-        max_home_price: data.max_home_price,
-        monthly_healthcare_budget: data.monthly_healthcare_budget,
-        mobility: data.mobility || {},
-        property_tax_sensitive: data.property_tax_sensitive,
-        sales_tax_sensitive: data.sales_tax_sensitive,
-        income_tax_sensitive: data.income_tax_sensitive
-      }
+      current_status: data?.current_status || null,
+      region_preferences: data?.region_preferences || null,
+      climate_preferences: data?.climate_preferences || null,
+      culture_preferences: data?.culture_preferences || null,
+      hobbies: data?.hobbies || null,
+      administration: data?.administration || null,
+      costs: data?.costs || null
     };
     
     // Check which steps are completed

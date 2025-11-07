@@ -3,11 +3,10 @@
  *
  * Intelligently researches town data by:
  * 1. Learning patterns from similar towns in YOUR database
- * 2. Using Claude API to research with learned context (via secure Edge Function)
+ * 2. Using Claude API directly (client-side with dangerouslyAllowBrowser)
  * 3. Returning recommendations with reasoning
  *
- * SECURITY: All API calls go through Supabase Edge Function (server-side)
- * Never exposes API keys to client
+ * Uses Claude Haiku for cost-effective field research ($0.25/million tokens)
  */
 
 import Anthropic from '@anthropic-ai/sdk';
@@ -82,79 +81,163 @@ IMPORTANT: Study these examples carefully:
 }
 
 /**
- * Main AI research function with database pattern learning
- *
- * Calls Supabase Edge Function for secure server-side API access
- *
- * @param {Object} params - Research parameters
- * @param {string} params.townName - Town name
- * @param {string} params.subdivisionCode - State/province/subdivision
- * @param {string} params.country - Country name
- * @param {string} params.townId - Town ID (to exclude from pattern search)
- * @param {string} params.fieldName - Database field name
- * @param {string} params.searchQuery - Human-readable search query
- * @param {string} params.expectedFormat - Expected data format
- * @param {string} params.currentValue - Current value in database (if any)
- * @returns {Promise<Object>} { recommendedValue, reasoning, confidence, error }
+ * Fetch field definition from database template row
+ * @param {string} fieldName - Field name
+ * @returns {Promise<Object|null>} Field definition with audit_question, search_terms, etc. or null
  */
-export async function researchFieldWithContext({
-  townName,
-  subdivisionCode,
-  country,
-  townId,
-  fieldName,
-  searchQuery,
-  expectedFormat,
-  currentValue
-}) {
+async function getFieldDefinition(fieldName) {
   try {
-    console.log(`🔍 Calling AI Research Edge Function for ${fieldName}...`);
-
-    // Get current user session for authentication
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      throw new Error('Not authenticated. Please log in.');
-    }
-
-    // Call Supabase Edge Function (server-side secure API call)
-    const { data, error } = await supabase.functions.invoke('ai-research-field', {
-      body: {
-        townName,
-        subdivisionCode,
-        country,
-        townId,
-        fieldName,
-        searchQuery,
-        expectedFormat,
-        currentValue
-      }
-    });
+    const { data, error } = await supabase
+      .from('towns')
+      .select('audit_data')
+      .eq('id', 'ffffffff-ffff-ffff-ffff-ffffffffffff')
+      .maybeSingle(); // Use maybeSingle() instead of single() - doesn't throw on 0 rows
 
     if (error) {
-      console.error('Edge Function error:', error);
-      throw new Error(error.message || 'Failed to call AI research function');
+      console.warn(`Template row query error:`, error);
+      return null;
     }
 
-    console.log('✅ AI Research completed:', data);
+    if (!data) {
+      console.warn(`Template row doesn't exist yet - field definitions not available`);
+      return null;
+    }
+
+    const fieldDef = data?.audit_data?.field_definitions?.[fieldName];
+
+    if (!fieldDef || !fieldDef.audit_question) {
+      console.warn(`No field definition for "${fieldName}" in template row`);
+      return null;
+    }
+
+    return fieldDef;
+  } catch (error) {
+    console.warn(`Error fetching field definition for ${fieldName}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Main AI research function - USES FIELD DEFINITIONS FROM DATABASE
+ *
+ * This is the SINGLE SOURCE OF TRUTH for data normalization.
+ * Fetches field-specific prompts from database template row.
+ *
+ * @param {string} townId - Town ID (to exclude from pattern search)
+ * @param {string} fieldName - Database field name
+ * @param {Object} townData - Full town object with all fields
+ * @param {Object} options - Optional parameters
+ * @returns {Promise<Object>} { success, suggestedValue, confidence, reasoning, error }
+ */
+export async function researchFieldWithContext(townId, fieldName, townData, options = {}) {
+  try {
+    console.log(`🔍 Researching ${fieldName} for ${townData.town_name}, ${townData.country}...`);
+
+    // Step 1: Try to fetch field definition from database
+    const fieldDef = await getFieldDefinition(fieldName);
+
+    if (fieldDef) {
+      console.log(`📋 Using field definition:`, {
+        audit_question: fieldDef.audit_question,
+        search_terms: fieldDef.search_terms
+      });
+    } else {
+      console.log(`⚠️ No field definition available - using generic prompt`);
+    }
+
+    // Step 2: Get similar towns to learn pattern
+    const similarTowns = await getSimilarTownsPattern(fieldName, townData.country, townId);
+    const pattern = analyzePattern(similarTowns, fieldName);
+
+    console.log(`Found ${similarTowns.length} similar towns for pattern learning`);
+
+    // Step 3: Build prompt - use field definition if available, otherwise generic
+    const task = fieldDef?.audit_question ||
+      `Research and provide accurate data for the field "${fieldName}". Follow the format/pattern from similar towns below.`;
+
+    const searchContext = fieldDef?.search_terms ||
+      `Research ${fieldName} for ${townData.town_name}, ${townData.country}`;
+
+    const prompt = `You are a data normalization expert for retirement town database.
+
+TOWN INFORMATION:
+- Name: ${townData.town_name}
+- Country: ${townData.country}
+- State/Region: ${townData.state_code || 'N/A'}
+
+FIELD: ${fieldName}
+Current value: ${townData[fieldName] || 'NULL/Empty'}
+
+YOUR TASK:
+${task}
+
+PATTERN ANALYSIS FROM SIMILAR TOWNS:
+${pattern}
+
+SEARCH CONTEXT:
+${searchContext}
+
+NORMALIZATION RULES:
+1. Follow the exact format/pattern from similar towns
+2. Maintain data consistency across all towns
+3. If current value already matches pattern, keep it unchanged
+4. For empty/NULL values, research and provide normalized data
+5. Rate confidence: high (verified data), limited (inferred), low (uncertain)
+
+SPECIAL FIELD HANDLING:
+- image_url_1: Real Unsplash URL format: https://images.unsplash.com/photo-[id]?w=1200
+- Numeric fields: Return number only, no units
+- Text fields: Concise, factual, consistent formatting
+- NULL: Only if data cannot be reliably determined
+
+RESPONSE FORMAT (JSON only):
+{
+  "suggestedValue": "normalized value or null",
+  "reasoning": "why this value (reference pattern/research)",
+  "confidence": "high/limited/low"
+}`;
+
+    // Step 4: Call Anthropic API directly
+    const response = await anthropic.messages.create({
+      model: 'claude-3-haiku-20240307',
+      max_tokens: 1024,
+      messages: [{
+        role: 'user',
+        content: prompt
+      }]
+    });
+
+    // Step 5: Parse response
+    const responseText = response.content[0].text;
+    console.log('Raw AI response:', responseText);
+
+    // Extract JSON from response (handle markdown code blocks)
+    let jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('AI response did not contain valid JSON');
+    }
+
+    const result = JSON.parse(jsonMatch[0]);
+
+    console.log('✅ AI Research completed:', result);
 
     return {
-      recommendedValue: data.recommendedValue,
-      reasoning: data.reasoning,
-      confidence: data.confidence || 'medium',
-      changes: data.changes || { added: [], removed: [], kept: [] },
-      patternCount: data.patternCount || 0,
-      error: data.error || null
+      success: true,
+      suggestedValue: result.suggestedValue,
+      confidence: result.confidence || 'limited',
+      reasoning: result.reasoning || 'AI-generated suggestion',
+      patternCount: similarTowns.length,
+      fieldDefinition: fieldDef.audit_question // Include for transparency
     };
 
   } catch (error) {
     console.error('AI Research Error:', error);
 
     return {
-      recommendedValue: null,
-      reasoning: null,
-      confidence: null,
-      changes: null,
-      patternCount: 0,
+      success: false,
+      suggestedValue: null,
+      confidence: 'unknown',
+      reasoning: error.message,
       error: error.message || 'Failed to research field'
     };
   }
@@ -162,12 +245,10 @@ export async function researchFieldWithContext({
 
 /**
  * Validate Anthropic API key is configured
- * @returns {boolean} True (API key is configured server-side in Supabase Edge Function)
+ * @returns {boolean} True if API key is available
  */
 export function hasAnthropicAPIKey() {
-  // API key is now configured server-side in Supabase Edge Function
-  // No need to check client-side environment variables
-  return true;
+  return !!import.meta.env.VITE_ANTHROPIC_API_KEY;
 }
 
 /**

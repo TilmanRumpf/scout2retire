@@ -592,8 +592,8 @@ export default function Daily() {
       {(() => {
         try {
           return (
-            <UnifiedHeader 
-              title="brings your future home to life long before you arrive..."
+            <UnifiedHeader
+              title="Daily"
               subtitle={`${getGreeting()}, ${user?.full_name?.split(' ')[0] || 'Explorer'}! ${getRetirementTimeline()}`}
             />
           );

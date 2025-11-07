@@ -854,11 +854,32 @@ const EditableDataField = ({
         return 'bg-yellow-500'; // 🟡 Limited confidence
       case 'low':
         return 'bg-red-500'; // 🔴 Low confidence
+      case 'critical':
+        return 'bg-orange-500'; // ⚡ CRITICAL - Editable with system-wide impact
       case 'not_editable':
         return 'bg-black'; // ⚫ Non-editable
       case 'unknown':
       default:
         return 'bg-gray-300'; // ⚪ Unknown
+    }
+  };
+
+  // Get tooltip text for confidence levels
+  const getConfidenceTooltip = () => {
+    switch (confidence) {
+      case 'high':
+        return '🟢 High confidence - Safe to edit';
+      case 'limited':
+        return '🟡 Limited confidence - Edit with caution';
+      case 'low':
+        return '🔴 Low confidence - Needs verification';
+      case 'critical':
+        return '⚡ CRITICAL - Editable but has system-wide impact!';
+      case 'not_editable':
+        return '⚫ Non-editable system field';
+      case 'unknown':
+      default:
+        return '⚪ Unknown - Not audited yet';
     }
   };
 
@@ -888,10 +909,20 @@ const EditableDataField = ({
               <Edit2 size={14} />
             </button>
             {/* Audit Confidence Indicator */}
-            <div
-              className={`w-3 h-3 rounded-full ${getConfidenceColor()}`}
-              title={`Audit confidence: ${confidence}`}
-            />
+            <div className="group/tooltip relative inline-block">
+              {confidence === 'critical' ? (
+                <div className="w-5 h-5 flex items-center justify-center cursor-help">
+                  <svg className="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/>
+                  </svg>
+                </div>
+              ) : (
+                <div className={`w-3 h-3 rounded-full ${getConfidenceColor()} cursor-help`} />
+              )}
+              <div className="hidden group-hover/tooltip:block absolute right-0 top-5 bg-gray-900 dark:bg-gray-700 text-white text-xs px-3 py-1.5 rounded shadow-lg whitespace-nowrap z-50">
+                {getConfidenceTooltip()}
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -1189,6 +1220,29 @@ const EditableDataField = ({
                   {description && (
                     <div className="bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded p-2 text-xs text-gray-600 dark:text-gray-400">
                       <strong>Field description:</strong> {description}
+                    </div>
+                  )}
+
+                  {/* Critical warning for town_name field */}
+                  {field === 'town_name' && (
+                    <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-400 dark:border-red-600 rounded-lg p-3 space-y-2">
+                      <div className="flex items-start gap-2">
+                        <span className="text-red-600 text-xl flex-shrink-0">⚠️</span>
+                        <div className="text-sm">
+                          <div className="font-bold text-red-800 dark:text-red-300 mb-2">
+                            CRITICAL FIELD WARNING
+                          </div>
+                          <ul className="space-y-1 text-red-700 dark:text-red-400 text-xs">
+                            <li>• Changing the town name will <strong>NOT</strong> update descriptions, summaries, or other verbose fields that reference the old name</li>
+                            <li>• User preferences and search history will still reference the old name</li>
+                            <li>• This change affects all users who interact with this town</li>
+                            <li>• Consider marking the town as unmaintainable instead if data quality is poor</li>
+                          </ul>
+                          <div className="mt-2 text-xs font-semibold text-red-900 dark:text-red-200">
+                            Only proceed if you are correcting a spelling error or critical data issue.
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
 

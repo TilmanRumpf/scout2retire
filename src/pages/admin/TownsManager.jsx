@@ -23,10 +23,18 @@ import InfrastructurePanel from '../../components/admin/InfrastructurePanel';
 import ActivitiesPanel from '../../components/admin/ActivitiesPanel';
 import LegacyFieldsSection from '../../components/admin/LegacyFieldsSection';
 import AddTownModal from '../../components/admin/AddTownModal';
+import UpdateTownModal from '../../components/admin/UpdateTownModal';
+import AlertDashboard from '../../components/admin/AlertDashboard';
+import RatingHistoryPanel from '../../components/admin/RatingHistoryPanel';
 import { getFieldOptions, isMultiSelectField } from '../../utils/townDataOptions';
 import { useFieldDefinitions } from '../../hooks/useFieldDefinitions';
 import { uiConfig } from '../../styles/uiConfig';
 import { formatTownDisplay } from '../../utils/townDisplayUtils';
+import {
+  analyzeTownCompleteness,
+  generateUpdateSuggestions,
+  applyBulkUpdates
+} from '../../utils/admin/bulkUpdateTown';
 
 // Column mappings organized by category and subcategory to match onboarding structure
 const COLUMN_CATEGORIES = {
@@ -153,6 +161,9 @@ const COLUMN_CATEGORIES = {
         unused: ['utilities_cost', 'groceries_index', 'restaurant_price_index']
       }
     }
+  },
+  'Rating History': {
+    subcategories: {}  // Uses custom RatingHistoryPanel component
   }
 };
 
@@ -181,6 +192,7 @@ const TownsManager = () => {
   // Town access control
   const [userTownAccess, setUserTownAccess] = useState({}); // Map of town_id -> access_level
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
   
   // Filters
   const [filters, setFilters] = useState({
@@ -235,6 +247,13 @@ const TownsManager = () => {
   const [auditResults, setAuditResults] = useState({});
   const [auditLoading, setAuditLoading] = useState(false);
 
+  // Update Town modal state
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [updateSuggestions, setUpdateSuggestions] = useState([]);
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(null);
+  const [updateMode, setUpdateMode] = useState('critical'); // 'critical' or 'supplemental'
+
   // Global field search state
   const [fieldSearchQuery, setFieldSearchQuery] = useState('');
   const [showFieldDropdown, setShowFieldDropdown] = useState(false);
@@ -261,6 +280,9 @@ const TownsManager = () => {
         navigate('/welcome');
         return;
       }
+
+      // Store current user ID for tracking updates
+      setCurrentUserId(user.id);
 
       // Check if user is admin using both old and new admin fields
       const { data: userData, error: userError } = await supabase
@@ -728,7 +750,36 @@ const TownsManager = () => {
       setSelectedTown(foundTown);
     }
   };
-  
+
+  // Handle delete town
+  const handleDeleteTown = async (townId) => {
+    try {
+      const { error } = await supabase
+        .from('towns')
+        .delete()
+        .eq('id', townId);
+
+      if (error) {
+        console.error('Error deleting town:', error);
+        toast.error(`Failed to delete town: ${error.message}`);
+        return;
+      }
+
+      // Remove town from local state
+      setTowns(towns.filter(t => t.id !== townId));
+
+      // Clear selection if deleted town was selected
+      if (selectedTown?.id === townId) {
+        setSelectedTown(null);
+      }
+
+      toast.success('Town deleted successfully');
+    } catch (error) {
+      console.error('Error deleting town:', error);
+      toast.error('Failed to delete town');
+    }
+  };
+
   // Get unique values for geo_region column (handles both arrays and single values)
   const getUniqueGeoRegion = () => {
     const allRegions = new Set();
@@ -970,6 +1021,113 @@ const TownsManager = () => {
       toast.error(`Audit failed: ${error.message}`);
     } finally {
       setAuditLoading(false);
+    }
+  };
+
+  // Handle bulk update request for the selected town
+  const handleUpdateTown = async () => {
+    if (!selectedTown) {
+      toast.error('No town selected');
+      return;
+    }
+
+    // Check if API key is configured
+    if (!import.meta.env.VITE_ANTHROPIC_API_KEY) {
+      toast.error('Anthropic API key not configured. Check .env file.');
+      return;
+    }
+
+    setUpdateLoading(true);
+    const sessionName = updateMode === 'critical' ? 'Session 1: Critical Fields' : 'Session 2: Supplemental Details';
+    toast(`${sessionName} - Analyzing...`);
+
+    try {
+      // 1. Get or run audit results if not already available (only for first session)
+      let audit = auditResults;
+      if (updateMode === 'critical' && (!audit || Object.keys(audit).length === 0)) {
+        toast('Running audit first...');
+        const { auditTownData } = await import('../../utils/auditTown');
+        const result = await auditTownData(selectedTown, supabase);
+
+        if (result.success) {
+          audit = result.fieldConfidence || {};
+          setAuditResults(audit);
+        }
+      }
+
+      // 2. Analyze completeness with mode filter
+      const analysis = analyzeTownCompleteness(selectedTown, audit, updateMode);
+
+      if (analysis.priorityFields.length === 0) {
+        const message = updateMode === 'critical'
+          ? 'All critical fields look good! Ready to add details?'
+          : 'All supplemental fields complete!';
+        toast.success(message);
+        setUpdateLoading(false);
+
+        // If critical is done and no issues, offer to continue to supplemental
+        if (updateMode === 'critical') {
+          setUpdateMode('supplemental');
+        }
+        return;
+      }
+
+      toast(`Found ${analysis.totalIssues} ${updateMode} fields. Generating AI suggestions...`);
+
+      // 3. Generate suggestions for ALL priority fields (no limit)
+      const fieldsToUpdate = analysis.priorityFields;
+
+      const suggestions = await generateUpdateSuggestions(
+        selectedTown,
+        fieldsToUpdate,
+        (progress) => {
+          setGenerationProgress(progress);
+        }
+      );
+
+      setUpdateSuggestions(suggestions);
+      setUpdateModalOpen(true);
+      toast.success(`Generated ${suggestions.length} update suggestions`);
+    } catch (error) {
+      console.error('Update analysis error:', error);
+      toast.error(`Failed to analyze town: ${error.message}`);
+    } finally {
+      setUpdateLoading(false);
+      setGenerationProgress(null);
+    }
+  };
+
+  // Apply selected bulk updates
+  const handleApplyUpdates = async (selectedUpdates) => {
+    if (!selectedTown || !currentUserId) {
+      toast.error('Missing town or user information');
+      return;
+    }
+
+    try {
+      const result = await applyBulkUpdates(
+        selectedTown.id,
+        selectedUpdates,
+        currentUserId,
+        supabase
+      );
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      // Update local state with new data
+      const updatedTown = result.data;
+      setSelectedTown(updatedTown);
+      setTowns(prev => prev.map(t => t.id === updatedTown.id ? updatedTown : t));
+      setFilteredTowns(prev => prev.map(t => t.id === updatedTown.id ? updatedTown : t));
+
+      toast.success(`Successfully updated ${result.updatedFields.length} fields!`);
+      setUpdateModalOpen(false);
+      setUpdateSuggestions([]);
+    } catch (error) {
+      console.error('Apply updates error:', error);
+      toast.error(`Failed to apply updates: ${error.message}`);
     }
   };
 
@@ -1258,9 +1416,19 @@ const TownsManager = () => {
       }
     }
     
+    // Build update object with updated_by tracking
+    const updateData = {
+      [column]: valueToSave
+    };
+
+    // Add updated_by if we have a current user
+    if (currentUserId) {
+      updateData.updated_by = currentUserId;
+    }
+
     const { data, error } = await supabase
       .from('towns')
-      .update({ [column]: valueToSave })
+      .update(updateData)
       .eq('id', townId)
       .select();
     
@@ -1562,98 +1730,92 @@ const TownsManager = () => {
               </button>
             )}
 
-            {/* Has Photos */}
-            <select
-              value={filters.hasPhoto} 
-              onChange={(e) => setFilters({...filters, hasPhoto: e.target.value})}
-              className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm w-full sm:w-auto sm:max-w-[110px] ${uiConfig.colors.input}`}
-            >
-              <option value="all">Photo</option>
-              <option value="yes">Has Photo</option>
-              <option value="no">No Photo</option>
-            </select>
-            
-            {/* Completion */}
-            <select 
-              value={filters.completionLevel} 
-              onChange={(e) => setFilters({...filters, completionLevel: e.target.value})}
-              className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm w-full sm:w-auto sm:max-w-[140px] truncate ${uiConfig.colors.input}`}
-            >
-              <option value="all">Completion</option>
-              <option value="top50">Top 50</option>
-              <option value="81-100">81-100%</option>
-              <option value="61-80">61-80%</option>
-              <option value="41-60">41-60%</option>
-              <option value="21-40">21-40%</option>
-              <option value="0-20">0-20%</option>
-              <option value="worst50">Worst 50</option>
-            </select>
-            
-            {/* Geo Regions - hidden on mobile */}
-            <select 
-              value={filters.geo_region} 
-              onChange={(e) => setFilters({...filters, geo_region: e.target.value})}
-              className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm max-w-[160px] truncate hidden sm:block ${uiConfig.colors.input}`}
-              title="Filter by geo_region column"
-            >
-              <option value="all">Geo Region</option>
-              {getUniqueGeoRegion().map(region => (
-                <option key={region} value={region} className="truncate">{region}</option>
-              ))}
-            </select>
-            
-            {/* All Countries */}
-            <select 
-              value={filters.country} 
-              onChange={(e) => setFilters({...filters, country: e.target.value})}
-              className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm w-full sm:w-auto sm:max-w-[150px] truncate ${uiConfig.colors.input}`}
-            >
-              <option value="all">Countries</option>
-              {getUniqueCountries().map(country => (
-                <option key={country} value={country} className="truncate">{country.length > 20 ? country.substring(0, 20) + '...' : country}</option>
-              ))}
-            </select>
-            
-            {/* Data Quality */}
-            <select
-              value={filters.dataQuality}
-              onChange={(e) => {
-                const newQuality = e.target.value;
-                const updatedFilters = {...filters, dataQuality: newQuality};
+          {/* Delete Town Button */}
+          <button
+            onClick={() => {
+              if (!selectedTown) {
+                toast.error('Please select a town first');
+                return;
+              }
+              if (window.confirm(`Are you sure you want to delete "${selectedTown.town_name}"? This action cannot be undone.`)) {
+                handleDeleteTown(selectedTown.id);
+              }
+            }}
+            disabled={!selectedTown}
+            className={`sm:ml-auto px-4 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap ${
+              selectedTown
+                ? 'bg-red-600 hover:bg-red-700 text-white'
+                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed'
+            }`}
+            title={selectedTown ? `Delete ${selectedTown.town_name}` : 'Select a town to delete'}
+          >
+            Delete Town
+          </button>
 
-                // Smart filter reset: Clear conflicting filters when selecting data quality options
-                if (newQuality === 'missing_photos') {
-                  // Reset hasPhoto to 'all' to show towns without photos
-                  updatedFilters.hasPhoto = 'all';
-                } else if (newQuality === 'low_completion') {
-                  // Reset completionLevel to 'all' to show all completion levels
-                  updatedFilters.completionLevel = 'all';
-                }
+          {/* Smart Update Button - AI-powered data quality & fixes */}
+          <button
+            onClick={() => {
+              setUpdateMode('critical'); // Always start with critical
+              handleUpdateTown();
+            }}
+            disabled={updateLoading || !selectedTown}
+            className={`px-4 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap ${
+              updateLoading || !selectedTown
+                ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed'
+                : 'bg-yellow-500 hover:bg-yellow-600 text-black'
+            }`}
+            title={selectedTown
+              ? "Session 1: Fixes critical algorithm-blocking fields. Click again after for supplemental details."
+              : "Select a town first"}
+          >
+            {updateLoading ? 'Analyzing...' : 'Smart Update'}
+          </button>
 
-                setFilters(updatedFilters);
-              }}
-              className={`border ${uiConfig.colors.border} rounded px-3 py-1.5 text-sm w-full sm:w-auto sm:max-w-[150px] truncate ${uiConfig.colors.input}`}
-            >
-            <option value="all">Data Quality</option>
-            <option value="has_errors">Has data errors ({getDataQualityCounts().has_errors})</option>
-            <option value="missing_photos">Missing photos ({getDataQualityCounts().missing_photos})</option>
-            <option value="missing_match_data">Missing match data ({getDataQualityCounts().missing_match_data})</option>
-            <option value="low_completion">Low completion &lt; 50% ({getDataQualityCounts().low_completion})</option>
-            <option value="needs_review">Needs review 6+ months ({getDataQualityCounts().needs_review})</option>
-          </select>
+          {/* View Public Button - Opens town in public view */}
+          <button
+            onClick={() => {
+              if (selectedTown) {
+                navigate('/discover', { state: { selectedTownId: selectedTown } });
+              }
+            }}
+            disabled={!selectedTown}
+            className={`px-4 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap ${
+              !selectedTown
+                ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
+            }`}
+            title={selectedTown
+              ? "View how this town looks to users"
+              : "Select a town first"}
+          >
+            View Public
+          </button>
 
           {/* Add Town Button */}
           <button
             onClick={() => setAddTownModalOpen(true)}
             className="px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium transition-colors whitespace-nowrap"
           >
-            + Add Town
+            Add Town
           </button>
         </div>
       </div>
       </div>
 
       <div className={`${uiConfig.layout.width.containerXL} ${uiConfig.layout.spacing.page}`}>
+        {/* Alert Dashboard - Shows warnings about donkey shit */}
+        <div className="mb-6">
+          <AlertDashboard
+            onNavigateToTown={(townId) => {
+              const town = towns.find(t => t.id === townId);
+              if (town) {
+                setSelectedTown(town);
+                setActiveCategory('Rating History'); // Auto-open history tab
+              }
+            }}
+          />
+        </div>
+
         {/* Town Details - Full width */}
         <div>
             {selectedTown ? (
@@ -1760,15 +1922,6 @@ const TownsManager = () => {
                         })()}
                       </div>
 
-                      {/* Audit Button - Verifies data confidence for this town */}
-                      <button
-                        onClick={handleAuditTown}
-                        disabled={auditLoading}
-                        className={`px-3 py-1 rounded-lg ${auditLoading ? 'bg-gray-400 cursor-not-allowed' : `${uiConfig.colors.secondary} hover:${uiConfig.colors.primary}`} transition-colors flex items-center justify-center text-sm font-medium`}
-                        title="Audit town data - AI verifies confidence level for each field"
-                      >
-                        {auditLoading ? 'Auditing...' : 'Audit'}
-                      </button>
                       {/* Wikipedia Button */}
                       <button
                         onClick={() => setWikipediaOpen(true)}
@@ -1866,6 +2019,9 @@ const TownsManager = () => {
                   ) : activeCategory === 'Costs' ? (
                     // Special handling for Costs tab with inline editing panel
                     <CostsPanel town={selectedTown} onTownUpdate={handleTownUpdate} auditResults={auditResults} />
+                  ) : activeCategory === 'Rating History' ? (
+                    // Special handling for Rating History tab - shows change audit trail
+                    <RatingHistoryPanel townId={selectedTown.id} townName={selectedTown.town_name} />
                   ) : (
                     // Default rendering for other categories
                     Object.entries(COLUMN_CATEGORIES[activeCategory].subcategories).map(([subcategoryName, subcategory]) => {
@@ -2128,6 +2284,23 @@ const TownsManager = () => {
           // Select it (will have _errors and _completion fields)
           setSelectedTown(enrichedNewTown || newTown);
         }}
+      />
+
+      {/* Update Town Modal - AI-powered bulk updates */}
+      <UpdateTownModal
+        isOpen={updateModalOpen}
+        onClose={() => {
+          setUpdateModalOpen(false);
+          setUpdateSuggestions([]);
+          setGenerationProgress(null);
+          setUpdateMode('critical'); // Reset to critical for next time
+        }}
+        town={selectedTown}
+        suggestions={updateSuggestions}
+        onApplyUpdates={handleApplyUpdates}
+        isGenerating={updateLoading}
+        generationProgress={generationProgress}
+        mode={updateMode}
       />
     </div>
   );

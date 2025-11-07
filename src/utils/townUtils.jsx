@@ -7,10 +7,12 @@ import { canUserPerform } from './paywallUtils.js';
 // This caused the 3-hour climate scoring disaster when duplicated
 // UPDATED (2025-10-27): Added 4 missing fields to match matchingAlgorithm.js
 // UPDATED (2025-10-28): Renamed name → town_name for AI search efficiency
+// UPDATED (2025-11-06): Added quality_of_life - CRITICAL for filtering non-rankable towns
 const TOWN_SELECT_COLUMNS = `
   id, town_name, country, population, region, geo_region, regions,
   image_url_1, image_url_2, image_url_3,
   latitude, longitude, description,
+  quality_of_life,
   cost_of_living_usd, typical_monthly_living_cost, cost_index,
   healthcare_score, safety_score, healthcare_cost_monthly,
   environmental_health_rating,
@@ -83,6 +85,15 @@ export const fetchTowns = async (filters = {}) => {
       .not('image_url_1', 'ilike', 'NULL')  // Filter out 'NULL' string
       .not('image_url_1', 'eq', 'null');   // Filter out lowercase 'null' string
 
+    // 🚨 CRITICAL: Exclude non-rankable towns from PUBLIC views
+    // Non-rankable towns (quality_of_life = null) should ONLY appear in admin
+    // Set filters.includeNonRankable = true in admin contexts ONLY
+    if (filters.includeNonRankable !== true) {
+      query = query
+        .not('quality_of_life', 'is', null)
+        .gte('quality_of_life', 0);  // Must have a valid score
+    }
+
     // Apply filters if provided
     if (filters.country) {
       query = query.eq('country', filters.country);
@@ -121,9 +132,9 @@ export const fetchTowns = async (filters = {}) => {
 
     // Data fetched successfully
 
-    return { 
-      success: true, 
-      towns: data, 
+    return {
+      success: true,
+      towns: data,
       isPersonalized: false  // NEW: Flag to indicate this is not personalized
     };
   } catch (error) {
@@ -455,7 +466,9 @@ export const getTownOfTheDay = async (userId) => {
         .select(TOWN_SELECT_COLUMNS)
         .in('country', userCountries)
         .not('image_url_1', 'is', null)
-        .not('image_url_1', 'eq', '');
+        .not('image_url_1', 'eq', '')
+        .not('quality_of_life', 'is', null)  // 🚨 CRITICAL: No non-rankable towns
+        .gte('quality_of_life', 0);
       
       if (favoriteTownIds.length > 0) {
         tier1Query = tier1Query.not('id', 'in', `(${favoriteTownIds.join(',')})`);
@@ -487,7 +500,9 @@ export const getTownOfTheDay = async (userId) => {
         .select(TOWN_SELECT_COLUMNS)
         .in('country', Array.from(neighborCountries))
         .not('image_url_1', 'is', null)
-        .not('image_url_1', 'eq', '');
+        .not('image_url_1', 'eq', '')
+        .not('quality_of_life', 'is', null)  // 🚨 CRITICAL: No non-rankable towns
+        .gte('quality_of_life', 0);
       
       if (favoriteTownIds.length > 0) {
         tier2Query = tier2Query.not('id', 'in', `(${favoriteTownIds.join(',')})`);
@@ -527,7 +542,9 @@ export const getTownOfTheDay = async (userId) => {
           .select(TOWN_SELECT_COLUMNS)
           .in('country', Array.from(continentCountries))
           .not('image_url_1', 'is', null)
-          .not('image_url_1', 'eq', '');
+          .not('image_url_1', 'eq', '')
+          .not('quality_of_life', 'is', null)  // 🚨 CRITICAL: No non-rankable towns
+          .gte('quality_of_life', 0);
         
         if (favoriteTownIds.length > 0) {
           tier3Query = tier3Query.not('id', 'in', `(${favoriteTownIds.join(',')})`);
@@ -558,7 +575,9 @@ export const getTownOfTheDay = async (userId) => {
       .from('towns')
       .select(TOWN_SELECT_COLUMNS)
       .not('image_url_1', 'is', null)
-      .not('image_url_1', 'eq', '');
+      .not('image_url_1', 'eq', '')
+      .not('quality_of_life', 'is', null)  // 🚨 CRITICAL: No non-rankable towns
+      .gte('quality_of_life', 0);
     
     if (favoriteTownIds.length > 0) {
       tier4Query = tier4Query.not('id', 'in', `(${favoriteTownIds.join(',')})`);

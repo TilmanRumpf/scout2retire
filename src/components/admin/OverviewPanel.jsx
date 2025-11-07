@@ -11,9 +11,12 @@ import React, { useState, useEffect } from 'react';
 import EditableDataField from '../EditableDataField';
 import { checkAdminAccess } from '../../utils/paywallUtils';
 import TownPhotoUpload from './TownPhotoUpload';
+import supabase from '../../utils/supabaseClient';
 
 export default function OverviewPanel({ town, onTownUpdate, auditResults = {} }) {
   const [isExecutiveAdmin, setIsExecutiveAdmin] = useState(false);
+  const [createdByUser, setCreatedByUser] = useState(null);
+  const [updatedByUser, setUpdatedByUser] = useState(null);
 
   // Check if user is executive admin
   useEffect(() => {
@@ -23,6 +26,37 @@ export default function OverviewPanel({ town, onTownUpdate, auditResults = {} })
     };
     checkExecAdmin();
   }, []);
+
+  // Fetch user information for created_by and updated_by fields
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      // Fetch created_by user
+      if (town.created_by) {
+        const { data: creator } = await supabase
+          .from('users')
+          .select('email, full_name')
+          .eq('id', town.created_by)
+          .single();
+        setCreatedByUser(creator);
+      } else {
+        setCreatedByUser(null);
+      }
+
+      // Fetch updated_by user
+      if (town.updated_by) {
+        const { data: updater } = await supabase
+          .from('users')
+          .select('email, full_name')
+          .eq('id', town.updated_by)
+          .single();
+        setUpdatedByUser(updater);
+      } else {
+        setUpdatedByUser(null);
+      }
+    };
+
+    fetchUserInfo();
+  }, [town.created_by, town.updated_by]);
 
   // Auto-expand all sections
   const [expandedSections, setExpandedSections] = useState({
@@ -36,7 +70,27 @@ export default function OverviewPanel({ town, onTownUpdate, auditResults = {} })
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // Helper function to get confidence indicator color
+  // Helper function to get confidence indicator - returns either a color class or 'critical' for special rendering
+  const getConfidenceIndicator = (field) => {
+    const confidence = auditResults[field] || 'unknown';
+    switch (confidence) {
+      case 'high':
+        return { type: 'color', value: 'bg-green-500' };
+      case 'limited':
+        return { type: 'color', value: 'bg-yellow-500' };
+      case 'low':
+        return { type: 'color', value: 'bg-red-500' };
+      case 'critical':
+        return { type: 'icon', value: 'lightning' }; // Special lightning bolt icon
+      case 'not_editable':
+        return { type: 'color', value: 'bg-black' };
+      case 'unknown':
+      default:
+        return { type: 'color', value: 'bg-gray-300' };
+    }
+  };
+
+  // Backward compatibility - still support getConfidenceColor for simple cases
   const getConfidenceColor = (field) => {
     const confidence = auditResults[field] || 'unknown';
     switch (confidence) {
@@ -46,6 +100,8 @@ export default function OverviewPanel({ town, onTownUpdate, auditResults = {} })
         return 'bg-yellow-500';
       case 'low':
         return 'bg-red-500';
+      case 'critical':
+        return 'bg-orange-500';
       case 'not_editable':
         return 'bg-black';
       case 'unknown':
@@ -54,8 +110,27 @@ export default function OverviewPanel({ town, onTownUpdate, auditResults = {} })
     }
   };
 
+  // Get tooltip text for confidence levels
+  const getConfidenceTooltip = (confidence) => {
+    switch (confidence) {
+      case 'high':
+        return '🟢 High confidence - Safe to edit';
+      case 'limited':
+        return '🟡 Limited confidence - Edit with caution';
+      case 'low':
+        return '🔴 Low confidence - Needs verification';
+      case 'critical':
+        return '⚡ CRITICAL - Editable but has system-wide impact!';
+      case 'not_editable':
+        return '⚫ Non-editable system field';
+      case 'unknown':
+      default:
+        return '⚪ Unknown - Not audited yet';
+    }
+  };
+
   // Helper component for editable fields
-  const EditableField = ({ field, value, label, type = 'string', range, description }) => {
+  const EditableField = ({ field, value, label, type = 'string', range, description, forceConfidence }) => {
     return (
       <EditableDataField
         label={label}
@@ -69,7 +144,7 @@ export default function OverviewPanel({ town, onTownUpdate, auditResults = {} })
         range={range}
         description={description}
         isExecutiveAdmin={isExecutiveAdmin}
-        confidence={auditResults[field] || 'unknown'}
+        confidence={forceConfidence || auditResults[field] || 'unknown'}
         onUpdate={(field, newValue) => {
           if (onTownUpdate) {
             onTownUpdate(field, newValue);
@@ -108,28 +183,15 @@ export default function OverviewPanel({ town, onTownUpdate, auditResults = {} })
 
         {expandedSections.basic && (
           <div className="space-y-2 pl-4">
-            {/* Town Name (Display Only) */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Town Name
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
-                    town_name
-                  </div>
-                </div>
-                <div
-                  className={`w-3 h-3 rounded-full bg-black`}
-                  title="Non-editable field"
-                />
-              </div>
-              <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
-                <div className="text-sm font-bold text-gray-900 dark:text-gray-100">
-                  {town.town_name}
-                </div>
-              </div>
-            </div>
+            {/* Town Name (EDITABLE WITH WARNINGS) */}
+            <EditableField
+              field="town_name"
+              value={town.town_name}
+              label="Town Name"
+              type="string"
+              forceConfidence="critical"
+              description="⚠️ CRITICAL FIELD: Changing this will NOT update descriptions or verbose fields that reference the old name. Use with extreme caution!"
+            />
 
             {/* Country (Display Only) */}
             <div className="space-y-2">
@@ -142,10 +204,12 @@ export default function OverviewPanel({ town, onTownUpdate, auditResults = {} })
                     country
                   </div>
                 </div>
-                <div
-                  className={`w-3 h-3 rounded-full bg-black`}
-                  title="Non-editable field"
-                />
+                <div className="group/tooltip relative inline-block">
+                  <div className={`w-3 h-3 rounded-full bg-black cursor-help`} />
+                  <div className="hidden group-hover/tooltip:block absolute right-0 top-5 bg-gray-900 dark:bg-gray-700 text-white text-xs px-3 py-1.5 rounded shadow-lg whitespace-nowrap z-50">
+                    {getConfidenceTooltip('not_editable')}
+                  </div>
+                </div>
               </div>
               <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
                 <div className="text-sm text-gray-900 dark:text-gray-100">
@@ -165,10 +229,12 @@ export default function OverviewPanel({ town, onTownUpdate, auditResults = {} })
                     region
                   </div>
                 </div>
-                <div
-                  className={`w-3 h-3 rounded-full bg-black`}
-                  title="Non-editable field"
-                />
+                <div className="group/tooltip relative inline-block">
+                  <div className={`w-3 h-3 rounded-full bg-black cursor-help`} />
+                  <div className="hidden group-hover/tooltip:block absolute right-0 top-5 bg-gray-900 dark:bg-gray-700 text-white text-xs px-3 py-1.5 rounded shadow-lg whitespace-nowrap z-50">
+                    {getConfidenceTooltip('not_editable')}
+                  </div>
+                </div>
               </div>
               <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
                 <div className="text-sm text-gray-900 dark:text-gray-100">
@@ -185,18 +251,20 @@ export default function OverviewPanel({ town, onTownUpdate, auditResults = {} })
                     Overall Score
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
-                    overall_score
+                    quality_of_life
                   </div>
                 </div>
-                <div
-                  className={`w-3 h-3 rounded-full ${getConfidenceColor('overall_score')}`}
-                  title={`Audit confidence: ${auditResults['overall_score'] || 'unknown'}`}
-                />
+                <div className="group/tooltip relative inline-block">
+                  <div className={`w-3 h-3 rounded-full ${getConfidenceColor('quality_of_life')} cursor-help`} />
+                  <div className="hidden group-hover/tooltip:block absolute right-0 top-5 bg-gray-900 dark:bg-gray-700 text-white text-xs px-3 py-1.5 rounded shadow-lg whitespace-nowrap z-50">
+                    {getConfidenceTooltip(auditResults['quality_of_life'] || 'unknown')}
+                  </div>
+                </div>
               </div>
               <div className="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
                 <div className="text-sm font-bold text-blue-900 dark:text-blue-100">
-                  {town.overall_score !== null && town.overall_score !== undefined
-                    ? `${town.overall_score}%`
+                  {town.quality_of_life !== null && town.quality_of_life !== undefined
+                    ? `${town.quality_of_life}%`
                     : <span className="text-red-500 italic">(not calculated)</span>
                   }
                 </div>
@@ -317,10 +385,12 @@ export default function OverviewPanel({ town, onTownUpdate, auditResults = {} })
                     id
                   </div>
                 </div>
-                <div
-                  className={`w-3 h-3 rounded-full bg-black`}
-                  title="Non-editable field"
-                />
+                <div className="group/tooltip relative inline-block">
+                  <div className={`w-3 h-3 rounded-full bg-black cursor-help`} />
+                  <div className="hidden group-hover/tooltip:block absolute right-0 top-5 bg-gray-900 dark:bg-gray-700 text-white text-xs px-3 py-1.5 rounded shadow-lg whitespace-nowrap z-50">
+                    {getConfidenceTooltip('not_editable')}
+                  </div>
+                </div>
               </div>
               <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
                 <div className="text-sm font-mono text-gray-900 dark:text-gray-100">
@@ -340,10 +410,12 @@ export default function OverviewPanel({ town, onTownUpdate, auditResults = {} })
                     created_at
                   </div>
                 </div>
-                <div
-                  className={`w-3 h-3 rounded-full bg-black`}
-                  title="Non-editable field"
-                />
+                <div className="group/tooltip relative inline-block">
+                  <div className={`w-3 h-3 rounded-full bg-black cursor-help`} />
+                  <div className="hidden group-hover/tooltip:block absolute right-0 top-5 bg-gray-900 dark:bg-gray-700 text-white text-xs px-3 py-1.5 rounded shadow-lg whitespace-nowrap z-50">
+                    {getConfidenceTooltip('not_editable')}
+                  </div>
+                </div>
               </div>
               <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
                 <div className="text-sm text-gray-900 dark:text-gray-100">
@@ -363,10 +435,12 @@ export default function OverviewPanel({ town, onTownUpdate, auditResults = {} })
                     updated_at
                   </div>
                 </div>
-                <div
-                  className={`w-3 h-3 rounded-full bg-black`}
-                  title="Non-editable field"
-                />
+                <div className="group/tooltip relative inline-block">
+                  <div className={`w-3 h-3 rounded-full bg-black cursor-help`} />
+                  <div className="hidden group-hover/tooltip:block absolute right-0 top-5 bg-gray-900 dark:bg-gray-700 text-white text-xs px-3 py-1.5 rounded shadow-lg whitespace-nowrap z-50">
+                    {getConfidenceTooltip('not_editable')}
+                  </div>
+                </div>
               </div>
               <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
                 <div className="text-sm text-gray-900 dark:text-gray-100">
@@ -399,6 +473,74 @@ export default function OverviewPanel({ town, onTownUpdate, auditResults = {} })
                 </div>
               </div>
             )}
+
+            {/* Created By (if exists) */}
+            {town.created_by && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Created By
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                      created_by
+                    </div>
+                  </div>
+                  <div className="group/tooltip relative inline-block">
+                    <div className={`w-3 h-3 rounded-full bg-black cursor-help`} />
+                    <div className="hidden group-hover/tooltip:block absolute right-0 top-5 bg-gray-900 dark:bg-gray-700 text-white text-xs px-3 py-1.5 rounded shadow-lg whitespace-nowrap z-50">
+                      {getConfidenceTooltip('not_editable')}
+                    </div>
+                  </div>
+                </div>
+                <div className="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
+                  <div className="text-sm text-blue-900 dark:text-blue-100">
+                    {createdByUser ? (
+                      <>
+                        {createdByUser.full_name && <div className="font-medium">{createdByUser.full_name}</div>}
+                        <div className={createdByUser.full_name ? 'text-xs' : ''}>{createdByUser.email}</div>
+                      </>
+                    ) : (
+                      <span className="text-gray-500 italic">Loading...</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Last Modified By - ALWAYS SHOW */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Last Modified By
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                    updated_by
+                  </div>
+                </div>
+                <div className="group/tooltip relative inline-block">
+                  <div className={`w-3 h-3 rounded-full bg-black cursor-help`} />
+                  <div className="hidden group-hover/tooltip:block absolute right-0 top-5 bg-gray-900 dark:bg-gray-700 text-white text-xs px-3 py-1.5 rounded shadow-lg whitespace-nowrap z-50">
+                    {getConfidenceTooltip('not_editable')}
+                  </div>
+                </div>
+              </div>
+              <div className="px-3 py-2 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
+                <div className="text-sm text-green-900 dark:text-green-100">
+                  {town.updated_by && updatedByUser ? (
+                    <>
+                      {updatedByUser.full_name && <div className="font-medium">{updatedByUser.full_name}</div>}
+                      <div className={updatedByUser.full_name ? 'text-xs' : ''}>{updatedByUser.email}</div>
+                    </>
+                  ) : town.updated_by && !updatedByUser ? (
+                    <span className="text-gray-500 italic">Loading...</span>
+                  ) : (
+                    <span className="text-gray-500 italic">Unknown - Not tracked yet</span>
+                  )}
+                </div>
+              </div>
+            </div>
 
             {/* Data Source (if exists) */}
             {town.data_source !== undefined && (

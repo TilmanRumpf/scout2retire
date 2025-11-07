@@ -202,9 +202,9 @@ export async function getTownsInLocation(geographicInfo) {
 export async function matchTownsToUser(towns, userContext) {
   if (!userContext || towns.length === 0) return towns;
 
-  // For now, return towns sorted by overall_score
-  // In the future, this could use the full matching algorithm
-  return towns.sort((a, b) => (b.overall_score || 0) - (a.overall_score || 0));
+  // Sort by objective quality metric (not personalized score)
+  // Note: quality_of_life is an objective town rating (1-10), not a personalized match score
+  return towns.sort((a, b) => (b.quality_of_life || 0) - (a.quality_of_life || 0));
 }
 
 /**
@@ -237,7 +237,7 @@ export function formatGeographicContext(geographicInfo, towns, userContext) {
 
     const topTowns = towns.slice(0, 10);
     topTowns.forEach(town => {
-      const score = town.overall_score ? ` (score: ${town.overall_score})` : '';
+      const score = town.quality_of_life ? ` (quality: ${town.quality_of_life}/10)` : '';
       const rent = town['rent_cost_$'] ? ` - Rent: $${town['rent_cost_$']}/mo` : '';
       const pop = town.population ? ` - Pop: ${town.population.toLocaleString()}` : '';
       parts.push(`  • ${town.town_name}${score}${rent}${pop}`);

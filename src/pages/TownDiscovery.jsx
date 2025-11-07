@@ -157,7 +157,13 @@ export default function TownDiscovery() {
     const townId = params.get('town');
     const regionFilter = params.get('filterRegion');
 
-    if (townId) {
+    // Check for town ID from navigation state (from admin "View Public" button)
+    const stateTownId = location.state?.selectedTownId;
+
+    if (stateTownId) {
+      // Admin clicked "View Public" - show that specific town
+      setSelectedTown(stateTownId);
+    } else if (townId) {
       // User came from a specific town card - show that town
       // CRITICAL: Only set once, don't override when towns reload
       setSelectedTown(prev => prev || townId);
@@ -179,7 +185,7 @@ export default function TownDiscovery() {
     if (regionFilter && REGIONS.includes(regionFilter)) {
       setFilterRegion(regionFilter);
     }
-  }, [location.search, towns]);
+  }, [location.search, location.state, towns]);
 
   // Navigate to welcome if not authenticated
   useEffect(() => {
@@ -253,7 +259,7 @@ export default function TownDiscovery() {
   // Sort and filter towns - Memoize to prevent recalculation on every render
   const sortedAndFilteredTowns = useMemo(() => {
     let filtered = [...towns];
-    
+
     // Apply search filter
     if (searchTerm && searchTerm.trim().length > 0) {
       const search = searchTerm.trim().toLowerCase();
@@ -485,9 +491,12 @@ export default function TownDiscovery() {
                   <h2 className={`text-lg font-semibold ${uiConfig.colors.heading}`}>
                     {selectedTownData.town_name}, {selectedTownData.country}
                   </h2>
-                  <div className={`text-lg font-semibold ${uiConfig.colors.heading}`}>
-                    Score: {Math.round(selectedTownData.matchScore || 0)}%
-                  </div>
+                  {/* Only show match score if it exists (personalized view) */}
+                  {selectedTownData.matchScore > 0 && (
+                    <div className={`text-lg font-semibold ${uiConfig.colors.heading}`}>
+                      Match Score: {Math.round(selectedTownData.matchScore)}%
+                    </div>
+                  )}
                 </div>
 
                 {/* Town description - moved here right after title */}
