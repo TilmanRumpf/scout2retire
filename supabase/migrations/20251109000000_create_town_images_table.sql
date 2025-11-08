@@ -28,14 +28,22 @@
 -- STEP 1: Create town_images table
 -- =====================================================
 
--- Drop trigger first if exists (idempotent)
-DROP TRIGGER IF EXISTS sync_town_cache_image ON public.town_images;
-DROP FUNCTION IF EXISTS sync_town_cache_image();
+-- Drop trigger and function if they exist (idempotent, safe even if table doesn't exist)
+DO $$
+BEGIN
+  -- Drop trigger only if table exists
+  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'town_images') THEN
+    DROP TRIGGER IF EXISTS sync_town_cache_image ON public.town_images;
+  END IF;
+
+  -- Drop function (doesn't require table to exist)
+  DROP FUNCTION IF EXISTS sync_town_cache_image();
+END $$;
 
 -- Create table (idempotent - will not error if exists)
 CREATE TABLE IF NOT EXISTS public.town_images (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  town_id INTEGER NOT NULL REFERENCES public.towns(id) ON DELETE CASCADE,
+  town_id UUID NOT NULL REFERENCES public.towns(id) ON DELETE CASCADE,
 
   -- Image data
   image_url TEXT NOT NULL,
