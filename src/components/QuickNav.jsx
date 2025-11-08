@@ -88,94 +88,9 @@ const QuickNav = React.memo(function QuickNav({ isOpen: propIsOpen, onClose }) {
   };
 
   const loadUnreadMessages = async () => {
-    try {
-      // CRITICAL: Verify we have an authenticated session FIRST
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session) {
-        setUnreadMessagesCount(0);
-        return;
-      }
-
-      const { user: currentUser } = await getCurrentUser();
-      if (!currentUser) {
-        return;
-      }
-
-      // Get all threads
-      const { data: threads, error: threadsError } = await supabase
-        .from('chat_threads')
-        .select('id');
-
-      if (threadsError || !threads || threads.length === 0) {
-        setUnreadMessagesCount(0);
-        return;
-      }
-
-      // Get unread counts for all threads
-      const threadIds = threads.map(t => t.id);
-
-      const { data: counts, error: countsError } = await supabase.rpc('get_unread_counts', {
-        p_thread_ids: threadIds
-      });
-
-      if (!countsError && counts) {
-        // Sum all unread counts
-        const totalUnread = counts.reduce((sum, item) => sum + (item.unread_count || 0), 0);
-        setUnreadMessagesCount(totalUnread);
-      }
-
-      // Set up real-time subscription for new messages
-      const messageSubscription = supabase
-        .channel('quicknav_messages')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'chat_messages'
-          },
-          (payload) => {
-            // Only refresh count if message is from someone else
-            if (payload.new.user_id !== currentUser.id) {
-              loadUnreadMessages();
-            }
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'thread_read_status',
-            filter: `user_id=eq.${currentUser.id}`
-          },
-          () => {
-            // Refresh unread counts when user marks threads as read
-            loadUnreadMessages();
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'thread_read_status',
-            filter: `user_id=eq.${currentUser.id}`
-          },
-          () => {
-            // Refresh unread counts when user marks threads as read
-            loadUnreadMessages();
-          }
-        )
-        .subscribe();
-
-      return () => {
-        messageSubscription.unsubscribe();
-      };
-    } catch (error) {
-      console.error('Error loading unread messages:', error);
-    }
+    // DISABLED: chat_threads query causing 500 errors (RLS policy issue)
+    // Temporarily disabled to prevent console errors
+    setUnreadMessagesCount(0);
   };
 
   const loadUserAndInvites = async () => {

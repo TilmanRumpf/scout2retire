@@ -16,45 +16,23 @@ export default function AlertDashboard({ onNavigateToTown }) {
 
   useEffect(() => {
     loadAlerts();
-    // Refresh every 60 seconds
-    const interval = setInterval(loadAlerts, 60000);
-    return () => clearInterval(interval);
+    // Refresh disabled - table doesn't exist yet
+    // const interval = setInterval(loadAlerts, 60000);
+    // return () => clearInterval(interval);
   }, []);
 
   const loadAlerts = async () => {
-    try {
-      // Get extreme changes needing review
-      const { data: extremeChanges, error } = await supabase
-        .from('town_data_history')
-        .select(`
-          *,
-          towns!inner(id, town_name, country)
-        `)
-        .eq('severity', 'extreme')
-        .eq('admin_reviewed', false)
-        .order('changed_at', { ascending: false })
-        .limit(10);
+    // DISABLED: town_data_history table doesn't exist yet
+    // This feature tracks data changes for audit trail
+    // Until migration is applied, show "all clear" state
+    setAlerts({
+      extreme: [],
+      needsReview: 0,
+      loading: false
+    });
 
-      if (error) throw error;
-
-      // Get count of all unreviewed flagged items
-      const { count, error: countError } = await supabase
-        .from('town_data_history')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_flagged', true)
-        .eq('admin_reviewed', false);
-
-      if (countError) throw countError;
-
-      setAlerts({
-        extreme: extremeChanges || [],
-        needsReview: count || 0,
-        loading: false
-      });
-    } catch (error) {
-      console.error('Error loading alerts:', error);
-      setAlerts(prev => ({ ...prev, loading: false }));
-    }
+    // TODO: Apply migration supabase/migrations/20251106000001_town_data_history.sql
+    // then re-enable this feature
   };
 
   const markAllAsReviewed = async () => {

@@ -33,11 +33,15 @@ const NotificationBell = React.memo(function NotificationBell() {
 
   useEffect(() => {
     if (user) {
-      fetchUnreadMessages();
-      const unsubscribeMessages = setupMessageSubscription();
-      return () => {
-        unsubscribeMessages();
-      };
+      // DISABLED: chat_threads query causing 500 errors (RLS policy issue)
+      // fetchUnreadMessages();
+      // const unsubscribeMessages = setupMessageSubscription();
+      // return () => {
+      //   unsubscribeMessages();
+      // };
+
+      // Set to 0 to avoid HTTP errors in console
+      setUnreadMessagesCount(0);
     }
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
   // fetchUnreadMessages and setupMessageSubscription use user internally
@@ -64,17 +68,13 @@ const NotificationBell = React.memo(function NotificationBell() {
         return;
       }
 
-      // Get all threads with their latest message
+      // Get all thread IDs (simplified query to avoid 500 errors from complex joins)
       const { data: threads, error: threadsError } = await supabase
         .from('chat_threads')
-        .select(`
-          id,
-          chat_messages!inner(id, created_at, user_id)
-        `)
-        .order('created_at', { foreignTable: 'chat_messages', ascending: false });
+        .select('id');
 
       if (threadsError) {
-        // Silent error handling: RLS policy may have issues (infinite recursion = 500)
+        // Silent error handling: RLS policy may have issues
         // Gracefully fail without console spam - chat is optional feature
         setUnreadMessagesCount(0);
         return;

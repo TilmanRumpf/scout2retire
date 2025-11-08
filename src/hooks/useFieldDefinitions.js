@@ -11,24 +11,15 @@ export function useFieldDefinitions() {
   }, []);
   
   const fetchFieldDefinitions = async () => {
-    try {
-      // Fetch the system config row that contains field definitions
-      const { data, error } = await supabase
-        .from('towns')
-        .select('audit_data')
-        .eq('id', 'ffffffff-ffff-ffff-ffff-ffffffffffff')
-        .single();
-      
-      if (error) throw error;
-      
-      if (data?.audit_data?.field_definitions) {
-        setFieldDefinitions(data.audit_data.field_definitions);
-      }
-    } catch (error) {
-      console.error('Error fetching field definitions:', error);
-    } finally {
-      setLoading(false);
-    }
+    // DISABLED: Config row doesn't exist in database yet
+    // This feature is not currently in use - returning empty definitions
+    // to prevent 406 HTTP errors in console
+    setFieldDefinitions({});
+    setLoading(false);
+
+    // TODO: If field definitions are needed, create the config row:
+    // INSERT INTO towns (id, audit_data) VALUES
+    // ('ffffffff-ffff-ffff-ffff-ffffffffffff', '{"field_definitions": {}}');
   };
   
   // Get audit question for a field, replacing placeholders
