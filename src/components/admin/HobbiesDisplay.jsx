@@ -114,12 +114,14 @@ const HobbiesDisplay = ({ townId, townName }) => {
   const excludeHobby = async (hobbyId) => {
     try {
       // Check if already in towns_hobbies
-      const { data: existing } = await supabase
+      const { data: existing, error: checkError } = await supabase
         .from('towns_hobbies')
         .select('id')
         .eq('town_id', townId)
         .eq('hobby_id', hobbyId)
-        .single();
+        .maybeSingle();
+
+      if (checkError) throw checkError;
 
       if (existing) {
         // Update to excluded
@@ -378,11 +380,16 @@ const HobbiesDisplay = ({ townId, townName }) => {
           <span className="ml-2 text-sm font-normal text-gray-500">
             (Unique to {townName})
           </span>
+          {isExecutiveAdmin && (
+            <span className="ml-2 text-xs text-gray-400 italic">
+              Hover to exclude
+            </span>
+          )}
         </h4>
-        
-        {renderHobbyList(hobbiesData.specific.activities, 'Activities', 'green')}
-        {renderHobbyList(hobbiesData.specific.interests, 'Interests', 'emerald')}
-        {renderHobbyList(hobbiesData.specific.custom, 'Custom Hobbies', 'teal')}
+
+        {renderHobbyList(hobbiesData.specific.activities, 'Activities', 'green', true)}
+        {renderHobbyList(hobbiesData.specific.interests, 'Interests', 'emerald', true)}
+        {renderHobbyList(hobbiesData.specific.custom, 'Custom Hobbies', 'teal', true)}
         
         {totalSpecific === 0 && (
           <p className="text-gray-400 italic">
