@@ -1,0 +1,8 @@
+# Audit test files created during UI/UX assessment
+# These can be archived or deleted after review
+
+audit-ui-comprehensive.js
+audit-ui-deep-dive.js
+check-admin-access.js
+check-user-status.js
+check-user-direct.js

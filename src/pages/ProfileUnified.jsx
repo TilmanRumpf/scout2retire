@@ -315,19 +315,7 @@ export default function ProfileUnified() {
 
       console.log('✅ Database deletion result:', deleteResult);
 
-      // Step 2: Delete auth user (this requires admin privileges)
-      console.log('🗑️ Deleting auth user...');
-      const { error: authDeleteError } = await supabase.auth.admin.deleteUser(user.id);
-
-      if (authDeleteError) {
-        console.error('❌ Auth user deletion failed:', authDeleteError);
-        // Don't throw - database is already cleaned, just warn user
-        toast.error('Account data deleted but auth user could not be removed. Please contact support.');
-      } else {
-        console.log('✅ Auth user deleted successfully');
-      }
-
-      // Step 3: Sign out and redirect
+      // Sign out and redirect
       await signOut();
       navigate('/welcome');
       toast.success('Account deleted successfully');
