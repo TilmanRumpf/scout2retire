@@ -8,38 +8,42 @@ import { canUserPerform } from './paywallUtils.js';
 // UPDATED (2025-10-27): Added 4 missing fields to match matchingAlgorithm.js
 // UPDATED (2025-10-28): Renamed name → town_name for AI search efficiency
 // UPDATED (2025-11-06): Added quality_of_life - CRITICAL for filtering non-rankable towns
-const TOWN_SELECT_COLUMNS = `
-  id, town_name, country, population, region, geo_region, regions,
+// UPDATED (2025-11-07): Exported for use in AlgorithmManager to ensure consistency
+// CRITICAL: This must match EXACTLY the selectColumns in matchingAlgorithm.js
+// to ensure Algorithm Manager and /favorites show identical scores
+export const TOWN_SELECT_COLUMNS = `
+  id, town_name, country, population, region,
   image_url_1, image_url_2, image_url_3,
   latitude, longitude, description,
-  quality_of_life,
-  cost_of_living_usd, typical_monthly_living_cost, cost_index,
-  healthcare_score, safety_score, healthcare_cost_monthly,
-  environmental_health_rating,
-  avg_temp_summer, avg_temp_winter, climate, climate_description,
-  summer_climate_actual, winter_climate_actual,
-  sunshine_hours, sunshine_level_actual, annual_rainfall,
-  humidity_average, humidity_level_actual, seasonal_variation_actual,
-  precipitation_level_actual,
-  air_quality_index, elevation_meters, distance_to_ocean_km,
-  airport_distance, nearest_airport, english_proficiency_level,
-  walkability, expat_community_size,
-  geographic_features, geographic_features_actual, vegetation_type_actual,
-  urban_rural_character, pace_of_life_actual,
-  primary_language, languages_spoken, cultural_events_rating, nightlife_rating,
-  restaurants_rating, museums_rating, shopping_rating,
-  cultural_landmark_1, social_atmosphere,
-  outdoor_rating, outdoor_activities_rating, beaches_nearby,
-  top_hobbies,
-  golf_courses_count, hiking_trails_km, tennis_courts_count,
-  marinas_count, ski_resorts_within_100km, dog_parks_count,
-  farmers_markets, water_bodies, activities_available,
-  hospital_count, nearest_major_hospital_km, english_speaking_doctors,
-  visa_requirements, visa_on_arrival_countries, easy_residency_countries,
-  retirement_visa_available, digital_nomad_visa, crime_rate, natural_disaster_risk, internet_speed,
-  rent_1bed, rent_2bed_usd, groceries_cost, meal_cost, utilities_cost,
+  cost_index, cost_of_living_usd, typical_monthly_living_cost,
+  rent_1bed, rent_2bed_usd, meal_cost, groceries_cost, utilities_cost,
   income_tax_rate_pct, sales_tax_rate_pct, property_tax_rate_pct,
-  tax_haven_status, tax_treaty_us, foreign_income_taxed
+  tax_haven_status, tax_treaty_us, foreign_income_taxed,
+  healthcare_score, safety_score, quality_of_life, healthcare_cost_monthly,
+  environmental_health_rating,
+  hospital_count, nearest_major_hospital_km, english_speaking_doctors,
+  climate, climate_description, avg_temp_summer, avg_temp_winter,
+  summer_climate_actual, winter_climate_actual,
+  annual_rainfall, sunshine_hours, sunshine_level_actual,
+  precipitation_level_actual,
+  humidity_average, humidity_level_actual, seasonal_variation_actual,
+  air_quality_index,
+  activities_available, interests_supported,
+  outdoor_rating, outdoor_activities_rating, cultural_rating, nightlife_rating,
+  beaches_nearby, golf_courses_count, hiking_trails_km,
+  tennis_courts_count, marinas_count, ski_resorts_within_100km,
+  dog_parks_count, farmers_markets, water_bodies, walkability,
+  expat_community_size, english_proficiency_level,
+  primary_language, languages_spoken, cultural_events_rating, museums_rating,
+  restaurants_rating, shopping_rating, cultural_landmark_1,
+  social_atmosphere, pace_of_life_actual, urban_rural_character,
+  visa_requirements, visa_on_arrival_countries, easy_residency_countries,
+  residency_path_info, retirement_visa_available, digital_nomad_visa,
+  crime_rate, natural_disaster_risk, internet_speed,
+  geographic_features, geographic_features_actual, vegetation_type_actual,
+  elevation_meters, distance_to_ocean_km, nearest_airport,
+  airport_distance, geo_region, regions, top_hobbies,
+  government_efficiency_rating, political_stability_rating
 `;
 
 // Town management

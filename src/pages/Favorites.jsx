@@ -11,6 +11,7 @@ import HeaderSpacer from '../components/HeaderSpacer';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../styles/uiConfig';
 import { formatTownDisplay } from '../utils/townDisplayUtils';
+import { checkAdminAccess } from '../utils/paywallUtils';
 
 // Predefined regions and their countries from onboarding
 const REGIONS = [
@@ -47,6 +48,8 @@ export default function Favorites() {
   const [allTowns, setAllTowns] = useState([]); // All towns for search
   const [searchTerm, setSearchTerm] = useState(''); // Search term
   const [townsLoading, setTownsLoading] = useState(false);
+  const [lastScoreUpdate, setLastScoreUpdate] = useState(null); // Track cache age
+  const [isAdmin, setIsAdmin] = useState(false); // Admin check for refresh button
   
   const loading = userLoading || townsLoading;
   const [sortBy, setSortBy] = useState('match'); // Changed default to 'match'
@@ -71,58 +74,87 @@ export default function Favorites() {
     };
     loadUser();
   }, []);
+
+  // Check admin status for refresh button visibility
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const hasAccess = await checkAdminAccess();  // Any admin role
+      setIsAdmin(hasAccess);
+    };
+    checkAdmin();
+  }, []);
   
+  // Handle manual score refresh (cache bust)
+  const handleRefreshScores = async () => {
+    if (!user?.id) return;
+
+    // Clear all personalized cache for this user
+    const keysToRemove = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key && key.includes(`personalized_${user.id}`)) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => sessionStorage.removeItem(key));
+
+    toast.success('Refreshing match scores...');
+
+    // Reload data with skipCache flag
+    await loadFavoritesData(true);
+  };
+
+  // Load favorites and all towns
+  const loadFavoritesData = async (skipCache = false) => {
+    if (!user?.id) return;
+
+    setTownsLoading(true);
+
+    // Load favorites
+    const favResult = await fetchFavorites(user.id, 'Favorites');
+    if (favResult.success) {
+      setFavorites(favResult.favorites);
+
+      // Load town data for favorites
+      if (favResult.favorites.length > 0) {
+        const townIds = favResult.favorites.map(f => f.town_id);
+        const townsResult = await fetchTowns({
+          townIds,
+          userId: user.id,
+          component: 'Favorites',
+          usePersonalization: true,
+          skipCache  // Pass skipCache to force recalculation
+        });
+        if (townsResult.success) {
+          console.log('Loaded favorite towns:', townsResult.towns.length, 'towns for', townIds.length, 'favorite IDs');
+          setFavoriteTowns(townsResult.towns);
+          setLastScoreUpdate(new Date()); // Track when scores were updated
+        }
+      } else {
+        console.log('No favorites, setting favoriteTowns to empty array');
+        setFavoriteTowns([]);
+      }
+    }
+
+    // Load ALL towns for search functionality
+    const allTownsResult = await fetchTowns({
+      userId: user.id,
+      component: 'Favorites-Search',
+      usePersonalization: true,
+      limit: 500,
+      skipCache
+    });
+    if (allTownsResult.success) {
+      console.log('Loaded all towns for search:', allTownsResult.towns.length);
+      setAllTowns(allTownsResult.towns);
+    }
+
+    setTownsLoading(false);
+  };
+
   // Load favorites and all towns when user is loaded
   useEffect(() => {
     if (user?.id) {
-      const loadFavoritesData = async () => {
-        setTownsLoading(true);
-        
-        // Load favorites
-        const favResult = await fetchFavorites(user.id, 'Favorites');
-        if (favResult.success) {
-          setFavorites(favResult.favorites);
-          
-          // Load town data for favorites
-          if (favResult.favorites.length > 0) {
-            const townIds = favResult.favorites.map(f => f.town_id);
-            const townsResult = await fetchTowns({
-              townIds,
-              userId: user.id,
-              component: 'Favorites',
-              usePersonalization: true  // Use personalization to get match scores (townIds ensures we get ALL favorites)
-            });
-            if (townsResult.success) {
-              console.log('Loaded favorite towns:', townsResult.towns.length, 'towns for', townIds.length, 'favorite IDs');
-              // DEBUG: Check Gainesville specifically
-              const gainesville = townsResult.towns.find(t => t.town_name?.toLowerCase().includes('gainesville'));
-              if (gainesville) {
-                console.log('[Favorites] Gainesville loaded with score:', gainesville.matchScore + '%');
-                console.log('[Favorites] Gainesville full data:', gainesville);
-              }
-              setFavoriteTowns(townsResult.towns);
-            }
-          } else {
-            // No favorites - make sure to set empty array
-            console.log('No favorites, setting favoriteTowns to empty array');
-            setFavoriteTowns([]);
-          }
-        }
-        
-        // Load ALL towns for search functionality
-        const allTownsResult = await fetchTowns({ 
-          userId: user.id,
-          component: 'Favorites-Search',
-          usePersonalization: true,  // Changed to true to get match scores for all towns
-          limit: 500  // Get all towns, not just default limit
-        });
-        if (allTownsResult.success) {
-          console.log('Loaded all towns for search:', allTownsResult.towns.length);
-          setAllTowns(allTownsResult.towns);
-        }
-        
-        setTownsLoading(false);
-      };
       loadFavoritesData();
     }
   }, [user]);
@@ -360,6 +392,22 @@ export default function Favorites() {
   const countries = getUniqueCountries();
   const filterCount = activeFilterCount();
 
+  // Calculate cache age for display
+  const getCacheAge = () => {
+    if (!lastScoreUpdate) return null;
+    const ageMs = Date.now() - lastScoreUpdate.getTime();
+    const ageMin = Math.floor(ageMs / 60000);
+    if (ageMin < 1) return 'just now';
+    if (ageMin === 1) return '1 min ago';
+    if (ageMin < 60) return `${ageMin} mins ago`;
+    const ageHr = Math.floor(ageMin / 60);
+    if (ageHr === 1) return '1 hour ago';
+    return `${ageHr} hours ago`;
+  };
+
+  const cacheAge = getCacheAge();
+  const cacheIsStale = lastScoreUpdate && (Date.now() - lastScoreUpdate.getTime()) > 1800000; // 30 minutes
+
   return (
       <div className={`min-h-screen ${uiConfig.colors.page}`}>
         {/* Unified Header with integrated filters and menu */}
@@ -394,6 +442,30 @@ export default function Favorites() {
       <HeaderSpacer hasFilters={true} />
 
       <main className="max-w-7xl mx-auto px-4 py-3">
+        {/* Cache Age Indicator & Refresh Button (Admin Only) */}
+        {!isSelectionMode && favorites.length > 0 && isAdmin && (
+          <div className="mb-4 flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              {cacheAge && (
+                <span className={`text-sm ${cacheIsStale ? 'text-orange-600 font-medium' : 'text-gray-600'}`}>
+                  {cacheIsStale && '⚠️ '}Match scores updated: {cacheAge}
+                </span>
+              )}
+            </div>
+            <button
+              onClick={handleRefreshScores}
+              disabled={townsLoading}
+              className={`flex items-center gap-2 px-3 py-1.5 text-sm ${uiConfig.colors.btnSecondary} ${uiConfig.layout.radius.md} ${townsLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title="Recalculate match scores with latest preferences (Admin Only)"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {townsLoading ? 'Refreshing...' : 'Refresh Scores'}
+            </button>
+          </div>
+        )}
+
         {favorites.length === 0 ? (
           <div className="text-center py-12">
             <svg xmlns="http://www.w3.org/2000/svg" className={`mx-auto h-24 w-24 ${uiConfig.colors.muted} mb-6`} fill="none" viewBox="0 0 24 24" stroke="currentColor">

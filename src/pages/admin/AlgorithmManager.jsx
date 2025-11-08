@@ -4,6 +4,7 @@ import { supabase } from '../../utils/supabaseClient';
 import toast from 'react-hot-toast';
 import UnifiedHeader from '../../components/UnifiedHeader';
 import HeaderSpacer from '../../components/HeaderSpacer';
+import { TOWN_SELECT_COLUMNS } from '../../utils/townUtils.jsx';
 import {
   CATEGORY_WEIGHTS,
   MATCH_QUALITY,
@@ -68,6 +69,7 @@ const AlgorithmManager = () => {
   const [isRestoringUser, setIsRestoringUser] = useState(false);
   const [hasAttemptedUserRestore, setHasAttemptedUserRestore] = useState(false);
   const [isMouseOverDropdown, setIsMouseOverDropdown] = useState(false);
+  const [showScoringLogic, setShowScoringLogic] = useState(false);
 
   // Algorithm configuration state
   const [config, setConfig] = useState({
@@ -535,10 +537,11 @@ const AlgorithmManager = () => {
 
       console.log('Testing scoring with preferences:', userPreferences);
 
-      // Load full town data
+      // Load town data using CONSISTENT column selection
+      // CRITICAL: Use same columns as /favorites for accurate comparison
       const { data: fullTownData } = await supabase
         .from('towns')
-        .select('*')
+        .select(TOWN_SELECT_COLUMNS)
         .eq('id', selectedTown.id)
         .single();
 
@@ -556,6 +559,8 @@ const AlgorithmManager = () => {
         hasAdmin: !!userPreferences.administration,
         hasCosts: !!userPreferences.costs
       });
+
+      console.log('[AlgorithmManager] Using consistent column selection for scoring accuracy');
 
       // Use the SAME scoring function as the actual app!
       const scoredTowns = await scoreTownsBatch([fullTownData], userPreferences);
@@ -981,64 +986,86 @@ const AlgorithmManager = () => {
         </div>
 
 
-        {/* Category Weights Section */}
-        <div className={`${uiConfig.colors.card} rounded-lg shadow-md p-6 mb-6`}>
-          <h2 className={`text-xl font-semibold ${uiConfig.colors.heading} mb-4`}>
-            Category Weights
-            <span className={`ml-4 text-sm ${isValidWeight ? 'text-green-600' : 'text-red-600'}`}>
-              Total: {totalWeight.toFixed(1)}%
+        {/* Algorithm Scoring Logic - Collapsible */}
+        <div className={`${uiConfig.colors.card} border ${uiConfig.colors.border} rounded-lg mb-6`}>
+          <button
+            onClick={() => setShowScoringLogic(!showScoringLogic)}
+            className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
+          >
+            <h2 className={`text-xl font-semibold ${uiConfig.colors.heading}`}>
+              ⚙️ Algorithm Scoring Logic
+            </h2>
+            <span className={`text-2xl transform transition-transform ${showScoringLogic ? 'rotate-180' : ''}`}>
+              ▼
             </span>
-          </h2>
+          </button>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries(config.categoryWeights).map(([category, weight]) => (
-              <div key={category} className="flex items-center space-x-4">
-                <label className={`flex-1 ${uiConfig.colors.body} capitalize`}>
-                  {category.replace(/([A-Z])/g, ' $1').trim()}:
-                </label>
-                <input
-                  type="number"
-                  value={weight}
-                  onChange={(e) => handleWeightChange(category, e.target.value)}
-                  className="w-20 px-3 py-1 border border-border rounded-md focus:ring-2 focus:ring-primary"
-                  min="0"
-                  max="100"
-                  step="0.5"
-                />
-                <span className={uiConfig.colors.muted}>%</span>
+          {showScoringLogic && (
+            <div className="px-6 pb-6 space-y-6 border-t border-gray-200">
+              {/* Category Weights Section - READ ONLY */}
+              <div>
+                <h2 className={`text-xl font-semibold ${uiConfig.colors.heading} mb-4`}>
+                  Category Weights (Read-Only)
+                  <span className={`ml-4 text-sm text-green-600`}>
+                    Total: {totalWeight.toFixed(1)}%
+                  </span>
+                </h2>
+
+                {/* Warning Box */}
+                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <p className="text-sm text-yellow-800 font-medium">
+                    ⚠️ Weight changes require code deployment and affect ALL users system-wide
+                  </p>
+                  <p className="text-xs text-yellow-700 mt-1">
+                    To modify weights, update <code className="bg-yellow-100 px-1 rounded">src/utils/scoring/config.js</code> and deploy
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(config.categoryWeights).map(([category, weight]) => (
+                    <div key={category} className="flex items-center space-x-4">
+                      <label className={`flex-1 ${uiConfig.colors.body} capitalize`}>
+                        {category.replace(/([A-Z])/g, ' $1').trim()}:
+                      </label>
+                      <input
+                        type="number"
+                        value={weight}
+                        readOnly
+                        disabled
+                        className="w-20 px-3 py-1 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
+                        title="Weights are read-only. Modify config.js to change."
+                      />
+                      <span className={uiConfig.colors.muted}>%</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
 
-          {!isValidWeight && (
-            <p className="mt-4 text-red-600 text-sm">
-              ⚠️ Weights must add up to exactly 100%
-            </p>
+              {/* Match Quality Thresholds */}
+              <div>
+                <h2 className={`text-xl font-semibold ${uiConfig.colors.heading} mb-4`}>Match Quality Thresholds</h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(config.matchQuality).map(([level, threshold]) => (
+                    <div key={level} className="flex items-center space-x-4">
+                      <label className={`flex-1 ${uiConfig.colors.body}`}>
+                        {level.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}:
+                      </label>
+                      <input
+                        type="number"
+                        value={threshold}
+                        onChange={(e) => handleSettingChange('matchQuality', level, e.target.value)}
+                        className="w-20 px-3 py-1 border border-border rounded-md focus:ring-2 focus:ring-primary"
+                        min="0"
+                        max="100"
+                      />
+                      <span className={uiConfig.colors.muted}>pts</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           )}
-        </div>
-
-        {/* Match Quality Thresholds */}
-        <div className={`${uiConfig.colors.card} rounded-lg shadow-md p-6 mb-6`}>
-          <h2 className={`text-xl font-semibold ${uiConfig.colors.heading} mb-4`}>Match Quality Thresholds</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries(config.matchQuality).map(([level, threshold]) => (
-              <div key={level} className="flex items-center space-x-4">
-                <label className={`flex-1 ${uiConfig.colors.body}`}>
-                  {level.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}:
-                </label>
-                <input
-                  type="number"
-                  value={threshold}
-                  onChange={(e) => handleSettingChange('matchQuality', level, e.target.value)}
-                  className="w-20 px-3 py-1 border border-border rounded-md focus:ring-2 focus:ring-primary"
-                  min="0"
-                  max="100"
-                />
-                <span className={uiConfig.colors.muted}>pts</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Region Settings */}
@@ -1257,49 +1284,25 @@ const AlgorithmManager = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-end items-center">
           <button
-            onClick={handleReset}
-            className={uiConfig.colors.btnNeutral}
+            onClick={() => navigate('/admin')}
+            className={uiConfig.colors.btnSecondary}
           >
-            Reset to Defaults
+            Back to Admin
           </button>
-
-          <div className="space-x-4">
-            <button
-              onClick={() => navigate('/admin')}
-              className={uiConfig.colors.btnSecondary}
-            >
-              Cancel
-            </button>
-
-            <button
-              onClick={handleSave}
-              disabled={!isValidWeight || saving}
-              className={`${
-                isValidWeight && !saving
-                  ? 'px-6 py-2 rounded-lg bg-red-600 text-white font-bold hover:bg-red-700 transition-colors'
-                  : 'px-6 py-2 rounded-lg bg-gray-300 text-gray-500 cursor-not-allowed transition-colors'
-              }`}
-              title="⚠️ WARNING: This changes the algorithm for ALL USERS system-wide!"
-            >
-              {saving ? 'Saving...' : '⚠️ Save Universal Configuration'}
-            </button>
-          </div>
         </div>
 
-        {/* DANGER ZONE WARNING */}
-        <div className="mt-8 p-4 bg-red-50 border-2 border-red-500 rounded-lg">
-          <h3 className="text-lg font-bold text-red-800 mb-2">⚠️ DANGER ZONE - UNIVERSAL ALGORITHM CHANGES</h3>
-          <ul className="text-sm text-red-700 space-y-1 font-semibold">
-            <li>• 🚨 These changes affect the ENTIRE SYSTEM for ALL USERS</li>
-            <li>• 🚨 This is NOT town-specific - it changes the core algorithm</li>
-            <li>• 🚨 All user searches will use these new weights and thresholds</li>
-            <li>• 🚨 Changes are IMMEDIATE and affect ALL future calculations</li>
+        {/* INFO BOX - Algorithm Configuration */}
+        <div className="mt-8 p-4 bg-blue-50 border-2 border-blue-300 rounded-lg">
+          <h3 className="text-lg font-bold text-blue-800 mb-2">ℹ️ Algorithm Configuration</h3>
+          <ul className="text-sm text-blue-700 space-y-1">
+            <li>• 📊 Use this tool to <strong>test and validate</strong> the current algorithm</li>
+            <li>• 🔬 Select any user + town to see detailed score breakdowns</li>
+            <li>• ⚙️ Algorithm weights are defined in <code className="bg-blue-100 px-1 rounded">src/utils/scoring/config.js</code></li>
+            <li>• 🔄 Changes to config.js require code deployment to take effect</li>
+            <li>• ✅ This ensures consistency and prevents accidental modifications</li>
           </ul>
-          <p className="mt-3 text-sm text-red-800 font-bold">
-            Only modify if you understand the system-wide impact!
-          </p>
         </div>
 
         {/* Info Box */}
