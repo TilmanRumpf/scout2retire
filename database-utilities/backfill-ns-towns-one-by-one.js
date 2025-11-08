@@ -154,7 +154,7 @@ async function queryAndBackfillTown(townName) {
   }
 
   // Build SQL
-  const sql = `UPDATE towns\nSET ${updates.join(',\n    ')}\nWHERE name = '${townName.replace("'", "''")}';`;
+  const sql = `UPDATE towns\nSET ${updates.join(',\n    ')}\nWHERE town_name = '${townName.replace("'", "''")}';`;
 
   sqlStatements.push(`\n-- ${townName}\n${sql}`);
 

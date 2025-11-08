@@ -327,7 +327,7 @@ export default function ScottyGuideEnhanced() {
       if (text.includes('visa') || text.includes('residency')) {
         return `${town.town_name} visa info`;
       }
-      if (text.includes('cost') || text.includes('budget')) {
+      if (text.includes('cost') || text.includes('costs')) {
         return `${town.town_name} costs`;
       }
       if (text.includes('health')) {
@@ -340,7 +340,7 @@ export default function ScottyGuideEnhanced() {
     const text = firstMessage.toLowerCase();
     if (text.includes('recommend')) return 'Town recommendations';
     if (text.includes('visa')) return 'Visa questions';
-    if (text.includes('budget') || text.includes('cost')) return 'Budget planning';
+    if (text.includes('costs') || text.includes('cost')) return 'Costs planning';
     if (text.includes('health')) return 'Healthcare info';
 
     // Use first few words
@@ -368,7 +368,7 @@ export default function ScottyGuideEnhanced() {
     }
 
     synopsis += `\n\nWhat would you like to know about ${name}? I can help with:`;
-    synopsis += `\n• Cost of living and budget planning`;
+    synopsis += `\n• Cost of living and cost planning`;
     synopsis += `\n• Healthcare and medical facilities`;
     synopsis += `\n• Visa requirements and residency`;
     synopsis += `\n• Climate and lifestyle`;
@@ -454,7 +454,7 @@ export default function ScottyGuideEnhanced() {
               <ul className="mt-2">
                 <li>• Finding the perfect retirement destination</li>
                 <li>• Visa requirements and residency</li>
-                <li>• Cost of living and budgeting</li>
+                <li>• Cost of living and cost management</li>
                 <li>• Healthcare and lifestyle</li>
               </ul>
             </div>

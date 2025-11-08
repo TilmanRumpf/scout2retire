@@ -37,9 +37,9 @@ console.log('-- Run each chunk separately\n');
 
 towns.forEach(town => {
   console.log(`-- ${town} - Chunk 1`);
-  console.log(`UPDATE towns SET ${chunk1} WHERE name = '${town}';\n`);
-  
+  console.log(`UPDATE towns SET ${chunk1} WHERE town_name = '${town}';\n`);
+
   console.log(`-- ${town} - Chunk 2`);
-  console.log(`UPDATE towns SET ${chunk2} WHERE name = '${town}';\n`);
+  console.log(`UPDATE towns SET ${chunk2} WHERE town_name = '${town}';\n`);
 });
 

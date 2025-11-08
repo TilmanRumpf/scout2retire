@@ -161,7 +161,7 @@ export function detectTopics(content) {
   const topicPatterns = {
     visa: ['visa', 'residency', 'immigration', 'permit', 'citizen'],
     healthcare: ['health', 'medical', 'doctor', 'hospital', 'insurance'],
-    costs: ['cost', 'price', 'budget', 'expense', 'afford', 'rent', 'buy'],
+    costs: ['cost', 'price', 'expense', 'afford', 'rent', 'buy'],
     climate: ['weather', 'climate', 'temperature', 'rain', 'sun', 'season'],
     culture: ['culture', 'language', 'people', 'community', 'social', 'expat'],
     safety: ['safe', 'crime', 'security', 'dangerous', 'peaceful'],
@@ -226,7 +226,7 @@ export function getTopicCategory(content, townContext = null) {
   if (lowerContent.includes('visa') || lowerContent.includes('residency')) {
     return 'visa';
   }
-  if (lowerContent.includes('budget') || lowerContent.includes('cost')) {
+  if (lowerContent.includes('cost') || lowerContent.includes('expense')) {
     return 'costs';
   }
   if (lowerContent.includes('health') || lowerContent.includes('medical')) {

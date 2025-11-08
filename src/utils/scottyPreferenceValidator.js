@@ -116,10 +116,10 @@ const CLIMATE_PROFILES = {
 };
 
 /**
- * Budget compatibility rules
- * Helps identify when budget doesn't match country/region expectations
+ * Cost compatibility rules
+ * Helps identify when cost doesn't match country/region expectations
  */
-const BUDGET_PROFILES = {
+const COST_PROFILES = {
   'very_low': { max: 1500, suitable: ['Thailand', 'Malaysia', 'Ecuador', 'Mexico (some areas)'] },
   'low': { max: 2000, suitable: ['Portugal', 'Spain', 'Mexico', 'Costa Rica', 'Panama'] },
   'moderate': { max: 3000, suitable: ['Portugal', 'Spain', 'France (some)', 'Italy (some)', 'Canada (some)'] },
@@ -158,10 +158,10 @@ export function detectPreferenceContradictions(userContext, geographicInfo) {
     contradictions.push(...climateContradictions);
   }
 
-  // Check budget contradictions
-  const budgetContradictions = checkBudgetCompatibility(userContext, geographicInfo);
-  if (budgetContradictions.length > 0) {
-    contradictions.push(...budgetContradictions);
+  // Check cost contradictions
+  const costContradictions = checkCostCompatibility(userContext, geographicInfo);
+  if (costContradictions.length > 0) {
+    contradictions.push(...costContradictions);
   }
 
   // Check lifestyle contradictions
@@ -255,33 +255,33 @@ function checkClimateCompatibility(userContext, geographicInfo) {
 }
 
 /**
- * Check if budget aligns with location's typical costs
+ * Check if cost aligns with location's typical costs
  */
-function checkBudgetCompatibility(userContext, geographicInfo) {
+function checkCostCompatibility(userContext, geographicInfo) {
   const contradictions = [];
   const locationName = geographicInfo.name;
   const country = geographicInfo.country || locationName;
 
-  const userBudget = userContext.budget?.total_monthly;
-  if (!userBudget) return contradictions;
+  const userCost = userContext.costs?.total_monthly;
+  if (!userCost) return contradictions;
 
   // High-cost countries
   const highCostCountries = ['United States', 'Canada', 'France', 'Switzerland', 'Norway'];
   const moderateCostCountries = ['Portugal', 'Spain', 'Italy'];
   const lowCostCountries = ['Mexico', 'Thailand', 'Malaysia', 'Ecuador', 'Costa Rica', 'Panama'];
 
-  if (userBudget < 2000 && highCostCountries.includes(country)) {
+  if (userCost < 2000 && highCostCountries.includes(country)) {
     contradictions.push({
-      type: 'budget',
+      type: 'cost',
       severity: 'high',
-      preference: `$${userBudget.toLocaleString()}/month budget`,
+      preference: `$${userCost.toLocaleString()}/month cost`,
       reality: `${locationName} typically requires $3,000-4,500+/month`,
-      suggestion: `With a $${userBudget.toLocaleString()}/month budget, ${locationName} might be challenging. Some smaller towns could work, but it would be tight. Would you like me to suggest more affordable alternatives, or focus on budget-friendly areas within ${locationName}?`,
-      diplomaticPhrase: `I see your budget is around $${userBudget.toLocaleString()}/month. ${locationName} is wonderful, but it tends to be on the higher cost side - most retirees there spend $3,000-4,500+/month. Are you flexible on budget, or should we explore more affordable options that match your other preferences?`
+      suggestion: `With a $${userCost.toLocaleString()}/month cost, ${locationName} might be challenging. Some smaller towns could work, but it would be tight. Would you like me to suggest more affordable alternatives, or focus on cost-friendly areas within ${locationName}?`,
+      diplomaticPhrase: `I see your cost is around $${userCost.toLocaleString()}/month. ${locationName} is wonderful, but it tends to be on the higher cost side - most retirees there spend $3,000-4,500+/month. Are you flexible on cost, or should we explore more affordable options that match your other preferences?`
     });
   }
 
-  if (userBudget > 4000 && lowCostCountries.includes(country)) {
+  if (userCost > 4000 && lowCostCountries.includes(country)) {
     // This is actually good - they can live very well
     // No contradiction, maybe a positive note
   }

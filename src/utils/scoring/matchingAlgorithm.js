@@ -5,7 +5,7 @@
  * 1. Pre-filters towns at database level (50-80% reduction in data transfer)
  * 2. Caches results for 1 hour to avoid redundant calculations
  * 3. Fetches ALL qualifying towns (no 200 limit) for complete matching
- * 4. Smart filtering based on deal-breakers (budget, healthcare, safety)
+ * 4. Smart filtering based on deal-breakers (cost, healthcare, safety)
  * 
  * @module matchingAlgorithm
  */
@@ -90,9 +90,9 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
         political_stability: ['good']
       },
       costs: {
-        total_monthly_budget: 3000,
+        total_monthly_cost: 3000,
         max_monthly_rent: 1200,
-        budget_flexibility: 'moderate'
+        cost_flexibility: 'moderate'
       }
     };
     
@@ -177,13 +177,13 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
         .not('image_url_1', 'eq', '')
         .not('image_url_1', 'ilike', 'NULL');  // Filter out 'NULL' string
     }
-    
+
     // Only apply pre-filtering when NOT requesting specific towns
     if (!townIds || townIds.length === 0) {
-      // REMOVED budget pre-filtering due to scale mismatch
-      // The cost_index in DB is on a different scale (0-100) than user budgets ($3000)
-      // Budget matching is still handled in the scoring phase
-      
+      // REMOVED cost pre-filtering due to scale mismatch
+      // The cost_index in DB is on a different scale (0-100) than user costs ($3000)
+      // Cost matching is still handled in the scoring phase
+
       // Pre-filter by minimum healthcare for users with health concerns
       if (finalUserPreferences.administration?.healthcare_importance === 'excellent' || 
           finalUserPreferences.administration?.healthcare_quality?.includes('good')) {

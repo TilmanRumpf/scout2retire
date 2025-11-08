@@ -331,7 +331,7 @@ export default function OnboardingReview() {
         
       case 'costs':
         // Tier definitions matching OnboardingCosts.jsx
-        const budgetTiers = [
+        const costTiers = [
           { value: 1500, label: '$1,500-2,000' },
           { value: 2000, label: '$2,000-3,000' },
           { value: 3000, label: '$3,000-4,000' },
@@ -361,7 +361,7 @@ export default function OnboardingReview() {
         ];
 
         // Helper to format array values
-        const formatBudgetArray = (values, tiers) => {
+        const formatCostArray = (values, tiers) => {
           if (!values || !Array.isArray(values) || values.length === 0) {
             return 'Not specified';
           }
@@ -379,20 +379,20 @@ export default function OnboardingReview() {
         return (
           <div className={`space-y-1 ${uiConfig.font.size.xs}`}>
             <p>
-              <span className={`${uiConfig.font.weight.medium}`}>Monthly Budget:</span>{' '}
-              {formatBudgetArray(data.total_monthly_budget, budgetTiers)}
+              <span className={`${uiConfig.font.weight.medium}`}>Monthly Cost:</span>{' '}
+              {formatCostArray(data.total_monthly_cost, costTiers)}
             </p>
             <p>
               <span className={`${uiConfig.font.weight.medium}`}>Max Rent:</span>{' '}
-              {formatBudgetArray(data.max_monthly_rent, rentTiers)}
+              {formatCostArray(data.max_monthly_rent, rentTiers)}
             </p>
             <p>
               <span className={`${uiConfig.font.weight.medium}`}>Max Home Price:</span>{' '}
-              {formatBudgetArray(data.max_home_price, homePriceTiers)}
+              {formatCostArray(data.max_home_price, homePriceTiers)}
             </p>
             <p>
-              <span className={`${uiConfig.font.weight.medium}`}>Healthcare Budget:</span>{' '}
-              {healthcareTiers.find(t => t.value === findClosestTier(data.monthly_healthcare_budget, healthcareTiers))?.label || 'Not specified'}/month
+              <span className={`${uiConfig.font.weight.medium}`}>Healthcare Cost:</span>{' '}
+              {healthcareTiers.find(t => t.value === findClosestTier(data.monthly_healthcare_cost, healthcareTiers))?.label || 'Not specified'}/month
             </p>
           </div>
         );
@@ -427,7 +427,7 @@ export default function OnboardingReview() {
     { key: 'culture_preferences', title: 'Culture & Lifestyle', path: '/onboarding/culture' },
     { key: 'hobbies', title: 'Hobbies & Interests', path: '/onboarding/hobbies' },
     { key: 'administration', title: 'Administrative Preferences', path: '/onboarding/administration' },
-    { key: 'costs', title: 'Budget & Costs', path: '/onboarding/costs' }
+    { key: 'costs', title: 'Costs & Taxes', path: '/onboarding/costs' }
   ];
 
   return (

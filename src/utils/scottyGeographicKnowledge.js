@@ -255,10 +255,10 @@ export function formatGeographicContext(geographicInfo, towns, userContext) {
   if (userContext && towns.length > 0) {
     parts.push(`\nUSER MATCH ANALYSIS:`);
 
-    // Budget compatibility
-    if (userContext.budget?.total_monthly) {
-      const affordableTowns = towns.filter(t => t['rent_cost_$'] && t['rent_cost_$'] <= userContext.budget.total_monthly);
-      parts.push(`  • Budget ($${userContext.budget.total_monthly}/mo): ${affordableTowns.length}/${towns.length} towns within budget`);
+    // Cost compatibility
+    if (userContext.costs?.total_monthly) {
+      const affordableTowns = towns.filter(t => t['rent_cost_$'] && t['rent_cost_$'] <= userContext.costs.total_monthly);
+      parts.push(`  • Cost ($${userContext.costs.total_monthly}/mo): ${affordableTowns.length}/${towns.length} towns within cost range`);
     }
 
     // Geographic preferences

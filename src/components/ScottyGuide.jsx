@@ -58,8 +58,8 @@ function ScottyGuide() {
       parts.push(citizenship);
     }
 
-    if (userContext.budget?.total_monthly) {
-      parts.push(`$${userContext.budget.total_monthly.toLocaleString()}/mo`);
+    if (userContext.costs?.total_monthly) {
+      parts.push(`$${userContext.costs.total_monthly.toLocaleString()}/mo`);
     }
 
     return parts.join(' • ');
@@ -138,7 +138,7 @@ What would you like to know about ${name}?`;
         const text = firstUserMessage.text.toLowerCase();
         if (text.includes('visa') || text.includes('move') || text.includes('immigrat')) {
           return `${town.town_name} immigration`;
-        } else if (text.includes('cost') || text.includes('budget')) {
+        } else if (text.includes('cost') || text.includes('costs')) {
           return `${town.town_name} costs`;
         } else if (text.includes('healthcare')) {
           return `${town.town_name} healthcare`;
@@ -202,7 +202,7 @@ What would you like to know about ${name}?`;
     }
     
     // Generic topics (no country mentioned)
-    if (text.includes('budget') || text.includes('afford')) return 'Budget planning';
+    if (text.includes('costs') || text.includes('afford')) return 'Costs planning';
     if (text.includes('healthcare') || text.includes('medical')) return 'Healthcare abroad';
     if (text.includes('visa') || text.includes('residency')) return 'Visa requirements';
     if (text.includes('climate') || text.includes('weather')) return 'Climate preferences';
@@ -537,7 +537,7 @@ What would you like to know about ${name}?`;
     
     if (lowerText.includes('visa') || lowerText.includes('residency')) topics.push('visa');
     if (lowerText.includes('healthcare') || lowerText.includes('medical')) topics.push('healthcare');
-    if (lowerText.includes('cost') || lowerText.includes('budget') || lowerText.includes('expensive')) topics.push('costs');
+    if (lowerText.includes('cost') || lowerText.includes('costs') || lowerText.includes('expensive')) topics.push('costs');
     if (lowerText.includes('tax')) topics.push('taxes');
     if (lowerText.includes('climate') || lowerText.includes('weather')) topics.push('climate');
     if (lowerText.includes('culture') || lowerText.includes('language')) topics.push('culture');
@@ -647,7 +647,7 @@ CRITICAL RULE: Do NOT suggest towns like San Sebastián, Split, Trieste, or any 
     const scottyPersona = `You are Scotty, a friendly and knowledgeable retirement guide (not a professional advisor).
     You help people explore retirement options in a conversational, approachable way.
 
-    ${userInfo ? `USER CONTEXT:\n${userInfo}\n\nALWAYS consider the above user information when providing advice. Make your responses highly personalized based on their citizenship, budget, preferences, and situation.\n` : ''}
+    ${userInfo ? `USER CONTEXT:\n${userInfo}\n\nALWAYS consider the above user information when providing advice. Make your responses highly personalized based on their citizenship, costs, preferences, and situation.\n` : ''}
     ${geographicContext}
     ${townContext}
     ${recentContext}
@@ -675,7 +675,7 @@ CRITICAL RULE: Do NOT suggest towns like San Sebastián, Split, Trieste, or any 
     7. NO long lists or detailed explanations in the first response
     8. Use simple formatting - just **bold** for emphasis, minimal bullet points
     9. Save detailed information for follow-up questions
-    10. When relevant, reference the user's specific situation (e.g., "As a ${userContext?.citizenship?.primary || 'retiree'} citizen..." or "With your budget of $${userContext?.budget?.total_monthly || 'X'}...")
+    10. When relevant, reference the user's specific situation (e.g., "As a ${userContext?.citizenship?.primary || 'retiree'} citizen..." or "With your monthly costs of $${userContext?.costs?.total_monthly || 'X'}...")
     11. If the user has favorited towns, consider mentioning them when relevant (e.g., "I see you've favorited ${userContext?.favorites?.[0]?.town_name || 'some towns'}...")
     
     Remember: You're chatting on a phone screen - be helpful but concise!`;

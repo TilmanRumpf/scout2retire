@@ -146,19 +146,19 @@ BEGIN
     RETURN QUERY
     SELECT
       t.id,
-      t.name,
+      t.town_name,
       t.country,
       'full'::TEXT,
       NOW(),
       NULL::TIMESTAMP
     FROM towns t
-    ORDER BY t.name;
+    ORDER BY t.town_name;
   ELSE
     -- Non-admins get only their accessible towns
     RETURN QUERY
     SELECT
       uta.town_id,
-      t.name,
+      t.town_name,
       t.country,
       uta.access_level,
       uta.granted_at,
@@ -168,7 +168,7 @@ BEGIN
     WHERE uta.user_id = p_user_id
       AND uta.active = true
       AND (uta.expires_at IS NULL OR uta.expires_at > NOW())
-    ORDER BY t.name;
+    ORDER BY t.town_name;
   END IF;
 END;
 $$;

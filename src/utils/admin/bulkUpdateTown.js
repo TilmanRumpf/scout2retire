@@ -74,7 +74,7 @@ const FIELD_EXPLANATIONS = {
   image_url_1: 'Main photo is the first thing users see - towns without photos get skipped',
   climate: 'Climate type (tropical, temperate, etc.) is required for the matching algorithm to work',
   population: 'Population size helps users find towns that match their preference (small village vs city)',
-  cost_of_living_usd: 'Monthly cost helps users filter by budget - algorithm cannot work without this',
+  cost_of_living_usd: 'Monthly cost helps users filter by cost - algorithm cannot work without this',
   healthcare_score: 'Healthcare quality score (0-100) - critical for retirees making health decisions',
   safety_score: 'Safety score (0-100) - users filter by this when choosing where to live',
   climate_description: 'Detailed climate info helps users understand what weather to expect year-round',

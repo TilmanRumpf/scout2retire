@@ -16,7 +16,7 @@ const generateEnhancedInsights = (town, _preferences, scores) => {
   if (scores.region >= 80) insights.push(`Excellent location match in ${town.country}`);
   if (scores.climate >= 80) insights.push(`Climate aligns well with your preferences`);
   if (scores.culture >= 80) insights.push(`Cultural fit matches your lifestyle`);
-  if (scores.cost >= 80) insights.push(`Very affordable for your budget`);
+  if (scores.cost >= 80) insights.push(`Very affordable for your cost`);
   if (scores.admin >= 80) insights.push(`Healthcare and safety meet your standards`);
   if (scores.hobbies >= 80) insights.push(`Many activities you enjoy are available`);
   
@@ -187,8 +187,8 @@ export const convertPreferencesToAlgorithmFormat = (userPreferences) => {
       const costPrefs = userPreferences.costs || userPreferences.cost_preferences || {};
       
       // Only add fields from root level if they actually have values
-      if (userPreferences.total_monthly_budget !== undefined && userPreferences.total_monthly_budget !== null) {
-        costPrefs.total_monthly_budget = userPreferences.total_monthly_budget;
+      if (userPreferences.total_monthly_cost !== undefined && userPreferences.total_monthly_cost !== null) {
+        costPrefs.total_monthly_cost = userPreferences.total_monthly_cost;
       }
       if (userPreferences.max_monthly_rent !== undefined && userPreferences.max_monthly_rent !== null) {
         costPrefs.max_monthly_rent = userPreferences.max_monthly_rent;
@@ -196,8 +196,8 @@ export const convertPreferencesToAlgorithmFormat = (userPreferences) => {
       if (userPreferences.max_home_price !== undefined && userPreferences.max_home_price !== null) {
         costPrefs.max_home_price = userPreferences.max_home_price;
       }
-      if (userPreferences.monthly_healthcare_budget !== undefined && userPreferences.monthly_healthcare_budget !== null) {
-        costPrefs.monthly_healthcare_budget = userPreferences.monthly_healthcare_budget;
+      if (userPreferences.monthly_healthcare_cost !== undefined && userPreferences.monthly_healthcare_cost !== null) {
+        costPrefs.monthly_healthcare_cost = userPreferences.monthly_healthcare_cost;
       }
       if (userPreferences.mobility !== undefined && userPreferences.mobility !== null) {
         costPrefs.mobility = userPreferences.mobility;

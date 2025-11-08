@@ -204,7 +204,7 @@ export default function ComparisonGrid({
           </div>
         );
 
-      case 'budget':
+      case 'costs':
         return (
           <div className="space-y-3">
             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">

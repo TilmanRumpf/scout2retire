@@ -161,15 +161,15 @@ function parseAdminPreferences(prefs) {
 }
 
 /**
- * Parse cost/budget preferences
+ * Parse cost preferences
  */
 function parseCostPreferences(prefs) {
   return {
-    // Use Math.max for budget arrays (semantic: maximum user can afford)
+    // Use Math.max for cost arrays (semantic: maximum user can afford)
     // Field names match what calculateCostScore expects
-    totalMonthlyBudget: extractMaxFromArrayOrValue(prefs.total_monthly_budget),
+    totalMonthlyCost: extractMaxFromArrayOrValue(prefs.total_monthly_cost),
     maxMonthlyRent: extractMaxFromArrayOrValue(prefs.max_monthly_rent),
-    monthlyHealthcareBudget: extractMaxFromArrayOrValue(prefs.monthly_healthcare_budget),
+    monthlyHealthcareCost: extractMaxFromArrayOrValue(prefs.monthly_healthcare_cost),
 
     // Tax sensitivities
     incomeTaxSensitive: Boolean(prefs.income_tax_sensitive),
@@ -178,9 +178,9 @@ function parseCostPreferences(prefs) {
 
     // Helpers
     hasAnyPreferences: Boolean(
-      prefs.total_monthly_budget ||
+      prefs.total_monthly_cost ||
       prefs.max_monthly_rent ||
-      prefs.monthly_healthcare_budget
+      prefs.monthly_healthcare_cost
     )
   };
 }
@@ -273,7 +273,7 @@ function extractFirstOrArray(value) {
 
 /**
  * Extract maximum value from array or return value directly
- * Used for budget fields where maximum = what user can afford
+ * Used for cost fields where maximum = what user can afford
  */
 function extractMaxFromArrayOrValue(value) {
   if (!value) return 0;
@@ -298,7 +298,7 @@ function hasAnyPreferences(prefs) {
     prefs.lifestyle_preferences?.urban_rural_preference?.length ||
     prefs.activities?.length ||
     prefs.healthcare_quality?.length ||
-    prefs.total_monthly_budget
+    prefs.total_monthly_cost
   );
 }
 
@@ -353,9 +353,9 @@ function createEmptyPreferences() {
       hasAnyPreferences: false
     },
     cost: {
-      monthlyBudget: 0,
-      rentBudget: 0,
-      healthcareBudget: 0,
+      monthlyCost: 0,
+      rentCost: 0,
+      healthcareCost: 0,
       incomeTaxSensitive: false,
       propertyTaxSensitive: false,
       salesTaxSensitive: false,

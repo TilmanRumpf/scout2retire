@@ -75,9 +75,9 @@ export default function OnboardingProgress() {
       icon: HousePlus,
       description: 'Your administrative preferences'
     },
-    { 
-      key: 'costs', 
-      label: 'Budget & Costs', 
+    {
+      key: 'costs',
+      label: 'Costs',
       path: '/onboarding/costs',
       icon: DollarSign,
       description: 'Your cost preferences'

@@ -56,7 +56,7 @@ export default function TownRadarChart({ townData }) {
         convertScore(townData.categoryScores.culture || 0),
         convertScore(townData.categoryScores.hobbies || 0),
         convertScore(townData.categoryScores.admin || townData.categoryScores.administration || 0),
-        convertScore(townData.categoryScores.cost || townData.categoryScores.costs || townData.categoryScores.budget || 0)
+        convertScore(townData.categoryScores.cost || townData.categoryScores.costs || 0)
       ];
       
       console.log(`Spider Chart INSTANT for ${townData.town_name}:`, {
@@ -91,7 +91,7 @@ export default function TownRadarChart({ townData }) {
             convertScore(townData.categoryScores.culture || 0),
             convertScore(townData.categoryScores.hobbies || 0),
             convertScore(townData.categoryScores.admin || townData.categoryScores.administration || 0),
-            convertScore(townData.categoryScores.cost || townData.categoryScores.costs || townData.categoryScores.budget || 0)
+            convertScore(townData.categoryScores.cost || townData.categoryScores.costs || 0)
           ];
           
           // Smooth transition from current position to final values

@@ -27,7 +27,7 @@ export default function Welcome() {
             Find Your Perfect Retirement Town
           </h1>
           <p className={`text-xl ${uiConfig.colors.body} mb-8`}>
-            Scout<span className={uiConfig.colors.accent}>2</span>Retire helps you discover ideal retirement locations based on your lifestyle, budget, and preferences.
+            Scout<span className={uiConfig.colors.accent}>2</span>Retire helps you discover ideal retirement locations based on your lifestyle, costs, and preferences.
           </p>
           <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
             <Link
@@ -74,7 +74,7 @@ export default function Welcome() {
                 Personalized Matching
               </h3>
               <p className={uiConfig.colors.body}>
-                Our algorithm finds towns that match your lifestyle, climate preferences, budget, and healthcare needs.
+                Our algorithm finds towns that match your lifestyle, climate preferences, costs, and healthcare needs.
               </p>
             </div>
             <div className={`${uiConfig.colors.input} p-6 rounded-lg`}>

@@ -28,14 +28,14 @@ DROP VIEW IF EXISTS public.scotty_town_analytics CASCADE;
 CREATE VIEW public.scotty_town_analytics AS
 SELECT
   t.id as town_id,
-  t.name as town_name,
+  t.town_name as town_name,
   t.country,
   COUNT(DISTINCT sc.id) as conversation_count,
   COUNT(DISTINCT sc.user_id) as unique_users,
   MAX(sc.last_message_at) as last_discussed
 FROM towns t
 JOIN scotty_conversations sc ON sc.town_id = t.id
-GROUP BY t.id, t.name, t.country;
+GROUP BY t.id, t.town_name, t.country;
 
 GRANT SELECT ON public.scotty_town_analytics TO authenticated;
 
@@ -64,7 +64,7 @@ SELECT
   f.user_id,
   f.created_at,
   f.town_id,
-  t.name,
+  t.town_name,
   t.country,
   t.region,
   t.cost_index,

@@ -313,7 +313,7 @@ export default function Daily() {
       const { data, error } = await supabase
         .from('towns')
         .select('*')
-        .in('name', sampleTownNames)
+        .in('town_name', sampleTownNames)
         .not('image_url_1', 'is', null);
 
       if (error) {

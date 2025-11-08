@@ -356,17 +356,18 @@ FROM scotty_conversations
 GROUP BY DATE_TRUNC('day', started_at);
 
 -- Town-specific Scotty analytics
+DROP VIEW IF EXISTS public.scotty_town_analytics CASCADE;
 CREATE OR REPLACE VIEW public.scotty_town_analytics AS
 SELECT
   t.id as town_id,
-  t.name as town_name,
+  t.town_name as town_name,
   t.country,
   COUNT(DISTINCT sc.id) as conversation_count,
   COUNT(DISTINCT sc.user_id) as unique_users,
   MAX(sc.last_message_at) as last_discussed
 FROM towns t
 JOIN scotty_conversations sc ON sc.town_id = t.id
-GROUP BY t.id, t.name, t.country;
+GROUP BY t.id, t.town_name, t.country;
 
 -- Grant permissions
 GRANT SELECT ON public.scotty_conversation_analytics TO authenticated;

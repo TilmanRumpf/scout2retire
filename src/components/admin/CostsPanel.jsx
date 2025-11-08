@@ -1,7 +1,7 @@
 /**
  * COSTS PANEL - WITH INLINE EDITING
  *
- * Shows cost/budget data with INLINE EDITING capability
+ * Shows cost data with INLINE EDITING capability
  * Follows same pattern as ScoreBreakdownPanel
  *
  * Created: 2025-10-18

@@ -131,6 +131,10 @@ DROP POLICY IF EXISTS "Users can view own conversations" ON scotty_conversations
 DROP POLICY IF EXISTS "Users can insert own conversations" ON scotty_conversations;
 DROP POLICY IF EXISTS "Users can update own conversations" ON scotty_conversations;
 DROP POLICY IF EXISTS "Users can delete own conversations" ON scotty_conversations;
+DROP POLICY IF EXISTS "Users view own scotty conversations" ON scotty_conversations;
+DROP POLICY IF EXISTS "Users create own scotty conversations" ON scotty_conversations;
+DROP POLICY IF EXISTS "Users update own scotty conversations" ON scotty_conversations;
+DROP POLICY IF EXISTS "Users delete own scotty conversations" ON scotty_conversations;
 
 CREATE POLICY "Users view own scotty conversations"
   ON scotty_conversations FOR SELECT
@@ -152,6 +156,8 @@ CREATE POLICY "Users delete own scotty conversations"
 -- Message policies
 DROP POLICY IF EXISTS "Users can view messages from own conversations" ON scotty_messages;
 DROP POLICY IF EXISTS "Users can insert messages to own conversations" ON scotty_messages;
+DROP POLICY IF EXISTS "Users view messages in own conversations" ON scotty_messages;
+DROP POLICY IF EXISTS "Users create messages in own conversations" ON scotty_messages;
 
 CREATE POLICY "Users view messages in own conversations"
   ON scotty_messages FOR SELECT
@@ -172,6 +178,8 @@ CREATE POLICY "Users create messages in own conversations"
 -- Admin policies
 DROP POLICY IF EXISTS "Admins view all scotty conversations" ON scotty_conversations;
 DROP POLICY IF EXISTS "Admins view all scotty messages" ON scotty_messages;
+DROP POLICY IF EXISTS "Admins view all scotty conversations" ON scotty_conversations CASCADE;
+DROP POLICY IF EXISTS "Admins view all scotty messages" ON scotty_messages CASCADE;
 
 CREATE POLICY "Admins view all scotty conversations"
   ON scotty_conversations FOR SELECT
@@ -359,14 +367,14 @@ GROUP BY DATE_TRUNC('day', started_at);
 CREATE OR REPLACE VIEW public.scotty_town_analytics AS
 SELECT
   t.id as town_id,
-  t.name as town_name,
+  t.town_name as town_name,
   t.country,
   COUNT(DISTINCT sc.id) as conversation_count,
   COUNT(DISTINCT sc.user_id) as unique_users,
   MAX(sc.last_message_at) as last_discussed
 FROM towns t
 JOIN scotty_conversations sc ON sc.town_id = t.id
-GROUP BY t.id, t.name, t.country;
+GROUP BY t.id, t.town_name, t.country;
 
 -- Grant permissions
 GRANT SELECT ON public.scotty_conversation_analytics TO authenticated;

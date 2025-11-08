@@ -395,9 +395,9 @@ stillMissing.forEach(town => {
                      town.category?.includes('Asia') ? 'Varied Asian climate' :
                      null;
   
-  sql += `INSERT INTO towns (name, country, region, regions, climate_description)
+  sql += `INSERT INTO towns (town_name, country, region, regions, climate_description)
 SELECT '${town.town_name.replace(/'/g, "''")}', '${town.normalizedCountry.replace(/'/g, "''")}', ${town.region ? `'${town.region.replace(/'/g, "''")}'` : 'NULL'}, ARRAY[${regions.map(r => `'${r.replace(/'/g, "''")}'`).join(', ')}], ${climateDesc ? `'${climateDesc}'` : 'NULL'}
-WHERE NOT EXISTS (SELECT 1 FROM towns WHERE name = '${town.town_name.replace(/'/g, "''")}' AND country = '${town.normalizedCountry.replace(/'/g, "''")}');
+WHERE NOT EXISTS (SELECT 1 FROM towns WHERE town_name = '${town.town_name.replace(/'/g, "''")}' AND country = '${town.normalizedCountry.replace(/'/g, "''")}');
 `;
 });
 

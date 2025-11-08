@@ -30,7 +30,7 @@ SELECT
   f.user_id,
   f.created_at,
   f.town_id,
-  t.name,
+  t.town_name,
   t.country,
   t.region,
   t.cost_index,

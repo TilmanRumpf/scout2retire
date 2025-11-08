@@ -194,11 +194,11 @@ export async function getUserContext(userId) {
       },
 
       // Financial Information
-      budget: {
-        total_monthly: userProfile.total_budget_usd,
+      costs: {
+        total_monthly: userProfile.total_cost_usd,
         max_rent: userProfile.max_rent_usd,
         max_home_price: userProfile.max_home_price_usd,
-        healthcare_budget: userProfile.healthcare_budget_usd,
+        healthcare_cost: userProfile.healthcare_cost_usd,
         priorities: userProfile.financial_priorities || [],
       },
 
@@ -273,7 +273,7 @@ function isUSCitizen(primary, secondary) {
  * @returns {Object} Formatted context
  */
 function formatLegacyContext(userProfile, onboardingData, favorites = []) {
-  const { current_status, region, climate, culture, hobbies, administration, budget } = onboardingData;
+  const { current_status, region, climate, culture, hobbies, administration, costs } = onboardingData;
 
   return {
     personal: {
@@ -376,13 +376,13 @@ function formatLegacyContext(userProfile, onboardingData, favorites = []) {
       government_efficiency: administration?.government_efficiency?.[0],
     },
 
-    budget: {
-      total_monthly: budget?.total_budget,
-      max_rent: budget?.rent_budget,
-      max_purchase: budget?.home_price,
-      healthcare: budget?.healthcare_budget,
-      housing_type: budget?.housing_type,
-      priorities: budget?.financial_priorities || [],
+    costs: {
+      total_monthly: costs?.total_cost,
+      max_rent: costs?.rent_cost,
+      max_purchase: costs?.home_price,
+      healthcare: costs?.healthcare_cost,
+      housing_type: costs?.housing_type,
+      priorities: costs?.financial_priorities || [],
     },
 
     lifestyle_priorities: {
@@ -473,9 +473,9 @@ export function formatContextForPrompt(context) {
     parts.push(`Years to retirement: ${context.timeline.years_until}`);
   }
 
-  // Budget
-  if (context.budget.total_monthly) {
-    parts.push(`Monthly budget: $${context.budget.total_monthly.toLocaleString()}`);
+  // Costs
+  if (context.costs.total_monthly) {
+    parts.push(`Monthly cost: $${context.costs.total_monthly.toLocaleString()}`);
   }
 
   // Geographic preferences
@@ -544,25 +544,25 @@ export function formatContextForPrompt(context) {
     parts.push(`Tax sensitive to: ${taxConcerns.join(', ')}`);
   }
 
-  // Healthcare budget
-  if (context.budget.healthcare) {
-    parts.push(`Healthcare budget: $${context.budget.healthcare}/month`);
+  // Healthcare costs
+  if (context.costs.healthcare) {
+    parts.push(`Healthcare cost: $${context.costs.healthcare}/month`);
   }
 
   // Housing preferences
-  if (context.budget.housing_type) {
-    parts.push(`Housing: ${context.budget.housing_type}`);
+  if (context.costs.housing_type) {
+    parts.push(`Housing: ${context.costs.housing_type}`);
   }
-  if (context.budget.max_rent) {
-    const rentRange = Array.isArray(context.budget.max_rent) ?
-      `$${context.budget.max_rent[0]}-$${context.budget.max_rent[context.budget.max_rent.length - 1]}` :
-      `$${context.budget.max_rent}`;
+  if (context.costs.max_rent) {
+    const rentRange = Array.isArray(context.costs.max_rent) ?
+      `$${context.costs.max_rent[0]}-$${context.costs.max_rent[context.costs.max_rent.length - 1]}` :
+      `$${context.costs.max_rent}`;
     parts.push(`Max rent: ${rentRange}`);
   }
-  if (context.budget.max_purchase) {
-    const purchaseRange = Array.isArray(context.budget.max_purchase) ?
-      `$${context.budget.max_purchase[0].toLocaleString()}-$${context.budget.max_purchase[context.budget.max_purchase.length - 1].toLocaleString()}` :
-      `$${context.budget.max_purchase.toLocaleString()}`;
+  if (context.costs.max_purchase) {
+    const purchaseRange = Array.isArray(context.costs.max_purchase) ?
+      `$${context.costs.max_purchase[0].toLocaleString()}-$${context.costs.max_purchase[context.costs.max_purchase.length - 1].toLocaleString()}` :
+      `$${context.costs.max_purchase.toLocaleString()}`;
     parts.push(`Max purchase price: ${purchaseRange}`);
   }
 

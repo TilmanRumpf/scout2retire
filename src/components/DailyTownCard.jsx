@@ -267,11 +267,11 @@ function DailyTownCard() {
               summaryParts.push("Strong cultural compatibility");
             }
             
-            // Budget savings
+            // Cost savings
             if (town.cost_index) {
               const savings = 2500 - town.cost_index; // Assuming $2500/mo baseline
               if (savings > 0) {
-                summaryParts.push(`Budget-friendly: Save $${Math.round(savings)}/month`);
+                summaryParts.push(`Cost-effective: Save $${Math.round(savings)}/month`);
               }
             }
             

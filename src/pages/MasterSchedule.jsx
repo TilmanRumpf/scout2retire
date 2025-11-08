@@ -158,7 +158,7 @@ export default function MasterSchedule() {
           user_id: userId,
           milestone: 'Financial Planning',
           target_date: getFutureDate(Math.floor(monthsToRetirement * 0.5)),
-          notes: 'Meet with financial advisor to finalize retirement budget and savings plan.'
+          notes: 'Meet with financial advisor to finalize retirement costs and savings plan.'
         },
         {
           user_id: userId,

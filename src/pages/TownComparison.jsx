@@ -473,7 +473,7 @@ export default function TownComparison() {
                          activeCategory === 'culture' ? 'Culture Match' :
                          activeCategory === 'hobbies' ? 'Hobbies Match' :
                          activeCategory === 'administration' ? 'Admin Match' :
-                         activeCategory === 'budget' ? 'Budget Match' :
+                         activeCategory === 'costs' ? 'Costs Match' :
                          ''}
                       </p>
                     </div>

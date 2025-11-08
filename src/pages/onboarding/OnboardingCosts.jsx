@@ -153,11 +153,11 @@ export default function OnboardingCosts() {
   const [initialLoading, setInitialLoading] = useState(true);
   
   const [formData, setFormData] = useState({
-    total_monthly_budget: [], // Now array for multi-select
+    total_monthly_cost: [], // Now array for multi-select
     housing_preference: 'both', // 'rent', 'buy', or 'both'
     max_monthly_rent: [], // Now array for multi-select
     max_home_price: [], // Now array for multi-select
-    monthly_healthcare_budget: 500, // Keep single select for healthcare
+    monthly_healthcare_cost: 500, // Keep single select for healthcare
     mobility: {
       local: [], // Now arrays for multi-select
       regional: [],
@@ -179,9 +179,9 @@ export default function OnboardingCosts() {
   // Enable auto-save for this page
   const autoSave = useOnboardingAutoSave(formData, 'costs');
 
-  // Budget tier options - values represent UPPER bound (max user can afford)
-  const budgetTiers = [
-    { value: 2000, label: '$1,500-2,000', description: 'Budget' },
+  // Cost tier options - values represent UPPER bound (max user can afford)
+  const costTiers = [
+    { value: 2000, label: '$1,500-2,000', description: 'Low cost' },
     { value: 3000, label: '$2,000-3,000', description: 'Moderate' },
     { value: 4000, label: '$3,000-4,000', description: 'Comfortable' },
     { value: 5000, label: '$4,000-5,000', description: 'Premium' },
@@ -190,7 +190,7 @@ export default function OnboardingCosts() {
 
   // Rent tier options - values represent UPPER bound (max user can afford)
   const rentTiers = [
-    { value: 750, label: '$500-750', description: 'Budget' },
+    { value: 750, label: '$500-750', description: 'Entry level' },
     { value: 1000, label: '$750-1,000', description: 'Moderate' },
     { value: 1500, label: '$1,000-1,500', description: 'Comfortable' },
     { value: 2000, label: '$1,500-2,000', description: 'Premium' },
@@ -199,14 +199,14 @@ export default function OnboardingCosts() {
 
   // Home price tier options - values represent UPPER bound (max user can afford)
   const homePriceTiers = [
-    { value: 200000, label: '$100k-200k', description: 'Budget' },
+    { value: 200000, label: '$100k-200k', description: 'Entry level' },
     { value: 300000, label: '$200k-300k', description: 'Moderate' },
     { value: 400000, label: '$300k-400k', description: 'Comfortable' },
     { value: 500000, label: '$400k-500k', description: 'Premium' },
     { value: 600000, label: '$500k+', description: 'Luxury' }
   ];
 
-  // Healthcare budget tier options - values represent UPPER bound (max user can afford)
+  // Healthcare cost tier options - values represent UPPER bound (max user can afford)
   const healthcareTiers = [
     { value: 750, label: '$500-750', description: 'Basic' },
     { value: 1000, label: '$750-1,000', description: 'Standard' },
@@ -291,33 +291,33 @@ export default function OnboardingCosts() {
         
         const progressResult = await getOnboardingProgress(userResult.user.id);
         if (progressResult.success) {
-          if (progressResult.data && (progressResult.data.costs || progressResult.data.budget)) {
-            const budgetData = progressResult.data.costs || progressResult.data.budget;
-            
-            setFormData(prev => ({ 
-              ...prev, 
-              ...budgetData,
+          if (progressResult.data && (progressResult.data.costs || progressResult.data.costs)) {
+            const costData = progressResult.data.costs || progressResult.data.costs;
+
+            setFormData(prev => ({
+              ...prev,
+              ...costData,
               // Convert old single values to arrays if needed
-              total_monthly_budget: Array.isArray(budgetData.total_monthly_budget) 
-                ? budgetData.total_monthly_budget 
-                : (budgetData.total_monthly_budget ? [budgetData.total_monthly_budget] : []),
-              max_monthly_rent: Array.isArray(budgetData.max_monthly_rent)
-                ? budgetData.max_monthly_rent
-                : (budgetData.max_monthly_rent ? [budgetData.max_monthly_rent] : []),
-              max_home_price: Array.isArray(budgetData.max_home_price)
-                ? budgetData.max_home_price
-                : (budgetData.max_home_price ? [budgetData.max_home_price] : []),
+              total_monthly_cost: Array.isArray(costData.total_monthly_cost)
+                ? costData.total_monthly_cost
+                : (costData.total_monthly_cost ? [costData.total_monthly_cost] : []),
+              max_monthly_rent: Array.isArray(costData.max_monthly_rent)
+                ? costData.max_monthly_rent
+                : (costData.max_monthly_rent ? [costData.max_monthly_rent] : []),
+              max_home_price: Array.isArray(costData.max_home_price)
+                ? costData.max_home_price
+                : (costData.max_home_price ? [costData.max_home_price] : []),
               mobility: {
                 // Convert old string format to array, or use existing array
-                local: Array.isArray(budgetData.mobility?.local) 
-                  ? budgetData.mobility.local 
-                  : (budgetData.mobility?.local ? [budgetData.mobility.local] : []),
-                regional: Array.isArray(budgetData.mobility?.regional)
-                  ? budgetData.mobility.regional
-                  : (budgetData.mobility?.regional ? [budgetData.mobility.regional] : []),
-                international: Array.isArray(budgetData.mobility?.international)
-                  ? budgetData.mobility.international
-                  : (budgetData.mobility?.international ? [budgetData.mobility.international] : [])
+                local: Array.isArray(costData.mobility?.local)
+                  ? costData.mobility.local
+                  : (costData.mobility?.local ? [costData.mobility.local] : []),
+                regional: Array.isArray(costData.mobility?.regional)
+                  ? costData.mobility.regional
+                  : (costData.mobility?.regional ? [costData.mobility.regional] : []),
+                international: Array.isArray(costData.mobility?.international)
+                  ? costData.mobility.international
+                  : (costData.mobility?.international ? [costData.mobility.international] : [])
               },
               // Handle legacy need_car data
               need_car: undefined
@@ -335,9 +335,9 @@ export default function OnboardingCosts() {
     loadData();
   }, [navigate]);
 
-  const handleBudgetSelect = (field, value) => {
-    // For single-select fields (housing_preference, monthly_healthcare_budget), keep single select
-    if (field === 'housing_preference' || field === 'monthly_healthcare_budget') {
+  const handleCostSelect = (field, value) => {
+    // For single-select fields (housing_preference, monthly_healthcare_cost), keep single select
+    if (field === 'housing_preference' || field === 'monthly_healthcare_cost') {
       setFormData(prev => ({
         ...prev,
         [field]: value
@@ -345,7 +345,7 @@ export default function OnboardingCosts() {
       return;
     }
 
-    // For budget fields, toggle multi-select
+    // For cost fields, toggle multi-select
     setFormData(prev => {
       const currentValues = Array.isArray(prev[field]) ? prev[field] : [];
       const isSelected = currentValues.includes(value);
@@ -396,13 +396,13 @@ export default function OnboardingCosts() {
       
       
       const { success, error } = await saveOnboardingStep(userResult.user.id, formData, 'costs');
-      
+
       if (!success) {
         toast.error(`Failed to save: ${error?.message || 'Unknown error'}`);
         return;
       }
-      
-      toast.success('Budget information saved!');
+
+      toast.success('Cost information saved!');
       
       // Also save to new user_preferences table
       try {
@@ -448,20 +448,20 @@ export default function OnboardingCosts() {
         <div className={`bg-scout-accent/10 p-3 lg:p-4 ${uiConfig.layout.radius.lg} mb-4 lg:mb-6 flex items-start`}>
           <Lightbulb size={16} className="mr-2 text-orange-500 flex-shrink-0 mt-0.5" strokeWidth={3} />
           <p className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.colors.body}`}>
-            <span className={`${uiConfig.font.weight.medium}`}>Pro Tip:</span> Select budget ranges that match your retirement plans. You can always adjust these later as your preferences evolve.
+            <span className={`${uiConfig.font.weight.medium}`}>Pro Tip:</span> Select cost ranges that match your retirement plans. You can always adjust these later as your preferences evolve.
           </p>
         </div>
         
-        {/* Total Monthly Budget - More compact */}
-        <SelectionSection icon={DollarSign} title="Total Monthly Budget">
+        {/* Total Monthly Cost - More compact */}
+        <SelectionSection icon={DollarSign} title="Total Monthly Cost">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
-            {budgetTiers.map((tier) => (
+            {costTiers.map((tier) => (
               <SelectionCard
                 key={tier.value}
                 title={tier.label}
                 description={tier.description}
-                isSelected={formData.total_monthly_budget?.includes(tier.value)}
-                onClick={() => handleBudgetSelect('total_monthly_budget', tier.value)}
+                isSelected={formData.total_monthly_cost?.includes(tier.value)}
+                onClick={() => handleCostSelect('total_monthly_cost', tier.value)}
                 size="small"
               />
             ))}
@@ -469,7 +469,7 @@ export default function OnboardingCosts() {
         </SelectionSection>
 
         {/* Housing Costs */}
-        <SelectionSection icon={Home} title="Housing Budget">
+        <SelectionSection icon={Home} title="Housing Costs">
           {/* Housing Preference Selector */}
           <div className="mb-4">
             <h4 className={`${uiConfig.font.size.sm} lg:text-base ${uiConfig.font.weight.medium} ${uiConfig.colors.body} mb-3`}>
@@ -482,7 +482,7 @@ export default function OnboardingCosts() {
                   title={option.label}
                   description={option.description}
                   isSelected={formData.housing_preference === option.id}
-                  onClick={() => handleBudgetSelect('housing_preference', option.id)}
+                  onClick={() => handleCostSelect('housing_preference', option.id)}
                   size="small"
                 />
               ))}
@@ -502,7 +502,7 @@ export default function OnboardingCosts() {
                     title={tier.label}
                     description={tier.description}
                     isSelected={formData.max_monthly_rent?.includes(tier.value)}
-                    onClick={() => handleBudgetSelect('max_monthly_rent', tier.value)}
+                    onClick={() => handleCostSelect('max_monthly_rent', tier.value)}
                     size="small"
                   />
                 ))}
@@ -523,7 +523,7 @@ export default function OnboardingCosts() {
                     title={tier.label}
                     description={tier.description}
                     isSelected={formData.max_home_price?.includes(tier.value)}
-                    onClick={() => handleBudgetSelect('max_home_price', tier.value)}
+                    onClick={() => handleCostSelect('max_home_price', tier.value)}
                     size="small"
                   />
                 ))}
@@ -532,16 +532,16 @@ export default function OnboardingCosts() {
           )}
         </SelectionSection>
 
-        {/* Healthcare Budget */}
-        <SelectionSection icon={Heart} title="Monthly Healthcare Budget">
+        {/* Healthcare Cost */}
+        <SelectionSection icon={Heart} title="Monthly Healthcare Cost">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
             {healthcareTiers.map((tier) => (
               <SelectionCard
                 key={tier.value}
                 title={tier.label}
                 description={tier.description}
-                isSelected={findClosestTier(formData.monthly_healthcare_budget, healthcareTiers) === tier.value}
-                onClick={() => handleBudgetSelect('monthly_healthcare_budget', tier.value)}
+                isSelected={findClosestTier(formData.monthly_healthcare_cost, healthcareTiers) === tier.value}
+                onClick={() => handleCostSelect('monthly_healthcare_cost', tier.value)}
                 size="small"
               />
             ))}
@@ -601,8 +601,8 @@ export default function OnboardingCosts() {
           <div className={`${uiConfig.font.size.sm} ${uiConfig.colors.body}`}>
             <span className={`${uiConfig.font.weight.medium}`}>Your Preferences Summary:</span>
             <div className={`mt-2 ${uiConfig.font.size.xs} space-y-1`}>
-              <div>• Total Budget: {formData.total_monthly_budget?.length > 0 
-                ? formData.total_monthly_budget.map(v => budgetTiers.find(t => t.value === v)?.label).filter(Boolean).join(', ')
+              <div>• Total Cost: {formData.total_monthly_cost?.length > 0
+                ? formData.total_monthly_cost.map(v => costTiers.find(t => t.value === v)?.label).filter(Boolean).join(', ')
                 : 'Not selected'}</div>
               <div>• Housing: {housingPreferenceOptions.find(o => o.id === formData.housing_preference)?.label || 'Not selected'}</div>
               {(formData.housing_preference === 'rent' || formData.housing_preference === 'both') && (
@@ -615,7 +615,7 @@ export default function OnboardingCosts() {
                   ? formData.max_home_price.map(v => homePriceTiers.find(t => t.value === v)?.label).filter(Boolean).join(', ')
                   : 'Not selected'}</div>
               )}
-              <div>• Healthcare: {healthcareTiers.find(t => t.value === findClosestTier(formData.monthly_healthcare_budget, healthcareTiers))?.label || 'Not selected'}</div>
+              <div>• Healthcare: {healthcareTiers.find(t => t.value === findClosestTier(formData.monthly_healthcare_cost, healthcareTiers))?.label || 'Not selected'}</div>
               {(formData.mobility.local?.length > 0 || formData.mobility.regional?.length > 0 || formData.mobility.international?.length > 0) && (
                 <div>• Transportation: {[
                   formData.mobility.local?.length > 0 && `Local: ${formData.mobility.local.map(id => localMobilityOptions.find(o => o.id === id)?.label).filter(Boolean).join(', ')}`,

@@ -51,9 +51,9 @@ missingTowns.forEach(town => {
                      null;
   
   sql += `
-INSERT INTO towns (name, country, region, regions, climate_description)
+INSERT INTO towns (town_name, country, region, regions, climate_description)
 SELECT '${escapeSql(town.town_name)}', '${escapeSql(normalizedCountry)}', ${town.region ? `'${escapeSql(town.region)}'` : 'NULL'}, ARRAY[${regions.map(r => `'${escapeSql(r)}'`).join(', ')}], ${climateDesc ? `'${climateDesc}'` : 'NULL'}
-WHERE NOT EXISTS (SELECT 1 FROM towns WHERE name = '${escapeSql(town.town_name)}' AND country = '${escapeSql(normalizedCountry)}');`;
+WHERE NOT EXISTS (SELECT 1 FROM towns WHERE town_name = '${escapeSql(town.town_name)}' AND country = '${escapeSql(normalizedCountry)}');`;
 });
 
 sql += `
@@ -68,7 +68,7 @@ GROUP BY country
 ORDER BY country;
 
 -- Show any specific countries of interest
-SELECT * FROM towns WHERE country IN ('Australia', 'Mexico', 'Portugal', 'Spain', 'Italy') ORDER BY country, name LIMIT 20;
+SELECT * FROM towns WHERE country IN ('Australia', 'Mexico', 'Portugal', 'Spain', 'Italy') ORDER BY country, town_name LIMIT 20;
 `;
 
 // Write to file

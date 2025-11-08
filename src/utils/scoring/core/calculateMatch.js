@@ -7,15 +7,15 @@
  * 3. Culture (15%) - Lifestyle & language
  * 4. Hobbies (10%) - Activities & interests
  * 5. Administration (20%) - Healthcare, safety, visa
- * 6. Cost (20%) - Budget matching
+ * 6. Cost (20%) - Cost matching
  *
  * IMPORTANT LOGIC: Empty preferences = 100% match
  * - When a user has NO preferences in a category, they get 100% for that category
  * - This means "I don't care" = "I'm happy with anything"
  * - Only when users SELECT preferences do we filter/score based on matching
  *
- * Example: User with only budget preference gets:
- * - Cost: Scored based on their budget vs town cost
+ * Example: User with only cost preference gets:
+ * - Cost: Scored based on their cost vs town cost
  * - All other categories: 100% (open to any option)
  *
  * This ensures users see many options unless they specifically narrow them down

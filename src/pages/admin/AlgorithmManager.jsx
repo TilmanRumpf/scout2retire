@@ -12,7 +12,7 @@ import {
   CLIMATE_SETTINGS,
   CULTURE_SETTINGS,
   ADMIN_SETTINGS,
-  BUDGET_SETTINGS,
+  COST_SETTINGS,
   HOBBIES_SETTINGS,
   DEBUG
 } from '../../utils/scoring/config';
@@ -79,7 +79,7 @@ const AlgorithmManager = () => {
     climateSettings: { ...CLIMATE_SETTINGS },
     cultureSettings: { ...CULTURE_SETTINGS },
     adminSettings: { ...ADMIN_SETTINGS },
-    budgetSettings: { ...BUDGET_SETTINGS },
+    costSettings: { ...COST_SETTINGS },
     hobbiesSettings: { ...HOBBIES_SETTINGS },
     debugSettings: { ...DEBUG }
   });
@@ -489,7 +489,7 @@ const AlgorithmManager = () => {
       climateSettings: { ...CLIMATE_SETTINGS },
       cultureSettings: { ...CULTURE_SETTINGS },
       adminSettings: { ...ADMIN_SETTINGS },
-      budgetSettings: { ...BUDGET_SETTINGS },
+      costSettings: { ...COST_SETTINGS },
       hobbiesSettings: { ...HOBBIES_SETTINGS },
       debugSettings: { ...DEBUG }
     });
@@ -970,7 +970,7 @@ const AlgorithmManager = () => {
               <div>
                 <h3 className="text-lg font-semibold text-blue-800 mb-2">Category 6: Cost (19% weight)</h3>
                 <div className="bg-white rounded p-4 space-y-2">
-                  <p className="text-sm"><strong>Purpose:</strong> Match budget requirements</p>
+                  <p className="text-sm"><strong>Purpose:</strong> Match cost requirements</p>
                   <p className="text-sm"><strong>Database Columns:</strong></p>
                   <ul className="text-sm ml-4 list-disc">
                     <li><code>cost_of_living_usd</code> - Monthly living cost</li>
@@ -978,7 +978,7 @@ const AlgorithmManager = () => {
                     <li><code>meal_cost</code>, <code>groceries_cost</code>, <code>utilities_cost</code></li>
                     <li><code>income_tax_rate_pct</code>, <code>sales_tax_rate_pct</code>, <code>property_tax_rate_pct</code></li>
                   </ul>
-                  <p className="text-sm mt-2"><strong>Formula:</strong> Budget ratio scoring (2x budget = 70pts, exact match = 55pts)</p>
+                  <p className="text-sm mt-2"><strong>Formula:</strong> Cost ratio scoring (2x costs = 70pts, exact match = 55pts)</p>
                 </div>
               </div>
             </div>
@@ -1228,11 +1228,11 @@ const AlgorithmManager = () => {
           </div>
         </div>
 
-        {/* Budget Settings */}
+        {/* Cost Settings */}
         <div className={`${uiConfig.colors.card} rounded-lg shadow-md p-6 mb-6`}>
           <div className="flex justify-between items-center mb-4">
             <h2 className={`text-xl font-semibold ${uiConfig.colors.heading}`}>
-              Budget Scoring Settings
+              Cost Scoring Settings
             </h2>
             {testResults?.categoryScores?.cost !== undefined && (
               <span className="text-xl font-bold text-green-600">
@@ -1242,7 +1242,7 @@ const AlgorithmManager = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries(config.budgetSettings).map(([key, value]) => (
+            {Object.entries(config.costSettings).map(([key, value]) => (
               <div key={key} className="flex items-center space-x-4">
                 <label className={`flex-1 ${uiConfig.colors.body} text-sm`}>
                   {key.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}:
@@ -1250,7 +1250,7 @@ const AlgorithmManager = () => {
                 <input
                   type="number"
                   value={value}
-                  onChange={(e) => handleSettingChange('budgetSettings', key, e.target.value)}
+                  onChange={(e) => handleSettingChange('costSettings', key, e.target.value)}
                   className="w-20 px-3 py-1 border border-border rounded-md focus:ring-2 focus:ring-primary"
                   step={key.includes('RATIO') ? 0.1 : 1}
                 />

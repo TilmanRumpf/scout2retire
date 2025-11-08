@@ -689,7 +689,7 @@ export default function FilterBarV3({
                 <option value="culture">Culture Score</option>
                 <option value="hobbies">Hobbies Score</option>
                 <option value="administration">Admin Score</option>
-                <option value="budget">Budget Score</option>
+                <option value="costs">Costs Score</option>
               </select>
             </div>
 
@@ -867,7 +867,7 @@ export default function FilterBarV3({
       <>
       {openDropdown === 'sort' && (
         <PortalDropdown>
-          {['match', 'name', 'cost-low', 'cost-high', 'region', 'climate', 'culture', 'hobbies', 'administration', 'budget'].map(option => (
+          {['match', 'name', 'cost-low', 'cost-high', 'region', 'climate', 'culture', 'hobbies', 'administration', 'costs'].map(option => (
             <button
               key={option}
               onClick={() => {
@@ -889,7 +889,7 @@ export default function FilterBarV3({
                option === 'culture' ? 'Culture Score' :
                option === 'hobbies' ? 'Hobbies Score' :
                option === 'administration' ? 'Admin Score' :
-               'Budget Score'}
+               'Costs Score'}
             </button>
           ))}
         </PortalDropdown>

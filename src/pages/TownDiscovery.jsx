@@ -329,8 +329,8 @@ export default function TownDiscovery() {
       case 'administration':
         filtered.sort((a, b) => ((b.categoryScores?.administration || 0) - (a.categoryScores?.administration || 0)));
         break;
-      case 'budget':
-        filtered.sort((a, b) => ((b.categoryScores?.budget || 0) - (a.categoryScores?.budget || 0)));
+      case 'costs':
+        filtered.sort((a, b) => ((b.categoryScores?.cost || 0) - (a.categoryScores?.cost || 0)));
         break;
       case 'date':
       default:
@@ -476,7 +476,7 @@ export default function TownDiscovery() {
                         { name: "Culture", score: selectedTownData.categoryScores.culture || 0 },
                         { name: "Hobbies", score: selectedTownData.categoryScores.hobbies || 0 },
                         { name: "Admin", score: selectedTownData.categoryScores.administration || 0 },
-                        { name: "Costs", score: selectedTownData.categoryScores.budget || 0 }
+                        { name: "Costs", score: selectedTownData.categoryScores.costs || 0 }
                       ];
                       
                       const best = categories.reduce((max, cat) => cat.score > max.score ? cat : max);
@@ -557,9 +557,9 @@ export default function TownDiscovery() {
                               reasons.push(`Strong admin match`);
                             }
                             
-                            // 6. BUDGET/COSTS (if high match)
-                            if (scores.budget >= 70) {
-                              reasons.push(`Strong budget match`);
+                            // 6. COSTS (if high match)
+                            if (scores.cost >= 70) {
+                              reasons.push(`Strong costs match`);
                             }
                             
                             // Add any specific location info
@@ -916,7 +916,7 @@ export default function TownDiscovery() {
                         { name: "Culture", score: town.categoryScores.culture || 0 },
                         { name: "Hobbies", score: town.categoryScores.hobbies || 0 },
                         { name: "Admin", score: town.categoryScores.administration || 0 },
-                        { name: "Costs", score: town.categoryScores.budget || 0 }
+                        { name: "Costs", score: town.categoryScores.cost || 0 }
                       ];
                       
                       const best = categories.reduce((max, cat) => cat.score > max.score ? cat : max);

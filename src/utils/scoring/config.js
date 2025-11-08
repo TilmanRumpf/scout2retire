@@ -93,20 +93,20 @@ export const ADMIN_SETTINGS = {
   POLITICAL_STABILITY_POINTS: 10
 };
 
-// Budget Scoring Settings
-export const BUDGET_SETTINGS = {
-  // Points for each budget aspect
-  OVERALL_BUDGET_POINTS: 40,
-  RENT_BUDGET_POINTS: 30,
-  HEALTHCARE_BUDGET_POINTS: 20,
+// Cost Scoring Settings
+export const COST_SETTINGS = {
+  // Points for each cost aspect
+  OVERALL_COST_POINTS: 40,
+  RENT_COST_POINTS: 30,
+  HEALTHCARE_COST_POINTS: 20,
   TAX_POINTS: 15,
-  // Budget comfort zones
-  EXCELLENT_VALUE_RATIO: 2.0,    // Budget is 2x the cost
-  COMFORTABLE_MARGIN_RATIO: 1.5, // Budget is 1.5x the cost
-  GOOD_FIT_RATIO: 1.2,           // Budget is 1.2x the cost
-  ADEQUATE_RATIO: 1.0,           // Budget equals cost
-  TIGHT_RATIO: 0.9,              // Budget is 90% of cost
-  CHALLENGING_RATIO: 0.8         // Budget is 80% of cost
+  // Cost comfort zones
+  EXCELLENT_VALUE_RATIO: 2.0,    // Cost is 2x the cost
+  COMFORTABLE_MARGIN_RATIO: 1.5, // Cost is 1.5x the cost
+  GOOD_FIT_RATIO: 1.2,           // Cost is 1.2x the cost
+  ADEQUATE_RATIO: 1.0,           // Cost equals cost
+  TIGHT_RATIO: 0.9,              // Cost is 90% of cost
+  CHALLENGING_RATIO: 0.8         // Cost is 80% of cost
 };
 
 // Hobbies Scoring Settings

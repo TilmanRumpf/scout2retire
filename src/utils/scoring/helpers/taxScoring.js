@@ -2,7 +2,7 @@
  * TAX SCORING HELPER
  *
  * Provides comprehensive tax scoring logic for preference matching.
- * Used in both Admin scoring (government quality) and Cost scoring (budget fit).
+ * Used in both Admin scoring (government quality) and Cost scoring (cost fit).
  *
  * Created: 2025-10-17
  * Purpose: Eliminate duplication between adminScoring.js and costScoring.js

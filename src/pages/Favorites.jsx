@@ -337,8 +337,8 @@ export default function Favorites() {
       case 'administration':
         filtered.sort((a, b) => ((b.categoryScores?.administration || 0) - (a.categoryScores?.administration || 0)));
         break;
-      case 'budget':
-        filtered.sort((a, b) => ((b.categoryScores?.budget || 0) - (a.categoryScores?.budget || 0)));
+      case 'costs':
+        filtered.sort((a, b) => ((b.categoryScores?.cost || 0) - (a.categoryScores?.cost || 0)));
         break;
       case 'date':
       default:
@@ -592,7 +592,7 @@ export default function Favorites() {
                             appealStatement={
                               isFav ? "Saved favorite" :
                               searchTerm ? "Add to favorites" :
-                              town.cost_index <= 1500 ? "Budget-friendly" :
+                              town.cost_index <= 1500 ? "Cost-effective" :
                               town.matchScore >= 80 ? "Strong match" :
                               town.healthcare_score >= 8 ? "Great healthcare" :
                               "Saved favorite"

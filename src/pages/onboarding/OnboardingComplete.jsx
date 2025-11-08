@@ -101,11 +101,11 @@ export default function OnboardingComplete() {
     
     const summary = [];
     
-    if (userPreferences.costs?.total_monthly_budget) {
+    if (userPreferences.costs?.total_monthly_cost) {
       summary.push({
         icon: DollarSign,
         label: 'Costs',
-        value: `$${userPreferences.costs.total_monthly_budget}/month`
+        value: `$${userPreferences.costs.total_monthly_cost}/month`
       });
     }
     

@@ -137,19 +137,19 @@ export function formatUserAdminPrefs(adminPrefs) {
  * Format user's cost preferences for display
  */
 export function formatUserCostPrefs(costPrefs) {
-  if (!costPrefs) return { text: 'No budget constraints', items: [] };
+  if (!costPrefs) return { text: 'No cost constraints', items: [] };
 
   const items = [];
 
-  if (costPrefs.monthly_budget) {
-    items.push(`Budget: $${costPrefs.monthly_budget}/mo`);
+  if (costPrefs.monthly_cost) {
+    items.push(`Cost: $${costPrefs.monthly_cost}/mo`);
   }
-  if (costPrefs.rent_budget) {
-    items.push(`Rent max: $${costPrefs.rent_budget}/mo`);
+  if (costPrefs.rent_cost) {
+    items.push(`Rent max: $${costPrefs.rent_cost}/mo`);
   }
 
   return {
-    text: items.length > 0 ? items.join(' • ') : 'No budget constraints',
+    text: items.length > 0 ? items.join(' • ') : 'No cost constraints',
     items
   };
 }
