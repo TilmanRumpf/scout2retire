@@ -1030,30 +1030,63 @@ Return ONLY a JSON array of town names that best match this inspiration, maximum
 
                     {/* Featured Towns */}
                     {inspiration.typical_town_examples && inspiration.typical_town_examples.length > 0 && (() => {
-                      // Filter to only show towns that have images (exist in allTowns which is already filtered)
-                      const validTownNames = allTowns.map(t => t.town_name);
-                      const townsWithImages = inspiration.typical_town_examples.filter(name => validTownNames.includes(name));
+                      // Show ALL towns, color-coded by whether they have images
+                      const allTownsList = inspiration.typical_town_examples;
+                      const townsWithImages = allTownsList.filter(name => allTowns.some(t => t.town_name === name));
+                      const townsWithoutImages = allTownsList.filter(name => !allTowns.some(t => t.town_name === name));
 
-                      if (townsWithImages.length === 0) return null;
+                      const handleTownClick = async (townName) => {
+                        // Find town ID from database
+                        const { data, error } = await supabase
+                          .from('towns')
+                          .select('id')
+                          .eq('town_name', townName)
+                          .single();
+
+                        if (error) {
+                          toast.error('Town not found');
+                          console.error('Error finding town:', error);
+                          return;
+                        }
+
+                        if (data?.id) {
+                          // Navigate to Town Manager with this town selected
+                          navigate(`/admin/towns-manager?town=${data.id}`);
+                        }
+                      };
+
+                      if (allTownsList.length === 0) return null;
 
                       return (
                         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                           <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Featured Towns ({townsWithImages.length}):
-                            {townsWithImages.length < inspiration.typical_town_examples.length && (
-                              <span className="ml-2 text-xs text-orange-600 dark:text-orange-400">
-                                ({inspiration.typical_town_examples.length - townsWithImages.length} hidden - no images)
-                              </span>
-                            )}
+                            Featured Towns ({allTownsList.length}):
+                            <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                              ({townsWithImages.length} with photos, {townsWithoutImages.length} need photos)
+                            </span>
                           </p>
                           <div className="flex flex-wrap gap-2">
+                            {/* Towns WITH images - GREEN */}
                             {townsWithImages.map((town, idx) => (
-                              <span
-                                key={idx}
-                                className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded"
+                              <button
+                                key={`with-${idx}`}
+                                onClick={() => handleTownClick(town)}
+                                className="px-2 py-1 text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded hover:bg-green-200 dark:hover:bg-green-800 transition-colors cursor-pointer border border-green-300 dark:border-green-700"
+                                title="Click to open in Town Manager (has photos)"
                               >
                                 {town}
-                              </span>
+                              </button>
+                            ))}
+                            {/* Towns WITHOUT images - RED */}
+                            {townsWithoutImages.map((town, idx) => (
+                              <button
+                                key={`without-${idx}`}
+                                onClick={() => handleTownClick(town)}
+                                className="px-2 py-1 text-xs bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded hover:bg-red-200 dark:hover:bg-red-800 transition-colors cursor-pointer border border-red-300 dark:border-red-700"
+                                title="Click to open in Town Manager (needs photos!)"
+                              >
+                                {town}
+                              </button>
                             ))}
                           </div>
                         </div>
