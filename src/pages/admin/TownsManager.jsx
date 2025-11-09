@@ -1895,7 +1895,7 @@ const TownsManager = () => {
                           />
                         </button>
                         <span className={`text-xs font-medium ${selectedTown.is_published ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
-                          {selectedTown.is_published ? '✅ Published' : '⚠️ Draft'}
+                          {selectedTown.is_published ? 'Published' : 'Unpublished'}
                         </span>
                       </div>
                     </div>

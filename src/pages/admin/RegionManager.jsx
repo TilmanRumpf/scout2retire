@@ -249,7 +249,23 @@ const RegionManager = () => {
   };
 
   const handleToggleActive = async (id, currentStatus) => {
-    await handleUpdate(id, { is_active: !currentStatus });
+    const newStatus = !currentStatus;
+    const { error } = await supabase
+      .from('regional_inspirations')
+      .update({ is_active: newStatus })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating inspiration:', error);
+      toast.error('Failed to update inspiration');
+    } else {
+      toast.success(
+        newStatus
+          ? '✅ Inspiration published - now visible on Daily page'
+          : '⚠️ Inspiration unpublished - hidden from users'
+      );
+      loadInspirations();
+    }
   };
 
   const handleReorder = async (id, direction) => {
@@ -1083,7 +1099,7 @@ Return ONLY a JSON array of town names that best match this inspiration, maximum
                             {inspiration.title}
                           </h3>
 
-                          {/* Active/Inactive Toggle Switch */}
+                          {/* Published/Unpublished Toggle Switch */}
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => handleToggleActive(inspiration.id, inspiration.is_active)}
@@ -1091,7 +1107,7 @@ Return ONLY a JSON array of town names that best match this inspiration, maximum
                                 relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
                                 ${inspiration.is_active ? 'bg-green-600' : 'bg-gray-300 dark:bg-gray-600'}
                               `}
-                              title={inspiration.is_active ? 'Active - Click to deactivate' : 'Inactive - Click to activate'}
+                              title={inspiration.is_active ? 'Published - Click to unpublish' : 'Unpublished - Click to publish'}
                             >
                               <span
                                 className={`
@@ -1101,7 +1117,7 @@ Return ONLY a JSON array of town names that best match this inspiration, maximum
                               />
                             </button>
                             <span className={`text-xs font-medium ${inspiration.is_active ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
-                              {inspiration.is_active ? '✅ Active' : '⚠️ Inactive'}
+                              {inspiration.is_active ? 'Published' : 'Unpublished'}
                             </span>
                           </div>
                         </div>
