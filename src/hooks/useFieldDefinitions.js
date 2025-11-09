@@ -11,15 +11,34 @@ export function useFieldDefinitions() {
   }, []);
   
   const fetchFieldDefinitions = async () => {
-    // DISABLED: Config row doesn't exist in database yet
-    // This feature is not currently in use - returning empty definitions
-    // to prevent 406 HTTP errors in console
-    setFieldDefinitions({});
-    setLoading(false);
+    try {
+      // NEW: Fetch from field_search_templates table
+      const { data, error } = await supabase
+        .from('field_search_templates')
+        .select('*')
+        .eq('status', 'active');
 
-    // TODO: If field definitions are needed, create the config row:
-    // INSERT INTO towns (id, audit_data) VALUES
-    // ('ffffffff-ffff-ffff-ffff-ffffffffffff', '{"field_definitions": {}}');
+      if (error) throw error;
+
+      // Build definitions object keyed by field_name
+      const definitions = {};
+      data?.forEach(template => {
+        definitions[template.field_name] = {
+          search_template: template.search_template,
+          expected_format: template.expected_format,
+          audit_question: template.human_description,
+          search_query: template.search_template,
+          search_terms: template.field_name
+        };
+      });
+
+      setFieldDefinitions(definitions);
+    } catch (error) {
+      console.error('Error fetching field definitions:', error);
+      setFieldDefinitions({});
+    } finally {
+      setLoading(false);
+    }
   };
   
   // Get audit question for a field, replacing placeholders

@@ -33,28 +33,29 @@ const FieldDefinitionEditor = ({
   
   const loadFieldDefinition = async () => {
     try {
+      // NEW: Fetch from field_search_templates table
       const { data, error } = await supabase
-        .from('towns')
-        .select('audit_data')
-        .eq('id', 'ffffffff-ffff-ffff-ffff-ffffffffffff')
-        .single();
-      
+        .from('field_search_templates')
+        .select('*')
+        .eq('field_name', fieldName)
+        .eq('status', 'active')
+        .maybeSingle();
+
       if (error) throw error;
-      
-      if (data?.audit_data?.field_definitions?.[fieldName]) {
-        const fieldDef = data.audit_data.field_definitions[fieldName];
+
+      if (data) {
         // Extract just the search terms (remove placeholders)
-        let terms = fieldDef.search_query || '';
+        let terms = data.search_template || '';
         terms = terms
           .replace(/{town_name}/g, '')
           .replace(/{country}/g, '')
           .replace(/{region}/g, '')
           .trim();
-        
-        setSearchTerms(fieldDef.search_terms || terms || '');
-        setAuditQuestion(fieldDef.audit_question || '');
-        setVerificationLevel(fieldDef.verification_level || 3);
-        setVerificationNote(fieldDef.verification_note || '');
+
+        setSearchTerms(terms || '');
+        setAuditQuestion(data.human_description || '');
+        setVerificationLevel(3); // Default verification level
+        setVerificationNote(''); // Not stored in new system
       }
     } catch (error) {
       console.error('Error loading field definition:', error);
@@ -67,42 +68,30 @@ const FieldDefinitionEditor = ({
   const saveFieldDefinition = async () => {
     setSaving(true);
     try {
-      // Get current data
-      const { data: currentData, error: fetchError } = await supabase
-        .from('towns')
-        .select('audit_data')
-        .eq('id', 'ffffffff-ffff-ffff-ffff-ffffffffffff')
-        .single();
-      
-      if (fetchError) throw fetchError;
-      
-      // Update the field definition
-      const updatedFieldDefinitions = {
-        ...currentData.audit_data.field_definitions,
-        [fieldName]: {
-          ...currentData.audit_data.field_definitions[fieldName],
-          search_terms: searchTerms,
-          search_query: getSearchPattern().map(p => `{${p}}`).join(' ') + ' ' + searchTerms,
-          audit_question: auditQuestion,
-          verification_level: verificationLevel,
-          verification_note: verificationNote
-        }
-      };
-      
-      // Save back to database
-      const { error: updateError } = await supabase
-        .from('towns')
-        .update({
-          audit_data: {
-            ...currentData.audit_data,
-            field_definitions: updatedFieldDefinitions
-          }
-        })
-        .eq('id', 'ffffffff-ffff-ffff-ffff-ffffffffffff');
-      
-      if (updateError) throw updateError;
-      
-      toast.success(`✅ Updated "${fieldName}" for ALL towns!`);
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Build search template with placeholders
+      const searchTemplate = getSearchPattern().map(p => `{${p}}`).join(' ') + ' ' + searchTerms;
+
+      // NEW: Upsert to field_search_templates table
+      const { error: upsertError } = await supabase
+        .from('field_search_templates')
+        .upsert({
+          field_name: fieldName,
+          search_template: searchTemplate.trim(),
+          expected_format: '', // Could be enhanced in future
+          human_description: auditQuestion,
+          status: 'active',
+          updated_by: user?.id || null,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'field_name'
+        });
+
+      if (upsertError) throw upsertError;
+
+      toast.success(`✅ Updated "${fieldName}" template!`);
       onClose();
     } catch (error) {
       console.error('Error saving:', error);
