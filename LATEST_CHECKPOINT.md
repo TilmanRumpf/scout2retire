@@ -5,7 +5,7 @@
 ### Quick Restore Commands
 ```bash
 # Current checkpoint (Photo System Overhaul)
-git checkout <COMMIT_HASH_PENDING>
+git checkout 03cc58c
 
 # Previous checkpoint (Pre-Photo-Upload-Refactor)
 git checkout 6c7a446
@@ -202,7 +202,7 @@ Created comprehensive 5-page report: `PRE_PRODUCTION_QUALITY_AUDIT.md`
 - Database triggers auto-sync primary image to `towns.image_url_1`
 - Backward compatible with legacy `image_url_1/2/3` system
 - **Status:** 🟢 STABLE - Major architecture upgrade complete
-- **Git:** (pending commit)
+- **Git:** 03cc58c
 - **Snapshot:** 2025-11-09T00-05-03
 - **Report:** docs/project-history/CHECKPOINT_2025-11-08_Photo-System-Overhaul.md
 
@@ -344,7 +344,7 @@ Created comprehensive 5-page report: `PRE_PRODUCTION_QUALITY_AUDIT.md`
 ---
 
 **Last Updated:** November 8, 2025 19:05 PST
-**Git Commit:** (pending) (Photo System Overhaul)
+**Git Commit:** 03cc58c (Photo System Overhaul)
 **Previous Commit:** 6c7a446 (Pre-Photo-Upload-Refactor)
 **Database Snapshot:** 2025-11-09T00-05-03
 **System Status:** 🟢 STABLE - PHOTO SYSTEM OVERHAUL COMPLETE
