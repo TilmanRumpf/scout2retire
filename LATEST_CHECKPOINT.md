@@ -4,7 +4,10 @@
 
 ### Quick Restore Commands
 ```bash
-# Current checkpoint (CRITICAL FIX - Auto-Generate Templates + Column Names)
+# Current checkpoint (CRITICAL FIX - Template Stability + Full Text Display)
+git checkout 5448a98
+
+# Previous checkpoint (CRITICAL FIX - Auto-Generate Templates + Column Names)
 git checkout 419364e
 
 # Previous checkpoint (Phases 2 & 3 Complete - Template Manager + Optimistic Locking)
@@ -22,13 +25,18 @@ node restore-database-snapshot.js 2025-11-09T01-52-26
 
 ### What Was Accomplished
 
-**CRITICAL FIX (Nov 9, 2025): AUTO-GENERATE MISSING TEMPLATES**
-- ✅ **FIXED**: "No active template found" errors in console
-- ✅ **AUTO-GENERATION**: Templates now auto-generate on first use via Claude Haiku
-- ✅ **COLUMN NAMES**: All field names show database column in parentheses
-- ✅ **COST**: ~$0.001 per template (166 missing × $0.001 = $0.17 total)
-- ✅ **GRADUAL**: Templates created as needed, not all at once
-- ✅ **QUALITY**: AI-generated templates saved to database for reuse
+**CRITICAL FIX #2 (Nov 9, 2025): TEMPLATE STABILITY + FULL TEXT**
+- ✅ **REMOVED**: On-demand auto-generation (broke comparability)
+- ✅ **BATCH SCRIPT**: Created batch-generate-all-templates.js for ONE-TIME generation
+- ✅ **STATIC TEMPLATES**: All towns now use SAME template per field
+- ✅ **FULL TEXT**: Removed 100-char truncation, admins see complete content
+- ✅ **SCROLLABLE**: Added scrollable containers for long text
+- ✅ **COMPARABLE**: Data now comparable across all 351 towns
+
+**CRITICAL FIX #1 (Nov 9, 2025): AUTO-GENERATE MISSING TEMPLATES** (REVERTED)
+- ❌ **REVERTED**: Auto-generation on first use (created comparability issues)
+- ✅ **COLUMN NAMES**: All field names show database column in parentheses (KEPT)
+- ✅ **BATCH APPROACH**: Replaced with one-time batch generation
 
 **PHASES 2 & 3: TEMPLATE MANAGER UI + OPTIMISTIC LOCKING - COMPLETED**
 - ✅ **CREATED**: Template Manager admin page at /admin/templates
