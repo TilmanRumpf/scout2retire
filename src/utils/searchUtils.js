@@ -82,7 +82,7 @@ export async function searchTownsByCountry(country, filters = {}) {
 
     // Order by region and name for organized display
     query = query.order('region', { ascending: true })
-                 .order('name', { ascending: true })
+                 .order('town_name', { ascending: true })
                  .limit(100);
 
     const { data, error } = await query;

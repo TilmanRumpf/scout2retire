@@ -242,6 +242,7 @@ const TownsManager = () => {
 
   // Add Town modal state
   const [addTownModalOpen, setAddTownModalOpen] = useState(false);
+  const [initialTownName, setInitialTownName] = useState('');
 
   // Audit state - stores confidence level per field
   const [auditResults, setAuditResults] = useState({});
@@ -257,7 +258,7 @@ const TownsManager = () => {
   // Global field search state
   const [fieldSearchQuery, setFieldSearchQuery] = useState('');
   const [showFieldDropdown, setShowFieldDropdown] = useState(false);
-  const [highlightedField, setHighlightedField] = useState(null);
+  const [highlightedField, setHighlightedField] = useState(null); // Used by both search and wizard
   
   // Get field definitions for audit questions
   const { getAuditQuestion, getSearchQuery, getFieldDefinition, refreshDefinitions } = useFieldDefinitions();
@@ -499,6 +500,24 @@ const TownsManager = () => {
       }
     }
   }, [towns, location.search, selectedTown]);
+
+  // Handle ?action=add&name=TownName query params (from fuzzy match workflow in RegionManager)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const action = params.get('action');
+    const name = params.get('name');
+
+    if (action === 'add' && name) {
+      console.log('🏙️ Auto-opening Add Town modal with pre-filled name:', name);
+      setInitialTownName(name);
+      setAddTownModalOpen(true);
+
+      // Clean up URL after opening modal (remove query params)
+      setTimeout(() => {
+        navigate('/admin/towns-manager', { replace: true });
+      }, 100);
+    }
+  }, [location.search, navigate]);
 
   // Save selectedTown to localStorage whenever it changes
   useEffect(() => {
@@ -855,6 +874,14 @@ const TownsManager = () => {
     const newPublishedState = !town.is_published;
     const actionText = newPublishedState ? 'Publishing' : 'Unpublishing';
 
+    // VALIDATION: Cannot publish town without primary image
+    if (newPublishedState && !town.image_url_1) {
+      toast.error('❌ Cannot publish town without a primary image! Upload a photo first.', {
+        duration: 5000
+      });
+      return;
+    }
+
     try {
       toast.loading(`${actionText} ${town.town_name}...`, { id: 'publish-toggle' });
 
@@ -1123,22 +1150,28 @@ const TownsManager = () => {
         return;
       }
 
-      toast(`Found ${analysis.totalIssues} ${updateMode} fields. Generating AI suggestions...`);
+      toast.success(`Found ${analysis.totalIssues} ${updateMode} fields. Generating suggestions...`);
 
-      // 3. Generate suggestions for ALL priority fields (no limit)
-      const fieldsToUpdate = analysis.priorityFields;
-
+      // 3. Generate AI suggestions for each priority field
       const suggestions = await generateUpdateSuggestions(
+        selectedTown.id,
+        analysis.priorityFields,
         selectedTown,
-        fieldsToUpdate,
-        (progress) => {
-          setGenerationProgress(progress);
+        (field, progress, total) => {
+          setGenerationProgress({ field, current: progress, total });
+          toast(`Researching ${field}... (${progress}/${total})`);
         }
       );
 
+      if (!suggestions || suggestions.length === 0) {
+        toast.error('Failed to generate suggestions');
+        return;
+      }
+
+      // 4. Show suggestions in modal
       setUpdateSuggestions(suggestions);
       setUpdateModalOpen(true);
-      toast.success(`Generated ${suggestions.length} update suggestions`);
+      toast.success(`Generated ${suggestions.length} suggestions!`);
     } catch (error) {
       console.error('Update analysis error:', error);
       toast.error(`Failed to analyze town: ${error.message}`);
@@ -1150,8 +1183,8 @@ const TownsManager = () => {
 
   // Apply selected bulk updates
   const handleApplyUpdates = async (selectedUpdates) => {
-    if (!selectedTown || !currentUserId) {
-      toast.error('Missing town or user information');
+    if (!selectedTown) {
+      toast.error('Missing town information');
       return;
     }
 
@@ -1159,7 +1192,6 @@ const TownsManager = () => {
       const result = await applyBulkUpdates(
         selectedTown.id,
         selectedUpdates,
-        currentUserId,
         supabase
       );
 
@@ -1173,9 +1205,16 @@ const TownsManager = () => {
       setTowns(prev => prev.map(t => t.id === updatedTown.id ? updatedTown : t));
       setFilteredTowns(prev => prev.map(t => t.id === updatedTown.id ? updatedTown : t));
 
-      toast.success(`Successfully updated ${result.updatedFields.length} fields!`);
-      setUpdateModalOpen(false);
-      setUpdateSuggestions([]);
+      toast.success(`Successfully updated ${result.updatedFields?.length || 0} fields!`);
+
+      // KEEP MODAL OPEN for single-field updates, close only for bulk updates
+      // This prevents users from having to regenerate expensive AI suggestions
+      const isBulkUpdate = selectedUpdates.length > 1;
+      if (isBulkUpdate) {
+        setUpdateModalOpen(false);
+        setUpdateSuggestions([]);
+      }
+      // Single-field updates keep modal open so user can continue applying other fields
     } catch (error) {
       console.error('Apply updates error:', error);
       toast.error(`Failed to apply updates: ${error.message}`);
@@ -1467,14 +1506,19 @@ const TownsManager = () => {
       }
     }
     
-    // Build update object with updated_by tracking
+    // Build update object
     const updateData = {
       [column]: valueToSave
     };
 
-    // Add updated_by if we have a current user
-    if (currentUserId) {
-      updateData.updated_by = currentUserId;
+    // AUTO-TRACK: Add current user as last modifier
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id) {
+        updateData.updated_by = user.id;
+      }
+    } catch (error) {
+      console.warn('Could not get current user for tracking:', error);
     }
 
     const { data, error } = await supabase
@@ -1881,11 +1925,18 @@ const TownsManager = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleTogglePublish(selectedTown)}
+                          disabled={!selectedTown.is_published && !selectedTown.image_url_1}
                           className={`
                             relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-                            ${selectedTown.is_published ? 'bg-green-600' : 'bg-gray-300 dark:bg-gray-600'}
+                            ${selectedTown.is_published ? 'bg-green-600' : !selectedTown.image_url_1 ? 'bg-red-400 dark:bg-red-600 cursor-not-allowed opacity-50' : 'bg-gray-300 dark:bg-gray-600'}
                           `}
-                          title={selectedTown.is_published ? 'Published - Click to unpublish' : 'Unpublished - Click to publish'}
+                          title={
+                            !selectedTown.image_url_1
+                              ? '🚫 Cannot publish: No primary image (upload photo first)'
+                              : selectedTown.is_published
+                                ? 'Published - Click to unpublish'
+                                : 'Unpublished - Click to publish'
+                          }
                         >
                           <span
                             className={`
@@ -1894,8 +1945,8 @@ const TownsManager = () => {
                             `}
                           />
                         </button>
-                        <span className={`text-xs font-medium ${selectedTown.is_published ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
-                          {selectedTown.is_published ? 'Published' : 'Unpublished'}
+                        <span className={`text-xs font-medium ${selectedTown.is_published ? 'text-green-600 dark:text-green-400' : !selectedTown.image_url_1 ? 'text-red-500 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                          {selectedTown.is_published ? 'Published' : !selectedTown.image_url_1 ? 'No Image' : 'Unpublished'}
                         </span>
                       </div>
                     </div>
@@ -2014,7 +2065,7 @@ const TownsManager = () => {
                       </button>
                     </div>
                   </div>
-                  {selectedTown._errors.length > 0 && (
+                  {selectedTown._errors && selectedTown._errors.length > 0 && (
                     <div className={`mt-2 p-3 ${uiConfig.colors.statusError} rounded border ${uiConfig.colors.border}`}>
                       <h3 className={`font-semibold ${uiConfig.colors.errorText} mb-1`}>Detected Errors:</h3>
                       <ul className={`text-sm ${uiConfig.colors.errorText} list-disc list-inside`}>
@@ -2348,7 +2399,11 @@ const TownsManager = () => {
       {/* Add Town Modal */}
       <AddTownModal
         isOpen={addTownModalOpen}
-        onClose={() => setAddTownModalOpen(false)}
+        onClose={() => {
+          setAddTownModalOpen(false);
+          setInitialTownName(''); // Clear initial name when closing
+        }}
+        initialTownName={initialTownName}
         onTownAdded={async (newTown) => {
           // Refresh towns list and get the enriched towns array
           const enrichedTowns = await loadTowns();
@@ -2359,7 +2414,7 @@ const TownsManager = () => {
         }}
       />
 
-      {/* Update Town Modal - AI-powered bulk updates */}
+      {/* Update Town Modal - AI-powered bulk updates (DEPRECATED - use wizard instead) */}
       <UpdateTownModal
         isOpen={updateModalOpen}
         onClose={() => {
@@ -2375,6 +2430,7 @@ const TownsManager = () => {
         generationProgress={generationProgress}
         mode={updateMode}
       />
+
     </div>
   );
 };

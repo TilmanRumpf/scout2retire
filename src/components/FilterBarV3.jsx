@@ -105,23 +105,23 @@ export default function FilterBarV3({
     // Sort to prioritize exact matches and country matches
     filtered.sort((a, b) => {
       // Exact town name match comes first
-      const aNameMatch = a.name.toLowerCase() === search;
-      const bNameMatch = b.name.toLowerCase() === search;
+      const aNameMatch = a.town_name.toLowerCase() === search;
+      const bNameMatch = b.town_name.toLowerCase() === search;
       if (aNameMatch && !bNameMatch) return -1;
       if (!aNameMatch && bNameMatch) return 1;
-      
+
       // Then prioritize country matches
       const aCountryMatch = a.country?.toLowerCase().includes(search);
       const bCountryMatch = b.country?.toLowerCase().includes(search);
       if (aCountryMatch && !bCountryMatch) return -1;
       if (!aCountryMatch && bCountryMatch) return 1;
-      
+
       // Then town name starts with search
-      const aStartsWith = a.name.toLowerCase().startsWith(search);
-      const bStartsWith = b.name.toLowerCase().startsWith(search);
+      const aStartsWith = a.town_name.toLowerCase().startsWith(search);
+      const bStartsWith = b.town_name.toLowerCase().startsWith(search);
       if (aStartsWith && !bStartsWith) return -1;
       if (!aStartsWith && bStartsWith) return 1;
-      
+
       return 0;
     });
     
@@ -245,11 +245,11 @@ export default function FilterBarV3({
 
     // Search through town names and countries
     activeTownChats.forEach(tc => {
-      if (tc.towns.name.toLowerCase().includes(search) ||
+      if (tc.towns.town_name.toLowerCase().includes(search) ||
           tc.towns.country.toLowerCase().includes(search)) {
         results.push({
           type: 'town',
-          name: tc.towns.name,
+          name: tc.towns.town_name,
           country: tc.towns.country,
           id: tc.town_id
         });

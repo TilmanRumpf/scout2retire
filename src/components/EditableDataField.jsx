@@ -111,8 +111,13 @@ const EditableDataField = ({
 
   // Update editValue when value prop changes
   useEffect(() => {
-    setEditValue(value);
-  }, [value]);
+    // Convert arrays to comma-separated strings for editing
+    if (type === 'array' && Array.isArray(value)) {
+      setEditValue(value.join(', '));
+    } else {
+      setEditValue(value);
+    }
+  }, [value, type]);
 
   // Focus input when entering edit mode
   useEffect(() => {
@@ -176,14 +181,36 @@ const EditableDataField = ({
     } else if (type === 'boolean') {
       // Handle multiple boolean representations: 'true', true, 1, '1' -> true; 'false', false, 0, '0' -> false
       valueToSave = editValue === 'true' || editValue === true || editValue === 1 || editValue === '1';
+    } else if (type === 'array') {
+      // Convert comma-separated string to PostgreSQL array
+      if (typeof editValue === 'string' && editValue.trim()) {
+        valueToSave = editValue.split(',').map(v => v.trim()).filter(v => v);
+      } else if (Array.isArray(editValue)) {
+        valueToSave = editValue; // Already an array
+      } else {
+        valueToSave = null; // Empty array = null
+      }
     }
 
     setSaveState('saving');
 
     try {
+      // Build update object with user tracking
+      const updateData = { [field]: valueToSave };
+
+      // AUTO-TRACK: Add current user as last modifier
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.id) {
+          updateData.updated_by = user.id;
+        }
+      } catch (error) {
+        console.warn('Could not get current user for tracking:', error);
+      }
+
       const { data, error } = await supabase
         .from('towns')
-        .update({ [field]: valueToSave })
+        .update(updateData)
         .eq('id', townId)
         .select();
 
@@ -423,16 +450,25 @@ const EditableDataField = ({
     setAiRecommendation(null);
 
     try {
-      const result = await researchFieldWithContext({
-        townName,
-        subdivisionCode,
+      // Build townData object matching function signature
+      const townData = {
+        town_name: townName,
         country: countryName,
+        state_code: subdivisionCode,
+        [field]: editValue || null
+      };
+
+      // Call with correct positional parameters: (townId, fieldName, townData, options)
+      const result = await researchFieldWithContext(
         townId,
-        fieldName: field,
-        searchQuery,
-        expectedFormat,
-        currentValue: editValue || ''
-      });
+        field,
+        townData,
+        {
+          searchQuery,
+          expectedFormat,
+          currentValue: editValue || ''
+        }
+      );
 
       if (result.error) {
         toast.error(`AI Research failed: ${result.error}`);
@@ -498,14 +534,36 @@ const EditableDataField = ({
     } else if (type === 'boolean') {
       // Handle multiple boolean representations: 'true', true, 1, '1' -> true; 'false', false, 0, '0' -> false
       valueToSave = editValue === 'true' || editValue === true || editValue === 1 || editValue === '1';
+    } else if (type === 'array') {
+      // Convert comma-separated string to PostgreSQL array
+      if (typeof editValue === 'string' && editValue.trim()) {
+        valueToSave = editValue.split(',').map(v => v.trim()).filter(v => v);
+      } else if (Array.isArray(editValue)) {
+        valueToSave = editValue; // Already an array
+      } else {
+        valueToSave = null; // Empty array = null
+      }
     }
 
     setSaveState('saving');
 
     try {
+      // Build update object with user tracking
+      const updateData = { [field]: valueToSave };
+
+      // AUTO-TRACK: Add current user as last modifier
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.id) {
+          updateData.updated_by = user.id;
+        }
+      } catch (error) {
+        console.warn('Could not get current user for tracking:', error);
+      }
+
       const { data, error } = await supabase
         .from('towns')
-        .update({ [field]: valueToSave })
+        .update(updateData)
         .eq('id', townId)
         .select();
 
@@ -840,6 +898,14 @@ const EditableDataField = ({
 
     if (type === 'boolean') {
       return value ? 'Yes' : 'No';
+    }
+
+    if (type === 'array') {
+      // Display PostgreSQL arrays as comma-separated
+      if (Array.isArray(value)) {
+        return value.join(', ');
+      }
+      return String(value);
     }
 
     return String(value);

@@ -58,7 +58,7 @@ export async function auditTownData(townData, supabase) {
 
     const prompt = `You are auditing data quality for a retirement town database.
 
-Town: ${townData.town_name || townData.name}, ${townData.country}
+Town: ${townData.town_name}, ${townData.country}
 Region: ${townData.region || 'N/A'}
 
 DATA TO AUDIT:

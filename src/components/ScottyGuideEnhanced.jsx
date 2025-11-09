@@ -94,7 +94,7 @@ export default function ScottyGuideEnhanced() {
       const { data: towns } = await supabase
         .from('towns')
         .select('id, town_name, country')
-        .order('name');
+        .order('town_name');
 
       if (towns) {
         setAvailableTowns(towns);
@@ -209,7 +209,7 @@ export default function ScottyGuideEnhanced() {
         conversationId = await getOrCreateConversation({
           title: generateSmartTitle(userMessage, activeTown),
           townId: activeTown?.id,
-          townName: activeTown?.name,
+          townName: activeTown?.town_name,
           townCountry: activeTown?.country,
           topicCategory
         });
@@ -222,7 +222,7 @@ export default function ScottyGuideEnhanced() {
             conversation_id: conversationId,
             topic: topicCategory,
             town_id: activeTown?.id,
-            town_name: activeTown?.name
+            town_name: activeTown?.town_name
           }
         });
 
@@ -349,7 +349,7 @@ export default function ScottyGuideEnhanced() {
 
   // Generate town synopsis
   const generateTownSynopsis = (town) => {
-    const name = town.town_name || town.town_name;
+    const name = town.town_name;
     const country = town.country || town.town_country;
 
     if (!name || !country) {

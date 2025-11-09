@@ -230,6 +230,31 @@ export async function generateUpdateSuggestions(town, fieldsToUpdate, onProgress
       });
     }
 
+    // 🎯 PRE-FILTER: Skip API call if current value looks valid
+    // For text fields, if non-empty and reasonable length, assume it's correct
+    const currentValue = field.currentValue;
+    const hasValidValue = currentValue !== null &&
+                          currentValue !== undefined &&
+                          String(currentValue).trim().length > 0;
+
+    // SMART SKIP: For certain fields, if they have ANY value, trust it
+    // These are stable fields that rarely need AI correction
+    const trustExistingFields = new Set([
+      'town_name',      // Town names are manually entered, trust them
+      'country',        // Countries are from authoritative sources
+      'climate',        // Climate is stable, rarely changes
+      'latitude',       // Geographic coordinates are fixed
+      'longitude',
+      'state_code',     // Administrative codes are fixed
+      'region',         // Regional classification is stable
+      'population'      // Population data from census, trust existing
+    ]);
+
+    if (trustExistingFields.has(field.fieldName) && hasValidValue) {
+      console.log(`✓ ${field.fieldName}: Already has valid value "${currentValue}", skipping AI research`);
+      continue; // Skip this field entirely - no API call, no suggestion
+    }
+
     try {
       // Use existing AI research infrastructure
       const aiResult = await researchFieldWithContext(
@@ -240,6 +265,19 @@ export async function generateUpdateSuggestions(town, fieldsToUpdate, onProgress
       );
 
       if (aiResult.success && aiResult.suggestedValue) {
+        // 🚨 CRITICAL: Don't suggest if value is identical to current
+        // Normalize for comparison (trim, lowercase for case-insensitive fields)
+        const currentNormalized = String(field.currentValue || '').trim();
+        const suggestedNormalized = String(aiResult.suggestedValue).trim();
+
+        // Skip if identical (waste of API credits and user time)
+        if (currentNormalized === suggestedNormalized) {
+          console.log(`✓ ${field.fieldName}: Current value already correct, skipping suggestion`);
+          // Don't add to suggestions array at all
+          continue;
+        }
+
+        // Only suggest if value is actually different
         suggestions.push({
           fieldName: field.fieldName,
           currentValue: field.currentValue,
@@ -282,11 +320,10 @@ export async function generateUpdateSuggestions(town, fieldsToUpdate, onProgress
  * Apply selected updates to database
  * @param {string} townId - Town ID
  * @param {Array} selectedUpdates - Array of selected update suggestions
- * @param {string} userId - Current user ID
  * @param {Object} supabase - Supabase client
  * @returns {Object} Result with success status and details
  */
-export async function applyBulkUpdates(townId, selectedUpdates, userId, supabase) {
+export async function applyBulkUpdates(townId, selectedUpdates, supabase) {
   if (!selectedUpdates || selectedUpdates.length === 0) {
     return {
       success: false,
@@ -302,9 +339,15 @@ export async function applyBulkUpdates(townId, selectedUpdates, userId, supabase
     }
   });
 
-  // Add updated_by tracking
-  if (userId) {
-    updateData.updated_by = userId;
+  // AUTO-TRACK: Add current user as last modifier
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.id) {
+      updateData.updated_by = user.id;
+    }
+  } catch (error) {
+    console.warn('Could not get current user for tracking:', error);
+    // Continue anyway - tracking is nice-to-have, not critical
   }
 
   // Apply update to database
@@ -324,7 +367,7 @@ export async function applyBulkUpdates(townId, selectedUpdates, userId, supabase
 
     return {
       success: true,
-      updatedFields: Object.keys(updateData).filter(k => k !== 'updated_by'),
+      updatedFields: Object.keys(updateData),
       data: data[0]
     };
   } catch (error) {

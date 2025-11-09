@@ -280,7 +280,7 @@ export default function OnboardingComplete() {
                       {currentMatch.image_url_1 ? (
                         <img
                           src={currentMatch.image_url_1}
-                          alt={currentMatch.name}
+                          alt={currentMatch.town_name}
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -319,7 +319,7 @@ export default function OnboardingComplete() {
                     
                     <div className="p-6">
                       <h3 className={`text-2xl font-bold ${uiConfig.colors.heading} mb-2`}>
-                        {currentMatch.name}, {currentMatch.country}
+                        {currentMatch.town_name}, {currentMatch.country}
                       </h3>
                       
                       {/* Quick Stats */}

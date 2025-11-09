@@ -136,6 +136,9 @@ const RegionManager = () => {
       console.error('Error loading inspirations:', error);
       toast.error('Failed to load inspirations');
     } else {
+      console.log('📊 Loaded inspirations:', data?.length || 0);
+      console.log('🔴 Inactive:', data?.filter(i => !i.is_active).length || 0);
+      console.log('🟢 Active:', data?.filter(i => i.is_active).length || 0);
       setInspirations(data || []);
     }
     setLoading(false);
@@ -259,12 +262,15 @@ const RegionManager = () => {
       console.error('Error updating inspiration:', error);
       toast.error('Failed to update inspiration');
     } else {
+      // Switch to "All" filter so user can see the updated item
+      setStatusFilter('all');
+
       toast.success(
         newStatus
-          ? '✅ Inspiration published - now visible on Daily page'
-          : '⚠️ Inspiration unpublished - hidden from users'
+          ? 'Inspiration published - now visible on Daily page'
+          : 'Inspiration unpublished - hidden from users'
       );
-      loadInspirations();
+      await loadInspirations();
     }
   };
 
@@ -375,10 +381,34 @@ const RegionManager = () => {
       return;
     }
 
+    if (!data.region_name) {
+      toast.error('Add Region Name first to filter towns by country/region');
+      return;
+    }
+
     setAiMatching(true);
     setAiSuggestions([]);
 
     try {
+      // Filter towns by region_name (country)
+      const regionName = data.region_name.toLowerCase();
+      const filteredTowns = allTowns.filter(town => {
+        // Check if town's country matches the region name
+        const countryMatch = town.country?.toLowerCase().includes(regionName);
+        // Also check if region name is IN the town's regions array
+        const regionMatch = Array.isArray(town.regions) &&
+          town.regions.some(r => r.toLowerCase().includes(regionName));
+        return countryMatch || regionMatch;
+      });
+
+      if (filteredTowns.length === 0) {
+        toast.error(`No towns found for region "${data.region_name}"`);
+        setAiMatching(false);
+        return;
+      }
+
+      console.log(`🔍 AI Match: Filtering ${allTowns.length} towns → ${filteredTowns.length} towns for region "${data.region_name}"`);
+
       // Initialize Anthropic client
       const anthropic = new Anthropic({
         apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
@@ -392,9 +422,10 @@ Inspiration:
 Title: ${data.title || 'N/A'}
 Subtitle: ${data.subtitle || 'N/A'}
 Description: ${data.description || 'N/A'}
+Region: ${data.region_name}
 
-Available towns (with features):
-${allTowns.slice(0, 50).map(town =>
+Available towns in ${data.region_name} (${filteredTowns.length} towns with features):
+${filteredTowns.map(town =>
   `${town.town_name}, ${town.country} - Features: ${town.geographic_features_actual || 'unknown'}, Regions: ${Array.isArray(town.regions) ? town.regions.join(', ') : 'unknown'}`
 ).join('\n')}
 
@@ -511,6 +542,9 @@ Return ONLY a JSON array of town names that best match this inspiration, maximum
 
     return true;
   });
+
+  // Debug logging
+  console.log(`🔍 Filter: "${statusFilter}" | Search: "${searchQuery}" | Total: ${inspirations.length} | Filtered: ${filteredInspirations.length}`);
 
   if (loading) {
     return (
@@ -1169,7 +1203,7 @@ Return ONLY a JSON array of town names that best match this inspiration, maximum
                       const townsWithoutImages = allTownsList.filter(name => !allTowns.some(t => t.town_name === name));
 
                       const handleTownClick = async (townName) => {
-                        // Find town ID from database
+                        // Step 1: Try exact match
                         const { data, error } = await supabase
                           .from('towns')
                           .select('id, town_name')
@@ -1182,16 +1216,51 @@ Return ONLY a JSON array of town names that best match this inspiration, maximum
                           return;
                         }
 
-                        if (!data) {
-                          toast.error(`Town "${townName}" not found in database. It may have been deleted or renamed.`, {
-                            duration: 5000
-                          });
-                          console.warn(`Town "${townName}" listed in regional_inspirations but not found in towns table`);
+                        if (data) {
+                          // Found exact match - navigate
+                          navigate(`/admin/towns-manager?town=${data.id}`);
                           return;
                         }
 
-                        // Navigate to Town Manager with this town selected
-                        navigate(`/admin/towns-manager?town=${data.id}`);
+                        // Step 2: Town not found - try fuzzy matching
+                        toast.loading(`Searching for similar towns to "${townName}"...`, { id: 'fuzzy-search' });
+
+                        const { data: similarTowns, error: fuzzyError } = await supabase
+                          .from('towns')
+                          .select('id, town_name, country')
+                          .ilike('town_name', `%${townName}%`)
+                          .limit(5);
+
+                        toast.dismiss('fuzzy-search');
+
+                        if (fuzzyError) {
+                          console.error('Fuzzy search error:', error);
+                        }
+
+                        // Step 3: Show options or create new
+                        if (similarTowns && similarTowns.length > 0) {
+                          // Found similar towns - ask user
+                          const townOptions = similarTowns.map(t => `${t.town_name}, ${t.country}`).join('\n');
+                          const choice = confirm(
+                            `Town "${townName}" not found.\n\nFound similar towns:\n${townOptions}\n\nDo you want to:\n✅ OK = Create new town "${townName}"\n❌ Cancel = Go back`
+                          );
+
+                          if (choice) {
+                            // User wants to create new town
+                            if (confirm(`Create new town "${townName}" in database?`)) {
+                              // Navigate to Towns Manager with "add new" action
+                              // The Add Town modal will open automatically
+                              navigate('/admin/towns-manager?action=add&name=' + encodeURIComponent(townName));
+                              toast.success(`Opening Add Town form with "${townName}"`);
+                            }
+                          }
+                        } else {
+                          // No similar towns found - direct create option
+                          if (confirm(`Town "${townName}" not found in database.\n\nWould you like to create it now?`)) {
+                            navigate('/admin/towns-manager?action=add&name=' + encodeURIComponent(townName));
+                            toast.success(`Opening Add Town form with "${townName}"`);
+                          }
+                        }
                       };
 
                       if (allTownsList.length === 0) return null;

@@ -12,6 +12,48 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { supabase } from './supabaseClient';
 
+/**
+ * MULTI-DIMENSIONAL FIELD CONFIGURATIONS
+ *
+ * For fields that require multiple layers of research, not just a single value.
+ * Add new fields here to enable rich, comprehensive AI research.
+ */
+const MULTI_DIMENSIONAL_FIELDS = {
+  geo_region: {
+    name: 'Geographic Region',
+    layers: [
+      { name: 'Climate/ecological region', examples: 'mediterranean, tropical, temperate', case: 'lowercase' },
+      { name: 'Political/cultural region', examples: 'aegean region, tuscany, catalonia', case: 'lowercase' },
+      { name: 'Major water bodies', examples: 'Aegean Sea, Caribbean Sea, Gulf of Mexico', case: 'Title Case' },
+      { name: 'Colloquial/tourism names', examples: 'turquoise coast, french riviera, costa del sol', case: 'lowercase' },
+      { name: 'Local geographic features', examples: 'Gulf of Gökova, Bay of Naples', case: 'Title Case' }
+    ],
+    format: 'comma-separated, 3-6 values',
+    examples: {
+      'Bodrum, Turkey': 'mediterranean,aegean region,Aegean Sea,turquoise coast,Gulf of Gökova',
+      'Nice, France': 'mediterranean,provence-alpes-côte d\'azur,Mediterranean Sea,french riviera,côte d\'azur'
+    }
+  },
+  regions: {
+    name: 'Multiple Region Classifications',
+    layers: [
+      { name: 'Geopolitical regions', examples: 'Middle East, Balkans, Western Europe', case: 'Title Case' },
+      { name: 'Economic/political blocs', examples: 'NATO, EU, G20, OECD', case: 'ALL CAPS' },
+      { name: 'Climate zones', examples: 'Mediterranean Climate, Tropical Climate', case: 'Title Case' },
+      { name: 'Geographic features', examples: 'Coastal, Mountainous, Island', case: 'Title Case' },
+      { name: 'Cultural regions', examples: 'Arab World, Latin America, Caribbean', case: 'Title Case' }
+    ],
+    format: 'comma-separated, 3-7 values (Title Case)',
+    examples: {
+      'Bodrum, Turkey': 'Mediterranean,Middle East,NATO,Mediterranean Climate,Coastal,Aegean Region',
+      'Dubai, UAE': 'Middle East,Arab World,Persian Gulf,GCC,Coastal,Desert Climate'
+    }
+  },
+  // Add more multi-dimensional fields here as needed
+  // geographic_features_actual: { ... },
+  // activities_available: { ... },
+};
+
 // Initialize Anthropic client
 const anthropic = new Anthropic({
   apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
@@ -229,6 +271,32 @@ export async function researchFieldWithContext(townId, fieldName, townData, opti
     const searchContext = fieldDef?.search_terms ||
       `Research ${fieldName} for ${townData.town_name}, ${townData.country}`;
 
+    // SPECIAL HANDLING: Multi-dimensional fields
+    const multiDimConfig = MULTI_DIMENSIONAL_FIELDS[fieldName];
+    const multiDimInstructions = multiDimConfig ? `
+
+🎯 SPECIAL: This is a MULTI-DIMENSIONAL ${multiDimConfig.name.toUpperCase()} FIELD!
+
+You MUST research and include ALL of these layers (${multiDimConfig.format}):
+${multiDimConfig.layers.map((layer, i) =>
+  `${i + 1}. ${layer.name} (${layer.examples}) - ${layer.case}`
+).join('\n')}
+
+EXAMPLES:
+${Object.entries(multiDimConfig.examples).map(([location, value]) =>
+  `✓ ${location}: "${value}"`
+).join('\n')}
+
+✗ WRONG: Single simple value (missing layers!)
+
+FORMAT RULES:
+- ${multiDimConfig.format}
+- Follow capitalization rules for each layer type
+- Include ${multiDimConfig.layers.length} values (comprehensive but focused)
+- Use recognized names, not invented terms
+- Research actual local names - verify spelling and accuracy
+` : '';
+
     const prompt = `You are a data normalization expert for retirement town database.
 
 TOWN INFORMATION:
@@ -241,6 +309,7 @@ Current value: ${townData[fieldName] || 'NULL/Empty'}
 
 YOUR TASK:
 ${task}
+${multiDimInstructions}
 
 PATTERN ANALYSIS FROM SIMILAR TOWNS:
 ${pattern}
@@ -251,15 +320,18 @@ ${searchContext}
 NORMALIZATION RULES:
 1. Follow the exact format/pattern from similar towns
 2. Maintain data consistency across all towns
-3. If current value already matches pattern, keep it unchanged
+3. 🚨 CRITICAL: If current value already matches pattern and looks correct, return it UNCHANGED
 4. For empty/NULL values, research and provide normalized data
 5. Rate confidence: high (verified data), limited (inferred), low (uncertain)
+6. DON'T suggest changes unless there's a real improvement to be made
 
 SPECIAL FIELD HANDLING:
 - image_url_1: Real Unsplash URL format: https://images.unsplash.com/photo-[id]?w=1200
+- cost_of_living_usd: MONTHLY cost in USD for SINGLE PERSON, comfortable lifestyle (typically 800-3000). Return integer only, no currency symbol or units. If sources show annual or couple costs, divide appropriately.
 - Numeric fields: Return number only, no units
 - Text fields: Concise, factual, consistent formatting
 - NULL: Only if data cannot be reliably determined
+${multiDimConfig ? `- ${fieldName}: MUST include multiple layers (see above)` : ''}
 
 RESPONSE FORMAT (JSON only):
 {
@@ -305,6 +377,27 @@ RESPONSE FORMAT (JSON only):
         patternCount: similarTowns.length,
         fieldDefinition: fieldDef?.audit_question || null
       };
+    }
+
+    // 🔍 VALIDATION: Cost of living must be reasonable monthly USD amount
+    if (fieldName === 'cost_of_living_usd' && result.suggestedValue !== null) {
+      const cost = parseInt(result.suggestedValue);
+
+      // Reject if not a number or outside reasonable range
+      if (isNaN(cost) || cost < 300 || cost > 8000) {
+        console.warn(`⚠️ VALIDATION FAILED: cost_of_living_usd=${cost} is outside reasonable range (300-8000)`);
+        return {
+          success: false,
+          suggestedValue: null,
+          confidence: 'low',
+          reasoning: `AI suggested ${cost} which is outside reasonable monthly cost range (300-8000 USD). This might be annual cost, local currency, or hallucination. Manual research recommended.`,
+          patternCount: similarTowns.length,
+          fieldDefinition: fieldDef?.audit_question || null
+        };
+      }
+
+      // Accept valid cost
+      console.log(`✓ VALIDATION PASSED: cost_of_living_usd=${cost} is reasonable`);
     }
 
     return {

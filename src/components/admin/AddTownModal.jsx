@@ -15,7 +15,7 @@ import { uiConfig } from '../../styles/uiConfig';
  * 5. If multiple, request region field
  * 6. Sequentially AI populate editable tabs
  */
-export default function AddTownModal({ isOpen, onClose, onTownAdded }) {
+export default function AddTownModal({ isOpen, onClose, onTownAdded, initialTownName = '' }) {
   const [step, setStep] = useState('input'); // input, verifying, region, confirm, creating, complete
   const [townName, setTownName] = useState('');
   const [country, setCountry] = useState('');
@@ -59,6 +59,13 @@ export default function AddTownModal({ isOpen, onClose, onTownAdded }) {
       }, 300);
     }
   }, [isOpen]);
+
+  // Pre-fill town name from initialTownName prop (from fuzzy match workflow)
+  useEffect(() => {
+    if (isOpen && initialTownName && initialTownName !== townName) {
+      setTownName(initialTownName);
+    }
+  }, [isOpen, initialTownName]);
 
   // Handle country autocomplete
   useEffect(() => {

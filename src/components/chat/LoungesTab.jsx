@@ -301,7 +301,7 @@ export default function LoungesTab({
                 {favorites
                   .map(f => allTowns.find(t => t.id === f.town_id))
                   .filter(Boolean)
-                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .sort((a, b) => a.town_name.localeCompare(b.town_name))
                   .map(town => {
                     const isActive = chatType === 'town' && activeTown?.id === town.id;
                     return (

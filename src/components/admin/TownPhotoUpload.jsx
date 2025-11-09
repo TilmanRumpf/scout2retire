@@ -385,7 +385,7 @@ export default function TownPhotoUpload({ town, onPhotoUpdate }) {
 
         {/* Image preview */}
         <img
-          src={imageUrl}
+          src={`${imageUrl}?t=${Date.now()}`}
           alt={`${town.town_name} - Photo ${displayOrder}`}
           className="w-full aspect-[4/3] object-cover"
           onError={(e) => {
@@ -568,7 +568,7 @@ export default function TownPhotoUpload({ town, onPhotoUpdate }) {
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
-        <div>
+        <div className="flex-1">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             Town Photos
           </h3>
@@ -576,6 +576,22 @@ export default function TownPhotoUpload({ town, onPhotoUpdate }) {
             Upload unlimited photos. Drag to reorder. Primary photo (first) displays in search results.
           </p>
         </div>
+        {/* CC Images Search Button */}
+        <button
+          onClick={() => {
+            const geoRegion = town.geo_region && Array.isArray(town.geo_region) && town.geo_region.length > 0
+              ? town.geo_region[0]
+              : (town.region || '');
+            const searchQuery = `${town.town_name} ${geoRegion} ${town.country}`;
+            const googleImagesUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}&tbm=isch&tbs=sur:cl`;
+            window.open(googleImagesUrl, '_blank', 'width=1200,height=800');
+          }}
+          className="ml-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap"
+          title="Search Google Images with Creative Commons license filter"
+        >
+          <ImageIcon size={16} />
+          🖼️ CC Images
+        </button>
       </div>
 
       {/* Photo grid */}

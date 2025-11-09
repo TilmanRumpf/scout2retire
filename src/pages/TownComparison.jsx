@@ -336,8 +336,8 @@ export default function TownComparison() {
           <div className="flex flex-wrap gap-2">
             {favorites
               .sort((a, b) => {
-                const nameA = (a.towns?.name || a.town_name || '').toLowerCase();
-                const nameB = (b.towns?.name || b.town_name || '').toLowerCase();
+                const nameA = (a.towns?.town_name || a.town_name || '').toLowerCase();
+                const nameB = (b.towns?.town_name || b.town_name || '').toLowerCase();
                 return nameA.localeCompare(nameB);
               })
               .map((fav) => {

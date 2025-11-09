@@ -82,7 +82,7 @@ export function useChatDataLoader(props) {
             const { data } = await supabase
               .from('towns')
               .select('id, town_name, country, region')
-              .ilike('name', cityName)
+              .ilike('town_name', cityName)
               .limit(1);
             if (data?.[0]) setUserHomeTown(data[0]);
           })() : Promise.resolve(),
@@ -145,7 +145,7 @@ export function useChatDataLoader(props) {
             activeTownChatsData.sort((a, b) => {
               if (a.is_favorited && !b.is_favorited) return -1;
               if (!a.is_favorited && b.is_favorited) return 1;
-              return a.towns.name.localeCompare(b.towns.name);
+              return a.towns.town_name.localeCompare(b.towns.town_name);
             });
 
             setActiveTownChats(activeTownChatsData);

@@ -283,7 +283,7 @@ export function useChatDataLoaders() {
       const { data, error } = await supabase
         .from('towns')
         .select('id, town_name, country')
-        .order('name');
+        .order('town_name');
 
       if (error) {
         console.error("Error loading towns:", error);

@@ -68,7 +68,7 @@ function ScottyGuide() {
   // Generate customized town synopsis based on user context
   const generateTownSynopsis = (town, context) => {
     // Use the correct field names from the towns table (handle both direct and nested access)
-    const name = town.town_name || town.town_name;
+    const name = town.town_name;
     const country = town.country || town.town_country;
     const rentCost = town['rent_cost_$'] || town.rent_cost || town.cost_of_living;
     
@@ -351,7 +351,7 @@ What would you like to know about ${name}?`;
           p_metadata: {
             topic: topic || 'New conversation',
             town_id: townContext?.id || null,
-            town_name: townContext?.name || townContext?.town_name || null
+            town_name: townContext?.town_name || null
           }
         });
       }
@@ -408,7 +408,7 @@ What would you like to know about ${name}?`;
             user_id: window.scottyUserId,
             title: title,
             town_id: activeTown?.id || null,
-            town_name: activeTown?.name || null,
+            town_name: activeTown?.town_name || null,
             town_country: activeTown?.country || null,
             user_citizenship: userContext?.citizenship?.primary,
             conversation_topic: activeTown ? 'town_research' : 'general_retirement'
@@ -425,7 +425,7 @@ What would you like to know about ${name}?`;
             message_type: msg.type,
             content: msg.text,
             contains_town_request: activeTown ? true : msg.text.toLowerCase().includes('town'),
-            mentioned_towns: activeTown ? [activeTown.name] : extractMentionedTowns(msg.text),
+            mentioned_towns: activeTown ? [activeTown.town_name] : extractMentionedTowns(msg.text),
             topics: extractTopics(msg.text)
           }));
 
@@ -466,7 +466,7 @@ What would you like to know about ${name}?`;
             message_type: msg.type,
             content: msg.text,
             contains_town_request: activeTown ? true : msg.text.toLowerCase().includes('town'),
-            mentioned_towns: activeTown ? [activeTown.name] : extractMentionedTowns(msg.text),
+            mentioned_towns: activeTown ? [activeTown.town_name] : extractMentionedTowns(msg.text),
             topics: extractTopics(msg.text)
           }));
 
@@ -621,7 +621,7 @@ What would you like to know about ${name}?`;
     }
 
     // Add town context if discussing a specific town
-    const townContext = activeTown ? `\n\nCURRENT TOPIC: The user is asking about ${activeTown.name}, ${activeTown.country}. IMPORTANT: Keep the conversation focused on ${activeTown.name} unless the user explicitly asks about a different location.` : '';
+    const townContext = activeTown ? `\n\nCURRENT TOPIC: The user is asking about ${activeTown.town_name}, ${activeTown.country}. IMPORTANT: Keep the conversation focused on ${activeTown.town_name} unless the user explicitly asks about a different location.` : '';
 
     // Add conversation history context for continuity
     let recentContext = '';
@@ -633,7 +633,7 @@ What would you like to know about ${name}?`;
       ).join('\n');
 
       recentContext = `\n\nCONVERSATION HISTORY:\n${summary}\n` +
-        (activeTown ? `\nREMEMBER: This entire conversation is about ${activeTown.name}, ${activeTown.country}. Stay focused on this location unless the user explicitly asks about somewhere else.` : '');
+        (activeTown ? `\nREMEMBER: This entire conversation is about ${activeTown.town_name}, ${activeTown.country}. Stay focused on this location unless the user explicitly asks about somewhere else.` : '');
     }
 
     // Format available towns list for AI
@@ -802,13 +802,13 @@ CRITICAL RULE: Do NOT suggest towns like San Sebastián, Split, Trieste, or any 
           {favorites.length > 0 && (
             <div className="flex-1 overflow-x-auto scrollbar-hide">
               <div className="flex items-center gap-2">
-                {[...favorites].sort((a, b) => a.towns.name.localeCompare(b.towns.name)).map(favorite => (
+                {[...favorites].sort((a, b) => a.towns.town_name.localeCompare(b.towns.town_name)).map(favorite => (
                   <button
                     key={favorite.town_id}
-                    onClick={() => startNewChat(`Research on ${favorite.towns.name}`, favorite.towns)}
+                    onClick={() => startNewChat(`Research on ${favorite.towns.town_name}`, favorite.towns)}
                     className={`flex-shrink-0 px-3 py-1.5 ${uiConfig.layout.radius.full} border ${uiConfig.colors.border} ${uiConfig.states.hover} ${uiConfig.animation.transition} ${uiConfig.font.size.sm} whitespace-nowrap`}
                   >
-                    {favorite.towns.name}
+                    {favorite.towns.town_name}
                   </button>
                 ))}
               </div>

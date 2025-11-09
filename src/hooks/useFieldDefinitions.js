@@ -49,22 +49,22 @@ export function useFieldDefinitions() {
     let question = def.audit_question;
     if (townData) {
       question = question
-        .replace('{town_name}', townData.name || '[Town]')
+        .replace('{town_name}', townData.town_name || '[Town]')
         .replace('{country}', townData.country || '[Country]')
         .replace('{region}', townData.region || '[Region]');
     }
     return question;
   };
-  
+
   // Get search query for a field, replacing placeholders
   const getSearchQuery = (fieldName, townData) => {
     const def = fieldDefinitions[fieldName];
     if (!def?.search_query) return null;
-    
+
     let query = def.search_query;
     if (townData) {
       query = query
-        .replace('{town_name}', townData.name || '')
+        .replace('{town_name}', townData.town_name || '')
         .replace('{country}', townData.country || '')
         .replace('{region}', townData.region || '');
     }

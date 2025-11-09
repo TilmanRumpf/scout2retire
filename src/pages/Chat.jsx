@@ -347,7 +347,7 @@ export default function Chat() {
             const { data } = await supabase
               .from('towns')
               .select('id, town_name, country, region')
-              .ilike('name', cityName)
+              .ilike('town_name', cityName)
               .limit(1);
             if (data?.[0]) setUserHomeTown(data[0]);
           })() : Promise.resolve(),

@@ -80,7 +80,7 @@ export default function TownAccessManager() {
       const { data: townsData, error: townsError } = await supabase
         .from('towns')
         .select('id, town_name, country, region')
-        .order('name');
+        .order('town_name');
 
       console.log('🔥 Towns query result:', { count: townsData?.length, error: townsError });
 
@@ -97,7 +97,7 @@ export default function TownAccessManager() {
         .from('user_town_access')
         .select(`
           *,
-          towns(id, name, country),
+          towns(id, town_name, country),
           granted_by_user:users!user_town_access_granted_by_fkey(email)
         `)
         .eq('active', true)
@@ -336,7 +336,7 @@ export default function TownAccessManager() {
                                 <MapPin className="w-4 h-4 text-gray-400" />
                                 <div>
                                   <div className="font-medium text-gray-900 dark:text-gray-100">
-                                    {access.towns?.name}, {access.towns?.country}
+                                    {access.towns?.town_name}, {access.towns?.country}
                                   </div>
                                   <div className="text-xs text-gray-500 dark:text-gray-400">
                                     Granted: {new Date(access.granted_at).toLocaleDateString()}
