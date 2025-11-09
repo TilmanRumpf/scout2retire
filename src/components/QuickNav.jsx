@@ -426,6 +426,16 @@ const QuickNav = React.memo(function QuickNav({ isOpen: propIsOpen, onClose }) {
                 >
                   <span className="font-medium text-scout-orange-500">Data Verification</span>
                 </Link>
+                <Link
+                  to="/admin/templates"
+                  className={`flex items-center justify-between p-2 sm:p-3 text-sm sm:text-base ${uiConfig.layout.radius.md} ${uiConfig.animation.transition} ${
+                    location.pathname === '/admin/templates'
+                      ? `${uiConfig.colors.success} ${uiConfig.colors.statusSuccess}`
+                      : `${uiConfig.colors.hoverBg}`
+                  }`}
+                >
+                  <span className="font-medium text-scout-orange-500">Template Manager</span>
+                </Link>
               </>
             )}
           </nav>

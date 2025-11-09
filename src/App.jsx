@@ -32,6 +32,7 @@ const AlgorithmManager = React.lazy(() => import("./pages/admin/AlgorithmManager
 const PaywallManager = React.lazy(() => import("./pages/admin/PaywallManager"));
 const RegionManager = React.lazy(() => import("./pages/admin/RegionManager"));
 const DataVerification = React.lazy(() => import("./pages/admin/DataVerification"));
+const TemplateManager = React.lazy(() => import("./pages/admin/TemplateManager"));
 const HeaderMockup = React.lazy(() => import("./pages/HeaderMockup"));
 const ScottyGuideEnhanced = React.lazy(() => import("./components/ScottyGuideEnhanced"));
 
@@ -327,6 +328,10 @@ const router = createBrowserRouter([
       {
         path: "admin/data-verification",
         element: <ProtectedRoute><AuthenticatedLayout><DataVerification /></AuthenticatedLayout></ProtectedRoute>
+      },
+      {
+        path: "admin/templates",
+        element: <ProtectedRoute><AuthenticatedLayout><TemplateManager /></AuthenticatedLayout></ProtectedRoute>
       },
 
       // Default redirect - check auth and redirect accordingly
