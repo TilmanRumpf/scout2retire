@@ -8,6 +8,7 @@ import { MapPin, DollarSign, Activity, Shield } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
 import OptimizedImage from './OptimizedImage';
 import TownImageOverlay from './TownImageOverlay';
+import TownCardImageCarousel from './TownCardImageCarousel';
 
 function TownCard({ 
   town, 
@@ -58,14 +59,13 @@ function TownCard({
     return (
       <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden flex ${className}`}>
         <Link to={`/discover?town=${town.id}`} className="flex flex-1">
-          <div className="w-24 h-24">
-            <OptimizedImage
-              src={town.image_url_1}
-              alt={town.town_name}
-              className="w-full h-full object-cover"
-              fallbackIconSize={16}
-            />
-          </div>
+          <TownCardImageCarousel
+            townId={town.id}
+            townName={town.town_name}
+            fallbackImageUrl={town.image_url_1}
+            height="h-24 w-24"
+            className="flex-shrink-0"
+          />
           <div className="p-3 flex-1">
             <h4 className={`font-medium ${uiConfig.colors.heading}`}>{town.town_name}</h4>
             <p className={`text-sm ${uiConfig.colors.hint}`}>{town.country}</p>
@@ -84,12 +84,12 @@ function TownCard({
   // Default card variant
   return (
     <div className={`${uiConfig.colors.card} ${uiConfig.layout.radius.lg} ${uiConfig.layout.shadow.md} overflow-hidden ${className}`}>
-      <div className="relative h-48">
-        <OptimizedImage
-          src={town.image_url_1}
-          alt={town.town_name}
-          className="w-full h-full object-cover"
-          fallbackIconSize={24}
+      <div className="relative">
+        <TownCardImageCarousel
+          townId={town.id}
+          townName={town.town_name}
+          fallbackImageUrl={town.image_url_1}
+          height="h-48"
         />
         {showActions && userId && (
           <TownImageOverlay
