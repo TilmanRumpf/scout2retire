@@ -848,6 +848,57 @@ const TownsManager = () => {
     return value !== '';
   };
   
+  // Handle publish/unpublish toggle
+  const handleTogglePublish = async (town) => {
+    if (!town) return;
+
+    const newPublishedState = !town.is_published;
+    const actionText = newPublishedState ? 'Publishing' : 'Unpublishing';
+
+    try {
+      toast.loading(`${actionText} ${town.town_name}...`, { id: 'publish-toggle' });
+
+      // Get current user for tracking
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Update database
+      const { error } = await supabase
+        .from('towns')
+        .update({
+          is_published: newPublishedState,
+          published_at: newPublishedState ? new Date().toISOString() : null,
+          published_by: newPublishedState ? user?.id : null
+        })
+        .eq('id', town.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setTowns(prevTowns =>
+        prevTowns.map(t =>
+          t.id === town.id
+            ? { ...t, is_published: newPublishedState }
+            : t
+        )
+      );
+
+      // Update selected town if it's the one being toggled
+      if (selectedTown?.id === town.id) {
+        setSelectedTown(prev => ({ ...prev, is_published: newPublishedState }));
+      }
+
+      toast.success(
+        newPublishedState
+          ? `✅ ${town.town_name} is now PUBLISHED and visible to users`
+          : `⚠️ ${town.town_name} is now UNPUBLISHED (admin-only)`,
+        { id: 'publish-toggle' }
+      );
+    } catch (error) {
+      console.error('Error toggling publish status:', error);
+      toast.error(`Failed to ${actionText.toLowerCase()}: ${error.message}`, { id: 'publish-toggle' });
+    }
+  };
+
   // Handle audit approval
   const handleAudit = (townId, fieldName) => {
     setShowAuditDialog({ townId, fieldName });
@@ -1825,6 +1876,28 @@ const TownsManager = () => {
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
                       <h2 className={`text-lg lg:text-xl font-bold ${uiConfig.colors.heading}`}>{formatTownDisplay(selectedTown)}</h2>
+
+                      {/* Publish/Unpublish Toggle */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleTogglePublish(selectedTown)}
+                          className={`
+                            relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+                            ${selectedTown.is_published ? 'bg-green-600' : 'bg-gray-300 dark:bg-gray-600'}
+                          `}
+                          title={selectedTown.is_published ? 'Published - Click to unpublish' : 'Unpublished - Click to publish'}
+                        >
+                          <span
+                            className={`
+                              inline-block w-4 h-4 transform rounded-full bg-white transition-transform
+                              ${selectedTown.is_published ? 'translate-x-6' : 'translate-x-1'}
+                            `}
+                          />
+                        </button>
+                        <span className={`text-xs font-medium ${selectedTown.is_published ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                          {selectedTown.is_published ? '✅ Published' : '⚠️ Draft'}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2 lg:gap-3">
                       {/* Global Field Search - PRIMARY INTERFACE */}

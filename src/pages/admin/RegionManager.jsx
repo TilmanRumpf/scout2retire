@@ -144,7 +144,7 @@ const RegionManager = () => {
   const loadTowns = async () => {
     const { data, error } = await supabase
       .from('towns')
-      .select('id, town_name, country, region, geographic_features_actual, regions')
+      .select('id, town_name, country, region, geographic_features_actual, regions, is_published')
       .not('image_url_1', 'is', null)
       .order('town_name');
 
@@ -275,6 +275,53 @@ const RegionManager = () => {
         ...formData,
         typical_town_examples: newSelection
       });
+    }
+  };
+
+  // Handle publish/unpublish toggle for towns
+  const handleTogglePublish = async (e, town) => {
+    e.stopPropagation(); // Prevent checkbox toggle
+    if (!town) return;
+
+    const newPublishedState = !town.is_published;
+    const actionText = newPublishedState ? 'Publishing' : 'Unpublishing';
+
+    try {
+      toast.loading(`${actionText} ${town.town_name}...`, { id: 'publish-toggle' });
+
+      // Get current user for tracking
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Update database
+      const { error } = await supabase
+        .from('towns')
+        .update({
+          is_published: newPublishedState,
+          published_at: newPublishedState ? new Date().toISOString() : null,
+          published_by: newPublishedState ? user?.id : null
+        })
+        .eq('id', town.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setAllTowns(prevTowns =>
+        prevTowns.map(t =>
+          t.id === town.id
+            ? { ...t, is_published: newPublishedState }
+            : t
+        )
+      );
+
+      toast.success(
+        newPublishedState
+          ? `✅ ${town.town_name} is now PUBLISHED`
+          : `⚠️ ${town.town_name} is now UNPUBLISHED`,
+        { id: 'publish-toggle' }
+      );
+    } catch (error) {
+      console.error('Error toggling publish status:', error);
+      toast.error(`Failed to ${actionText.toLowerCase()}: ${error.message}`, { id: 'publish-toggle' });
     }
   };
 
@@ -715,17 +762,35 @@ Return ONLY a JSON array of town names that best match this inspiration, maximum
                   </p>
                 ) : (
                   filteredTowns.slice(0, 20).map(town => (
-                  <label key={town.id} className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={(formData.typical_town_examples || []).includes(town.town_name)}
-                      onChange={() => toggleTownSelection(town.town_name)}
-                      className="rounded"
-                    />
-                    <span className="text-sm text-gray-900 dark:text-white">
-                      {town.town_name}, {town.country}
-                    </span>
-                  </label>
+                  <div key={town.id} className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded">
+                    <label className="flex items-center gap-2 cursor-pointer flex-1">
+                      <input
+                        type="checkbox"
+                        checked={(formData.typical_town_examples || []).includes(town.town_name)}
+                        onChange={() => toggleTownSelection(town.town_name)}
+                        className="rounded"
+                      />
+                      <span className="text-sm text-gray-900 dark:text-white">
+                        {town.town_name}, {town.country}
+                      </span>
+                    </label>
+                    {/* Publish/Unpublish Toggle */}
+                    <button
+                      onClick={(e) => handleTogglePublish(e, town)}
+                      className={`
+                        relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 flex-shrink-0
+                        ${town.is_published ? 'bg-green-600' : 'bg-gray-300 dark:bg-gray-600'}
+                      `}
+                      title={town.is_published ? 'Published - Click to unpublish' : 'Unpublished - Click to publish'}
+                    >
+                      <span
+                        className={`
+                          inline-block w-3 h-3 transform rounded-full bg-white transition-transform
+                          ${town.is_published ? 'translate-x-5' : 'translate-x-1'}
+                        `}
+                      />
+                    </button>
+                  </div>
                   ))
                 )}
               </div>
@@ -932,17 +997,35 @@ Return ONLY a JSON array of town names that best match this inspiration, maximum
                           </p>
                         ) : (
                           filteredTowns.slice(0, 20).map(town => (
-                            <label key={town.id} className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={(editingInspiration.typical_town_examples || []).includes(town.town_name)}
-                                onChange={() => toggleTownSelection(town.town_name)}
-                                className="rounded"
-                              />
-                              <span className="text-sm text-gray-900 dark:text-white">
-                                {town.town_name}, {town.country}
-                              </span>
-                            </label>
+                            <div key={town.id} className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded">
+                              <label className="flex items-center gap-2 cursor-pointer flex-1">
+                                <input
+                                  type="checkbox"
+                                  checked={(editingInspiration.typical_town_examples || []).includes(town.town_name)}
+                                  onChange={() => toggleTownSelection(town.town_name)}
+                                  className="rounded"
+                                />
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {town.town_name}, {town.country}
+                                </span>
+                              </label>
+                              {/* Publish/Unpublish Toggle */}
+                              <button
+                                onClick={(e) => handleTogglePublish(e, town)}
+                                className={`
+                                  relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 flex-shrink-0
+                                  ${town.is_published ? 'bg-green-600' : 'bg-gray-300 dark:bg-gray-600'}
+                                `}
+                                title={town.is_published ? 'Published - Click to unpublish' : 'Unpublished - Click to publish'}
+                              >
+                                <span
+                                  className={`
+                                    inline-block w-3 h-3 transform rounded-full bg-white transition-transform
+                                    ${town.is_published ? 'translate-x-5' : 'translate-x-1'}
+                                  `}
+                                />
+                              </button>
+                            </div>
                           ))
                         )}
                       </div>

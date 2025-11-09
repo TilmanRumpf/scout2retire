@@ -14,7 +14,7 @@ import { canUserPerform } from './paywallUtils.js';
 export const TOWN_SELECT_COLUMNS = `
   id, town_name, country, population, region,
   image_url_1, image_url_2, image_url_3,
-  latitude, longitude, description,
+  latitude, longitude, description, is_published,
   cost_index, cost_of_living_usd, typical_monthly_living_cost,
   rent_1bed, rent_2bed_usd, meal_cost, groceries_cost, utilities_cost,
   income_tax_rate_pct, sales_tax_rate_pct, property_tax_rate_pct,
@@ -88,6 +88,13 @@ export const fetchTowns = async (filters = {}) => {
       .not('image_url_1', 'eq', '')
       .not('image_url_1', 'ilike', 'NULL')  // Filter out 'NULL' string
       .not('image_url_1', 'eq', 'null');   // Filter out lowercase 'null' string
+
+    // 🚨 CRITICAL: Exclude unpublished towns from PUBLIC views
+    // Unpublished towns (is_published = false) should ONLY appear in admin
+    // Set filters.includeUnpublished = true in admin contexts ONLY
+    if (filters.includeUnpublished !== true) {
+      query = query.eq('is_published', true);
+    }
 
     // 🚨 CRITICAL: Exclude non-rankable towns from PUBLIC views
     // Non-rankable towns (quality_of_life = null) should ONLY appear in admin
