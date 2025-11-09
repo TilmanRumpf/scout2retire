@@ -81,36 +81,37 @@ IMPORTANT: Study these examples carefully:
 }
 
 /**
- * Fetch field definition from database template row
+ * Fetch field definition from field_search_templates table
  * @param {string} fieldName - Field name
  * @returns {Promise<Object|null>} Field definition with audit_question, search_terms, etc. or null
  */
 async function getFieldDefinition(fieldName) {
   try {
     const { data, error } = await supabase
-      .from('towns')
-      .select('audit_data')
-      .eq('id', 'ffffffff-ffff-ffff-ffff-ffffffffffff')
-      .maybeSingle(); // Use maybeSingle() instead of single() - doesn't throw on 0 rows
+      .from('field_search_templates')
+      .select('*')
+      .eq('field_name', fieldName)
+      .eq('status', 'active')
+      .maybeSingle();
 
     if (error) {
-      console.warn(`Template row query error:`, error);
+      console.warn(`Template query error for "${fieldName}":`, error);
       return null;
     }
 
     if (!data) {
-      console.warn(`Template row doesn't exist yet - field definitions not available`);
+      console.warn(`No active template found for "${fieldName}"`);
       return null;
     }
 
-    const fieldDef = data?.audit_data?.field_definitions?.[fieldName];
-
-    if (!fieldDef || !fieldDef.audit_question) {
-      console.warn(`No field definition for "${fieldName}" in template row`);
-      return null;
-    }
-
-    return fieldDef;
+    // Map to expected structure for backward compatibility
+    return {
+      search_template: data.search_template,
+      expected_format: data.expected_format,
+      audit_question: data.human_description,
+      search_terms: fieldName,
+      search_query: data.search_template
+    };
   } catch (error) {
     console.warn(`Error fetching field definition for ${fieldName}:`, error);
     return null;
@@ -221,13 +222,28 @@ RESPONSE FORMAT (JSON only):
 
     console.log('✅ AI Research completed:', result);
 
+    // 🎯 OVERRIDE: Primary photo should be manually uploaded, not AI-suggested
+    if (fieldName === 'image_url_1') {
+      console.log('🖼️ PRIMARY PHOTO OVERRIDE: Replacing AI suggestion with manual upload message');
+      return {
+        success: true,
+        suggestedValue: "Upload a photo in towns manager, if you have confidence in all relevant town data points.",
+        confidence: result.confidence || 'high', // Preserve AI confidence if available
+        reasoning: result.reasoning
+          ? `AI suggestion: ${result.reasoning}\n\nNote: Manual photo upload recommended for quality control.`
+          : 'Manual photo upload recommended for quality control.',
+        patternCount: similarTowns.length,
+        fieldDefinition: fieldDef?.audit_question || null
+      };
+    }
+
     return {
       success: true,
       suggestedValue: result.suggestedValue,
       confidence: result.confidence || 'limited',
       reasoning: result.reasoning || 'AI-generated suggestion',
       patternCount: similarTowns.length,
-      fieldDefinition: fieldDef.audit_question // Include for transparency
+      fieldDefinition: fieldDef?.audit_question || null // FIX: Safe null handling
     };
 
   } catch (error) {

@@ -169,6 +169,15 @@ export const icons = {
   }
 };
 
+export const typography = {
+  h1: 'text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100',
+  h2: 'text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100',
+  h3: 'text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100',
+  h4: 'text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100',
+  body: 'text-base text-gray-700 dark:text-gray-300',
+  bodySmall: 'text-sm text-gray-600 dark:text-gray-400',
+};
+
 // Step Navigation Patterns - Updated 10JUN25: Aligned with actual flow
 export const stepNavigation = {
   styles: {
@@ -775,6 +784,7 @@ export const townCardOverlay = {
 export const uiConfig = {
   colors,
   font,
+  typography,
   layout,
   animation,
   icons,
