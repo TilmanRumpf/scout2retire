@@ -1172,20 +1172,26 @@ Return ONLY a JSON array of town names that best match this inspiration, maximum
                         // Find town ID from database
                         const { data, error } = await supabase
                           .from('towns')
-                          .select('id')
+                          .select('id, town_name')
                           .eq('town_name', townName)
-                          .single();
+                          .maybeSingle();
 
                         if (error) {
-                          toast.error('Town not found');
+                          toast.error(`Database error looking up "${townName}"`);
                           console.error('Error finding town:', error);
                           return;
                         }
 
-                        if (data?.id) {
-                          // Navigate to Town Manager with this town selected
-                          navigate(`/admin/towns-manager?town=${data.id}`);
+                        if (!data) {
+                          toast.error(`Town "${townName}" not found in database. It may have been deleted or renamed.`, {
+                            duration: 5000
+                          });
+                          console.warn(`Town "${townName}" listed in regional_inspirations but not found in towns table`);
+                          return;
                         }
+
+                        // Navigate to Town Manager with this town selected
+                        navigate(`/admin/towns-manager?town=${data.id}`);
                       };
 
                       if (allTownsList.length === 0) return null;
