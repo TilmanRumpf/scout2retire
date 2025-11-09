@@ -142,14 +142,40 @@ const RegionManager = () => {
   };
 
   const loadTowns = async () => {
-    const { data, error } = await supabase
+    // Try with is_published first, fallback if column doesn't exist yet
+    let query = supabase
       .from('towns')
-      .select('id, town_name, country, region, geographic_features_actual, regions, is_published')
+      .select('id, town_name, country, region, geographic_features_actual, regions, is_published, image_url_1')
       .not('image_url_1', 'is', null)
+      .not('image_url_1', 'eq', '')
+      .not('image_url_1', 'ilike', 'NULL')
+      .not('image_url_1', 'eq', 'null')
       .order('town_name');
 
+    const { data, error } = await query;
+
     if (error) {
-      console.error('Error loading towns:', error);
+      // If is_published column doesn't exist yet, retry without it
+      if (error.code === '42703' || error.message?.includes('is_published')) {
+        console.warn('is_published column not found, falling back to query without it');
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('towns')
+          .select('id, town_name, country, region, geographic_features_actual, regions, image_url_1')
+          .not('image_url_1', 'is', null)
+          .not('image_url_1', 'eq', '')
+          .not('image_url_1', 'ilike', 'NULL')
+          .not('image_url_1', 'eq', 'null')
+          .order('town_name');
+
+        if (fallbackError) {
+          console.error('Error loading towns:', fallbackError);
+        } else {
+          // Add default is_published = true for towns without the column
+          setAllTowns((fallbackData || []).map(t => ({ ...t, is_published: true })));
+        }
+      } else {
+        console.error('Error loading towns:', error);
+      }
     } else {
       setAllTowns(data || []);
     }
@@ -1056,14 +1082,28 @@ Return ONLY a JSON array of town names that best match this inspiration, maximum
                           <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                             {inspiration.title}
                           </h3>
-                          {!inspiration.is_active && (
-                            <span className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
-                              Inactive
+
+                          {/* Active/Inactive Toggle Switch */}
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleToggleActive(inspiration.id, inspiration.is_active)}
+                              className={`
+                                relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+                                ${inspiration.is_active ? 'bg-green-600' : 'bg-gray-300 dark:bg-gray-600'}
+                              `}
+                              title={inspiration.is_active ? 'Active - Click to deactivate' : 'Inactive - Click to activate'}
+                            >
+                              <span
+                                className={`
+                                  inline-block w-4 h-4 transform rounded-full bg-white transition-transform
+                                  ${inspiration.is_active ? 'translate-x-6' : 'translate-x-1'}
+                                `}
+                              />
+                            </button>
+                            <span className={`text-xs font-medium ${inspiration.is_active ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                              {inspiration.is_active ? '✅ Active' : '⚠️ Inactive'}
                             </span>
-                          )}
-                          <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
-                            Order: {inspiration.display_order}
-                          </span>
+                          </div>
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                           {inspiration.subtitle || inspiration.region_name}
@@ -1089,12 +1129,6 @@ Return ONLY a JSON array of town names that best match this inspiration, maximum
                           title={searchQuery || statusFilter !== 'all' ? 'Clear filters to reorder' : 'Move down'}
                         >
                           <ChevronDown className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleToggleActive(inspiration.id, inspiration.is_active)}
-                          className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                        >
-                          {inspiration.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                         </button>
                         <button
                           onClick={() => setEditingInspiration(inspiration)}
