@@ -336,14 +336,15 @@ export async function applyBulkUpdates(townId, selectedUpdates, userId, supabase
 }
 
 /**
- * Get human-readable field name
+ * Get human-readable field name with database column name
  * @param {string} fieldName - Database field name
- * @returns {string} Display name
+ * @returns {string} Display name with column name in parentheses
  */
 export function getFieldDisplayName(fieldName) {
   const displayNames = {
     image_url_1: 'Primary Photo',
     description: 'Description',
+    town_name: 'Town Name',
     verbose_description: 'Detailed Description',
     climate: 'Climate Type',
     climate_description: 'Climate Description',
@@ -362,7 +363,10 @@ export function getFieldDisplayName(fieldName) {
     museum_count: 'Museum Count'
   };
 
-  return displayNames[fieldName] || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const humanName = displayNames[fieldName] || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+  // Always show column name in parentheses
+  return `${humanName} (${fieldName})`;
 }
 
 /**

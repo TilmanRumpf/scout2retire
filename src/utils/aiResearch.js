@@ -100,8 +100,23 @@ async function getFieldDefinition(fieldName) {
     }
 
     if (!data) {
-      console.warn(`No active template found for "${fieldName}"`);
-      return null;
+      console.warn(`No active template found for "${fieldName}" - will auto-generate`);
+      // Auto-generate template for this field
+      await autoGenerateTemplate(fieldName);
+      // Try fetching again after generation
+      const { data: newData } = await supabase
+        .from('field_search_templates')
+        .select('*')
+        .eq('field_name', fieldName)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (newData) {
+        console.log(`✅ Auto-generated template for "${fieldName}"`);
+        data = newData;
+      } else {
+        return null;
+      }
     }
 
     // Map to expected structure for backward compatibility
@@ -115,6 +130,74 @@ async function getFieldDefinition(fieldName) {
   } catch (error) {
     console.warn(`Error fetching field definition for ${fieldName}:`, error);
     return null;
+  }
+}
+
+/**
+ * Auto-generate a template for a missing field using AI
+ */
+async function autoGenerateTemplate(fieldName) {
+  try {
+    // Convert field name to human-readable
+    const humanName = fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+    // Generate template using Claude
+    const prompt = `Generate a search template for the database field "${fieldName}" (${humanName}).
+
+This template will be used to guide AI research for finding accurate data about retirement towns.
+
+Return ONLY valid JSON with this structure:
+{
+  "search_template": "Question to ask about {town_name}, {subdivision}, {country}",
+  "expected_format": "Brief description of expected data format",
+  "human_description": "Clear description for admins about what this field captures"
+}
+
+Examples:
+- For "population": search_template should be "What is the population of {town_name}, {subdivision}, {country}?"
+- For "climate": search_template should be "What is the climate type in {town_name}, {subdivision}, {country}?"
+
+Make it specific and actionable. Use placeholders: {town_name}, {subdivision}, {country}`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': import.meta.env.VITE_ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 500,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      })
+    });
+
+    const result = await response.json();
+    const generatedTemplate = JSON.parse(result.content[0].text);
+
+    // Save to database
+    const { data: { user } } = await supabase.auth.getUser();
+
+    await supabase
+      .from('field_search_templates')
+      .insert({
+        field_name: fieldName,
+        search_template: generatedTemplate.search_template,
+        expected_format: generatedTemplate.expected_format,
+        human_description: generatedTemplate.human_description,
+        status: 'active',
+        updated_by: user?.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+
+    console.log(`🤖 Auto-generated template for "${fieldName}":`, generatedTemplate);
+  } catch (error) {
+    console.error(`Failed to auto-generate template for "${fieldName}":`, error);
   }
 }
 
