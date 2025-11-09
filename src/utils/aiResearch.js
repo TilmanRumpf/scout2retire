@@ -100,23 +100,10 @@ async function getFieldDefinition(fieldName) {
     }
 
     if (!data) {
-      console.warn(`No active template found for "${fieldName}" - will auto-generate`);
-      // Auto-generate template for this field
-      await autoGenerateTemplate(fieldName);
-      // Try fetching again after generation
-      const { data: newData } = await supabase
-        .from('field_search_templates')
-        .select('*')
-        .eq('field_name', fieldName)
-        .eq('status', 'active')
-        .maybeSingle();
-
-      if (newData) {
-        console.log(`✅ Auto-generated template for "${fieldName}"`);
-        data = newData;
-      } else {
-        return null;
-      }
+      console.warn(`No active template found for "${fieldName}"`);
+      // DO NOT auto-generate - templates must be static for comparability
+      // Use generic fallback instead
+      return null;
     }
 
     // Map to expected structure for backward compatibility

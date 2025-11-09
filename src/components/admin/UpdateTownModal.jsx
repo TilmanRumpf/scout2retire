@@ -78,11 +78,10 @@ const UpdateTownModal = ({
 
   const selectedCount = Object.values(selectedSuggestions).filter(Boolean).length;
 
-  // Truncate long text for display
-  const truncate = (text, maxLength = 100) => {
+  // Format text for display - NO TRUNCATION for admin review
+  const formatValue = (text) => {
     if (!text) return '(empty)';
-    const str = String(text);
-    return str.length > maxLength ? str.substring(0, maxLength) + '...' : str;
+    return String(text);
   };
 
   return (
@@ -211,8 +210,8 @@ const UpdateTownModal = ({
                   {/* Current value */}
                   <div className="mb-2">
                     <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Current:</div>
-                    <div className="text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded px-3 py-2 font-mono">
-                      {truncate(suggestion.currentValue)}
+                    <div className="text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded px-3 py-2 font-mono max-h-32 overflow-y-auto whitespace-pre-wrap">
+                      {formatValue(suggestion.currentValue)}
                     </div>
                   </div>
 
@@ -224,9 +223,9 @@ const UpdateTownModal = ({
                   {/* Suggested value */}
                   <div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Suggested:</div>
-                    <div className="text-sm text-gray-900 dark:text-white bg-green-50 dark:bg-green-900/20 rounded px-3 py-2 font-mono border border-green-200 dark:border-green-800">
+                    <div className="text-sm text-gray-900 dark:text-white bg-green-50 dark:bg-green-900/20 rounded px-3 py-2 font-mono border border-green-200 dark:border-green-800 max-h-32 overflow-y-auto whitespace-pre-wrap">
                       {suggestion.suggestedValue !== null ? (
-                        truncate(suggestion.suggestedValue)
+                        formatValue(suggestion.suggestedValue)
                       ) : (
                         <span className="text-red-600 dark:text-red-400">
                           {suggestion.reason}
