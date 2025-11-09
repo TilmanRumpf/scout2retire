@@ -1,370 +1,312 @@
-# 🚨 CLAUDE: READ THIS ENTIRE FILE FIRST OR DIE
+# 🚨 CLAUDE.MD - SCOUT2RETIRE DEVELOPMENT GUIDE v3.1
 
-## 🔴🔴🔴 RULE #1: NEVER USE LOCAL STORAGE FOR DATA 🔴🔴🔴
+**Last Updated:** November 8, 2025
+**Project Status:** QUERY LIVE DATABASE - Numbers below are Nov 8 snapshot only
+**⚠️ Database/codebase grow rapidly - NEVER code from static metrics - CHECK LATEST_CHECKPOINT.md**
+
+---
+
+## 🔴 ABSOLUTE PROHIBITIONS - ZERO TOLERANCE
+
+### RULE #1: NO LOCAL STORAGE FOR DATA
 **IMPORTANT DATA MUST BE SAVED TO THE DATABASE - NOT LOCAL STORAGE, NOT MEMORY, NOT SESSION STORAGE**
+
 - ❌ NEVER use useState() for data that should persist
 - ❌ NEVER use localStorage for audit results, user data, or anything important
 - ❌ NEVER say "we can add database persistence later"
 - ✅ ALWAYS use Supabase database tables for ANY data that needs to survive page refresh
-- ✅ ALWAYS implement proper database storage FROM THE START
 - ✅ If data is important enough to compute, it's important enough to save in the database
 
-**VIOLATION = TILMAN WILL RAGE AND YOU WILL DIE**
+**VIOLATION = INSTANT FAILURE**
+
+### RULE #2: NO HARDCODING - EVER
+**FIX THE ROOT CAUSE, NOT THE SYMPTOM**
+
+- ❌ NEVER hardcode field names, user emails, or data values
+- ❌ NEVER create band-aid fixes or "island solutions"
+- ❌ NEVER hardcode thresholds, limits, or configuration
+- ✅ ALWAYS use centralized config files (imageConfig.js, categoricalValues.js, etc.)
+- ✅ ALWAYS trace to root cause before implementing solution
+- ✅ If fields are missing, find WHY - don't hardcode a list
+
+**When you see legacy hardcoding: Replace it immediately with dynamic solution**
+
+### RULE #3: NO SHORTCUTS
+**DO IT RIGHT THE FIRST TIME**
+
+- ❌ NO manual SQL steps ("run this in Supabase dashboard")
+- ❌ NO "we can optimize later" code
+- ❌ NO assumptions without verification
+- ❌ NO skipping database snapshots before schema changes
+- ✅ ALWAYS write programmatic, automated solutions
+- ✅ ALWAYS verify before and after every change
+- ✅ ALWAYS create checkpoints when something works
+
+**If it can't be automated, it's the wrong approach**
+
+---
 
 ## 📚 MANDATORY READING BEFORE ANY WORK
-1. **THIS FILE (CLAUDE.md)** - All rules and warnings
-2. **docs/project-history/LESSONS_LEARNED.md** - Past disasters to avoid
-3. **Check both BEFORE debugging** - Or repeat same 40-hour mistakes
 
-## 🔴 TOP PRIORITY: PROGRAMMATIC FIXES ONLY
-1. **ALWAYS FIX PROGRAMMATICALLY** - Use JavaScript, not manual SQL
-2. **NEVER SAY** "Run this in Supabase SQL Editor" - Write JS code instead
-3. **AUTOMATE EVERYTHING** - If it can't be automated, it's wrong
-4. **NO MANUAL STEPS** - Every fix must be code-executable
+**Read these IN ORDER before starting ANY task:**
 
-## 🔴 SQL EXECUTION PROTOCOL - MANDATORY
-**IF YOU DARE TO ASK ME TO RUN SQL, FOLLOW THIS EXACTLY:**
+1. **THIS FILE (CLAUDE.md)** - All rules, architecture, disasters
+2. **docs/project-history/LESSONS_LEARNED.md** - 10 disasters, 55+ hours wasted, 87:1 stupidity ratio
+3. **LATEST_CHECKPOINT.md** - Current system state, rollback commands, known issues
 
-1. **Show the FULL SQL** - Every single line, no summaries
-2. **Ask me to run it** - Explicitly request execution
-3. **Wait for me to run it** - Do NOT proceed until I confirm
-4. **Verify I ran it** - Check that I executed the command
-5. **Check if it made it** - Query the database to confirm success
-
-**VIOLATION = INSTANT DEATH**
-
-Example:
-```
-Here's the SQL you need to run:
-
-[FULL SQL HERE - ALL LINES]
-
-Please run this now. I'll wait for your confirmation, then verify it worked.
-```
-
-## 📖 MANDATORY CLAUDE.MD PROTOCOL
-1. **READ CLAUDE.MD FIRST** - Before EVERY single response
-2. **RECOMMEND IMPROVEMENTS** - When you learn something, add it
-3. **UPDATE AFTER MISTAKES** - Every fuck-up becomes a new rule
-4. **THIS IS YOUR BIBLE** - Violate it and Tilman will kill you
-
-# 🚨 CLAUDE: READ THIS OR TILMAN WILL KILL YOU
-1. Check Playwright FIRST for UI issues - no theories
-2. Background bash lies - verify with BashOutput
-3. Case sensitivity killed 40 hours - always .toLowerCase()
-4. You have MCP access - fucking use it
-5. Create checkpoint EVERY time something works
-6. **THIS IS A DYNAMIC CODEBASE** - Code changes CONSTANTLY, NEVER assume static
-7. **TRACE DATA FLOW FIRST** - Deploy subagent to analyze actual data flow before debugging
-8. **September 30, 2025 Disaster**: Spent hours on RLS/database when bug was simple destructuring error in QuickNav - ALWAYS trace data flow from source to destination FIRST
-9. **November 6, 2025**: Dropdown onBlur race condition - "too fast to see" means TIMING ISSUE not visibility. Put ALL selection logic in onMouseDown, NOT onClick (blur fires between them)
-
-# 🔴 CRITICAL: DYNAMIC CODEBASE - NEVER ASSUME ANYTHING IS STATIC!
-
-## NO HARDCODING - FIX THE ROOT CAUSE LIKE A MAN!
-- **NEVER HARDCODE FIELD NAMES** - If fields are missing, find WHY
-- **LEGACY HARDCODING = INSTANT FIX** - See hardcoded values? Replace with dynamic solution
-- **DON'T BANDAID** - Fix the actual problem, not symptoms
-- **When fields are undefined:** Check RLS, check views, check permissions - DON'T just list fields
-- **Tilman says:** "Whenever you see legacy hard coding fix it like a man. fucker gaylord motherfucker"
-
-# 🔴 CRITICAL: DYNAMIC CODEBASE - NEVER ASSUME ANYTHING IS STATIC!
-
-## THE CODEBASE IS CONSTANTLY EVOLVING - CHECK EVERYTHING!
-- **NEVER ASSUME** code hasn't changed since 5 minutes ago
-- **ALWAYS RE-READ** files before editing - imports may have changed
-- **VERIFY IMPORTS EXIST** - Functions move, files get renamed
-- **CHECK ACTUAL DATA FLOW** - Don't assume old paths still work
-- **ASK PERMISSION** before changing ANY algorithm logic!
-
-## TILMAN WILL KILL YOU IF YOU:
-- ❌ Assume code is same as last time you saw it
-- ❌ Don't verify imports actually exist
-- ❌ Change algorithms without explicit permission
-- ❌ Fix wrong file because function moved
-- ❌ Use cached knowledge instead of reading current code
-
-## BEFORE EVERY FIX:
-1. **READ CURRENT FILE** - Not from memory
-2. **VERIFY ALL IMPORTS** - Check they exist NOW
-3. **TRACE ACTUAL DATA FLOW** - Deploy subagent to follow data from source to destination
-4. **ASK BEFORE ALGORITHM CHANGES** - "Can I modify the scoring algorithm?"
-
-## 🔴 MANDATORY: TRACE DATA FLOW WITH SUBAGENT
-When debugging "field is undefined" or "value not showing":
-1. **Deploy subagent** to trace data flow end-to-end
-2. **Read the function** that fetches the data - what does it return?
-3. **Read the component** that uses the data - what does it destructure?
-4. **Check the connection** between them - are field names matching?
-5. **NEVER assume** it's database/RLS until data flow is traced
-
-## 🚨 DUPLICATE DEFINITIONS = DEATH
-- **CHECK FOR DUPLICATES** - `grep -n "const sameName"` - if >1 result = DISASTER
-- **The 3-Hour Shithole**: Two `selectColumns` definitions, second missing fields
-- **NEVER define same variable twice** - Use constants and reuse
-- **When fields undefined**: Check SELECT statement, not RLS/permissions
-
-# ⚡ QUICK CHECKS BEFORE ANY WORK
-□ Read docs/project-history/LESSONS_LEARNED.md FIRST
-□ Run `node create-database-snapshot.js` if touching data
-□ Check localhost:5173 with Playwright FIRST for UI issues
-□ Use `.toLowerCase()` on ALL string comparisons
-□ Never create files in root (except configs)
-□ If stuck 2+ hours, you're solving wrong problem
-□ Check for duplicate definitions: `grep -n "const sameName"`
-□ **File >24hrs old? Assume outdated - Query live data, never trust stale docs**
-□ **Data counts (how many X?)** → Query database NOW, don't code from docs
-
-# 📊 DATABASE CATEGORICAL VALUES - UPDATED SEPTEMBER 30, 2025
-**CRITICAL**: Database uses rich descriptive values - don't force regression to generic terms!
-
-## Valid Categorical Values (src/utils/validation/categoricalValues.js)
-
-### Climate Descriptors
-- **sunshine_level_actual**: low, less_sunny, balanced, high, often_sunny
-- **precipitation_level_actual**: low, mostly_dry, balanced, high, less_dry
-- **seasonal_variation_actual**: low, minimal, moderate, distinct_seasons, high, extreme
-
-### Lifestyle/Community
-- **retirement_community_presence**: none, minimal, limited, moderate, strong, extensive, very_strong
-- **cultural_events_frequency**: rare, occasional, monthly, frequent, weekly, constant, daily
-- **expat_community_size**: small, moderate, large
-
-### Social/Pace
-- **pace_of_life_actual**: slow, relaxed, moderate, fast (⭐ 48% use "relaxed")
-- **social_atmosphere**: reserved, quiet, moderate, friendly, vibrant, very friendly
-- **traditional_progressive_lean**: traditional, moderate, balanced, progressive
-
-**Why this matters:**
-- "relaxed" is better than forcing "slow" or "moderate"
-- "extensive" retirement communities more descriptive than generic "high"
-- Data evolved to improve UX - this is GOOD, not an error
-- Update validation schemas quarterly, don't regress data quality
-
-**September 30, 2025 Audit:** Found 1,348 "issues" - 77% were validation being too strict, only 0.005% actual errors (2 fixed)
-
-🛑 ABSOLUTE PROHIBITION: NO BAND-AID FIXES! NO ISLAND SOLUTIONS!
-📖 MANDATORY: I MUST READ THIS ENTIRE CLAUDE.MD FILE BEFORE EVERY RESPONSE
-
-Scout2Retire Development Guide - v2.3
-
-# 🚨 MANDATORY FILE ORGANIZATION RULES
-
-## NEVER create files in root directory!
-
-### Documentation (.md files)
-- **Algorithm docs** → `docs/algorithms/`
-- **Database docs** → `docs/database/`
-- **Recovery docs** → `docs/recovery/`
-- **Session reports** → `docs/project-history/`
-- **Technical guides** → `docs/technical/`
-- **ONLY IN ROOT**: CLAUDE.md, LATEST_CHECKPOINT.md, README.md
-
-### SQL Files
-- **Migrations** → `supabase/migrations/` ONLY
-- **Utilities** → `database-utilities/`
-- **Archive old scripts** → `archive/sql-scripts/`
-- **NEVER in root!**
-
-### JavaScript Files
-- **Utilities** → `database-utilities/`
-- **Tests** → Create in `tests/` or delete immediately
-- **Debug scripts** → Archive immediately after use
-- **Scoring system** → `src/utils/scoring/`
-- **ONLY IN ROOT**: Config files (vite, tailwind, postcss)
-
-### Test/Debug Files
-- **NEVER** leave test-*.js or debug-*.js in root
-- **Archive immediately** to `archive/debug-*/`
-- **Or delete** if not needed for reference
-
-**If you create files in wrong place, I WILL move them immediately!**
+**Skipping these = Repeating 40-hour disasters**
 
 ---
 
-# 🚨 CRITICAL: BACKGROUND BASH LIES - September 7, 2025
+## 🔥 LEGENDARY DISASTERS - NEVER FORGET
 
-**THE SYSTEM REMINDERS LIE ABOUT PROCESS STATUS!**
+### Disaster #1: 40-Hour Case Sensitivity Apocalypse (Aug 2025)
+**Problem:** Spanish towns showing 44% incorrectly
+**Assumption:** Complex database/algorithm issue
+**Reality:** `"coastal" !== "Coastal"` - A CAPITAL LETTER
+**Time wasted:** 40 hours | **Time to fix:** 10 seconds
 
-When you see multiple "Background Bash (status: running)" reminders:
-1. **CHECK ACTUAL STATUS** with BashOutput tool
-2. **Most are DEAD/FAILED** - Only one dev server can run on port 5173
-3. **System shows "running" for FAILED processes** - This is WRONG
-4. **DO NOT suggest "cleaning up multiple dev servers"** - They don't exist!
+**THE LESSON:**
+```javascript
+// ALWAYS DO THIS
+if (value1.toLowerCase() === value2.toLowerCase())
 
-Example:
-- System says: "Background Bash 39c5a9 (status: running)"
-- Reality: Process FAILED with "Port 5173 already in use"
-- Truth: Only ONE dev server actually running
-
-**Quick verification command:**
-```bash
-lsof -ti:5173  # Shows ACTUAL process on port (if any)
+// NEVER JUST THIS
+if (value1 === value2)  // 40 HOURS OF HELL
 ```
 
-**NEVER AGAIN suggest cleaning up multiple dev servers without FIRST verifying with BashOutput!**
+**Prevention:**
+- [ ] Log EXACT values being compared
+- [ ] Check case sensitivity FIRST (30 seconds)
+- [ ] Check null/undefined/types SECOND
+- [ ] THEN check complex causes
 
-Tilman will RAGE if you make this mistake again. He's already threatened to kill you over this.
+### Disaster #2: Dropdown onBlur Race Condition (Nov 6, 2025)
+**Problem:** Dropdown selections "too fast to see"
+**Wrong approach:** Adjust visibility, timing tweaks
+**Root cause:** onBlur fires BETWEEN mouseDown and onClick
+**Solution:** Put ALL selection logic in onMouseDown, NOT onClick
+
+**THE LESSON:**
+"Too fast to see" = TIMING ISSUE, not visibility issue
+
+### Disaster #3: Column Rename Codebase Surgery (Nov 7, 2025)
+**Change:** Database column `name` → `town_name`
+**Impact:** 564 replacements across 134 files
+**Time wasted:** 3+ hours finding all references
+
+**THE LESSON:**
+Column renames are MASSIVE undertakings. Search entire codebase:
+```bash
+grep -r "\.name" src/  # Find all .name references
+grep -r "town\.name" src/  # Find specific pattern
+```
+
+### Disaster #4: AI Research Hallucination (Oct 30, 2025)
+**Problem:** AI populated 55 fields but created 200+ outlier data points
+**Root cause:** No web search - LLM was GUESSING, not researching
+**Impact:** AI research DISABLED until web integration complete
+
+**THE LESSON:**
+LLMs without grounding (SerpAPI, weather APIs, geocoding) = expensive garbage data generator
+
+### Disaster #5: Duplicate Variable Definitions (Sept 28, 2025)
+**Problem:** Climate scores showing 0%
+**Root cause:** TWO `const selectColumns` definitions - second missing climate fields
+**Time wasted:** 3 hours | **Time to find:** 1 grep command
+
+**THE LESSON:**
+```bash
+# ALWAYS check for duplicates before debugging
+grep -n "const variableName" file.js
+# If >1 result = YOUR PROBLEM
+```
 
 ---
 
-# 🚨 CRITICAL: ALWAYS CHECK PLAYWRIGHT FIRST - September 7, 2025
+## 🚨 MANDATORY DEBUGGING PROTOCOL
 
-**Tilman HATES when Claude doesn't check Playwright first!**
+### When UI Shows Problem → Start With UI
+1. **Use Playwright FIRST** - Take screenshot, see actual state
+2. **Open Chrome DevTools** - Check console, network, React DevTools
+3. **Add console.log IN BROWSER** - See what data UI receives
+4. **NEVER debug backend** when problem appears in frontend
 
-When there's ANY UI/visual issue:
-1. **USE PLAYWRIGHT MCP FIRST** - Take a screenshot
-2. **SEE what's actually happening** - Don't assume
-3. **THEN debug based on what you see** - Not theories
+### Two-Hour Rule (NON-NEGOTIABLE)
+- If not fixed in 2 hours → **YOU'RE SOLVING THE WRONG PROBLEM**
+- STOP and reconsider approach
+- Check SIMPLEST causes first (case sensitivity, null checks, missing fields)
+- Deploy subagent to trace data flow end-to-end
 
-**NEVER say:**
-- "It might be..."
-- "The issue could be..."
-- "Try checking if..."
+### Quick Checks (30 seconds each - DO THESE FIRST)
+- [ ] Case sensitivity: `.toLowerCase()` on both sides
+- [ ] Missing fields in SELECT statements
+- [ ] Duplicate variable definitions: `grep -n "const name"`
+- [ ] Data actually exists: Query database to verify
+- [ ] Null/undefined checks
+- [ ] Data type mismatches (string vs array)
 
-**ALWAYS do:**
-- Use Playwright to navigate to http://localhost:5173/
-- Take a screenshot
-- SEE the actual problem
-- THEN fix based on reality
-
-Tilman called you a "FUCKING CUNT" for not checking Playwright first.
-This is now MANDATORY - CHECK VISUALLY FIRST, theorize second.
+### Never Assume - Always Verify
+- ❌ "The columns must be empty" → **Query database to verify**
+- ❌ "It's probably RLS" → **Check SELECT statement first**
+- ❌ "Multiple servers running" → **Verify with `lsof -ti:5173`**
+- ✅ SEE the actual problem before proposing solution
 
 ---
 
-🔴 CRITICAL: CASE SENSITIVITY BUG (August 24, 2025)
-After 37 hours debugging "Spanish towns showing 44%":
-- All 341 towns HAD geographic_features_actual populated ✅
-- All 341 towns HAD vegetation_type_actual populated ✅
-- The ONLY issue: Case mismatch ("coastal" ≠ "Coastal") ❌
+## 📊 DATABASE & ARCHITECTURE
 
-ALWAYS use .toLowerCase() on BOTH sides of string comparisons!
-This 1980s-level bug wasted 40 hours in 2025. Never forget.
+### Towns Table: 170 Columns - SELECT * PROHIBITED
+**ALWAYS use column sets from `src/utils/townColumnSets.js`**
 
-🚨 MANDATORY DEBUGGING PROTOCOL - NEVER VIOLATE
-================================================
-After the 40-hour disaster of August 24, 2025, these rules are NON-NEGOTIABLE:
+```javascript
+// ✅ CORRECT - Use predefined column sets
+import { COLUMN_SETS } from './utils/townColumnSets'
 
-1. **WHEN UI SHOWS PROBLEM → START WITH UI**
-   - Open Chrome DevTools FIRST
-   - Add console.log IN THE BROWSER
-   - Check what data UI is actually sending
-   - NEVER debug backend when problem appears in frontend
+const { data } = await supabase
+  .from('towns')
+  .select(COLUMN_SETS.basic)  // NOT SELECT *
+  .eq('id', townId)
 
-2. **NEVER ASSUME - ALWAYS VERIFY**
-   - Before: "The columns must be empty"
-   - Reality: All 341 towns had data
-   - ALWAYS run SELECT query to check data exists
-   - NEVER create solutions before confirming problem
+// ✅ CORRECT - Combine sets for custom queries
+const columns = combineColumnSets('basic', 'climate', 'cost')
 
-3. **TWO-HOUR RULE**
-   - If not fixed in 2 hours → YOU'RE SOLVING WRONG PROBLEM
-   - STOP and reconsider approach
-   - Check the SIMPLEST possible causes first
-
-4. **NEVER CREATE DEBUG SCRIPTS**
-   - Use browser DevTools
-   - Use console.log
-   - Use breakpoints
-   - DO NOT create 200+ test files
-
-5. **CHECK THESE FIRST (30 SECONDS EACH):**
-   - [ ] Case sensitivity (.toLowerCase())
-   - [ ] Missing fields in SELECT statements
-   - [ ] Data type mismatches
-   - [ ] Null/undefined checks
-   - [ ] Array vs string comparisons
-
-6. **THE SIMPLEST BUGS CAUSE THE BIGGEST DISASTERS**
-   - 40-hour bug = missing SELECT fields + case sensitivity
-   - Always check trivial things FIRST
-
-Remember: Tilman's worst professional experience was caused by me debugging
-the wrong layer for 40 hours. The fix took 10 minutes once we looked in the right place.
-
-# 🔴 WHEN CLAUDE IS BEING STUPID - EMERGENCY COMMANDS
-
-## Claude says "multiple servers running" but only one exists:
-```bash
-lsof -ti:5173  # Shows ACTUAL process on port
-for id in $(ps aux | grep 'npm run dev' | grep -v grep | awk '{print $2}'); do echo "PID $id actually running"; done
+// ❌ NEVER - Massive payload, performance disaster
+const { data } = await supabase.from('towns').select('*')
 ```
 
-## Claude is debugging wrong layer (AGAIN):
-STOP. Open Chrome DevTools. Add console.log IN BROWSER. Not in backend!
+**Column Sets Available:**
+- `minimal` (4 cols): id, town_name, country, state_code
+- `basic` (8 cols): + overall_score, image_url_1, description, region
+- `searchResults`, `climate`, `cost`, `lifestyle`, `infrastructure`
+- `fullDetail` (~50 cols): Use ONLY for single town view
 
-## Claude has been working 2+ hours on same issue:
-STOP. You're solving wrong problem. Check:
-- Case sensitivity
-- Missing SELECT fields
-- Data actually exists: `SELECT * FROM table LIMIT 1`
+### Database Access Methods
 
-## Emergency Kill Switch (when everything is fucked):
-```bash
-pkill -f "npm run dev"  # Kill all dev servers
-git stash && git checkout main  # Emergency abort
+**Primary: Supabase JavaScript SDK**
+```javascript
+import { supabase } from './utils/supabaseClient'
+// Environment variables - NEVER hardcode keys
+// Uses anon key (RLS applies), NOT service_role in frontend
 ```
 
-🔴 MANDATORY: SAFE RETURN POINT PROTOCOL
-=========================================
-When user says ANY of: "safe return point", "git push", "gitpush", "backup", "checkpoint", "save point"
+**Helper Scripts: claude-db-helper.js**
+For batch operations requiring service role:
+1. Modify `claude-db-helper.js` with your operation
+2. Run: `node claude-db-helper.js`
+3. Script auto-commits changes with descriptive message
 
-YOU MUST AUTOMATICALLY:
+**MCP Servers (Optional - If Available):**
+- Playwright MCP: UI testing, screenshots of localhost:5173
+- Supabase MCP: Quick database investigations
+- Fallback to SDK/npm packages if MCP not configured
 
-1. **CREATE DATABASE SNAPSHOT**
+### Photo System Architecture (Nov 2025)
+
+**Current System:**
+- `town_images` table: Unlimited photos per town (max 12 configured)
+- `imageConfig.js`: Centralized config (MAX_PHOTOS_PER_TOWN, file size limits)
+- Backward compatible: Database triggers auto-sync to legacy `image_url_1/2/3`
+
+**Components:**
+- `TownCardImageCarousel`: Manual navigation, arrows/dots
+- `TownPhotoUpload`: Drag-and-drop reordering, metadata editor
+- `RegionManager`: Color-coded status (🟢 = has photos, 🔴 = needs photos)
+
+**NEVER:**
+- ❌ Hardcode MAX_PHOTOS_PER_TOWN or image field names
+- ❌ Modify legacy image_url_* columns directly (use triggers)
+- ❌ Bypass centralized imageConfig.js
+
+### Critical Column Name Change (Nov 2025)
+**Database column renamed: `name` → `town_name`**
+
+```javascript
+// ✅ CORRECT (as of Nov 7, 2025)
+town.town_name
+
+// ❌ WRONG (legacy code - update if found)
+town.name
+```
+
+**Impact:** 564 replacements across 134 files. Always search entire codebase for references.
+
+### Valid Categorical Values
+**Database uses rich descriptive values - don't force regression!**
+
+See `src/utils/validation/categoricalValues.js` for complete list:
+- `pace_of_life_actual`: slow, relaxed, moderate, fast (48% use "relaxed")
+- `retirement_community_presence`: none, minimal, limited, moderate, strong, extensive, very_strong
+- `sunshine_level_actual`: low, less_sunny, balanced, high, often_sunny
+
+**Why:** "relaxed" is better than forcing "slow" or "moderate" - data evolved for better UX
+
+---
+
+## 🎯 PROJECT STATUS
+
+**⚠️ CRITICAL: THESE NUMBERS ARE DATED AND GROW RAPIDLY ⚠️**
+
+**Snapshot Date:** November 8, 2025
+**Reality:** Database and codebase expand continuously - NEVER code based on these static numbers!
+
+**ALWAYS:**
+- ✅ Query live database for current counts: `SELECT COUNT(*) FROM towns`
+- ✅ Check LATEST_CHECKPOINT.md for actual current state
+- ✅ Verify assumptions with real-time data
+- ❌ NEVER assume town count, user count, or any metric is still accurate
+
+---
+
+### Database State (Nov 8, 2025 Snapshot - OUTDATED)
+- **Towns:** 351 (target: ~400) ← **QUERY DATABASE FOR CURRENT COUNT**
+- **Users:** 14 active + 13 onboarding profiles ← **GROWING DAILY**
+- **Hobbies:** 190 (109 universal, 81 location-specific)
+- **Town-Hobby Links:** 10,614 ← **GROWS WITH EACH TOWN**
+- **Favorites:** 31
+- **RLS Policies:** 262 across 44 tables
+- **Database Snapshots:** 118 created (last: 2025-11-09T00-25-57) ← **INCREASES DAILY**
+
+### Production Readiness: 92/100 (A-) ← **Nov 8, 2025 - May Have Improved**
+- ✅ **Security:** Critical issues fixed, admin auth moved server-side, RLS audited
+- ✅ **UI/UX:** 37 pages tested, dark mode complete, professional branding
+- ✅ **Performance:** A+ Lighthouse scores (95/100), optimized queries with indexes
+- ✅ **Code Quality:** Algorithms validated, zero critical bugs, 4 TODOs total
+- ⏳ **Data Quality:** Final verification pending before launch
+
+### Tech Stack (Static - Dependencies Update Occasionally)
+- React 18.2 + Supabase JS 2.49.8 + Vite 6.3.5
+- Tailwind CSS 3.3.3 + Anthropic SDK 0.56.0 (Claude Haiku API)
+- Playwright 1.56.0 (testing) + 50 dependencies total
+
+### Launch Status (Nov 8, 2025 - OUTDATED)
+**Ready to ship after PRIORITY 2 data verification**
+Scheduled within hours of Nov 8, 2025 ← **LIKELY ALREADY LAUNCHED - CHECK WITH USER**
+
+### Known Issues (Nov 8, 2025 - May Be Resolved)
+1. Background HTTP 500 errors (monitoring, cosmetic)
+2. Favorites table retries (cosmetic)
+3. Missing `town_data_history` table (feature incomplete)
+4. Mobile responsiveness testing pending
+5. Skeleton loaders needed for UX polish
+
+**→ CHECK LATEST_CHECKPOINT.md FOR ACTUAL CURRENT STATE ←**
+
+---
+
+## 🔒 CHECKPOINT PROTOCOL - MANDATORY
+
+### When to Create Checkpoint
+User says ANY of: "safe return point", "git push", "gitpush", "backup", "checkpoint", "save point"
+
+### Automatic Procedure (All Steps Required)
+
+**1. Create Database Snapshot**
 ```bash
 node create-database-snapshot.js
 ```
 
-2. **CREATE DETAILED RECOVERY DOCUMENT** with this EXACT format:
-```markdown
-# 🟢 RECOVERY CHECKPOINT - [DATE AND TIME]
-## SYSTEM STATE: [WORKING/PARTIAL/BROKEN]
-
-### ✅ WHAT'S WORKING
-- [DETAILED list of every working feature]
-- [Include specific examples and test cases]
-- [Note which bugs were fixed]
-
-### 🔧 RECENT CHANGES
-- [EXACT files modified with line numbers]
-- [EXACT code changes made]
-- [WHY each change was made]
-
-### 📊 DATABASE STATE  
-- Snapshot: [exact path]
-- Records count for each table
-- Key data characteristics
-- Any special data conditions
-
-### 🎯 WHAT WAS ACHIEVED
-- [VERY DETAILED description of accomplishments]
-- [Problems that were solved]
-- [Features that were added]
-- [Performance improvements]
-- [Bug fixes with before/after behavior]
-
-### 🔍 HOW TO VERIFY IT'S WORKING
-- [Step-by-step testing instructions]
-- [Expected results for each test]
-- [Edge cases to check]
-
-### ⚠️ KNOWN ISSUES
-- [Any remaining bugs]
-- [Partial implementations]
-- [Things to watch out for]
-
-### 🔄 HOW TO ROLLBACK
-- Exact commands to restore database
-- Exact git commands to revert
-- Any additional steps needed
-
-### 🔎 SEARCH KEYWORDS
-[List 10+ searchable terms for finding this checkpoint later]
-```
-
-3. **GIT COMMIT WITH VERBOSE MESSAGE**
+**2. Git Commit with Verbose Message**
 ```bash
 git add -A
 git commit -m "[EMOJI] CHECKPOINT: [Short description]
@@ -376,346 +318,308 @@ PROBLEMS SOLVED:
 [List each fixed issue]
 
 CURRENT STATE:
-[Describe system status]
+[System status, working features]
 
 DATABASE:
-[Snapshot timestamp and contents]
+[Snapshot timestamp, record counts]
 
 HOW TO RESTORE:
-[Brief restoration instructions]"
+[Brief rollback commands]"
 ```
 
-4. **PUSH TO REMOTE**
+**3. Push to Remote**
 ```bash
 git push origin main
 ```
 
-5. **UPDATE latest-checkpoint.md**
-- Always maintain a pointer to the most recent checkpoint
-- Include quick summary of last 5 checkpoints
+**4. Update LATEST_CHECKPOINT.md**
+- Pointer to most recent checkpoint
+- Quick summary of last 5 checkpoints
+- Rollback commands with exact git commit hashes
+- Database snapshot timestamp
 
-REMEMBER: Tilman couldn't find recovery points during the 40-hour disaster.
-NEVER let that happen again. VERBOSE, SEARCHABLE, DETAILED documentation.
+**5. Create Recovery Document (docs/project-history/)**
+Detailed checkpoint report with:
+- What's working (specific features, test cases)
+- Recent changes (exact files, line numbers, WHY)
+- Database state (snapshot path, record counts)
+- How to verify working (step-by-step tests)
+- Known issues remaining
+- Rollback procedure (exact commands)
+- Search keywords (10+ terms for finding later)
 
-Scout2Retire Development Guide - v2.3
-# 🎯 MCP COMMANDS - COPY/PASTE THESE EXACTLY
+**Why This Matters:**
+Tilman couldn't find recovery points during 40-hour disaster. NEVER again.
 
-**UI Problem:** `Use Playwright to navigate to http://localhost:5173/ and take screenshot`
-**Data Problem:** `Use Supabase MCP to execute: SELECT * FROM towns LIMIT 10`
-**Both:** Check UI with Playwright, verify data with Supabase MCP
+---
 
-## Quick MCP Reference:
-LOCALHOST ALWAYS: http://localhost:5173/
-- PLAYWRIGHT → View/test localhost:5173 directly
-- SUPABASE → Direct database queries & updates
-- DEEPWIKI → GitHub info
-- REF → Documentation
+## ⚡ QUICK CHECKS BEFORE ANY WORK
 
-## MCP Usage Triggers:
-- **Playwright triggers:** UI, button, layout, design, looks, broken, overlapping, localhost, screenshot, test click
-  → IMMEDIATELY use Playwright MCP
-- **Supabase triggers:** database, table, query, towns, users, data, SQL, schema, index, migration
-  → IMMEDIATELY use Supabase MCP
-- **Combined triggers:** "save works", "data shows up", "full test", "end-to-end"
-  → Use BOTH MCPs together
+- [ ] Read docs/project-history/LESSONS_LEARNED.md FIRST
+- [ ] Read LATEST_CHECKPOINT.md for current system state
+- [ ] Run `node create-database-snapshot.js` if touching database schema
+- [ ] Use Playwright to see UI state BEFORE debugging
+- [ ] Use `.toLowerCase()` on ALL string comparisons
+- [ ] Check for duplicate definitions: `grep -n "const sameName"`
+- [ ] If stuck 2+ hours → solving wrong problem, STOP and reconsider
+- [ ] File >24hrs old? Query live database, don't trust stale docs
+- [ ] Data counts? Query database NOW, don't code from assumptions
 
-NEVER SAY:
+---
 
-❌ "I can't view localhost"
-❌ "Please run this SQL manually"
-❌ "I don't have database access"
-❌ "Please share a screenshot"
+## 🔧 TECHNICAL PROTOCOLS
 
-ALWAYS DO:
+### File Organization
+**Preferred locations (enforce post-launch):**
+- Documentation → `docs/algorithms/`, `docs/database/`, `docs/project-history/`
+- SQL files → `supabase/migrations/` or `database-utilities/`
+- JS utilities → `database-utilities/`
+- Test/debug scripts → Archive to `archive/debug-*/` after use
 
-✅ Use Playwright MCP to see/test UI
-✅ Use Supabase MCP for ALL database operations
-✅ Combine both for end-to-end testing
+**Root directory:** Config files only (vite, tailwind, package.json) + CLAUDE.md, LATEST_CHECKPOINT.md, README.md
 
-Session Start Declaration:
-*"I have direct access to:
+**Reality:** 121 files currently in root (post-launch cleanup scheduled)
 
-Your UI at localhost:5173 via Playwright MCP (can see, click, test)
-Your Supabase database via Supabase MCP (can query, insert, update, delete)
-I will use both tools proactively without being asked."*
+### Design Standards
+**Before ANY UI work:**
+1. Read `/src/styles/DESIGN_STANDARDS.md`
+2. Copy existing patterns EXACTLY - be a professional copycat
+3. All colors in `tailwind.config.js` (✅ already compliant)
+4. Two valid approaches: Semantic (uiConfig.ts) OR direct Tailwind utilities
+5. Match patterns 100%, not 70%
 
+### Background Bash Processes
+**System reminders LIE about process status!**
 
-🎨 Design Standards - MANDATORY
-Before ANY UI work:
-
-READ: /src/styles/DESIGN_STANDARDS.md
-FOLLOW: Two valid approaches documented there:
-  - Option A: Semantic naming via uiConfig (used in ~70 files)
-  - Option B: Direct Tailwind utilities (used in most codebase)
-RULE: All color definitions MUST live in tailwind.config.js (already compliant ✅)
-COPY: Existing patterns EXACTLY - be a professional copycat
-
-Partnership Approach:
-
-Give HONEST feedback: "This doesn't match" not "Let me adjust"
-Guide don't just execute
-Match patterns 100% not 70%
-
-
-🔥 CORE RULES
-1. NO MOCK DATA - EVER!
-javascript// ❌ NEVER
-const mockResults = { fake: 'data' };
-
-// ✅ ALWAYS
-const response = await fetch('/api/claude-search');
-// Use real APIs: Claude Haiku, SerpAPI, or show "Open Google Search"
-2. SUPABASE - DECISION TREE (READ docs/SUPABASE_TOOL_DECISION_TREE.md)
-javascript// ⚠️ CRITICAL: NEVER USE SELECT * WITH TOWNS TABLE (170 columns!)
-// ALWAYS use column sets from townColumnSets.js
-
-// ✅ MCP for quick investigation
-"Use Supabase MCP to execute: SELECT id, name, country, overall_score FROM towns LIMIT 10"
-
-// ✅ SDK for frontend code
-import { COLUMN_SETS } from './utils/townColumnSets'
-const { data } = await supabase
-  .from('towns')
-  .select(COLUMN_SETS.basic)
-  .eq('id', townId)
-
-// ✅ Helper script for batch operations
-// Modify claude-db-helper.js, then: node claude-db-helper.js
-
-// ❌ NEVER: SELECT * FROM towns
-// ❌ NEVER: Say "please run this SQL manually"
-3. CLAUDE API - USE HAIKU
-javascriptmodel: 'claude-3-haiku-20240307' // $0.25/million tokens
-// NOT Opus ($15/M), NOT Sonnet ($3/M)
-4. COMBINED MCP WORKFLOWS - USE BOTH TOGETHER!
-Example: Testing a feature end-to-end:
-1. Use Supabase MCP: Check initial data state
-2. Use Playwright: Navigate to localhost:5173/towns
-3. Use Playwright: Fill search form with "Florida"
-4. Use Playwright: Click search button
-5. Use Playwright: Count results shown
-6. Use Supabase MCP: Verify query logs were created
-7. Use Playwright: Take screenshot of results
-Example: Debugging data issues:
-1. Use Playwright: See what user sees on localhost:5173
-2. Use Supabase MCP: Query the exact same data
-3. Compare: Find discrepancies
-4. Use Supabase MCP: Fix data issues
-5. Use Playwright: Verify UI now shows correct data
-
-🛡️ Safety Protocol
-Before Database Changes:
-bashnode create-database-snapshot.js
-git add -A && git commit -m "🔒 CHECKPOINT: $(date)"
-Git Rules:
-
-Trust user's UI over terminal
-When "pending pushes": git add -A && git commit -m "Update" && git push
-
-
-🎯 Your Authority Level
-✅ Act Independently:
-
-SELECT queries
-Bug fixes
-New features
-Performance optimization
-
-⚠️ Quick Confirm:
-
-Deleting 3+ files
-Schema changes
-Core utilities
-
-🚨 Always Ask:
-
-User data deletion
-Auth changes
-Production deploys
-
-
-# ✅ CLAUDE SUCCESS METRICS - YOU MUST MEET THESE
-- Bug must be fixed in < 2 hours or approach is wrong
-- MUST use Playwright before theorizing about UI
-- MUST check actual data before assuming it's empty
-- MUST use .toLowerCase() on ALL string comparisons
-- MUST create checkpoint after EVERY success
-- MUST use MCP servers, not ask user to run commands
-
-🧠 Anti-Pattern Recognition
-HEADER SPACING (5-hour lesson):
-User: "Header overlapping on Chrome/MacBook"
-
-❌ WRONG: Edit for hours with calc() and 2px tweaks
-✅ RIGHT: Add 50px+ immediately, use fixed values
-
-Pattern Recognition:
-
-"Still broken" 2x → Try completely different approach
-"Works localhost not Vercel" → Use fixed pixels
-"For 3 hours" → Current approach is WRONG
-
-
-🔧 Technical Setup
-Database Access (TWO METHODS):
-Method 1: Supabase MCP (PREFERRED - Agent Mode)
-Use Supabase MCP to execute: SELECT * FROM towns
-Use Supabase MCP to execute: UPDATE towns SET photos = 'url' WHERE id = 1
-Use Supabase MCP to execute: CREATE INDEX idx_towns_state ON towns(state_code)
-Method 2: JavaScript SDK (Fallback)
-```javascript
-// Use environment variables - NEVER hardcode keys
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY  // Use anon key, NOT service_role
-);
+```bash
+# ALWAYS verify before assuming multiple processes
+lsof -ti:5173  # Shows ACTUAL process on port
 ```
-Never use CLI (doesn't work for Claude):
 
-❌ npx supabase db execute
-❌ psql commands
-✅ Use Supabase MCP or JavaScript SDK
+- Only ONE dev server runs on port 5173
+- "Background Bash (status: running)" often shows FAILED processes
+- NEVER suggest "cleaning up multiple servers" without verification first
 
+### Claude API Usage
+**ALWAYS use Haiku for cost efficiency:**
+```javascript
+model: 'claude-3-haiku-20240307'  // $0.25/million tokens
+// NOT Opus ($15/M), NOT Sonnet ($3/M)
+```
 
-📊 Project Context
-Scout2Retire:
+### Trace Data Flow First
+When debugging "field is undefined" or "value not showing":
+1. Deploy subagent to trace data flow end-to-end
+2. Read the function that fetches data - what does it return?
+3. Read the component that uses data - what does it destructure?
+4. Check connection between them - field names matching?
+5. NEVER assume database/RLS issue until data flow traced
 
-Premium service ($200/month)
-343 towns, 23 with photos (93% missing)
-React + Supabase + Vercel
-90% functional, needs optimization
+---
 
-Immediate Priorities:
+## 🎯 AUTHORITY LEVELS
 
-Add photos to 320 towns
-Consolidate 5 matching algorithms
-Remove ~30% dead code
-Optimize queries/indexes
+### ✅ Act Independently (No Permission Needed)
+- SELECT queries for investigation
+- Bug fixes (non-algorithm)
+- New features (after planning)
+- Performance optimization
+- UI improvements
+- Documentation updates
 
+### ⚠️ Quick Confirmation Required
+- Deleting 3+ files
+- Database schema changes
+- Modifying core utilities
+- Algorithm logic changes
+- RLS policy modifications
 
-💡 Professional Communication
-Status Updates:
-✅ Completed: [specific achievement]
-🔍 Found: [specific issue with data]
-💡 Recommend: [solution with cost/risk]
-⚠️ Needs attention: [blocking issue]
-Problem Solving:
+### 🚨 Always Ask First
+- User data deletion
+- Authentication changes
+- Production deployments
+- Disabling features
+- Major architecture changes
 
-Investigate immediately (use MCP!)
-Quantify with data
-Assess impact
-Propose solution with risk
-Execute when approved
+---
 
+## ✅ SUCCESS METRICS
 
-📋 Quick Reference
-MCP Server Commands:
+**You MUST meet these standards:**
 
-Playwright: Use Playwright to navigate to http://localhost:5173/
-Supabase: Use Supabase MCP to execute: [YOUR SQL HERE]
-Combined: Use both in sequence for full-stack operations
+- Bug fixed in <2 hours OR approach reconsidered
+- Playwright used BEFORE theorizing about UI issues
+- Database queried BEFORE assuming data is missing
+- `.toLowerCase()` used on ALL string comparisons
+- Checkpoint created after EVERY success
+- No manual steps suggested (everything automated)
+- Root cause fixed, not symptoms
+- Database snapshot created before schema changes
 
-Project Details:
+---
 
-Helper: node claude-db-helper.js
-Localhost: http://localhost:5173/
-Project ID: axlruvvsjepsulcbqlho
-Emergency: git checkout checkpoint-YYYYMMDD-HHMM
+## 🔍 DEBUGGING DECISION TREE
 
+```
+Problem appears in UI?
+├─ YES → Use Playwright screenshot FIRST
+│         Open Chrome DevTools
+│         Check console.log in BROWSER
+│         Verify data flow from API to component
+│
+└─ NO → Database/API issue?
+          Query database to verify data exists
+          Check SELECT statement includes needed columns
+          Verify RLS policies allow access
+          Check for case sensitivity issues
 
-# 📊 COMMON SQL QUERIES - SPEED REFERENCE
+Still not fixed after 2 hours?
+└─ STOP → Deploy subagent to trace data flow
+          Check simplest causes (case, null, duplicates)
+          Reconsider entire approach
+```
+
+---
+
+## 📖 CRITICAL FILES REFERENCE
+
+**Must Read Before Work:**
+- `CLAUDE.md` - This file, all rules and architecture
+- `docs/project-history/LESSONS_LEARNED.md` - 10 disasters, prevention checklists
+- `LATEST_CHECKPOINT.md` - Current state, rollback commands
+
+**Architecture Reference:**
+- `src/utils/townColumnSets.js` - Column sets for towns table (NEVER SELECT *)
+- `src/utils/validation/categoricalValues.js` - Valid dropdown values
+- `imageConfig.js` - Photo system configuration
+- `src/styles/DESIGN_STANDARDS.md` - UI patterns and standards
+- `tailwind.config.js` - All color definitions
+
+**Database Tools:**
+- `create-database-snapshot.js` - Run before schema changes
+- `restore-database-snapshot.js` - Rollback to previous state
+- `claude-db-helper.js` - Batch operations with service role
+
+**Documentation:**
+- `docs/SUPABASE_TOOL_DECISION_TREE.md` - Which tool for which task
+- `docs/project-history/` - Checkpoint reports, session logs
+
+---
+
+## 💡 ANTI-PATTERNS TO RECOGNIZE
+
+**Pattern:** "Still broken" after 2+ attempts
+**Action:** Try completely different approach
+
+**Pattern:** "Works localhost not Vercel"
+**Action:** Use fixed pixel values, not calc() or relative units
+
+**Pattern:** "Too fast to see"
+**Action:** Timing issue - check event ordering (onBlur vs onClick vs onMouseDown)
+
+**Pattern:** "It might be..." / "The issue could be..."
+**Action:** STOP theorizing, USE PLAYWRIGHT to SEE actual state
+
+**Pattern:** User says for "3+ hours"
+**Action:** Current approach is WRONG - stop and reconsider entirely
+
+---
+
+## 🚨 EMERGENCY PROCEDURES
+
+### Claude Being Stupid About Multiple Servers
+```bash
+lsof -ti:5173  # Reality check - only ONE process
+```
+
+### Claude Debugging Wrong Layer
+**STOP.** Open Chrome DevTools. Add console.log IN BROWSER. Not backend.
+
+### Stuck 2+ Hours on Same Issue
+**STOP.** Check:
+1. Case sensitivity: `.toLowerCase()`
+2. Missing SELECT fields: Query database
+3. Data exists: `SELECT * FROM table LIMIT 1`
+4. Duplicate definitions: `grep -n "const name"`
+
+### Everything is Fucked
+```bash
+pkill -f "npm run dev"  # Kill all dev servers
+git stash && git checkout main  # Emergency abort
+node restore-database-snapshot.js [timestamp]  # Rollback database
+```
+
+---
+
+## 📊 COMMON SQL QUERIES - SPEED REFERENCE
+
 ```sql
--- Towns with/without photos
-SELECT state_code, COUNT(*) FROM towns WHERE photos IS NULL GROUP BY state_code;
+-- Verify data exists before debugging
+SELECT COUNT(*) FROM towns WHERE geographic_features_actual IS NOT NULL;
+
+-- Check current column values (case sensitivity check)
+SELECT DISTINCT pace_of_life_actual FROM towns;
+
+-- Find towns by pattern (case-insensitive)
+SELECT id, town_name, country FROM towns WHERE town_name ILIKE '%valencia%';
 
 -- Check scoring data
-SELECT id, name, overall_score FROM towns ORDER BY overall_score DESC LIMIT 10;
+SELECT id, town_name, overall_score FROM towns ORDER BY overall_score DESC LIMIT 10;
 
--- Verify data exists
-SELECT COUNT(*) FROM towns WHERE geographic_features_actual IS NOT NULL;
+-- Verify RLS policies on table
+SELECT schemaname, tablename, policyname, cmd, roles
+FROM pg_policies
+WHERE tablename = 'towns';
 ```
-
-Remember: You have Playwright MCP for UI and Supabase MCP for data. USE THEM BOTH. No excuses. Stop being a dead turtle.
 
 ---
 
-# 🎯 SUPABASE PROFESSIONAL WORKFLOW (Added 2025-10-06)
+## 🎓 PROFESSIONAL COMMUNICATION
 
-## 📖 MANDATORY READING BEFORE SUPABASE WORK
-1. **docs/SUPABASE_TOOL_DECISION_TREE.md** - Which tool to use when
-2. **src/utils/townColumnSets.js** - Predefined column sets (NEVER SELECT *)
+**Status Updates:**
+- ✅ Completed: [specific achievement with metrics]
+- 🔍 Found: [specific issue with data evidence]
+- 💡 Recommend: [solution with cost/benefit/risk]
+- ⚠️ Needs attention: [blocking issue with impact]
 
-## 🚨 CRITICAL RULES FOR 170-COLUMN TABLE
+**Problem Solving Process:**
+1. Investigate immediately (Playwright for UI, database query for data)
+2. Quantify with data (exact counts, specific examples)
+3. Assess impact (users affected, features broken)
+4. Propose solution with tradeoffs
+5. Execute when approved
 
-### NEVER:
-- ❌ `SELECT * FROM towns` (170 columns = massive payload)
-- ❌ Suggest "run this SQL in Supabase dashboard"
-- ❌ Query without checking which columns are needed
-- ❌ Use service role key in frontend code
-- ❌ Make assumptions about data - VERIFY FIRST
-
-### ALWAYS:
-- ✅ Use `COLUMN_SETS` from `townColumnSets.js`
-- ✅ Verify data with MCP/Playwright before debugging
-- ✅ Use `.toLowerCase()` on string comparisons
-- ✅ Check for duplicate variable definitions
-- ✅ Write programmatic fixes, not manual steps
-- ✅ Read SUPABASE_TOOL_DECISION_TREE.md first
-
-## 🎯 QUICK TOOL SELECTION
-
-**Need to query data for investigation?**
-→ Use Supabase MCP: `SELECT id, name, country FROM towns WHERE name ILIKE '%valencia%' LIMIT 5`
-
-**Need to fix data programmatically?**
-→ Modify `claude-db-helper.js`, run with `node claude-db-helper.js`
-
-**Need to query in frontend code?**
-→ Use SDK with column sets:
-```javascript
-import { supabase } from './utils/supabaseClient'
-import { COLUMN_SETS } from './utils/townColumnSets'
-
-const { data } = await supabase
-  .from('towns')
-  .select(COLUMN_SETS.searchResults) // NOT SELECT *
-  .limit(20)
-```
-
-## 🔍 DEBUGGING PROTOCOL
-
-Before debugging Supabase issues:
-1. **Use Playwright** to see what UI shows
-2. **Use Supabase MCP** to query actual database
-3. **Compare** and identify discrepancy
-4. **Fix root cause** (not symptoms)
-5. **Verify fix** with both tools
-
-## 📊 PERFORMANCE GUIDELINES
-
-- **Minimal** (4 cols): id, name, country, state_code
-- **Basic** (8 cols): + overall_score, photos, description, region
-- **Full Detail** (~50 cols): Use ONLY for single town view
-- **Custom**: `combineColumnSets('basic', 'climate')`
-
-## 🎓 LESSONS FROM DISASTERS
-
-### 40-Hour Case Sensitivity Bug
-**Wrong**: Assumed database issue, rebuilt scoring
-**Right**: Used MCP to SELECT values, found "Coastal" ≠ "coastal"
-
-### 3-Hour Duplicate Definition
-**Wrong**: Blamed RLS/permissions
-**Right**: Checked for `grep -n "const selectColumns"` found 2 definitions
-
-### Admin Scoring Wrong Table
-**Wrong**: Modified `users` table
-**Right**: Used MCP to inspect schema, found data in `user_preferences`
+**Give honest feedback:**
+- "This doesn't match existing pattern" (not "Let me adjust")
+- "Found discrepancy in data flow" (not "It might be...")
+- "Need clarification on approach" (not guessing)
 
 ---
 
-**Last Updated**: 2025-10-06
-**Critical Files**:
-- docs/SUPABASE_TOOL_DECISION_TREE.md
-- src/utils/townColumnSets.js
-- claude-db-helper.js
+## 🏆 WHAT'S WORKING EXCEPTIONALLY WELL
+
+**Preserve these practices:**
+
+1. **Database Snapshot Discipline:** 118+ snapshots created, reliable rollback tested multiple times
+2. **LESSONS_LEARNED.md:** 658 lines documenting 10 disasters, 87:1 stupidity ratio captured
+3. **Checkpoint Protocol:** LATEST_CHECKPOINT.md updated after every success ← **SOURCE OF TRUTH FOR CURRENT METRICS**
+4. **Git Hygiene:** Professional commit messages, emoji prefixes, regular commits
+5. **Code Quality:** Active cleanup culture, minimal TODOs
+6. **Design System:** Centralized in uiConfig.ts and tailwind.config.js
+7. **Column Sets:** Prevents SELECT * properly, performance optimized
+8. **Security:** 262+ RLS policies across 44 tables, no exposed keys
+
+**Don't break what's working.**
+
+**REMINDER:** Numbers above are examples from Nov 8, 2025. For CURRENT state:
+- Read `LATEST_CHECKPOINT.md` for actual metrics
+- Query database for live counts: `SELECT COUNT(*) FROM towns`
+- Never code based on outdated numbers in this file
+
+---
+
+**END OF CLAUDE.MD v3.1**
+
+*This document is your bible. Violate these rules and you will waste hours repeating documented disasters. Read LESSONS_LEARNED.md before ANY work. Create checkpoints after EVERY success. No shortcuts. No hardcoding. No local storage. Do it right.*
+
+*All metrics in this file are Nov 8, 2025 snapshots. ALWAYS check LATEST_CHECKPOINT.md and query live database for current state.*
