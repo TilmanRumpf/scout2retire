@@ -14,23 +14,15 @@ import supabase from '../supabaseClient';
 import { getOnboardingProgress } from '../userpreferences/onboardingUtils';
 import { scoreTownsBatch } from './unifiedScoring';
 import { clearOutdatedScoringCache } from './cacheBuster';
+import { getPreferenceHash, clearPersonalizedCache as clearCacheUtil } from '../preferenceUtils';
 
 // Conversion function moved to unifiedScoring.js to avoid duplication
 
 /**
  * Clear cached personalized results for a user
+ * @deprecated Use clearPersonalizedCache from preferenceUtils.js instead
  */
-export const clearPersonalizedCache = (userId) => {
-  // Clear all cached results for this user
-  const keysToRemove = [];
-  for (let i = 0; i < sessionStorage.length; i++) {
-    const key = sessionStorage.key(i);
-    if (key && key.startsWith(`personalized_${userId}_`)) {
-      keysToRemove.push(key);
-    }
-  }
-  keysToRemove.forEach(key => sessionStorage.removeItem(key));
-};
+export const clearPersonalizedCache = clearCacheUtil;
 
 /**
  * Get personalized town recommendations based on user's onboarding preferences
@@ -100,8 +92,17 @@ export const getPersonalizedTowns = async (userId, options = {}) => {
 
     // User preferences loaded successfully
 
-    // Build cache key for performance
-    const cacheKey = `personalized_${userId}_${JSON.stringify(options)}`;
+    // Get preference hash for cache key versioning
+    // This ensures cache automatically invalidates when preferences change
+    const { hash: preferenceHash } = await getPreferenceHash(userId);
+    const hashToUse = preferenceHash || '00000000'; // Default hash if none exists yet
+
+    // Build cache key for performance with preference version
+    // Format: personalized_{userId}_{prefHash}_{options}
+    // When preferences change, hash changes → cache key changes → stale cache bypassed
+    const cacheKey = `personalized_${userId}_${hashToUse}_${JSON.stringify(options)}`;
+
+    console.log(`[getPersonalizedTowns] Cache key: userId=${userId}, prefHash=${hashToUse}, options=${JSON.stringify(options)}`);
 
     // Check if we have cached results (unless skipCache is true)
     if (!options.skipCache) {

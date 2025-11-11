@@ -1,4 +1,5 @@
 import supabase from '../supabaseClient';
+import { updatePreferenceHash } from '../preferenceUtils';
 
 /**
  * Saves user preferences from onboarding to the new structured table
@@ -132,8 +133,24 @@ export const saveUserPreferences = async (userId, stepName, stepData) => {
       console.error('No data returned from update/insert - likely a permissions issue or the update didn\'t match any rows');
       return { success: false, error: 'Update failed - no rows affected' };
     }
-    
+
     console.log('Successfully saved preferences, returned data:', result.data[0]);
+
+    // Update preference hash for cache invalidation
+    // This ensures cached scores are automatically invalidated when preferences change
+    try {
+      const savedData = result.data[0];
+      const hashResult = await updatePreferenceHash(userId, savedData);
+      if (hashResult.success) {
+        console.log(`✅ Preference hash updated: ${hashResult.hash} for step: ${stepName}`);
+      } else {
+        console.warn(`⚠️  Could not update preference hash (non-critical):`, hashResult.error);
+      }
+    } catch (hashError) {
+      // Non-critical error - don't fail the save
+      console.warn('⚠️  Preference hash update failed (non-critical):', hashError);
+    }
+
     return { success: true, data: result.data[0] };
     
   } catch (error) {

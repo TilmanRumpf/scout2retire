@@ -1,6 +1,6 @@
+#!/usr/bin/env node
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
-
 dotenv.config();
 
 const supabase = createClient(
@@ -8,56 +8,52 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-async function checkPolicies() {
-  console.log('🔍 Checking RLS policies for towns_hobbies...\n');
+async function checkRLS() {
+  console.log('🔍 Checking RLS policies on onboarding_responses table...\n');
 
-  const { data, error } = await supabase
+  const { data: policies, error } = await supabase
     .rpc('exec_sql', {
-      query: `
-        SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual 
-        FROM pg_policies 
-        WHERE tablename = 'towns_hobbies';
+      sql: `
+        SELECT 
+          schemaname,
+          tablename,
+          policyname,
+          permissive,
+          roles,
+          cmd,
+          qual,
+          with_check
+        FROM pg_policies
+        WHERE tablename = 'onboarding_responses'
+        ORDER BY policyname;
       `
     });
 
   if (error) {
-    console.log('Cannot query policies with RPC. Trying manual check...\n');
-    
-    // Try to insert with anon key
-    const anonClient = createClient(
-      process.env.VITE_SUPABASE_URL,
-      process.env.VITE_SUPABASE_ANON_KEY
-    );
+    // Try direct SQL query instead
+    const { data: policies2, error: error2 } = await supabase
+      .from('pg_policies')
+      .select('*')
+      .eq('tablename', 'onboarding_responses');
 
-    const { error: insertError } = await anonClient
-      .from('towns_hobbies')
-      .insert({
-        town_id: '00000000-0000-0000-0000-000000000000',
-        hobby_id: '00000000-0000-0000-0000-000000000000',
-        is_excluded: true
-      });
-
-    if (insertError) {
-      console.log('❌ INSERT failed with anon key:', insertError.message);
-      console.log('\n💡 SOLUTION: You need to add RLS policy for INSERT on towns_hobbies');
-      console.log('\nRun this SQL in Supabase:');
-      console.log('---------------------------------------------------');
-      console.log('CREATE POLICY "Allow authenticated users to manage towns_hobbies"');
-      console.log('ON towns_hobbies FOR ALL');
-      console.log('TO authenticated');
-      console.log('USING (true)');
-      console.log('WITH CHECK (true);');
-      console.log('---------------------------------------------------');
-    } else {
-      console.log('✅ INSERT works with anon key - cleaning up test record...');
-      await anonClient
-        .from('towns_hobbies')
-        .delete()
-        .eq('town_id', '00000000-0000-0000-0000-000000000000');
+    if (error2) {
+      console.log('❌ Cannot query policies:', error2.message);
+      console.log('Will use SQL editor query instead...\n');
+      console.log('Run this in Supabase SQL Editor:');
+      console.log(`
+SELECT policyname, cmd, roles, qual
+FROM pg_policies
+WHERE tablename = 'onboarding_responses';
+      `);
+      return;
     }
-  } else {
-    console.log('Policies:', data);
+
+    console.log('Policies:', policies2);
+    return;
   }
+
+  console.log('✅ Found policies:');
+  console.log(JSON.stringify(policies, null, 2));
 }
 
-checkPolicies().catch(console.error);
+checkRLS();

@@ -3,6 +3,7 @@
 import supabase from '../supabaseClient';
 import { clearPersonalizedCache } from '../scoring';
 import { DEBUG_CONFIG } from '../constants';
+import { updatePreferenceHash } from '../preferenceUtils';
 
 // Transformation function to ensure data matches Supabase format
 const transformAdministrationData = (data) => {
@@ -134,20 +135,34 @@ export const completeOnboarding = async (userId) => {
       .from('users')
       .update({ onboarding_completed: true })
       .eq('id', userId);
-    
+
     if (usersError) {
       console.error("Error updating users table:", usersError);
       // Don't fail the whole operation if users table update fails
       // The user_preferences table is the source of truth
     }
-    
+
+    // Update preference hash for cache invalidation
+    try {
+      if (updatedPrefs) {
+        const hashResult = await updatePreferenceHash(userId, updatedPrefs);
+        if (hashResult.success) {
+          console.log(`✅ Preference hash updated on onboarding completion: ${hashResult.hash}`);
+        } else {
+          console.warn('⚠️  Could not update preference hash (non-critical):', hashResult.error);
+        }
+      }
+    } catch (hashError) {
+      console.warn('⚠️  Preference hash update failed (non-critical):', hashError);
+    }
+
     console.log('✅ Successfully completed onboarding for user:', userId);
     console.log('✅ Both user_preferences and users tables updated');
-    
+
     // Note: Matching will run on first app load instead of during onboarding completion
     // This avoids server-side environment issues during onboarding
     console.log('✅ Onboarding completed - matching will run when user visits app');
-    
+
     return { success: true };
   } catch (error) {
     console.error("Unexpected error completing onboarding:", error);

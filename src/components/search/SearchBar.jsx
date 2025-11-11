@@ -73,6 +73,8 @@ export default function SearchBar({
 
   // Handle suggestion selection
   const handleSuggestionClick = (suggestion) => {
+    console.log('🔍 Suggestion clicked:', suggestion);
+    console.log('🔍 Setting search term to:', suggestion.value);
     onChange(suggestion.value);
     setShowSuggestions(false);
     setSelectedIndex(-1);
@@ -196,7 +198,10 @@ export default function SearchBar({
           {suggestions.map((suggestion, index) => (
             <div
               key={index}
-              onClick={() => handleSuggestionClick(suggestion)}
+              onMouseDown={(e) => {
+                e.preventDefault(); // Prevent input blur
+                handleSuggestionClick(suggestion);
+              }}
               className={suggestionClasses(index === selectedIndex)}
               role="option"
               aria-selected={index === selectedIndex}

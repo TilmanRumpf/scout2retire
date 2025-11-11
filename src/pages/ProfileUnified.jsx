@@ -11,6 +11,7 @@ import { uiConfig } from '../styles/uiConfig';
 import { User, Settings, Bell, Shield, Palette, MapPin } from 'lucide-react';
 import { UsernameSelector } from '../components/UsernameSelector';
 import AvatarUpload from '../components/AvatarUpload';
+import { updatePreferenceHash } from '../utils/preferenceUtils';
 
 // Reusable toggle switch component
 const ToggleSwitch = ({ id, checked, onChange, label, description, saveState }) => (
@@ -349,6 +350,23 @@ export default function ProfileUnified() {
 
       if (error) throw error;
 
+      // Fetch updated preferences for hash calculation
+      const { data: updatedPrefs } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      // Update preference hash for cache invalidation
+      if (updatedPrefs) {
+        try {
+          await updatePreferenceHash(user.id, updatedPrefs);
+          console.log('[handleToggleNotification] Preference hash updated after notification change');
+        } catch (hashError) {
+          console.warn('[handleToggleNotification] Failed to update preference hash (non-critical):', hashError);
+        }
+      }
+
       // Show saved indicator
       setSavingStates(prev => ({ ...prev, [`notification_${key}`]: 'saved' }));
 
@@ -384,6 +402,23 @@ export default function ProfileUnified() {
 
       if (error) throw error;
 
+      // Fetch updated preferences for hash calculation
+      const { data: updatedPrefs } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      // Update preference hash for cache invalidation
+      if (updatedPrefs) {
+        try {
+          await updatePreferenceHash(user.id, updatedPrefs);
+          console.log('[handleTogglePrivacy] Preference hash updated after privacy change');
+        } catch (hashError) {
+          console.warn('[handleTogglePrivacy] Failed to update preference hash (non-critical):', hashError);
+        }
+      }
+
       // Show saved indicator
       setSavingStates(prev => ({ ...prev, [`privacy_${key}`]: 'saved' }));
 
@@ -417,6 +452,23 @@ export default function ProfileUnified() {
         .eq('user_id', user.id);
 
       if (error) throw error;
+
+      // Fetch updated preferences for hash calculation
+      const { data: updatedPrefs } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      // Update preference hash for cache invalidation
+      if (updatedPrefs) {
+        try {
+          await updatePreferenceHash(user.id, updatedPrefs);
+          console.log('[handlePrivacyVisibilityChange] Preference hash updated after visibility change');
+        } catch (hashError) {
+          console.warn('[handlePrivacyVisibilityChange] Failed to update preference hash (non-critical):', hashError);
+        }
+      }
 
       // Show saved indicator
       setSavingStates(prev => ({ ...prev, 'privacy_visibility': 'saved' }));

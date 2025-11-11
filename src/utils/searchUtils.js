@@ -20,20 +20,25 @@ export function calculateDistance(lat1, lon1, lat2, lon2) {
 export async function searchTownsByText(searchTerm, filters = {}) {
   try {
     const term = searchTerm.toLowerCase().trim();
+    console.log('🔍 searchTownsByText called with term:', term);
 
+    // TEST: Use same columns as autocomplete to isolate the issue
     let query = supabase
       .from('towns')
-      .select(COMMON_QUERIES.searchResults);
+      .select('id, town_name, country, region, image_url_1, description, quality_of_life');
 
     // Apply text search
     if (term) {
-      query = query.or(`name.ilike.%${term}%,country.ilike.%${term}%,region.ilike.%${term}%`);
+      // TEST: Simple ilike on town_name only first
+      const pattern = `%${term}%`;
+      query = query.ilike('town_name', pattern);
+      console.log('🔍 Searching town_name for pattern:', pattern);
     }
 
     // Apply filters
     if (filters.costRange) {
-      query = query.gte('cost_of_living_index', filters.costRange[0])
-                   .lte('cost_of_living_index', filters.costRange[1]);
+      query = query.gte('cost_of_living_usd', filters.costRange[0])
+                   .lte('cost_of_living_usd', filters.costRange[1]);
     }
 
     if (filters.matchRange && filters.userId) {
@@ -56,13 +61,14 @@ export async function searchTownsByText(searchTerm, filters = {}) {
     const { data, error } = await query;
 
     if (error) {
-      console.error('Search error:', error);
+      console.error('❌ Search error:', error);
       return { data: [], error };
     }
 
+    console.log(`✅ Search found ${data?.length || 0} towns:`, data);
     return { data: data || [], error: null };
   } catch (err) {
-    console.error('Search exception:', err);
+    console.error('❌ Search exception:', err);
     return { data: [], error: err };
   }
 }

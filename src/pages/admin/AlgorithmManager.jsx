@@ -38,6 +38,7 @@ import {
   calculateSectionScore,
   formatFinalCalculation
 } from '../../utils/scoring/matchDisplayHelpers';
+import { validatePreferenceHash } from '../../utils/preferenceUtils';
 
 const AlgorithmManager = () => {
   const navigate = useNavigate();
@@ -70,6 +71,7 @@ const AlgorithmManager = () => {
   const [hasAttemptedUserRestore, setHasAttemptedUserRestore] = useState(false);
   const [isMouseOverDropdown, setIsMouseOverDropdown] = useState(false);
   const [showScoringLogic, setShowScoringLogic] = useState(false);
+  const [preferencesFreshness, setPreferencesFreshness] = useState(null); // { valid: boolean, timestamp: string }
 
   // Algorithm configuration state
   const [config, setConfig] = useState({
@@ -216,16 +218,36 @@ const AlgorithmManager = () => {
         if (result.success && result.data) {
           setUserPreferences(result.data);
           console.log('✅ Loaded preferences for test user:', selectedTestUser.email, result.data);
+
+          // Validate preference hash
+          const validation = await validatePreferenceHash(selectedTestUser.id, result.data);
+          setPreferencesFreshness({
+            valid: validation.valid,
+            storedHash: validation.storedHash,
+            calculatedHash: validation.calculatedHash,
+            timestamp: result.data.preferences_updated_at
+          });
+
+          if (!validation.valid) {
+            console.warn('[AlgorithmManager] ⚠️  Preference hash mismatch detected!');
+            toast('⚠️ User preferences may have changed. Results might be stale.', {
+              icon: '⚠️',
+              style: { background: '#fef3c7', color: '#92400e' }
+            });
+          }
+
           // Clear test results when user changes
           setTestResults(null);
         } else {
           console.error('❌ Failed to load preferences for user:', selectedTestUser.email, result);
           setUserPreferences(null);
+          setPreferencesFreshness(null);
           toast.error('Could not load preferences for selected user');
         }
       } catch (error) {
         console.error('❌ Error loading user preferences:', error);
         setUserPreferences(null);
+        setPreferencesFreshness(null);
         toast.error('Error loading user preferences');
       }
     };
@@ -522,6 +544,15 @@ const AlgorithmManager = () => {
       return;
     }
 
+    // Re-validate preference freshness before scoring
+    if (userPreferences) {
+      const validation = await validatePreferenceHash(selectedTestUser.id, userPreferences);
+      if (!validation.valid) {
+        toast.error('User preferences have changed! Please refresh to use latest preferences.');
+        return;
+      }
+    }
+
     setIsCalculating(true);
     try {
       // Clear any cached results to ensure fresh scoring
@@ -676,6 +707,37 @@ const AlgorithmManager = () => {
 
           {showTesting && (
             <div className="px-6 pb-6 border-t border-gray-200">
+            {/* Preference Freshness Indicator */}
+            {selectedTestUser && preferencesFreshness && (
+              <div className={`mt-4 mb-4 p-3 rounded-lg ${preferencesFreshness.valid ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className={`text-sm font-medium ${preferencesFreshness.valid ? 'text-green-800' : 'text-yellow-800'}`}>
+                      {preferencesFreshness.valid ? '✅ Testing with current preferences' : '⚠️  Preferences may have changed'}
+                    </span>
+                    {preferencesFreshness.timestamp && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        Last updated: {new Date(preferencesFreshness.timestamp).toLocaleString()}
+                      </p>
+                    )}
+                  </div>
+                  {!preferencesFreshness.valid && (
+                    <button
+                      onClick={() => {
+                        // Reload preferences
+                        const currentUser = selectedTestUser;
+                        setSelectedTestUser(null);
+                        setTimeout(() => setSelectedTestUser(currentUser), 100);
+                      }}
+                      className="text-sm px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+                    >
+                      Refresh
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Test Scoring Button and Overall Match */}
             {selectedTown && selectedTestUser && (
               <div className="flex justify-between items-center mb-4 mt-4">
