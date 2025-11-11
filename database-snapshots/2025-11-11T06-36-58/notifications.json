@@ -1,0 +1,36 @@
+[
+  {
+    "id": "d31b199b-c2d2-47f3-add8-7e048edb4867",
+    "user_id": "02600f37-06ab-4fa7-88e6-46caa3e1bf05",
+    "type": "friend_invitation",
+    "title": "New Friend Request",
+    "message": "Tilman Rumpf sent you a friend request",
+    "data": {
+      "sender_id": "83d285b2-b21b-4d13-a1a1-6d51b6733d52",
+      "sender_name": "Tilman Rumpf",
+      "sender_email": "tilman.rumpf@gmail.com",
+      "connection_id": "e499c16e-ca64-4f58-9333-f90e0d985111",
+      "invitation_message": null
+    },
+    "is_read": true,
+    "read_at": "2025-10-07T01:31:03.382448+00:00",
+    "created_at": "2025-10-06T23:57:25.282202+00:00"
+  },
+  {
+    "id": "781b0b20-1ee7-4ec3-bcb8-2c6c4fa4755a",
+    "user_id": "d1039857-71e2-4562-86aa-1f0b4a0c17c8",
+    "type": "friend_invitation",
+    "title": "New Friend Request",
+    "message": "Tilman Rumpf sent you a friend request",
+    "data": {
+      "sender_id": "83d285b2-b21b-4d13-a1a1-6d51b6733d52",
+      "sender_name": "Tilman Rumpf",
+      "sender_email": "tilman.rumpf@gmail.com",
+      "connection_id": "ef9252f6-93f5-4a89-b89c-993af5ad937c",
+      "invitation_message": null
+    },
+    "is_read": false,
+    "read_at": null,
+    "created_at": "2025-10-07T01:57:15.605595+00:00"
+  }
+]

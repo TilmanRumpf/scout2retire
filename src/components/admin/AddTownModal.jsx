@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { X, AlertTriangle, Search, CheckCircle2, Loader2, MapPin } from 'lucide-react';
+import { X, AlertTriangle, Search, CheckCircle2, Loader2, MapPin, AlertCircle, CheckCircle } from 'lucide-react';
 import supabase from '../../utils/supabaseClient';
 import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 import Anthropic from '@anthropic-ai/sdk';
+import { validateAIResults, getFieldDisplayName, formatValueForDisplay } from '../../utils/validation/aiResultValidator';
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({
@@ -27,7 +28,7 @@ const anthropic = new Anthropic({
  * 5. Confirm and create
  */
 export default function AddTownModal({ isOpen, onClose, onTownAdded, initialTownName = '' }) {
-  // Steps: input, duplicate_warning, region_choice, region_manual, region_ai_search, region_dropdown, verifying, confirm, creating, complete
+  // Steps: input, duplicate_warning, region_choice, region_manual, region_ai_search, region_dropdown, verifying, confirm, creating, audit, complete
   const [step, setStep] = useState('input');
   const [townName, setTownName] = useState('');
   const [country, setCountry] = useState('');
@@ -41,6 +42,11 @@ export default function AddTownModal({ isOpen, onClose, onTownAdded, initialTown
   const [selectedTownOption, setSelectedTownOption] = useState(null);
   const [townInfo, setTownInfo] = useState(null);
   const [manualEntryMode, setManualEntryMode] = useState(false);
+
+  // Audit step state
+  const [createdTownId, setCreatedTownId] = useState(null);
+  const [populatedData, setPopulatedData] = useState(null);
+  const [auditResults, setAuditResults] = useState(null);
 
   // List of all countries for autocomplete
   const COUNTRIES = [
@@ -335,27 +341,120 @@ Return ONLY the JSON array, no explanation.`;
       if (!populateResponse.ok || !populateResult.success) {
         console.error('AI population failed:', populateResult);
         toast.error(`AI population failed. You can fill data manually.`);
-      } else {
-        toast.success(`AI populated ${populateResult.populatedFields?.length || 0} fields!`);
+
+        // Skip audit if AI failed
+        setStep('complete');
+        setLoading(false);
+        setVerificationStatus('');
+
+        if (onTownAdded) {
+          onTownAdded(createdTown);
+        }
+
+        setTimeout(() => {
+          onClose();
+        }, 2000);
+        return;
       }
 
-      setStep('complete');
+      // AI populated successfully - fetch data for audit
+      toast.success(`AI populated ${populateResult.populatedFields?.length || 0} fields! Reviewing...`);
+      setVerificationStatus('Fetching populated data for review...');
+
+      const { data: populatedTown, error: fetchError } = await supabase
+        .from('towns')
+        .select('*')
+        .eq('id', createdTown.id)
+        .single();
+
+      if (fetchError) {
+        console.error('Failed to fetch populated town:', fetchError);
+        toast.error('Could not fetch data for audit');
+        setStep('complete');
+        setLoading(false);
+        return;
+      }
+
+      // Run validation on AI results
+      const validation = validateAIResults(populatedTown);
+
+      // Store for audit step
+      setCreatedTownId(createdTown.id);
+      setPopulatedData(populatedTown);
+      setAuditResults(validation);
+
+      // Move to audit step
+      setStep('audit');
       setLoading(false);
       setVerificationStatus('');
-
-      if (onTownAdded) {
-        onTownAdded(createdTown);
-      }
-
-      setTimeout(() => {
-        onClose();
-      }, 2000);
 
     } catch (error) {
       console.error('Error creating town:', error);
       toast.error(`Failed to create town: ${error.message}`);
       setLoading(false);
       setStep('confirm');
+      setVerificationStatus('');
+    }
+  };
+
+  /**
+   * Handle audit approval - proceed to complete
+   */
+  const handleAuditApprove = () => {
+    toast.success('AI results approved!');
+    setStep('complete');
+
+    if (onTownAdded && populatedData) {
+      onTownAdded(populatedData);
+    }
+
+    setTimeout(() => {
+      onClose();
+    }, 2000);
+  };
+
+  /**
+   * Handle audit rejection - delete town and restart
+   */
+  const handleAuditReject = async () => {
+    if (!createdTownId) return;
+
+    const confirmDelete = window.confirm(
+      'Reject AI results? This will delete the town and you can start over.'
+    );
+
+    if (!confirmDelete) return;
+
+    setLoading(true);
+    setVerificationStatus('Deleting town...');
+
+    try {
+      const { error } = await supabase
+        .from('towns')
+        .delete()
+        .eq('id', createdTownId);
+
+      if (error) throw error;
+
+      toast.success('Town deleted. You can try again.');
+
+      // Reset to initial step
+      setTimeout(() => {
+        setStep('input');
+        setTownName('');
+        setCountry('');
+        setRegion('');
+        setCreatedTownId(null);
+        setPopulatedData(null);
+        setAuditResults(null);
+        setLoading(false);
+        setVerificationStatus('');
+      }, 300);
+
+    } catch (error) {
+      console.error('Error deleting town:', error);
+      toast.error(`Failed to delete town: ${error.message}`);
+      setLoading(false);
       setVerificationStatus('');
     }
   };
@@ -786,6 +885,125 @@ Return ONLY the JSON array, no explanation.`;
             </div>
           )}
 
+          {/* Step: Audit AI Results */}
+          {step === 'audit' && auditResults && populatedData && (
+            <div className="py-6">
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  Review AI-Populated Data
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  AI has populated {Object.keys(populatedData).filter(k => populatedData[k] !== null && populatedData[k] !== '').length} fields.
+                  Please review for accuracy before finalizing.
+                </p>
+              </div>
+
+              {/* Summary Badge */}
+              <div className="mb-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                <div className="flex items-center gap-4">
+                  {auditResults.hasErrors ? (
+                    <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                      <AlertCircle className="w-5 h-5" />
+                      <span className="font-medium">{auditResults.issues.filter(i => i.severity === 'error').length} Errors Found</span>
+                    </div>
+                  ) : auditResults.hasWarnings ? (
+                    <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
+                      <AlertTriangle className="w-5 h-5" />
+                      <span className="font-medium">{auditResults.issues.filter(i => i.severity === 'warning').length} Warnings</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                      <CheckCircle className="w-5 h-5" />
+                      <span className="font-medium">All Clear - No Issues Detected</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Issues List */}
+              {auditResults.totalIssues > 0 && (
+                <div className="mb-4 max-h-96 overflow-y-auto">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Issues Detected:
+                  </h4>
+                  <div className="space-y-2">
+                    {auditResults.issues.map((issue, idx) => (
+                      <div
+                        key={idx}
+                        className={`p-3 rounded-lg border ${
+                          issue.severity === 'error'
+                            ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'
+                            : 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'
+                        }`}
+                      >
+                        <div className="flex items-start gap-2">
+                          {issue.severity === 'error' ? (
+                            <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                          ) : (
+                            <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                              {getFieldDisplayName(issue.field)}
+                            </p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                              {issue.message}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 font-mono">
+                              Value: {formatValueForDisplay(issue.field, issue.value)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Sample of Populated Fields */}
+              <div className="mt-4">
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Sample Populated Fields:
+                </h4>
+                <div className="text-xs space-y-1 text-gray-600 dark:text-gray-400">
+                  {['population', 'description', 'airport_distance', 'cost_of_living_usd']
+                    .filter(field => populatedData[field])
+                    .map(field => (
+                      <div key={field} className="flex justify-between py-1 border-b border-gray-200 dark:border-gray-700">
+                        <span className="font-medium">{getFieldDisplayName(field)}:</span>
+                        <span className="text-gray-900 dark:text-white">{formatValueForDisplay(field, populatedData[field])}</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="mt-6 flex items-center justify-end gap-3">
+                <button
+                  onClick={handleAuditReject}
+                  disabled={loading}
+                  className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                >
+                  Reject & Delete
+                </button>
+                <button
+                  onClick={handleAuditApprove}
+                  disabled={loading}
+                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  Approve & Finalize
+                </button>
+              </div>
+
+              {auditResults.hasErrors && (
+                <p className="mt-3 text-xs text-red-600 dark:text-red-400 text-center">
+                  ⚠️ Errors detected - review carefully before approving
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Step: Complete */}
           {step === 'complete' && (
             <div className="py-8 text-center">
@@ -801,7 +1019,7 @@ Return ONLY the JSON array, no explanation.`;
         </div>
 
         {/* Footer */}
-        {!['creating', 'complete', 'verifying', 'region_ai_search'].includes(step) && (
+        {!['creating', 'audit', 'complete', 'verifying', 'region_ai_search'].includes(step) && (
           <div className="sticky bottom-0 flex items-center justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
             <button
               onClick={() => {
