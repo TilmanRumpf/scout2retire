@@ -5,6 +5,7 @@ import supabase from '../../utils/supabaseClient';
 import UnifiedHeader from '../../components/UnifiedHeader';
 import HeaderSpacer from '../../components/HeaderSpacer';
 import { uiConfig } from '../../styles/uiConfig';
+import { getFieldCategory, getAllCategories, getCategoryColor } from '../../utils/fieldCategories';
 
 const TemplateManager = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const TemplateManager = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortField, setSortField] = useState('field_name');
   const [sortDirection, setSortDirection] = useState('asc');
   const [editingTemplate, setEditingTemplate] = useState(null);
@@ -24,7 +26,7 @@ const TemplateManager = () => {
 
   useEffect(() => {
     filterAndSortTemplates();
-  }, [templates, searchTerm, statusFilter, sortField, sortDirection]);
+  }, [templates, searchTerm, statusFilter, categoryFilter, sortField, sortDirection]);
 
   const loadTemplates = async () => {
     try {
@@ -61,14 +63,30 @@ const TemplateManager = () => {
       filtered = filtered.filter(t => t.status === statusFilter);
     }
 
+    // Apply category filter
+    if (categoryFilter !== 'all') {
+      filtered = filtered.filter(t => getFieldCategory(t.field_name) === categoryFilter);
+    }
+
     // Apply sorting
     filtered.sort((a, b) => {
-      let aVal = a[sortField] || '';
-      let bVal = b[sortField] || '';
+      let aVal, bVal;
+
+      // Handle category sorting
+      if (sortField === 'category') {
+        aVal = getFieldCategory(a.field_name);
+        bVal = getFieldCategory(b.field_name);
+      } else {
+        aVal = a[sortField] || '';
+        bVal = b[sortField] || '';
+      }
 
       if (sortField === 'updated_at') {
         aVal = new Date(aVal);
         bVal = new Date(bVal);
+      } else if (sortField === 'version') {
+        aVal = Number(aVal) || 0;
+        bVal = Number(bVal) || 0;
       } else {
         aVal = String(aVal).toLowerCase();
         bVal = String(bVal).toLowerCase();
@@ -227,7 +245,7 @@ const TemplateManager = () => {
 
         {/* Filters and Search */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div>
               <label className="block text-sm font-medium mb-2">Search</label>
@@ -238,6 +256,21 @@ const TemplateManager = () => {
                 placeholder="Search field name, template..."
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-scout-orange-500 dark:bg-gray-700"
               />
+            </div>
+
+            {/* Category Filter */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Category</label>
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-scout-orange-500 dark:bg-gray-700"
+              >
+                <option value="all">All Categories</option>
+                {getAllCategories().map(category => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
             </div>
 
             {/* Status Filter */}
@@ -264,14 +297,14 @@ const TemplateManager = () => {
                 <button
                   onClick={() => handleBulkAction('activate')}
                   disabled={selectedTemplates.size === 0}
-                  className="flex-1 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                   Activate
                 </button>
                 <button
                   onClick={() => handleBulkAction('archive')}
                   disabled={selectedTemplates.size === 0}
-                  className="flex-1 px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                   Archive
                 </button>
@@ -324,6 +357,12 @@ const TemplateManager = () => {
                   >
                     Field Name {sortField === 'field_name' && (sortDirection === 'asc' ? '↑' : '↓')}
                   </th>
+                  <th
+                    onClick={() => handleSort('category')}
+                    className="px-4 py-3 text-left text-sm font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  >
+                    Category {sortField === 'category' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
                   <th className="px-4 py-3 text-left text-sm font-medium">
                     Template Preview
                   </th>
@@ -365,6 +404,11 @@ const TemplateManager = () => {
                       <div className="font-medium">{template.field_name}</div>
                     </td>
                     <td className="px-4 py-3">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${getCategoryColor(getFieldCategory(template.field_name))}`}>
+                        {getFieldCategory(template.field_name)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
                       <div className={`text-sm ${uiConfig.colors.muted} truncate max-w-md`}>
                         {template.search_template || 'No template'}
                       </div>
@@ -403,7 +447,7 @@ const TemplateManager = () => {
           {filteredTemplates.length === 0 && (
             <div className="text-center py-12">
               <p className={`${uiConfig.colors.muted}`}>
-                {searchTerm || statusFilter !== 'all'
+                {searchTerm || statusFilter !== 'all' || categoryFilter !== 'all'
                   ? 'No templates match your filters'
                   : 'No templates found'}
               </p>
