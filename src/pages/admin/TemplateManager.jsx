@@ -355,13 +355,13 @@ const TemplateManager = () => {
                     onClick={() => handleSort('field_name')}
                     className="px-4 py-3 text-left text-sm font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                   >
-                    Field Name {sortField === 'field_name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    Field Name {sortField === 'field_name' ? (sortDirection === 'asc' ? '↑' : '↓') : '↑'}
                   </th>
                   <th
                     onClick={() => handleSort('category')}
                     className="px-4 py-3 text-left text-sm font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                   >
-                    Category {sortField === 'category' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    Category {sortField === 'category' ? (sortDirection === 'asc' ? '↑' : '↓') : '↑'}
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium">
                     Template Preview
@@ -370,19 +370,19 @@ const TemplateManager = () => {
                     onClick={() => handleSort('status')}
                     className="px-4 py-3 text-left text-sm font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                   >
-                    Status {sortField === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    Status {sortField === 'status' ? (sortDirection === 'asc' ? '↑' : '↓') : '↑'}
                   </th>
                   <th
                     onClick={() => handleSort('version')}
                     className="px-4 py-3 text-left text-sm font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                   >
-                    Ver {sortField === 'version' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    Ver {sortField === 'version' ? (sortDirection === 'asc' ? '↑' : '↓') : '↑'}
                   </th>
                   <th
                     onClick={() => handleSort('updated_at')}
                     className="px-4 py-3 text-left text-sm font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                   >
-                    Updated {sortField === 'updated_at' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    Updated {sortField === 'updated_at' ? (sortDirection === 'asc' ? '↑' : '↓') : '↑'}
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium">
                     Actions
