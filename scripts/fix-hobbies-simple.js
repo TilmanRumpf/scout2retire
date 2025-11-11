@@ -109,7 +109,7 @@ async function fixHobbies() {
         const batch = assignments.slice(i, i + batchSize);
         
         // Use upsert to avoid duplicates
-        const { data, error } = await supabase
+        const { data: _data, error } = await supabase
           .from('towns_hobbies')
           .upsert(batch, { onConflict: 'town_id,hobby_id' });
         

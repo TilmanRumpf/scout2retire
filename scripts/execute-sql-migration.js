@@ -14,7 +14,7 @@ async function executeSQLMigration() {
     console.log('Executing SQL migration to fix Google Maps links...\n');
 
     // Use RPC to execute raw SQL
-    const { data, error } = await supabase.rpc('exec_sql', {
+    const { data: _data, error } = await supabase.rpc('exec_sql', {
       query: `
         UPDATE towns
         SET google_maps_link = 

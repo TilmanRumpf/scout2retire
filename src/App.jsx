@@ -8,7 +8,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import supabase from './utils/supabaseClient';
 import AuthenticatedLayout from './components/AuthenticatedLayout';
 import UnifiedErrorBoundary from './components/UnifiedErrorBoundary';
-import { checkAppVersion, setupAutoRefresh } from './utils/versionCheck';
+// import { checkAppVersion, setupAutoRefresh } from './utils/versionCheck';
 import InstallPromptBanner from './components/InstallPromptBanner';
 import SuspenseLoader from './components/SuspenseLoader';
 import StartupScreen from './components/StartupScreen';
@@ -53,7 +53,7 @@ import OnboardingLayout from './components/OnboardingLayout';
 
 // Public Route component - redirects authenticated users to /daily
 const PublicRoute = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [_user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -95,7 +95,7 @@ const PublicRoute = ({ children }) => {
     
     // Note: We don't redirect on SIGNED_IN event here because the Login component
     // needs to check onboarding status and decide where to redirect
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, _session) => {
       // Only re-check auth on SIGNED_OUT to clear the loading state
       if (event === 'SIGNED_OUT') {
         setLoading(true);
@@ -116,7 +116,7 @@ const PublicRoute = ({ children }) => {
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [onboardingCompleted, setOnboardingCompleted] = useState(null);
+  const [_onboardingCompleted, setOnboardingCompleted] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -183,9 +183,9 @@ const ProtectedRoute = ({ children }) => {
     checkAuth();
     
     // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        setUser(session.user);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, _session) => {
+      if (event === 'SIGNED_IN' && _session) {
+        setUser(_session.user);
         setLoading(false);
       } else if (event === 'SIGNED_OUT') {
         setUser(null);

@@ -1,19 +1,17 @@
 import React from 'react';
-import { formatTownDisplay } from '../utils/townDisplayUtils';
 import TownRadarChart from './TownRadarChart';
 import LikeButton from './LikeButton';
 import OptimizedImage from './OptimizedImage';
 import { MapPin, X } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
 
-export default function ComparisonGrid({ 
-  towns, 
-  activeCategory, 
-  getCategoryData, 
-  handleRemoveTown, 
-  handleToggleFavorite, 
-  isFavorited, 
-  userId 
+export default function ComparisonGrid({
+  towns,
+  activeCategory,
+  handleRemoveTown,
+  handleToggleFavorite,
+  isFavorited,
+  userId
 }) {
   // Helper to render category-specific content
   const renderCategoryContent = (town, category) => {

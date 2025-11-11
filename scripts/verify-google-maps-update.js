@@ -14,7 +14,7 @@ async function verifyGoogleMapsUpdate() {
     console.log('Verifying Google Maps links in online Supabase...\n');
 
     // Check for any remaining goo.gl links
-    const { data: brokenLinks, count: brokenCount } = await supabase
+    const { data: _brokenLinks, count: brokenCount } = await supabase
       .from('towns')
       .select('*', { count: 'exact', head: true })
       .like('google_maps_link', '%goo.gl%');

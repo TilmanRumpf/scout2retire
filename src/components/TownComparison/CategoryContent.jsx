@@ -154,60 +154,6 @@ const CategoryContent = React.memo(({ town, category }) => {
           </div>
         );
 
-      case 'costs':
-        return (
-          <div className="h-full flex flex-col">
-            <div className="space-y-3 flex-1">
-              {/* Cost Ranges */}
-              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
-                <h4 className="font-medium text-sm mb-2">Monthly Living Costs</h4>
-                <div className="space-y-1 text-sm">
-                  {town.cost_housing_actual && (
-                    <div className="flex justify-between">
-                      <span className={uiConfig.colors.hint}>Housing Costs:</span>
-                      <span className="font-medium capitalize">{town.cost_housing_actual?.replace('_', ' ')}</span>
-                    </div>
-                  )}
-                  {town.cost_food_actual && (
-                    <div className="flex justify-between">
-                      <span className={uiConfig.colors.hint}>Food Costs:</span>
-                      <span className="font-medium capitalize">{town.cost_food_actual?.replace('_', ' ')}</span>
-                    </div>
-                  )}
-                  {town.cost_transportation_actual && (
-                    <div className="flex justify-between">
-                      <span className={uiConfig.colors.hint}>Transportation:</span>
-                      <span className="font-medium capitalize">{town.cost_transportation_actual?.replace('_', ' ')}</span>
-                    </div>
-                  )}
-                  {town.cost_healthcare_actual && (
-                    <div className="flex justify-between">
-                      <span className={uiConfig.colors.hint}>Healthcare:</span>
-                      <span className="font-medium capitalize">{town.cost_healthcare_actual?.replace('_', ' ')}</span>
-                    </div>
-                  )}
-                  {town.cost_entertainment_actual && (
-                    <div className="flex justify-between">
-                      <span className={uiConfig.colors.hint}>Entertainment:</span>
-                      <span className="font-medium capitalize">{town.cost_entertainment_actual?.replace('_', ' ')}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Overall Cost Index */}
-              {town.cost_index && (
-                <div className={`bg-scout-accent-50 dark:bg-scout-accent-900/20 rounded-lg p-3 text-center`}>
-                  <p className={`text-xs ${uiConfig.colors.hint} mb-1`}>Overall Cost Index</p>
-                  <p className={`text-2xl font-bold ${uiConfig.colors.success}`}>
-                    ${town.cost_index}/month
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        );
-
       default:
         return <div>Category not found</div>;
     }
