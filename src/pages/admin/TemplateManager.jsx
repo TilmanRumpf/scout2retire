@@ -24,6 +24,25 @@ const TemplateManager = () => {
     loadTemplates();
   }, []);
 
+  // Real-time subscription for template changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('template_changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'field_search_templates'
+      }, (payload) => {
+        console.log('Template change detected:', payload);
+        loadTemplates(); // Reload all templates when any change occurs
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   useEffect(() => {
     filterAndSortTemplates();
   }, [templates, searchTerm, statusFilter, categoryFilter, sortField, sortDirection]);
