@@ -87,7 +87,8 @@ export default function ProfileUnified() {
   const [privacy, setPrivacy] = useState({
     profile_visibility: 'friends',
     show_email: false,
-    show_location: true
+    show_location: true,
+    allow_crash_reporting: false
   });
 
   // Track saving states for visual feedback
@@ -770,6 +771,14 @@ export default function ProfileUnified() {
                   label="Show Location"
                   description="Display your current location"
                   saveState={savingStates['privacy_show_location']}
+                />
+                <ToggleSwitch
+                  id="allow_crash_reporting"
+                  checked={privacy.allow_crash_reporting}
+                  onChange={handleTogglePrivacy}
+                  label="Crash Reporting and Debugging"
+                  description="Help us improve by sharing crash reports and debug data"
+                  saveState={savingStates['privacy_allow_crash_reporting']}
                 />
               </div>
             </div>

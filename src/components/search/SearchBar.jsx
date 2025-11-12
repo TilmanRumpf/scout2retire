@@ -8,6 +8,7 @@ import { useDebounce } from 'use-debounce';
 export default function SearchBar({
   value,
   onChange,
+  onSelect,
   placeholder = 'Search...',
   autoFocus = false,
   showFilters = false,
@@ -75,7 +76,16 @@ export default function SearchBar({
   const handleSuggestionClick = (suggestion) => {
     console.log('🔍 Suggestion clicked:', suggestion);
     console.log('🔍 Setting search term to:', suggestion.value);
-    onChange(suggestion.value);
+
+    // If onSelect is provided and this is a town suggestion, call it
+    if (onSelect && suggestion.type === 'town' && suggestion.data) {
+      console.log('🔍 Calling onSelect with town data:', suggestion.data);
+      onSelect(suggestion.data);
+    } else {
+      // Otherwise just update the search term
+      onChange(suggestion.value);
+    }
+
     setShowSuggestions(false);
     setSelectedIndex(-1);
     inputRef.current?.focus();

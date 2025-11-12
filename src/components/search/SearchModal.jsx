@@ -39,7 +39,7 @@ export default function SearchModal({ isOpen, onClose }) {
   // Filter state
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
-    costRange: [0, 200],
+    costRange: [0, 5000],
     matchRange: [0, 100],
     hasPhotos: false,
     climateType: []
@@ -264,6 +264,7 @@ export default function SearchModal({ isOpen, onClose }) {
               <SearchBar
                 value={searchTerm}
                 onChange={setSearchTerm}
+                onSelect={handleTownSelect}
                 placeholder="Search by town name, country, or region..."
                 autoFocus
                 showFilters

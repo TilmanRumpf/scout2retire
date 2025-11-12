@@ -185,7 +185,7 @@ function SearchResultItem({ town, onSelect, searchMode, userLocation, darkMode }
               {town.quality_of_life && (
                 <div className="text-right">
                   <span className={`font-bold ${scoreClasses(town.quality_of_life * 10)}`}>
-                    {town.quality_of_life}/10
+                    {Math.round(town.quality_of_life * 10)}%
                   </span>
                   <p className="text-xs text-gray-500">
                     {town.quality_of_life >= 9 ? 'Excellent' :

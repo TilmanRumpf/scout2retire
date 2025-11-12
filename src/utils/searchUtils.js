@@ -29,30 +29,13 @@ export async function searchTownsByText(searchTerm, filters = {}) {
 
     // Apply text search
     if (term) {
-      // TEST: Simple ilike on town_name only first
       const pattern = `%${term}%`;
       query = query.ilike('town_name', pattern);
       console.log('🔍 Searching town_name for pattern:', pattern);
     }
 
-    // Apply filters
-    if (filters.costRange) {
-      query = query.gte('cost_of_living_usd', filters.costRange[0])
-                   .lte('cost_of_living_usd', filters.costRange[1]);
-    }
-
-    if (filters.matchRange && filters.userId) {
-      query = query.gte('quality_of_life', filters.matchRange[0])
-                   .lte('quality_of_life', filters.matchRange[1]);
-    }
-
-    if (filters.hasPhotos) {
-      query = query.not('image_url_1', 'is', null);
-    }
-
-    if (filters.climateType && filters.climateType.length > 0) {
-      query = query.in('climate_type', filters.climateType);
-    }
+    // ONLY show published towns (must have image)
+    query = query.not('image_url_1', 'is', null);
 
     // Order by relevance and score
     query = query.order('quality_of_life', { ascending: false, nullsFirst: false })
@@ -60,12 +43,22 @@ export async function searchTownsByText(searchTerm, filters = {}) {
 
     const { data, error } = await query;
 
+    console.log('🔍 Raw query response:', { data, error, dataLength: data?.length });
+
     if (error) {
-      console.error('❌ Search error:', error);
+      console.error('❌ Search error details:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
       return { data: [], error };
     }
 
-    console.log(`✅ Search found ${data?.length || 0} towns:`, data);
+    console.log(`✅ Search found ${data?.length || 0} towns`);
+    if (data && data.length > 0) {
+      console.log('First result:', data[0]);
+    }
     return { data: data || [], error: null };
   } catch (err) {
     console.error('❌ Search exception:', err);
@@ -155,10 +148,11 @@ export async function getAutocompleteSuggestions(searchTerm, limit = 5) {
       return { suggestions: [], error: null };
     }
 
-    // Search for matching towns
+    // Search for matching towns (published only)
     const { data: towns, error: townError } = await supabase
       .from('towns')
-      .select('town_name, country, region')
+      .select('id, town_name, country, region')
+      .not('image_url_1', 'is', null)
       .or(`town_name.ilike.${term}%,town_name.ilike.% ${term}%`)
       .limit(limit);
 
@@ -280,23 +274,21 @@ export function getBoundsForTowns(towns) {
   ];
 }
 
-// Track search analytics
+// Track search analytics (anonymous + authenticated)
 export async function trackSearch(searchData) {
   try {
-    // Only track if user is logged in
+    // Get user if logged in (optional - supports anonymous tracking)
     const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) return;
 
     await supabase
       .from('user_searches')
       .insert({
-        user_id: user.id,
+        user_id: user?.id || null, // Nullable for anonymous users
         search_type: searchData.mode,
         search_term: searchData.term,
         results_count: searchData.resultsCount,
-        filters_applied: searchData.filters,
-        timestamp: new Date().toISOString()
+        filters_applied: searchData.filters
+        // created_at auto-fills in database
       });
   } catch (err) {
     // Silently fail - don't interrupt search
