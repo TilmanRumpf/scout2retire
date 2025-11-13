@@ -1,6 +1,6 @@
-# 🚨 CLAUDE.MD - SCOUT2RETIRE DEVELOPMENT GUIDE v3.1
+# 🚨 CLAUDE.MD - SCOUT2RETIRE DEVELOPMENT GUIDE v3.2
 
-**Last Updated:** November 8, 2025
+**Last Updated:** November 13, 2025
 **Project Status:** QUERY LIVE DATABASE - Numbers below are Nov 8 snapshot only
 **⚠️ Database/codebase grow rapidly - NEVER code from static metrics - CHECK LATEST_CHECKPOINT.md**
 
@@ -43,6 +43,26 @@
 - ✅ ALWAYS create checkpoints when something works
 
 **If it can't be automated, it's the wrong approach**
+
+### RULE #4: FIX SYSTEMIC PROBLEMS COMPLETELY
+**WHEN YOU SEE A PATTERN, FIX IT EVERYWHERE**
+
+- ✅ If you discover a systemic or systematic problem, fix it across the ENTIRE codebase
+- ✅ Don't cut corners - make it right everywhere the problem exists
+- ✅ Don't fix 1 of 10 instances and call it done
+- ✅ Audit the full scope before fixing (find ALL instances)
+- ✅ Fix ALL instances systematically
+- ✅ Verify ALL fixes completed
+- ❌ NEVER leave half-fixed systemic issues
+- ❌ NEVER assume "this is the only place with this problem"
+- ❌ NEVER kill the codebase with breaking changes - test and verify
+
+**Examples:**
+- Template expected values wrong → Check ALL templates, fix ALL incorrect ones
+- Case sensitivity bug in one comparison → Find ALL comparisons, fix ALL
+- Hardcoded value in one file → Find ALL hardcoded instances, centralize ALL
+
+**Don't kill the code. Fix it right.**
 
 ---
 
@@ -618,8 +638,8 @@ WHERE tablename = 'towns';
 
 ---
 
-**END OF CLAUDE.MD v3.1**
+**END OF CLAUDE.MD v3.2**
 
-*This document is your bible. Violate these rules and you will waste hours repeating documented disasters. Read LESSONS_LEARNED.md before ANY work. Create checkpoints after EVERY success. No shortcuts. No hardcoding. No local storage. Do it right.*
+*This document is your bible. Violate these rules and you will waste hours repeating documented disasters. Read LESSONS_LEARNED.md before ANY work. Create checkpoints after EVERY success. No shortcuts. No hardcoding. No local storage. Fix systemic problems completely. Do it right.*
 
 *All metrics in this file are Nov 8, 2025 snapshots. ALWAYS check LATEST_CHECKPOINT.md and query live database for current state.*

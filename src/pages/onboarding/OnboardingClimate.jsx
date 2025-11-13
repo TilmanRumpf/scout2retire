@@ -11,6 +11,15 @@ import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 import { isIOS } from '../../utils/platformDetection';
 import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
+import { VALID_CATEGORICAL_VALUES } from '../../utils/validation/categoricalValues';
+
+// Helper to format categorical values for display
+const formatCategoricalLabel = (value) => {
+  return value
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
 
 export default function OnboardingClimate() {
   const [formData, setFormData] = useState({
@@ -192,35 +201,31 @@ export default function OnboardingClimate() {
     );
   }
 
-  const summerOptions = [
-    { value: 'mild', label: 'Mild' },
-    { value: 'warm', label: 'Warm' },
-    { value: 'hot', label: 'Hot' }
-  ];
+  // DYNAMIC: Generated from categoricalValues.js (RULE #2: NO HARDCODING)
+  const summerOptions = VALID_CATEGORICAL_VALUES.summer_climate_actual.map(value => ({
+    value,
+    label: formatCategoricalLabel(value)
+  }));
 
-  const winterOptions = [
-    { value: 'cold', label: 'Cold' },
-    { value: 'cool', label: 'Cool' },
-    { value: 'mild', label: 'Mild' }
-  ];
+  const winterOptions = VALID_CATEGORICAL_VALUES.winter_climate_actual.map(value => ({
+    value,
+    label: formatCategoricalLabel(value)
+  }));
 
-  const humidityOptions = [
-    { value: 'dry', label: 'Dry' },
-    { value: 'balanced', label: 'Balanced' },
-    { value: 'humid', label: 'Humid' }
-  ];
+  const humidityOptions = VALID_CATEGORICAL_VALUES.humidity_level_actual.map(value => ({
+    value,
+    label: formatCategoricalLabel(value)
+  }));
 
-  const sunshineOptions = [
-    { value: 'often_sunny', label: 'Often Sunny' },
-    { value: 'balanced', label: 'Balanced' },
-    { value: 'less_sunny', label: 'Less Sunny' }
-  ];
+  const sunshineOptions = VALID_CATEGORICAL_VALUES.sunshine_level_actual.map(value => ({
+    value,
+    label: formatCategoricalLabel(value)
+  }));
 
-  const precipitationOptions = [
-    { value: 'mostly_dry', label: 'Mostly Dry' },
-    { value: 'balanced', label: 'Balanced' },
-    { value: 'less_dry', label: 'Less Dry' }
-  ];
+  const precipitationOptions = VALID_CATEGORICAL_VALUES.precipitation_level_actual.map(value => ({
+    value,
+    label: formatCategoricalLabel(value)
+  }));
 
   return (
       <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">

@@ -101,10 +101,10 @@ function parseCulturePreferences(prefs) {
     languagePreferences: normalizeArray(language.preferences),
     languagesSpoken: normalizeArray(language.already_speak),
 
-    // Cultural importance ratings (1-5 scale)
-    diningImportance: cultural.dining_nightlife || 0,
-    culturalEventsImportance: cultural.cultural_events || 0,
-    museumsImportance: cultural.museums || 0,
+    // Cultural importance ratings
+    diningImportance: cultural.dining_nightlife || 0,  // Still uses 1-5 scale
+    culturalEventsFrequency: cultural.cultural_events || 'occasional',  // Now uses frequency strings
+    museumsImportance: cultural.museums || 0,  // Still uses 1-5 scale
 
     // Helpers
     hasAnyPreferences: Boolean(
@@ -113,7 +113,7 @@ function parseCulturePreferences(prefs) {
       prefs.expat_community_preference ||
       language.preferences?.length ||
       cultural.dining_nightlife > 1 ||
-      cultural.cultural_events > 1 ||
+      (cultural.cultural_events && cultural.cultural_events !== 'occasional') ||  // String value, not 'occasional' (default)
       cultural.museums > 1
     )
   };
@@ -333,7 +333,7 @@ function createEmptyPreferences() {
       languagePreferences: [],
       languagesSpoken: [],
       diningImportance: 0,
-      culturalEventsImportance: 0,
+      culturalEventsFrequency: 'occasional',
       museumsImportance: 0,
       hasAnyPreferences: false
     },

@@ -245,31 +245,52 @@ export function calculateCultureScore(preferences, town) {
   }
   
   // 5. DINING & NIGHTLIFE (10 points)
+  // User specifies IMPORTANCE (1-5), town has QUALITY ratings (1-10)
+  // Logic: Higher importance requires higher quality threshold
   const diningImportance = parsed.culture.diningImportance || 1
-  
+
   if (diningImportance === 1) {
-    // User doesn't care - full points
+    // User doesn't care - full points regardless of town quality
     score += 10
     factors.push({ factor: 'Flexible on dining & nightlife', score: 10 })
   } else if (town.restaurants_rating && town.nightlife_rating) {
-    // Average the two ratings for comparison
-    const townDiningNightlife = Math.round((town.restaurants_rating + town.nightlife_rating) / 2)
-    const difference = Math.abs(diningImportance - townDiningNightlife)
+    // Average the two quality ratings (1-10 scale)
+    const avgQuality = Math.round((town.restaurants_rating + town.nightlife_rating) / 2)
     let points = 0
-    
-    if (difference === 0) {
-      points = 10 // Exact match
-      factors.push({ factor: 'Dining & nightlife perfectly matched', score: 10 })
-    } else if (difference === 1) {
-      points = 7  // Adjacent
-      factors.push({ factor: 'Dining & nightlife good match', score: 7 })
-    } else if (difference === 2) {
-      points = 4  // Near
-      factors.push({ factor: 'Dining & nightlife acceptable', score: 4 })
+
+    if (diningImportance === 5) {
+      // Very Important - wants excellent quality (8-10)
+      if (avgQuality >= 8) {
+        points = 10
+        factors.push({ factor: `Dining & nightlife excellent match (quality ${avgQuality}/10)`, score: 10 })
+      } else if (avgQuality >= 6) {
+        points = 5
+        factors.push({ factor: `Dining & nightlife acceptable (quality ${avgQuality}/10)`, score: 5 })
+      } else {
+        points = 0
+        factors.push({ factor: `Dining & nightlife below expectations (quality ${avgQuality}/10)`, score: 0 })
+      }
+    } else if (diningImportance === 3) {
+      // Nice to Have - wants decent quality (5-10)
+      if (avgQuality >= 7) {
+        points = 10
+        factors.push({ factor: `Dining & nightlife great match (quality ${avgQuality}/10)`, score: 10 })
+      } else if (avgQuality >= 5) {
+        points = 7
+        factors.push({ factor: `Dining & nightlife good match (quality ${avgQuality}/10)`, score: 7 })
+      } else if (avgQuality >= 3) {
+        points = 3
+        factors.push({ factor: `Dining & nightlife acceptable (quality ${avgQuality}/10)`, score: 3 })
+      } else {
+        points = 0
+        factors.push({ factor: `Dining & nightlife below expectations (quality ${avgQuality}/10)`, score: 0 })
+      }
     } else {
-      factors.push({ factor: 'Dining & nightlife mismatch', score: 0 })
+      // Unexpected importance value - give partial credit
+      points = 5
+      factors.push({ factor: `Dining & nightlife (unexpected importance: ${diningImportance})`, score: 5 })
     }
-    
+
     score += points
   } else {
     // No data - give partial credit
@@ -278,29 +299,37 @@ export function calculateCultureScore(preferences, town) {
   }
   
   // 6. EVENTS & CONCERTS (10 points)
-  const eventsImportance = parsed.culture.culturalEventsImportance || 1
-  
-  if (eventsImportance === 1) {
-    // User doesn't care - full points
-    score += 10
-    factors.push({ factor: 'Flexible on cultural events', score: 10 })
-  } else if (town.cultural_events_rating) {
-    const difference = Math.abs(eventsImportance - town.cultural_events_rating)
+  // Now uses frequency matching: occasional, regular, frequent
+  const userFrequency = parsed.culture.culturalEventsFrequency || 'occasional'
+
+  if (town.cultural_events_frequency) {
+    const townFrequency = town.cultural_events_frequency
     let points = 0
-    
-    if (difference === 0) {
-      points = 10 // Exact match
+
+    // Exact match
+    if (userFrequency === townFrequency) {
+      points = 10
       factors.push({ factor: 'Cultural events perfectly matched', score: 10 })
-    } else if (difference === 1) {
-      points = 7  // Adjacent
-      factors.push({ factor: 'Cultural events good match', score: 7 })
-    } else if (difference === 2) {
-      points = 4  // Near
-      factors.push({ factor: 'Cultural events acceptable', score: 4 })
-    } else {
-      factors.push({ factor: 'Cultural events mismatch', score: 0 })
     }
-    
+    // Adjacent frequencies (1 step away)
+    else if (
+      (userFrequency === 'occasional' && townFrequency === 'regular') ||
+      (userFrequency === 'regular' && townFrequency === 'occasional') ||
+      (userFrequency === 'regular' && townFrequency === 'frequent') ||
+      (userFrequency === 'frequent' && townFrequency === 'regular')
+    ) {
+      points = 7
+      factors.push({ factor: 'Cultural events good match', score: 7 })
+    }
+    // Far apart (occasional vs frequent)
+    else if (
+      (userFrequency === 'occasional' && townFrequency === 'frequent') ||
+      (userFrequency === 'frequent' && townFrequency === 'occasional')
+    ) {
+      points = 4
+      factors.push({ factor: 'Cultural events acceptable', score: 4 })
+    }
+
     score += points
   } else {
     // No data - give partial credit
@@ -309,34 +338,57 @@ export function calculateCultureScore(preferences, town) {
   }
   
   // 7. MUSEUMS & ARTS (10 points)
+  // User specifies IMPORTANCE (1-5), town has QUALITY rating (1-10)
+  // Logic: Higher importance requires higher quality threshold
   const museumsImportance = parsed.culture.museumsImportance || 1
-  
+
   if (museumsImportance === 1) {
-    // User doesn't care - full points
+    // User doesn't care - full points regardless of town quality
     score += 10
     factors.push({ factor: 'Flexible on museums & arts', score: 10 })
   } else if (town.museums_rating) {
-    const difference = Math.abs(museumsImportance - town.museums_rating)
+    // Town has quality rating (1-10 scale)
+    const quality = town.museums_rating
     let points = 0
-    
-    if (difference === 0) {
-      points = 10 // Exact match
-      factors.push({ factor: 'Museums & arts perfectly matched', score: 10 })
-    } else if (difference === 1) {
-      points = 7  // Adjacent
-      factors.push({ factor: 'Museums & arts good match', score: 7 })
-    } else if (difference === 2) {
-      points = 4  // Near
-      factors.push({ factor: 'Museums & arts acceptable', score: 4 })
+
+    if (museumsImportance === 5) {
+      // Very Important - wants excellent quality (8-10)
+      if (quality >= 8) {
+        points = 10
+        factors.push({ factor: `Museums excellent match (quality ${quality}/10)`, score: 10 })
+      } else if (quality >= 6) {
+        points = 5
+        factors.push({ factor: `Museums acceptable (quality ${quality}/10)`, score: 5 })
+      } else {
+        points = 0
+        factors.push({ factor: `Museums below expectations (quality ${quality}/10)`, score: 0 })
+      }
+    } else if (museumsImportance === 3) {
+      // Nice to Have - wants decent quality (5-10)
+      if (quality >= 7) {
+        points = 10
+        factors.push({ factor: `Museums great match (quality ${quality}/10)`, score: 10 })
+      } else if (quality >= 5) {
+        points = 7
+        factors.push({ factor: `Museums good match (quality ${quality}/10)`, score: 7 })
+      } else if (quality >= 3) {
+        points = 3
+        factors.push({ factor: `Museums acceptable (quality ${quality}/10)`, score: 3 })
+      } else {
+        points = 0
+        factors.push({ factor: `Museums below expectations (quality ${quality}/10)`, score: 0 })
+      }
     } else {
-      factors.push({ factor: 'Museums & arts mismatch', score: 0 })
+      // Unexpected importance value - give partial credit
+      points = 5
+      factors.push({ factor: `Museums (unexpected importance: ${museumsImportance})`, score: 5 })
     }
-    
+
     score += points
   } else {
     // No data - give partial credit
     score += 5
-    factors.push({ factor: 'Museums & arts data unavailable', score: 5 })
+    factors.push({ factor: 'Museums data unavailable', score: 5 })
   }
   
   return {

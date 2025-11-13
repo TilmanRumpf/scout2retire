@@ -1,0 +1,422 @@
+[
+  {
+    "panel": "OverviewPanel",
+    "field": "town_name"
+  },
+  {
+    "panel": "OverviewPanel",
+    "field": "description"
+  },
+  {
+    "panel": "OverviewPanel",
+    "field": "verbose_description"
+  },
+  {
+    "panel": "OverviewPanel",
+    "field": "summary"
+  },
+  {
+    "panel": "OverviewPanel",
+    "field": "appealStatement"
+  },
+  {
+    "panel": "RegionPanel",
+    "field": "country"
+  },
+  {
+    "panel": "RegionPanel",
+    "field": "region"
+  },
+  {
+    "panel": "RegionPanel",
+    "field": "regions"
+  },
+  {
+    "panel": "RegionPanel",
+    "field": "geo_region"
+  },
+  {
+    "panel": "RegionPanel",
+    "field": "latitude"
+  },
+  {
+    "panel": "RegionPanel",
+    "field": "longitude"
+  },
+  {
+    "panel": "RegionPanel",
+    "field": "geographic_features_actual"
+  },
+  {
+    "panel": "RegionPanel",
+    "field": "vegetation_type_actual"
+  },
+  {
+    "panel": "RegionPanel",
+    "field": "elevation_meters"
+  },
+  {
+    "panel": "RegionPanel",
+    "field": "population"
+  },
+  {
+    "panel": "RegionPanel",
+    "field": "urban_rural_character"
+  },
+  {
+    "panel": "ClimatePanel",
+    "field": "avg_temp_summer"
+  },
+  {
+    "panel": "ClimatePanel",
+    "field": "summer_climate_actual"
+  },
+  {
+    "panel": "ClimatePanel",
+    "field": "avg_temp_winter"
+  },
+  {
+    "panel": "ClimatePanel",
+    "field": "winter_climate_actual"
+  },
+  {
+    "panel": "ClimatePanel",
+    "field": "sunshine_level_actual"
+  },
+  {
+    "panel": "ClimatePanel",
+    "field": "sunshine_hours"
+  },
+  {
+    "panel": "ClimatePanel",
+    "field": "precipitation_level_actual"
+  },
+  {
+    "panel": "ClimatePanel",
+    "field": "annual_rainfall"
+  },
+  {
+    "panel": "ClimatePanel",
+    "field": "seasonal_variation_actual"
+  },
+  {
+    "panel": "ClimatePanel",
+    "field": "humidity_level_actual"
+  },
+  {
+    "panel": "ClimatePanel",
+    "field": "humidity_average"
+  },
+  {
+    "panel": "ClimatePanel",
+    "field": "climate_description"
+  },
+  {
+    "panel": "ClimatePanel",
+    "field": "air_quality_index"
+  },
+  {
+    "panel": "ClimatePanel",
+    "field": "natural_disaster_risk"
+  },
+  {
+    "panel": "ClimatePanel",
+    "field": "environmental_health_rating"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "primary_language"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "english_proficiency"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "pace_of_life_actual"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "social_atmosphere"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "traditional_progressive_lean"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "expat_community_size"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "retirement_community_presence"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "cultural_events_frequency"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "cultural_events_rating"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "nightlife_rating"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "restaurants_rating"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "museums_rating"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "shopping_rating"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "outdoor_rating"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "cultural_landmark_1"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "cultural_landmark_2"
+  },
+  {
+    "panel": "CulturePanel",
+    "field": "cultural_landmark_3"
+  },
+  {
+    "panel": "HealthcarePanel",
+    "field": "healthcare_score"
+  },
+  {
+    "panel": "HealthcarePanel",
+    "field": "environmental_health_rating"
+  },
+  {
+    "panel": "HealthcarePanel",
+    "field": "medical_specialties_rating"
+  },
+  {
+    "panel": "HealthcarePanel",
+    "field": "hospital_count"
+  },
+  {
+    "panel": "HealthcarePanel",
+    "field": "nearest_major_hospital_km"
+  },
+  {
+    "panel": "HealthcarePanel",
+    "field": "emergency_services_quality"
+  },
+  {
+    "panel": "HealthcarePanel",
+    "field": "english_speaking_doctors"
+  },
+  {
+    "panel": "HealthcarePanel",
+    "field": "healthcare_description"
+  },
+  {
+    "panel": "HealthcarePanel",
+    "field": "healthcare_cost"
+  },
+  {
+    "panel": "HealthcarePanel",
+    "field": "healthcare_cost_monthly"
+  },
+  {
+    "panel": "HealthcarePanel",
+    "field": "private_healthcare_cost_index"
+  },
+  {
+    "panel": "HealthcarePanel",
+    "field": "insurance_availability_rating"
+  },
+  {
+    "panel": "HealthcarePanel",
+    "field": "health_insurance_required"
+  },
+  {
+    "panel": "HealthcarePanel",
+    "field": "medical_specialties_available"
+  },
+  {
+    "panel": "HealthcarePanel",
+    "field": "healthcare_specialties_available"
+  },
+  {
+    "panel": "SafetyPanel",
+    "field": "safety_score"
+  },
+  {
+    "panel": "SafetyPanel",
+    "field": "safety_description"
+  },
+  {
+    "panel": "SafetyPanel",
+    "field": "crime_rate"
+  },
+  {
+    "panel": "SafetyPanel",
+    "field": "political_stability_rating"
+  },
+  {
+    "panel": "SafetyPanel",
+    "field": "natural_disaster_risk"
+  },
+  {
+    "panel": "SafetyPanel",
+    "field": "natural_disaster_risk_score"
+  },
+  {
+    "panel": "InfrastructurePanel",
+    "field": "internet_speed"
+  },
+  {
+    "panel": "InfrastructurePanel",
+    "field": "coworking_spaces_count"
+  },
+  {
+    "panel": "InfrastructurePanel",
+    "field": "digital_nomad_visa"
+  },
+  {
+    "panel": "InfrastructurePanel",
+    "field": "public_transport_quality"
+  },
+  {
+    "panel": "InfrastructurePanel",
+    "field": "airport_distance"
+  },
+  {
+    "panel": "InfrastructurePanel",
+    "field": "international_airport_distance"
+  },
+  {
+    "panel": "InfrastructurePanel",
+    "field": "regional_airport_distance"
+  },
+  {
+    "panel": "InfrastructurePanel",
+    "field": "walkability"
+  },
+  {
+    "panel": "InfrastructurePanel",
+    "field": "infrastructure_description"
+  },
+  {
+    "panel": "InfrastructurePanel",
+    "field": "government_efficiency_rating"
+  },
+  {
+    "panel": "ActivitiesPanel",
+    "field": "golf_courses_count"
+  },
+  {
+    "panel": "ActivitiesPanel",
+    "field": "tennis_courts_count"
+  },
+  {
+    "panel": "ActivitiesPanel",
+    "field": "dog_parks_count"
+  },
+  {
+    "panel": "ActivitiesPanel",
+    "field": "hiking_trails_km"
+  },
+  {
+    "panel": "ActivitiesPanel",
+    "field": "ski_resorts_within_100km"
+  },
+  {
+    "panel": "ActivitiesPanel",
+    "field": "outdoor_rating"
+  },
+  {
+    "panel": "ActivitiesPanel",
+    "field": "outdoor_activities_rating"
+  },
+  {
+    "panel": "ActivitiesPanel",
+    "field": "beaches_nearby"
+  },
+  {
+    "panel": "ActivitiesPanel",
+    "field": "water_bodies"
+  },
+  {
+    "panel": "ActivitiesPanel",
+    "field": "activities_available"
+  },
+  {
+    "panel": "ActivitiesPanel",
+    "field": "farmers_markets"
+  },
+  {
+    "panel": "ActivitiesPanel",
+    "field": "marinas_count"
+  },
+  {
+    "panel": "ActivitiesPanel",
+    "field": "coworking_spaces_count"
+  },
+  {
+    "panel": "ActivitiesPanel",
+    "field": "veterinary_clinics_count"
+  },
+  {
+    "panel": "ActivitiesPanel",
+    "field": "international_schools_count"
+  },
+  {
+    "panel": "CostsPanel",
+    "field": "cost_of_living_usd"
+  },
+  {
+    "panel": "CostsPanel",
+    "field": "typical_monthly_living_cost"
+  },
+  {
+    "panel": "CostsPanel",
+    "field": "rent_1bed"
+  },
+  {
+    "panel": "CostsPanel",
+    "field": "utilities_cost"
+  },
+  {
+    "panel": "CostsPanel",
+    "field": "groceries_cost"
+  },
+  {
+    "panel": "CostsPanel",
+    "field": "meal_cost"
+  },
+  {
+    "panel": "CostsPanel",
+    "field": "income_tax_rate_pct"
+  },
+  {
+    "panel": "CostsPanel",
+    "field": "property_tax_rate_pct"
+  },
+  {
+    "panel": "CostsPanel",
+    "field": "sales_tax_rate_pct"
+  },
+  {
+    "panel": "CostsPanel",
+    "field": "tax_haven_status"
+  },
+  {
+    "panel": "CostsPanel",
+    "field": "foreign_income_taxed"
+  }
+]

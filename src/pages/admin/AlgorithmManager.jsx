@@ -681,7 +681,7 @@ const AlgorithmManager = () => {
 
   return (
     <div className={`min-h-screen ${uiConfig.colors.page}`}>
-      <UnifiedHeader title="🎯 Algorithm Manager" />
+      <UnifiedHeader title="Algorithm Manager" />
       <HeaderSpacer />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Description */}

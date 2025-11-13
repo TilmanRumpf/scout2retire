@@ -42,9 +42,22 @@ const EditableDataField = ({
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
   const [hasExistingTemplate, setHasExistingTemplate] = useState(false);
 
-  // AI Research state
+  // AI Research state - REFACTORED for structured results
   const [aiResearching, setAiResearching] = useState(false);
   const [aiRecommendation, setAiRecommendation] = useState(null);
+
+  // Step 1 choice tracking
+  const [chosenValue, setChosenValue] = useState(null);
+  const [chosenSource, setChosenSource] = useState(null); // 'research' | 'pattern' | 'current' | 'custom' | 'merged' | 'not_found'
+  const [chosenConfidence, setChosenConfidence] = useState(null);
+  const [factSummary, setFactSummary] = useState(null);
+
+  // Merge preview state
+  const [showMergePreview, setShowMergePreview] = useState(false);
+  const [mergedValue, setMergedValue] = useState(null);
+
+  // Step 2 audit status (REQUIRED before save)
+  const [selectedAuditStatus, setSelectedAuditStatus] = useState(null);
 
   // Template section collapse state (persisted in localStorage)
   const [isTemplateExpanded, setIsTemplateExpanded] = useState(() => {
@@ -473,8 +486,10 @@ const EditableDataField = ({
       if (result.error) {
         toast.error(`AI Research failed: ${result.error}`);
       } else {
+        // Store structured AI research result
         setAiRecommendation(result);
-        toast.success('AI recommendation ready!');
+        setFactSummary(result.factSummary || null);
+        toast.success('Research complete!');
       }
     } catch (error) {
       console.error('AI research error:', error);
@@ -484,13 +499,89 @@ const EditableDataField = ({
     }
   };
 
-  // Accept AI recommendation and auto-fill the value
-  const handleAcceptRecommendation = () => {
-    if (aiRecommendation?.recommendedValue) {
-      setEditValue(aiRecommendation.recommendedValue);
-      setAiRecommendation(null);
-      toast.success('Value auto-filled! Review and save when ready.');
+  // Step 1 Action Handlers - User chooses value source
+  const handleKeepCurrentValue = () => {
+    setChosenValue(value);
+    setChosenSource('current');
+    setChosenConfidence('unknown'); // Current DB value has unknown confidence
+    setEditValue(value);
+    toast.success('Using current database value');
+  };
+
+  const handleUseResearchedValue = () => {
+    if (!aiRecommendation?.suggestedValue) {
+      toast.error('No researched value available');
+      return;
     }
+    setChosenValue(aiRecommendation.suggestedValue);
+    setChosenSource(aiRecommendation.source || 'research');
+    setChosenConfidence(aiRecommendation.confidence || 'limited');
+    setEditValue(aiRecommendation.suggestedValue);
+    toast.success(`Using researched value (${aiRecommendation.confidence} confidence)`);
+  };
+
+  const handleEnterCustomValue = () => {
+    setChosenValue(null); // User will type it
+    setChosenSource('custom');
+    setChosenConfidence('unknown'); // Custom entry needs audit
+    setEditValue('');
+    toast.success('Enter your custom value below');
+  };
+
+  const handleMergeValues = () => {
+    if (!aiRecommendation?.suggestedValue) {
+      toast.error('No researched value to merge');
+      return;
+    }
+
+    // Smart merge logic based on field type
+    let merged;
+    const currentVal = value?.toString().trim() || '';
+    const aiVal = aiRecommendation.suggestedValue?.toString().trim() || '';
+
+    if (type === 'array' || currentVal.includes(',') || aiVal.includes(',')) {
+      // Multi-value field - merge and deduplicate
+      const currentItems = currentVal ? currentVal.split(',').map(v => v.trim()).filter(Boolean) : [];
+      const aiItems = aiVal ? aiVal.split(',').map(v => v.trim()).filter(Boolean) : [];
+
+      // Combine and deduplicate (case-insensitive)
+      const allItems = [...currentItems];
+      aiItems.forEach(item => {
+        const itemLower = item.toLowerCase();
+        if (!allItems.some(existing => existing.toLowerCase() === itemLower)) {
+          allItems.push(item);
+        }
+      });
+
+      merged = allItems.join(', ');
+    } else {
+      // Single value - concatenate with separator
+      if (currentVal && aiVal && currentVal.toLowerCase() !== aiVal.toLowerCase()) {
+        merged = `${currentVal} / ${aiVal}`;
+      } else {
+        merged = aiVal || currentVal;
+      }
+    }
+
+    setMergedValue(merged);
+    setShowMergePreview(true);
+    setEditValue(merged);
+    toast.success('Values merged - review and edit if needed');
+  };
+
+  const handleApproveMerge = () => {
+    setChosenValue(editValue);
+    setChosenSource('merged');
+    setChosenConfidence(aiRecommendation?.confidence || 'limited');
+    setShowMergePreview(false);
+    toast.success('Merged value approved');
+  };
+
+  const handleCancelMerge = () => {
+    setShowMergePreview(false);
+    setMergedValue(null);
+    setEditValue(value);
+    toast('Merge cancelled');
   };
 
   // Toggle template management section visibility
@@ -520,6 +611,12 @@ const EditableDataField = ({
 
   // Save data to database from modal
   const handleSaveFromModal = async () => {
+    // STEP 2 REQUIREMENT: Audit status must be selected
+    if (!selectedAuditStatus) {
+      toast.error('Please select an audit status before saving');
+      return;
+    }
+
     // Validate
     const validation = validateValue(editValue);
     if (!validation.valid) {
@@ -548,18 +645,33 @@ const EditableDataField = ({
     setSaveState('saving');
 
     try {
-      // Build update object with user tracking
-      const updateData = { [field]: valueToSave };
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
 
-      // AUTO-TRACK: Add current user as last modifier
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user?.id) {
-          updateData.updated_by = user.id;
+      // Fetch current audit_data to preserve other fields
+      const { data: currentTown, error: fetchError } = await supabase
+        .from('towns')
+        .select('audit_data')
+        .eq('id', townId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const currentAuditData = currentTown?.audit_data || {};
+
+      // Build update object with value + audit_data
+      const updateData = {
+        [field]: valueToSave,
+        audit_data: {
+          ...currentAuditData,
+          [field]: {
+            status: selectedAuditStatus,
+            source: chosenSource || 'custom', // Track where value came from
+            audited_at: new Date().toISOString(),
+            audited_by: user?.email || 'unknown'
+          }
         }
-      } catch (error) {
-        console.warn('Could not get current user for tracking:', error);
-      }
+      };
 
       const { data, error } = await supabase
         .from('towns')
@@ -570,20 +682,25 @@ const EditableDataField = ({
       if (error) throw error;
 
       setSaveState('success');
-      toast.success(`${label} updated successfully`);
+      toast.success(`${label} updated with ${selectedAuditStatus} confidence!`);
 
-      // Call onUpdate callback with new value
+      // Call onUpdate callback to reload audit results
       if (onUpdate) {
         onUpdate(field, valueToSave);
       }
 
-      // For non-exec admins, close modal after brief success indicator
-      if (!isExecutiveAdmin) {
-        setTimeout(() => {
-          setShowCombinedModal(false);
-          setSaveState('idle');
-        }, 1000);
-      }
+      // Close modal after brief success indicator
+      setTimeout(() => {
+        setShowCombinedModal(false);
+        setSaveState('idle');
+        // Reset Step 1 and Step 2 state
+        setChosenValue(null);
+        setChosenSource(null);
+        setChosenConfidence(null);
+        setSelectedAuditStatus(null);
+        setAiRecommendation(null);
+        setFactSummary(null);
+      }, 1500);
 
     } catch (error) {
       console.error('Error updating field:', error);
@@ -974,16 +1091,22 @@ const EditableDataField = ({
 
               <Edit2 size={14} />
             </button>
-            {/* Audit Confidence Indicator */}
+            {/* Audit Confidence Indicator - Made MORE VISIBLE */}
             <div className="group/tooltip relative inline-block">
               {confidence === 'critical' ? (
-                <div className="w-5 h-5 flex items-center justify-center cursor-help">
-                  <svg className="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 16 16">
+                <div className="w-6 h-6 flex items-center justify-center cursor-help">
+                  <svg className="w-6 h-6 text-orange-500" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/>
                   </svg>
                 </div>
+              ) : confidence === 'unknown' ? (
+                <div className="w-4 h-4 rounded-full bg-gray-300 dark:bg-gray-600 cursor-help border-2 border-gray-400 dark:border-gray-500" title="Not yet audited" />
               ) : (
-                <div className={`w-3 h-3 rounded-full ${getConfidenceColor()} cursor-help`} />
+                <div
+                  className={`w-4 h-4 rounded-full ${getConfidenceColor()} cursor-help border-2 border-white dark:border-gray-800 shadow-sm`}
+                  title={`Audit: ${confidence}`}
+                  onClick={() => console.log(`Field: ${field}, Confidence: ${confidence}`)}
+                />
               )}
               <div className="hidden group-hover/tooltip:block absolute right-0 top-5 bg-gray-900 dark:bg-gray-700 text-white text-xs px-3 py-1.5 rounded shadow-lg whitespace-nowrap z-50">
                 {getConfidenceTooltip()}
@@ -1199,81 +1322,221 @@ const EditableDataField = ({
                     Claude AI learns from your database. Google opens in popup window.
                   </p>
 
-                  {/* AI Recommendation Section */}
+                  {/* STRUCTURED RESEARCH RESULTS - FACT-FIRST */}
                   {aiRecommendation && (
-                    <div className="mt-3 border-2 border-green-200 dark:border-green-800 rounded-lg p-4 bg-green-50/30 dark:bg-green-900/10">
-                      <div className="flex items-start justify-between mb-2">
-                        <h5 className="text-sm font-bold text-green-800 dark:text-green-300 flex items-center gap-2">
-                          <Sparkles size={16} />
-                          AI Recommendation
-                        </h5>
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          aiRecommendation.confidence === 'high'
-                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                            : aiRecommendation.confidence === 'medium'
-                            ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-                            : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                        }`}>
-                          {aiRecommendation.confidence === 'high' ? '✓ High' : aiRecommendation.confidence === 'medium' ? '~ Medium' : '! Low'} Confidence
-                        </span>
-                      </div>
+                    <div className="mt-3 space-y-3">
+                      {/* External Fact Summary */}
+                      {factSummary && (
+                        <div className="border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4 bg-blue-50/30 dark:bg-blue-900/10">
+                          <h5 className="text-sm font-bold text-blue-800 dark:text-blue-300 mb-2">
+                            📚 External Fact Summary
+                          </h5>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            {factSummary}
+                          </p>
+                        </div>
+                      )}
 
-                      <div className="bg-white dark:bg-gray-900/50 border border-green-200 dark:border-green-700 rounded p-3 mb-2">
-                        <div className="text-sm font-semibold text-green-900 dark:text-green-100 mb-1">
-                          {aiRecommendation.recommendedValue}
+                      {/* AI Interpretation */}
+                      <div className="border-2 border-green-200 dark:border-green-800 rounded-lg p-4 bg-green-50/30 dark:bg-green-900/10">
+                        <div className="flex items-start justify-between mb-3">
+                          <h5 className="text-sm font-bold text-green-800 dark:text-green-300 flex items-center gap-2">
+                            <Sparkles size={16} />
+                            AI Interpretation for this Field
+                          </h5>
+                          <div className="flex gap-2">
+                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                              aiRecommendation.source === 'research'
+                                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                                : aiRecommendation.source === 'pattern'
+                                ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400'
+                            }`}>
+                              {aiRecommendation.source === 'research' ? '🔍 Research' :
+                               aiRecommendation.source === 'pattern' ? '📊 Pattern' : '❓ Not Found'}
+                            </span>
+                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                              aiRecommendation.confidence === 'high'
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                                : aiRecommendation.confidence === 'limited'
+                                ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                                : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                            }`}>
+                              {aiRecommendation.confidence === 'high' ? '🟢 High' :
+                               aiRecommendation.confidence === 'limited' ? '🟡 Limited' : '🔴 Low'}
+                            </span>
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">
-                          {aiRecommendation.reasoning}
+
+                        <div className="bg-white dark:bg-gray-900/50 border border-green-200 dark:border-green-700 rounded p-3 mb-2">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Proposed {label}:</div>
+                          <div className="text-sm font-bold text-green-900 dark:text-green-100 mb-2">
+                            {aiRecommendation.suggestedValue || '(null)'}
+                          </div>
+                          <div className="text-xs text-gray-700 dark:text-gray-300 mb-2">
+                            <strong>Notes:</strong> {aiRecommendation.reasoning}
+                          </div>
+                          {value && value.toString().trim() && (
+                            <div className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded mt-2">
+                              <strong>Original DB value:</strong> {value}
+                            </div>
+                          )}
                         </div>
-                        {aiRecommendation.patternCount > 0 && (
-                          <div className="text-xs text-green-600 dark:text-green-400 mt-1">
-                            Based on {aiRecommendation.patternCount} similar towns
+
+                        {/* Four Explicit Action Buttons */}
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Choose value source:
+                          </p>
+                          <div className="grid grid-cols-1 gap-2">
+                            <button
+                              onClick={handleKeepCurrentValue}
+                              className="px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm font-medium flex items-center justify-between"
+                            >
+                              <span>Keep current database value</span>
+                              <span className="text-xs text-gray-500">({value || 'empty'})</span>
+                            </button>
+                            <button
+                              onClick={handleUseResearchedValue}
+                              className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                            >
+                              <Check size={16} />
+                              Use researched value ({aiRecommendation.confidence} confidence)
+                            </button>
+                            <button
+                              onClick={handleMergeValues}
+                              disabled={!value || !value.toString().trim()}
+                              className="px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                              title={!value ? 'No current value to merge' : 'Combine AI research with current value'}
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                              </svg>
+                              Merge AI & current value
+                            </button>
+                            <button
+                              onClick={handleEnterCustomValue}
+                              className="px-4 py-3 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 border-2 border-blue-300 dark:border-blue-700 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors text-sm font-medium"
+                            >
+                              Enter a custom value
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Merge Preview - shown after clicking "Merge" */}
+                        {showMergePreview && (
+                          <div className="mt-4 p-4 border-2 border-purple-300 dark:border-purple-700 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                            <h6 className="text-sm font-bold text-purple-900 dark:text-purple-200 mb-3 flex items-center gap-2">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                              </svg>
+                              Merged Result Preview
+                            </h6>
+                            <p className="text-xs text-purple-700 dark:text-purple-300 mb-3">
+                              Review the merged value below. Edit if needed, then approve or cancel.
+                            </p>
+
+                            {/* Show merged value breakdown */}
+                            <div className="bg-white dark:bg-gray-900 rounded p-3 mb-3 text-xs">
+                              <div className="text-gray-600 dark:text-gray-400 mb-2">
+                                <strong>Original:</strong> {value || '(empty)'}
+                              </div>
+                              <div className="text-gray-600 dark:text-gray-400 mb-2">
+                                <strong>AI Research:</strong> {aiRecommendation?.suggestedValue}
+                              </div>
+                              <div className="text-purple-700 dark:text-purple-300 font-semibold">
+                                <strong>Merged:</strong> {editValue}
+                              </div>
+                            </div>
+
+                            {/* Editable merged value */}
+                            <div className="mb-3">
+                              <label className="block text-xs font-medium text-purple-900 dark:text-purple-200 mb-1">
+                                Edit merged value if needed:
+                              </label>
+                              {renderModalInput()}
+                            </div>
+
+                            {/* Action buttons */}
+                            <div className="flex gap-2">
+                              <button
+                                onClick={handleCancelMerge}
+                                className="flex-1 px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() => {
+                                  // Just keep editing - don't close preview
+                                  toast.success('Continue editing - click Approve when ready');
+                                }}
+                                className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center justify-center gap-1"
+                              >
+                                <Edit2 size={14} />
+                                Keep Editing
+                              </button>
+                              <button
+                                onClick={handleApproveMerge}
+                                className="flex-1 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium flex items-center justify-center gap-1"
+                              >
+                                <Check size={14} />
+                                Approve Merge
+                              </button>
+                            </div>
                           </div>
                         )}
-                      </div>
-
-                      <div className="flex gap-2">
-                        <button
-                          onClick={handleAcceptRecommendation}
-                          className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium flex items-center justify-center gap-1"
-                        >
-                          <Check size={16} />
-                          Accept & Fill Below
-                        </button>
-                        <button
-                          onClick={() => setAiRecommendation(null)}
-                          className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-sm font-medium flex items-center justify-center gap-1"
-                        >
-                          <X size={16} />
-                          Discard
-                        </button>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* SECTION 2: Enter Data & Save to Database - YELLOW (Caution, modifying one town) */}
+              {/* SECTION 2: Approve Value + Audit Status - YELLOW (Human approval gate) */}
               <div className="border-2 border-yellow-200 dark:border-yellow-800 rounded-lg p-4 bg-yellow-50/30 dark:bg-yellow-900/10">
                 <h4 className="text-sm font-bold text-yellow-800 dark:text-yellow-300 mb-3 flex items-center gap-2">
                   <span className="bg-yellow-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
-                  <span>Step 2: Enter Data & Save to Database</span>
+                  <span>Step 2: Approve Value & Set Audit Status</span>
                   {/* Database Info Tooltip for Save */}
                   <div className="group/save relative inline-block">
                     <Info size={14} className="text-yellow-500 hover:text-yellow-700 dark:hover:text-yellow-300 cursor-help transition-colors" />
                     <div className="hidden group-hover/save:block absolute left-0 top-5 bg-gray-900 dark:bg-gray-700 text-white text-xs px-3 py-1.5 rounded shadow-lg whitespace-nowrap z-10">
                       <div className="font-semibold">Database Info:</div>
                       <div className="mt-0.5">Table: <span className="text-blue-300">towns</span></div>
-                      <div>Column: <span className="text-green-300">{field}</span></div>
-                      <div className="text-yellow-300 mt-1">⚠️ Saves to single town only</div>
+                      <div>Columns: <span className="text-green-300">{field}, audit_data</span></div>
+                      <div className="text-yellow-300 mt-1">⚠️ Saves value + audit status together</div>
                     </div>
                   </div>
                 </h4>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
+                  {/* Origin Chip - Show where value came from */}
+                  {chosenSource && (
+                    <div className={`px-3 py-2 rounded-lg text-sm flex items-center gap-2 ${
+                      chosenSource === 'research' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' :
+                      chosenSource === 'pattern' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200' :
+                      chosenSource === 'merged' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200' :
+                      chosenSource === 'current' ? 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200' :
+                      'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'
+                    }`}>
+                      <span className="font-semibold">Source:</span>
+                      <span>
+                        {chosenSource === 'research' ? '🔍 From research' :
+                         chosenSource === 'pattern' ? '📊 From pattern' :
+                         chosenSource === 'merged' ? '🔄 Merged AI + DB' :
+                         chosenSource === 'current' ? '💾 Current DB value' :
+                         '✏️ Custom entry'}
+                      </span>
+                      {chosenConfidence && chosenConfidence !== 'unknown' && (
+                        <span className="text-xs">
+                          ({chosenConfidence} confidence)
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {label} Value
+                      Final {label} Value <span className="text-xs text-gray-500">(editable)</span>
                     </label>
                     {renderModalInput()}
                     {range && (
@@ -1312,15 +1575,47 @@ const EditableDataField = ({
                     </div>
                   )}
 
-                  <div className="bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded p-2 text-xs">
-                    <div className="text-gray-600 dark:text-gray-400">
-                      <strong>Current value:</strong> {value !== null && value !== undefined && value !== '' ? String(value) : <span className="text-red-500 italic">(empty)</span>}
+                  {/* AUDIT STATUS SECTION - REQUIRED BEFORE SAVE */}
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-700 rounded-lg">
+                    <label className="block text-sm font-bold text-blue-900 dark:text-blue-200 mb-2 flex items-center gap-2">
+                      <span className="text-red-500">*</span>
+                      Audit Status (required)
+                    </label>
+                    <p className="text-xs text-blue-700 dark:text-blue-300 mb-3">
+                      Pick a quality rating for this value:
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { value: 'high', color: 'bg-green-500', label: '🟢 High', desc: 'Verified - safe to use' },
+                        { value: 'limited', color: 'bg-yellow-500', label: '🟡 Limited', desc: 'Inferred - use caution' },
+                        { value: 'low', color: 'bg-red-500', label: '🔴 Low', desc: 'Needs verification' },
+                        { value: 'critical', color: 'bg-orange-500', label: '⚡ Critical', desc: 'System-wide impact' },
+                        { value: 'unknown', color: 'bg-gray-400', label: '⚪ Unknown', desc: 'Not yet audited' }
+                      ].map((status) => (
+                        <button
+                          key={status.value}
+                          onClick={() => setSelectedAuditStatus(status.value)}
+                          className={`px-3 py-2 rounded-lg text-white text-xs font-medium transition-all flex items-center gap-2 ${
+                            selectedAuditStatus === status.value
+                              ? `${status.color} ring-4 ring-blue-300 dark:ring-blue-600`
+                              : `${status.color} opacity-60 hover:opacity-100`
+                          }`}
+                          title={status.desc}
+                        >
+                          <div className="w-3 h-3 rounded-full bg-white/30" />
+                          <div className="text-left flex-1">
+                            <div>{status.label}</div>
+                            <div className="text-xs opacity-75">{status.desc}</div>
+                          </div>
+                          {selectedAuditStatus === status.value && <Check size={14} />}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
                   <button
                     onClick={handleSaveFromModal}
-                    disabled={saveState === 'saving'}
+                    disabled={saveState === 'saving' || !selectedAuditStatus}
                     className="w-full px-4 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 font-medium"
                   >
                     {saveState === 'saving' ? (
@@ -1335,10 +1630,12 @@ const EditableDataField = ({
                       </>
                     ) : (
                       <>
-                        <span> Save to Database</span>
+                        <span>Save to Database</span>
+                        {!selectedAuditStatus && <span className="text-xs opacity-75">(select audit status first)</span>}
                       </>
                     )}
                   </button>
+
                 </div>
               </div>
 

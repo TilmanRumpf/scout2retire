@@ -22,17 +22,23 @@
 import { parsePreferences } from '../helpers/preferenceParser.js';
 import { calculateHealthcareScore } from '../helpers/calculateHealthcareScore.js';
 import { calculateSafetyScore } from '../helpers/calculateSafetyScore.js';
+import { ADMIN_QUALITY_VALUES } from '../../config/userPreferenceOptions.js';
 
 /**
  * Calculate gradual healthcare/safety scoring based on user preference level
  * @param {number} actualScore - Town's actual score (0-10)
- * @param {string} userPref - User's preference level ('basic', 'functional', 'good')
+ * @param {string} userPref - User's preference level from ADMIN_QUALITY_VALUES ('basic', 'functional', 'good')
  * @param {number} maxPoints - Maximum points for this category
  * @returns {Object} Score and description
+ *
+ * DYNAMIC: Uses centralized quality levels from userPreferenceOptions.js (RULE #2: NO HARDCODING)
  */
 function calculateGradualAdminScore(actualScore, userPref, maxPoints) {
   if (!actualScore || !userPref) return { score: 0, description: null }
-  
+
+  // DYNAMIC: Quality level values from centralized config (RULE #2: NO HARDCODING)
+  // Valid values: ADMIN_QUALITY_VALUES = ['good', 'functional', 'basic']
+
   // Define scoring tiers based on user preference
   if (userPref === 'good') {
     // User wants good quality (target ≥7.0)

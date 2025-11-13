@@ -154,27 +154,52 @@ Example response:
 
 /**
  * Load audit results for a town from database
+ * Merges AI-generated audits from town_field_audits table with manual audits from towns.audit_data
+ * Manual audits take priority over AI audits
  * @param {string} townId - Town ID
  * @param {Object} supabase - Supabase client instance
  * @returns {Promise<Object>} Object mapping field names to confidence levels
  */
 export async function loadAuditResults(townId, supabase) {
   try {
-    const { data, error } = await supabase
+    // Load AI-generated audit results from town_field_audits table
+    const { data: aiAudits, error: aiError } = await supabase
       .from('town_field_audits')
       .select('field_name, confidence')
       .eq('town_id', townId);
 
-    if (error) {
-      console.error('Error loading audit results:', error);
-      return {};
+    if (aiError) {
+      console.error('Error loading AI audit results:', aiError);
     }
 
-    // Convert array to object mapping field_name => confidence
+    // Load manual audit results from towns.audit_data JSONB column
+    const { data: townData, error: townError } = await supabase
+      .from('towns')
+      .select('audit_data')
+      .eq('id', townId)
+      .single();
+
+    if (townError) {
+      console.error('Error loading manual audit results:', townError);
+    }
+
+    // Start with AI audits
     const auditResults = {};
-    data.forEach(record => {
-      auditResults[record.field_name] = record.confidence;
-    });
+    if (aiAudits) {
+      aiAudits.forEach(record => {
+        auditResults[record.field_name] = record.confidence;
+      });
+    }
+
+    // Merge manual audits (they take priority)
+    if (townData?.audit_data) {
+      Object.entries(townData.audit_data).forEach(([fieldName, auditInfo]) => {
+        // Manual audit overrides AI audit
+        if (auditInfo?.status) {
+          auditResults[fieldName] = auditInfo.status;
+        }
+      });
+    }
 
     return auditResults;
   } catch (error) {

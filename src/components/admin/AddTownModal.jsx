@@ -13,22 +13,27 @@ const anthropic = new Anthropic({
 });
 
 /**
- * AddTownModal - Professional duplicate-aware town addition
+ * AddTownModal - OPTION 1: Trust User + Verify After AI Population
  *
- * WORKFLOW:
- * 1. User enters town + country
- * 2. Check database for duplicates
- * 3. If duplicates exist:
+ * NEW WORKFLOW (Simplified):
+ * 1. User enters: Town + Country + Region + Postal Code (optional)
+ * 2. Check database for exact duplicate
+ * 3. If duplicates exist with DIFFERENT regions:
  *    a. Show warning + existing towns
  *    b. Ask: "Still want to add different one?"
- *    c. Ask: "Do you know the region/state?"
- *       - YES → Manual entry
- *       - NO → AI deep search → Dropdown selection
- * 4. Verify with Wikipedia (with region)
- * 5. Confirm and create
+ * 4. Create town immediately (skip Wikipedia verification)
+ * 5. AI populates all data
+ * 6. AUDIT STEP: User reviews AI results before finalizing
+ * 7. Approve → Complete | Reject → Delete & restart
+ *
+ * WHY THIS WORKS BETTER:
+ * - Wikipedia verification is unreliable ("garbage")
+ * - AI research with Town + Country + Region + Postal Code is more accurate
+ * - Audit step AFTER AI population is the real verification point
+ * - Faster workflow - no Wikipedia delay
  */
 export default function AddTownModal({ isOpen, onClose, onTownAdded, initialTownName = '' }) {
-  // Steps: input, duplicate_warning, region_choice, region_manual, region_ai_search, region_dropdown, verifying, confirm, creating, audit, complete
+  // Steps: input, duplicate_warning, region_choice, region_manual, region_ai_search, region_dropdown, additional_info, verifying, confirm, creating, audit, complete
   const [step, setStep] = useState('input');
   const [townName, setTownName] = useState('');
   const [country, setCountry] = useState('');
@@ -42,6 +47,11 @@ export default function AddTownModal({ isOpen, onClose, onTownAdded, initialTown
   const [selectedTownOption, setSelectedTownOption] = useState(null);
   const [townInfo, setTownInfo] = useState(null);
   const [manualEntryMode, setManualEntryMode] = useState(false);
+
+  // Additional identifiers for better matching (Option C - Hybrid)
+  const [postalCode, setPostalCode] = useState('');
+  const [nearbyCity, setNearbyCity] = useState('');
+  const [quickSearchAttempted, setQuickSearchAttempted] = useState(false);
 
   // Audit step state
   const [createdTownId, setCreatedTownId] = useState(null);
@@ -71,6 +81,9 @@ export default function AddTownModal({ isOpen, onClose, onTownAdded, initialTown
         setTownName('');
         setCountry('');
         setRegion('');
+        setPostalCode('');
+        setNearbyCity('');
+        setQuickSearchAttempted(false);
         setVerificationStatus('');
         setExistingTowns([]);
         setAiDiscoveredTowns([]);
@@ -104,12 +117,14 @@ export default function AddTownModal({ isOpen, onClose, onTownAdded, initialTown
 
   /**
    * Step 1: Check for duplicates in database
+   * OPTION 1: Skip Wikipedia - Trust user input, verify AFTER AI population
    */
   const checkForDuplicates = async () => {
     setLoading(true);
     setVerificationStatus('Checking database for existing towns...');
 
     try {
+      // Check for exact duplicate (same town, country, region combination)
       const { data: existingTownsWithSameName, error } = await supabase
         .from('towns')
         .select('id, town_name, country, region')
@@ -118,8 +133,20 @@ export default function AddTownModal({ isOpen, onClose, onTownAdded, initialTown
 
       if (error) throw error;
 
+      // Check if exact combination exists (including region if provided)
+      const exactDuplicate = existingTownsWithSameName?.find(t =>
+        t.region?.toLowerCase() === region.trim().toLowerCase()
+      );
+
+      if (exactDuplicate) {
+        toast.error(`${townName}, ${region}, ${country} already exists!`);
+        setLoading(false);
+        setVerificationStatus('');
+        return;
+      }
+
+      // If duplicates exist but with different regions - show warning
       if (existingTownsWithSameName && existingTownsWithSameName.length > 0) {
-        // Duplicates found - show warning
         setExistingTowns(existingTownsWithSameName);
         setStep('duplicate_warning');
         setVerificationStatus('');
@@ -127,9 +154,11 @@ export default function AddTownModal({ isOpen, onClose, onTownAdded, initialTown
         return;
       }
 
-      // No duplicates - proceed directly to verification
+      // No duplicates - skip Wikipedia, create town immediately
+      // AI will populate, then user verifies in audit step
+      console.log('✅ No duplicates - creating town immediately (Option 1: Trust + Verify After)');
       setExistingTowns([]);
-      await externalSearchVerification();
+      await createTown();
     } catch (error) {
       console.error('Error checking duplicates:', error);
       toast.error(`Failed to check database: ${error.message}`);
@@ -230,12 +259,24 @@ Return ONLY the JSON array, no explanation.`;
     setLoading(true);
 
     try {
-      // Build search query with region if available
-      const searchQuery = region.trim()
-        ? `${townName} ${region} ${country}`
-        : `${townName} ${country}`;
+      // Build enriched search query with all available identifiers
+      let searchQuery = townName;
 
-      const wikipediaUrl = `https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(searchQuery)}&limit=5&format=json&origin=*`;
+      // Add identifiers in order of specificity
+      if (postalCode.trim()) {
+        searchQuery += ` ${postalCode}`;
+      }
+      if (region.trim()) {
+        searchQuery += ` ${region}`;
+      }
+      if (nearbyCity.trim()) {
+        searchQuery += ` near ${nearbyCity}`;
+      }
+      searchQuery += ` ${country}`;
+
+      console.log('🔍 Wikipedia search query:', searchQuery);
+
+      const wikipediaUrl = `https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(searchQuery)}&limit=10&format=json&origin=*`;
 
       const response = await fetch(wikipediaUrl);
       const data = await response.json();
@@ -244,17 +285,112 @@ Return ONLY the JSON array, no explanation.`;
       const descriptions = data[2] || [];
       const urls = data[3] || [];
 
-      if (titles.length > 0) {
+      console.log('🔍 Wikipedia raw results:', { titles, descriptions });
+
+      // Filter out people/biographies - look for geographic keywords in descriptions
+      const isGeographicLocation = (title, description) => {
+        const lowerTitle = title.toLowerCase();
+        const lowerDesc = (description || '').toLowerCase();
+        const searchTownLower = townName.toLowerCase();
+
+        // FIRST: Check if result is relevant to search term
+        // Title must contain the town name or be very close (allow 1-2 character difference)
+        const titleFirstPart = lowerTitle.split(',')[0].trim();
+        const titleContainsSearch = lowerTitle.includes(searchTownLower);
+        const searchContainsTitle = searchTownLower.includes(titleFirstPart);
+
+        // Allow fuzzy match (e.g., "Crozon" matches "Morgat" if it's in Crozon)
+        const isFuzzyMatch = Math.abs(titleFirstPart.length - searchTownLower.length) <= 2 &&
+                            (titleFirstPart.startsWith(searchTownLower.substring(0, 3)) ||
+                             searchTownLower.startsWith(titleFirstPart.substring(0, 3)));
+
+        if (!titleContainsSearch && !searchContainsTitle && !isFuzzyMatch) {
+          console.log(`❌ Filtered (not relevant): ${title}`);
+          return false;
+        }
+
+        // Check if title looks like a person's name (multiple capitalized words, no commas)
+        const titleWords = title.split(' ');
+        const hasComma = title.includes(',');
+        const allCapitalized = titleWords.length >= 2 && titleWords.every(word => /^[A-Z]/.test(word));
+
+        // If title looks like a full name (e.g., "Frances Emilia Crofton") and has no comma, likely a person
+        if (allCapitalized && !hasComma && titleWords.length >= 2 && titleWords.length <= 4) {
+          console.log(`❌ Filtered (person name): ${title}`);
+          return false;
+        }
+
+        // Exclude historical concepts, organizations, non-places
+        const nonPlaceKeywords = ['crown of', 'kingdom of', 'empire of', 'dynasty', 'royal', 'monarchy', 'treaty', 'war of', 'battle of', 'company', 'corporation', 'university'];
+        if (nonPlaceKeywords.some(keyword => lowerTitle.includes(keyword) || lowerDesc.includes(keyword))) {
+          console.log(`❌ Filtered (historical/org): ${title}`);
+          return false;
+        }
+
+        // Exclude people (births, deaths, biographical patterns)
+        const personKeywords = ['born', 'died', 'death', 'birth', 'politician', 'actor', 'writer', 'author', 'singer', 'artist', 'player', 'coach'];
+        if (personKeywords.some(keyword => lowerDesc.includes(keyword))) {
+          console.log(`❌ Filtered (person): ${title}`);
+          return false;
+        }
+
+        // Prioritize geographic keywords
+        const placeKeywords = ['commune', 'city', 'town', 'village', 'municipality', 'settlement', 'canton', 'department', 'region', 'province', 'county', 'district', 'located in', 'located on', 'peninsula'];
+        if (placeKeywords.some(keyword => lowerDesc.includes(keyword))) {
+          console.log(`✅ Kept (place keyword): ${title}`);
+          return true;
+        }
+
+        // Check if title contains country name (good sign for places)
+        if (lowerTitle.includes(country.toLowerCase())) {
+          console.log(`✅ Kept (country name): ${title}`);
+          return true;
+        }
+
+        // If title has comma (e.g., "Crozon, France"), likely a place
+        if (hasComma) {
+          console.log(`✅ Kept (has comma): ${title}`);
+          return true;
+        }
+
+        // Default to false if uncertain
+        console.log(`❌ Filtered (uncertain): ${title}`);
+        return false;
+      };
+
+      // Filter and prioritize geographic results
+      const geographicResults = [];
+      for (let i = 0; i < titles.length; i++) {
+        if (isGeographicLocation(titles[i], descriptions[i])) {
+          geographicResults.push({ title: titles[i], description: descriptions[i], url: urls[i] });
+        }
+      }
+
+      console.log(`📊 Filtered results: ${geographicResults.length} of ${titles.length} kept`);
+
+      // OPTION C - HYBRID: If no good results on first try, ask for more identifiers
+      if (geographicResults.length === 0 && !quickSearchAttempted) {
+        console.log('🔍 No matches found - asking for additional identifiers');
+        setStep('additional_info');
+        setVerificationStatus('');
+        setLoading(false);
+        setQuickSearchAttempted(true);
+        return;
+      }
+
+      // Found match OR already tried with additional info
+      if (geographicResults.length > 0) {
         setTownInfo({
-          title: titles[0],
-          description: descriptions[0] || 'No description available',
-          url: urls[0],
-          alternatives: titles.slice(1, 3).map((t, i) => ({
-            title: t,
-            description: descriptions[i + 1] || ''
+          title: geographicResults[0].title,
+          description: geographicResults[0].description || 'No description available',
+          url: geographicResults[0].url,
+          alternatives: geographicResults.slice(1, 3).map(r => ({
+            title: r.title,
+            description: r.description || ''
           }))
         });
       } else {
+        // No results even with additional info
         setTownInfo({
           title: region ? `${townName}, ${region}, ${country}` : `${townName}, ${country}`,
           description: 'Could not find this town on Wikipedia. This may be a small town or the name might be incorrect.',
@@ -301,6 +437,7 @@ Return ONLY the JSON array, no explanation.`;
         town_name: capitalizeTownName(townName),
         country: country.trim(),
         region: region.trim() || null,
+        is_published: false,  // Always create as unpublished - admin must review first
         created_at: new Date().toISOString()
       };
 
@@ -331,7 +468,8 @@ Return ONLY the JSON array, no explanation.`;
             townId: createdTown.id,
             townName: townName.trim(),
             country: country.trim(),
-            region: region.trim() || null
+            region: region.trim() || null,
+            postalCode: postalCode.trim() || null  // Pass postal code to AI for better research
           })
         }
       );
@@ -414,6 +552,21 @@ Return ONLY the JSON array, no explanation.`;
   };
 
   /**
+   * Handle "Fix Errors" - navigate to town editor
+   */
+  const handleFixErrors = () => {
+    if (!createdTownId) return;
+
+    toast.success('Opening editor to fix errors...');
+
+    // Close modal and navigate to town detail page
+    onClose();
+
+    // Navigate to town detail page where user can edit
+    window.location.href = `/admin/town/${createdTownId}`;
+  };
+
+  /**
    * Handle audit rejection - delete town and restart
    */
   const handleAuditReject = async () => {
@@ -461,6 +614,7 @@ Return ONLY the JSON array, no explanation.`;
 
   /**
    * Handle initial form submission
+   * OPTION 1: Require region upfront for better AI research
    */
   const handleInitialSubmit = async () => {
     if (!townName.trim()) {
@@ -471,15 +625,23 @@ Return ONLY the JSON array, no explanation.`;
       toast.error('Country is required');
       return;
     }
+    if (!region.trim()) {
+      toast.error('Region is required');
+      return;
+    }
 
     await checkForDuplicates();
   };
 
   /**
    * Handle "Yes, add different town" from duplicate warning
+   * OPTION 1: Create immediately since we already have all info
    */
-  const handleConfirmAddDifferent = () => {
-    setStep('region_choice');
+  const handleConfirmAddDifferent = async () => {
+    // User confirmed they want to add a different instance of this town
+    // We already have town + country + region, so create immediately
+    console.log('✅ User confirmed different town - creating immediately');
+    await createTown();
   };
 
   /**
@@ -640,6 +802,41 @@ Return ONLY the JSON array, no explanation.`;
                   </div>
                 )}
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Region / State / Province <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={region}
+                  onChange={(e) => setRegion(e.target.value)}
+                  placeholder="e.g., Florida, Andalusia, Brittany"
+                  className={`w-full px-4 py-2 border ${uiConfig.colors.border} rounded-lg ${uiConfig.colors.input} focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                  disabled={loading}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Postal Code / ZIP Code
+                  <span className="text-xs text-gray-500 ml-2">(Optional but helpful for AI)</span>
+                </label>
+                <input
+                  type="text"
+                  value={postalCode}
+                  onChange={(e) => setPostalCode(e.target.value)}
+                  placeholder="e.g., 32601, 29160, M5H 2N2"
+                  className={`w-full px-4 py-2 border ${uiConfig.colors.border} rounded-lg ${uiConfig.colors.input} focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  💡 <strong>New workflow:</strong> We'll create the town immediately, then AI will research and populate data. You'll review AI results before finalizing.
+                </p>
+              </div>
             </div>
           )}
 
@@ -795,6 +992,84 @@ Return ONLY the JSON array, no explanation.`;
             </div>
           )}
 
+          {/* Step: Additional Information (Option C - Hybrid) */}
+          {step === 'additional_info' && (
+            <div className="space-y-4">
+              <div className="p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-orange-900 dark:text-orange-100 mb-2">
+                      Help us find the exact location
+                    </h3>
+                    <p className="text-sm text-orange-800 dark:text-orange-200 mb-3">
+                      We couldn't immediately identify "<strong>{townName}, {country}</strong>" on Wikipedia.
+                    </p>
+                    <p className="text-sm text-orange-700 dark:text-orange-300">
+                      Please provide additional identifiers to help us find the correct town:
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {/* Region input (if not already provided) */}
+                {!region.trim() && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Region / State / Province
+                      <span className="text-xs text-gray-500 ml-2">(Optional but helpful)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={region}
+                      onChange={(e) => setRegion(e.target.value)}
+                      placeholder="e.g., Brittany, California, Ontario"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+                )}
+
+                {/* Postal code input */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Postal Code / ZIP Code
+                    <span className="text-xs text-green-600 dark:text-green-400 ml-2">✓ Highly specific</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    placeholder="e.g., 29160, 90210, M5H 2N2"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    autoFocus
+                  />
+                </div>
+
+                {/* Nearby city input */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Nearby Major City
+                    <span className="text-xs text-gray-500 ml-2">(Optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={nearbyCity}
+                    onChange={(e) => setNearbyCity(e.target.value)}
+                    placeholder="e.g., near Brest, 20 miles from Paris"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  💡 <strong>Tip:</strong> Postal codes are the most reliable identifier. Even one additional detail helps!
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Step: Verifying (Wikipedia search) */}
           {step === 'verifying' && (
             <div className="py-8 text-center">
@@ -855,11 +1130,31 @@ Return ONLY the JSON array, no explanation.`;
                 </div>
               )}
 
-              <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
-                <p className="text-sm text-green-800 dark:text-green-200">
-                  ✨ After creation, Claude AI will automatically populate all town data
-                </p>
-              </div>
+              {/* Warning if Wikipedia verification failed */}
+              {!townInfo.url ? (
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-700 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-red-900 dark:text-red-100 mb-2">
+                        ⚠️ Could Not Verify This Town
+                      </p>
+                      <p className="text-sm text-red-800 dark:text-red-200 mb-3">
+                        Wikipedia couldn't find this town. If you proceed, Claude AI might populate data for the <strong>wrong town</strong> or <strong>hallucinate</strong> information.
+                      </p>
+                      <p className="text-sm font-medium text-red-900 dark:text-red-100">
+                        Are you absolutely sure this is "{townName}, {region || country}"?
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
+                  <p className="text-sm text-green-800 dark:text-green-200">
+                    ✨ After creation, Claude AI will automatically populate all town data
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -978,27 +1273,50 @@ Return ONLY the JSON array, no explanation.`;
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-6 flex items-center justify-end gap-3">
+              <div className="mt-6 flex items-center justify-between gap-3">
                 <button
                   onClick={handleAuditReject}
                   disabled={loading}
-                  className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                  className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
                 >
-                  Reject & Delete
+                  Delete & Start Over
                 </button>
-                <button
-                  onClick={handleAuditApprove}
-                  disabled={loading}
-                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  Approve & Finalize
-                </button>
+
+                <div className="flex gap-3">
+                  {auditResults.hasErrors ? (
+                    <>
+                      <button
+                        onClick={handleAuditApprove}
+                        disabled={loading}
+                        className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                      >
+                        <AlertTriangle className="w-4 h-4" />
+                        Accept Anyway
+                      </button>
+                      <button
+                        onClick={handleFixErrors}
+                        disabled={loading}
+                        className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                      >
+                        Fix Errors in Editor
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleAuditApprove}
+                      disabled={loading}
+                      className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      Approve & Finalize
+                    </button>
+                  )}
+                </div>
               </div>
 
               {auditResults.hasErrors && (
-                <p className="mt-3 text-xs text-red-600 dark:text-red-400 text-center">
-                  ⚠️ Errors detected - review carefully before approving
+                <p className="mt-3 text-sm text-blue-600 dark:text-blue-400 text-center">
+                  💡 Recommended: Click "Fix Errors in Editor" to correct issues before finalizing
                 </p>
               )}
             </div>
@@ -1036,6 +1354,11 @@ Return ONLY the JSON array, no explanation.`;
                   setRegion('');
                 } else if (step === 'region_dropdown') {
                   setStep('region_choice');
+                } else if (step === 'additional_info') {
+                  setStep('input');
+                  setPostalCode('');
+                  setNearbyCity('');
+                  setQuickSearchAttempted(false);
                 } else {
                   onClose();
                 }
@@ -1049,11 +1372,11 @@ Return ONLY the JSON array, no explanation.`;
             {step === 'input' && (
               <button
                 onClick={handleInitialSubmit}
-                disabled={loading || !townName.trim() || !country.trim()}
+                disabled={loading || !townName.trim() || !country.trim() || !region.trim()}
                 className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                Search & Verify
+                Create Town & Let AI Research
               </button>
             )}
 
@@ -1094,6 +1417,32 @@ Return ONLY the JSON array, no explanation.`;
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                 Continue
               </button>
+            )}
+
+            {step === 'additional_info' && (
+              <>
+                <button
+                  onClick={() => {
+                    // Go back to input to change town name
+                    setStep('input');
+                    setPostalCode('');
+                    setNearbyCity('');
+                    setQuickSearchAttempted(false);
+                  }}
+                  disabled={loading}
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  Start Over
+                </button>
+                <button
+                  onClick={externalSearchVerification}
+                  disabled={loading}
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                  Search Again
+                </button>
+              </>
             )}
 
             {step === 'confirm' && (

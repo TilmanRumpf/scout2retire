@@ -11,6 +11,15 @@ import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 import { isIOS } from '../../utils/platformDetection';
 import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
+import { VALID_CATEGORICAL_VALUES } from '../../utils/validation/categoricalValues';
+
+// Helper to format categorical values for display
+const formatCategoricalLabel = (value) => {
+  return value
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
 
 // Add Language Dropdown Component - multi-select with checkboxes
 const AddLanguageDropdown = ({ selectedLanguages = [], onChange, additionalLanguages, topLanguages }) => {
@@ -164,7 +173,7 @@ export default function OnboardingCulture() {
     cultural_importance: {
       dining_nightlife: 1,
       museums: 1,
-      cultural_events: 1
+      cultural_events: 'occasional'  // Changed from importance (1) to frequency ('occasional')
     },
     lifestyle_preferences: {
       pace_of_life_preference: [],
@@ -281,13 +290,22 @@ export default function OnboardingCulture() {
             },
             cultural_importance: {
               // Handle legacy data: combine restaurants and nightlife if they exist separately
-              dining_nightlife: progressResult.data.culture_preferences.cultural_importance?.dining_nightlife || 
-                                (progressResult.data.culture_preferences.cultural_importance?.restaurants && progressResult.data.culture_preferences.cultural_importance?.nightlife 
-                                  ? Math.round((progressResult.data.culture_preferences.cultural_importance.restaurants + 
+              dining_nightlife: progressResult.data.culture_preferences.cultural_importance?.dining_nightlife ||
+                                (progressResult.data.culture_preferences.cultural_importance?.restaurants && progressResult.data.culture_preferences.cultural_importance?.nightlife
+                                  ? Math.round((progressResult.data.culture_preferences.cultural_importance.restaurants +
                                                progressResult.data.culture_preferences.cultural_importance.nightlife) / 2)
                                   : 1),
               museums: progressResult.data.culture_preferences.cultural_importance?.museums || 1,
-              cultural_events: progressResult.data.culture_preferences.cultural_importance?.cultural_events || 1
+              // cultural_events: Handle backward compatibility - convert old integers to new strings
+              cultural_events: (() => {
+                const value = progressResult.data.culture_preferences.cultural_importance?.cultural_events;
+                if (!value) return 'occasional';
+                // If already string (new format), use as-is
+                if (typeof value === 'string') return value;
+                // Convert old integer format to new string format
+                const mapping = { 1: 'occasional', 3: 'regular', 5: 'frequent' };
+                return mapping[value] || 'occasional';
+              })()
             }
           };
           setFormData(loadedData);
@@ -429,19 +447,17 @@ export default function OnboardingCulture() {
     { id: 'museums', label: 'Museums & Arts', icon: Building }
   ];
 
-  // Expat community options
-  const expatOptions = [
-    { value: 'small', label: 'Small' },
-    { value: 'moderate', label: 'Moderate' },
-    { value: 'large', label: 'Large' }
-  ];
+  // Expat community options - DYNAMIC from categoricalValues.js (RULE #2: NO HARDCODING)
+  const expatOptions = VALID_CATEGORICAL_VALUES.expat_community_size.map(value => ({
+    value,
+    label: formatCategoricalLabel(value)
+  }));
 
-  // Pace of life options
-  const paceOptions = [
-    { value: 'relaxed', label: 'Relaxed' },
-    { value: 'moderate', label: 'Moderate' },
-    { value: 'fast', label: 'Fast' }
-  ];
+  // Pace of life options - DYNAMIC from categoricalValues.js (RULE #2: NO HARDCODING)
+  const paceOptions = VALID_CATEGORICAL_VALUES.pace_of_life_actual.map(value => ({
+    value,
+    label: formatCategoricalLabel(value)
+  }));
 
   // Language preference options
   const languageOptions = [
@@ -450,12 +466,11 @@ export default function OnboardingCulture() {
     { value: 'will_learn', label: 'Will Learn' }
   ];
 
-  // Urban/Rural options
-  const urbanOptions = [
-  { value: 'rural', label: 'Rural' },
-  { value: 'suburban', label: 'Suburban' },
-  { value: 'urban', label: 'Urban' }
-  ];
+  // Urban/Rural options - DYNAMIC from categoricalValues.js (RULE #2: NO HARDCODING)
+  const urbanOptions = VALID_CATEGORICAL_VALUES.urban_rural_character.map(value => ({
+    value,
+    label: formatCategoricalLabel(value)
+  }));
 
 
 
@@ -568,22 +583,30 @@ export default function OnboardingCulture() {
             <div className="space-y-3">
               {culturalCategories.map((category) => {
                 const value = formData.cultural_importance[category.id];
-                const importanceOptions = [
+
+                // cultural_events uses frequency (occasional, regular, frequent)
+                // Other categories use importance (1, 3, 5)
+                const options = category.id === 'cultural_events' ? [
+                  { value: 'occasional', label: 'Occasional', description: 'Monthly events' },
+                  { value: 'regular', label: 'Regular', description: 'Weekly events' },
+                  { value: 'frequent', label: 'Frequent', description: 'Daily events' }
+                ] : [
                   { value: 1, label: 'Not Important' },
                   { value: 3, label: 'Nice to Have' },
                   { value: 5, label: 'Very Important' }
                 ];
-                
+
                 return (
                   <div key={category.id}>
                     <label className={`${uiConfig.font.size.xs} ${uiConfig.colors.hint} block mb-2`}>
-                      {category.label}
+                      {category.id === 'cultural_events' ? 'Events & Concerts - How often?' : category.label}
                     </label>
                     <div className="grid grid-cols-2 min-[428px]:grid-cols-3 gap-2 sm:gap-3">
-                      {importanceOptions.map((option) => (
+                      {options.map((option) => (
                         <SelectionCard
                           key={option.value}
                           title={option.label}
+                          description={option.description}
                           isSelected={value === option.value}
                           onClick={() => handleImportanceChange(category.id, option.value)}
                           size="small"

@@ -18,6 +18,7 @@
 import { parsePreferences } from '../helpers/preferenceParser.js';
 import { compareIgnoreCase, includesIgnoreCase, normalize, arrayIncludesIgnoreCase } from '../helpers/stringUtils.js';
 import { REGION_SETTINGS } from '../config.js';
+import { VALID_CATEGORICAL_VALUES } from '../../validation/categoricalValues.js';
 
 // Helper function to calculate array overlap score
 function calculateArrayOverlap(userArray, townArray, maxScore = 100) {
@@ -146,8 +147,8 @@ export function calculateRegionScore(preferences, town) {
   // PART 2: GEOGRAPHIC FEATURES (Max 30 points)
   let geoScore = 0
 
-  // Define all possible geographic features
-  const ALL_GEO_FEATURES = ['coastal', 'mountain', 'island', 'lake', 'river', 'valley', 'desert', 'forest', 'plains']
+  // DYNAMIC: Use centralized geographic features from categoricalValues.js (RULE #2: NO HARDCODING)
+  const ALL_GEO_FEATURES = VALID_CATEGORICAL_VALUES.geographic_features_actual
   const userSelectedAllGeo = parsed.region.geographic_features.length === ALL_GEO_FEATURES.length &&
     ALL_GEO_FEATURES.every(f => arrayIncludesIgnoreCase(parsed.region.geographic_features, f))
 
@@ -217,8 +218,8 @@ export function calculateRegionScore(preferences, town) {
   // PART 3: VEGETATION TYPE (Max 20 points)
   let vegScore = 0
 
-  // Define all possible vegetation types
-  const ALL_VEG_TYPES = ['tropical', 'subtropical', 'mediterranean', 'forest', 'grassland', 'desert']
+  // DYNAMIC: Use centralized vegetation types from categoricalValues.js (RULE #2: NO HARDCODING)
+  const ALL_VEG_TYPES = VALID_CATEGORICAL_VALUES.vegetation_type_actual
   const userSelectedAllVeg = parsed.region.vegetation_types.length === ALL_VEG_TYPES.length &&
     ALL_VEG_TYPES.every(v => arrayIncludesIgnoreCase(parsed.region.vegetation_types, v))
 

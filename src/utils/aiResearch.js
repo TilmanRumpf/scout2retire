@@ -271,6 +271,10 @@ export async function researchFieldWithContext(townId, fieldName, townData, opti
     const searchContext = fieldDef?.search_terms ||
       `Research ${fieldName} for ${townData.town_name}, ${townData.country}`;
 
+    // Extract expected format from options or field definition
+    const expectedFormat = options.expectedFormat || fieldDef?.expected_format ||
+      (pattern.includes('Format:') ? pattern.split('Format:')[1].split('\n')[0].trim() : 'See pattern below');
+
     // SPECIAL HANDLING: Multi-dimensional fields
     const multiDimConfig = MULTI_DIMENSIONAL_FIELDS[fieldName];
     const multiDimInstructions = multiDimConfig ? `
@@ -297,7 +301,7 @@ FORMAT RULES:
 - Research actual local names - verify spelling and accuracy
 ` : '';
 
-    const prompt = `You are a data normalization expert for retirement town database.
+    const prompt = `You are an AI data auditor for a structured town-metadata database.
 
 TOWN INFORMATION:
 - Name: ${townData.town_name}
@@ -305,40 +309,85 @@ TOWN INFORMATION:
 - State/Region: ${townData.state_code || 'N/A'}
 
 FIELD: ${fieldName}
-Current value: ${townData[fieldName] || 'NULL/Empty'}
+Expected Format: ${expectedFormat || 'See below'}
+Current DB Value: ${townData[fieldName] || 'NULL/Empty'}
 
-YOUR TASK:
-${task}
+${task ? `FIELD PURPOSE: ${task}` : ''}
 ${multiDimInstructions}
 
-PATTERN ANALYSIS FROM SIMILAR TOWNS:
+PATTERN ANALYSIS FROM SIMILAR TOWNS (for reference only):
 ${pattern}
 
-SEARCH CONTEXT:
+SEARCH CONTEXT (use this for research):
 ${searchContext}
 
-NORMALIZATION RULES:
-1. Follow the exact format/pattern from similar towns
-2. Maintain data consistency across all towns
-3. 🚨 CRITICAL: If current value already matches pattern and looks correct, return it UNCHANGED
-4. For empty/NULL values, research and provide normalized data
-5. Rate confidence: high (verified data), limited (inferred), low (uncertain)
-6. DON'T suggest changes unless there's a real improvement to be made
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+YOUR JOB: Research, verify, and ONLY carefully improve the existing value.
+You must NOT blindly overwrite thoughtful human input.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-SPECIAL FIELD HANDLING:
-- image_url_1: Real Unsplash URL format: https://images.unsplash.com/photo-[id]?w=1200
-- cost_of_living_usd: MONTHLY cost in USD for SINGLE PERSON, comfortable lifestyle (typically 800-3000). Return integer only, no currency symbol or units. If sources show annual or couple costs, divide appropriately.
-- Numeric fields: Return number only, no units
-- Text fields: Concise, factual, consistent formatting
-- NULL: Only if data cannot be reliably determined
-${multiDimConfig ? `- ${fieldName}: MUST include multiple layers (see above)` : ''}
+1. RESEARCH WORKFLOW (for every field):
+   - Do real research about this town and field using search context
+   - Identify most reliable facts and canonical terms
+   - Use research to EVALUATE the existing current_db_value
 
-RESPONSE FORMAT (JSON only):
+2. TREAT EXISTING DATABASE VALUE AS A STRONG PRIOR:
+
+   Step A – Validate each part of current_db_value:
+   ✅ Correct – supported by research and matches expected format
+   ⚠️ Partially correct – somewhat supported but unclear
+   ❌ Incorrect – contradicts reliable sources
+
+   Step B – Prefer reuse over replacement:
+   - If current_db_value is correct → KEEP IT (normalize spacing/case, but keep same meaning)
+   - If parts are correct → Start from correct subset, add/remove based on research
+   - Never silently drop human-entered elements; if removing, explain WHY in notes
+   - Only fully replace when research CLEARLY shows it's wrong, incomplete, or misaligned
+
+   Step C – Multi-value fields (regions, tags, features):
+   - Begin with validated elements from current_db_value
+   - Add ONLY new elements clearly and strongly supported by research
+   - Avoid dumping every theoretically true label; prefer concise, meaningful set
+   - Keep order stable (append new items to end)
+
+3. CONFIDENCE AND SOURCE RULES:
+   - If based on verified research → source="research", confidence="high" or "limited"
+   - If guessing from patterns (weak research) → source="pattern", confidence="low" (MANDATORY)
+   - If no reliable info found → proposed_value=null or keep current, source="not_found", confidence="low"
+   - NEVER label high confidence if based on pattern guessing
+
+4. SPECIAL FIELD HANDLING:
+   - image_url_1: Real Unsplash URL format: https://images.unsplash.com/photo-[id]?w=1200
+   - cost_of_living_usd: MONTHLY cost in USD for SINGLE PERSON (typically 800-3000). Integer only.
+   - Numeric fields: Number only, no units
+   - Text fields: Concise, factual, consistent formatting
+   ${multiDimConfig ? `- ${fieldName}: MUST include multiple layers (see above)` : ''}
+
+RESPONSE FORMAT (JSON only - CRITICAL: Valid JSON with escaped strings):
 {
-  "suggestedValue": "normalized value or null",
-  "reasoning": "why this value (reference pattern/research)",
-  "confidence": "high/limited/low"
-}`;
+  "proposed_value": "<final suggested value in expected format>",
+  "factSummary": "Short factual paragraph about town/field (2-3 sentences from research)",
+  "confidence": "high | limited | low",
+  "source": "research | pattern | not_found",
+  "notes": "Explain how you evaluated current_db_value, what you kept, what you changed, and WHY."
+}
+
+⚠️ JSON FORMAT RULES:
+- All string values must be on a single line (no literal newlines inside strings)
+- Use proper JSON escaping for quotes and special characters
+- If you need to include line breaks in text, use spaces instead
+- Keep factSummary and notes concise (2-3 sentences max each)
+
+PRIORITY ORDER:
+1. Verify and reuse good human data
+2. Carefully improve when research justifies changes
+3. Only then replace or guess – clearly marked with low confidence
+
+⚠️ CRITICAL: DO NOT HALLUCINATE OR INVENT FACTS
+- ONLY include information you can verify from search_context or reliable knowledge
+- If uncertain about ANY detail (climate type, geographic features, etc.) → mark confidence="limited" or "low"
+- NEVER add speculative labels like "Mediterranean" without clear evidence
+- When in doubt, be conservative - less is more`;
 
     // Step 4: Call Anthropic API directly
     const response = await anthropic.messages.create({
@@ -360,7 +409,42 @@ RESPONSE FORMAT (JSON only):
       throw new Error('AI response did not contain valid JSON');
     }
 
-    const result = JSON.parse(jsonMatch[0]);
+    // Clean the JSON string - remove control characters but preserve intentional newlines in strings
+    let jsonString = jsonMatch[0];
+
+    // Parse with better error handling
+    let result;
+    try {
+      result = JSON.parse(jsonString);
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      console.error('Problematic JSON:', jsonString.substring(0, 500));
+
+      // Try to fix common issues
+      // Replace literal newlines inside strings with \n
+      jsonString = jsonString.replace(/("\w+"\s*:\s*")([^"]*?)"/g, (match, prefix, content) => {
+        // Fix newlines and control characters in string values
+        const cleaned = content
+          .replace(/\n/g, ' ')
+          .replace(/\r/g, '')
+          .replace(/\t/g, ' ')
+          .replace(/[\x00-\x1F\x7F]/g, ''); // Remove all control characters
+        return prefix + cleaned + '"';
+      });
+
+      try {
+        result = JSON.parse(jsonString);
+        console.log('✅ Successfully parsed after cleaning');
+      } catch (secondError) {
+        throw new Error(`Failed to parse AI response: ${secondError.message}. Response: ${jsonString.substring(0, 200)}`);
+      }
+    }
+
+    // ENFORCE RULE: pattern or not_found → confidence MUST be low
+    if ((result.source === 'pattern' || result.source === 'not_found') && result.confidence !== 'low') {
+      console.warn(`⚠️ ENFORCING RULE: source="${result.source}" requires confidence="low" (was "${result.confidence}")`);
+      result.confidence = 'low';
+    }
 
     console.log('✅ AI Research completed:', result);
 
@@ -402,11 +486,13 @@ RESPONSE FORMAT (JSON only):
 
     return {
       success: true,
-      suggestedValue: result.suggestedValue,
+      suggestedValue: result.proposed_value || result.suggestedValue, // Support both old and new format
+      factSummary: result.factSummary || 'No fact summary provided',
+      source: result.source || 'research', // Default to research if not specified
       confidence: result.confidence || 'limited',
-      reasoning: result.reasoning || 'AI-generated suggestion',
+      reasoning: result.notes || result.reasoning || 'AI-generated suggestion', // Support both old and new format
       patternCount: similarTowns.length,
-      fieldDefinition: fieldDef?.audit_question || null // FIX: Safe null handling
+      fieldDefinition: fieldDef?.audit_question || null
     };
 
   } catch (error) {

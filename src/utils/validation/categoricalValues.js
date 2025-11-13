@@ -27,84 +27,67 @@ export const VALID_CATEGORICAL_VALUES = {
     'very_strong'     // Exceptional retirement community presence
   ],
 
-  // Sunshine level
-  // Original: ['low', 'balanced', 'high']
-  // Actual usage: Descriptive terms more intuitive for users
+  // Sunshine level - MATCHES USER ONBOARDING OPTIONS
+  // Only 3 values match onboarding UI: often_sunny, balanced, less_sunny
   sunshine_level_actual: [
-    'low',           // Limited sunshine
-    'less_sunny',    // Below average sunshine
+    'often_sunny',   // Very sunny most of the time
     'balanced',      // Moderate sunshine
-    'high',          // Above average sunshine
-    'often_sunny'    // Very sunny most of the time
+    'less_sunny'     // Below average sunshine
   ],
 
-  // Precipitation level
-  // Original: ['low', 'balanced', 'high']
-  // Actual usage: Clearer descriptors for rain levels
+  // Precipitation level - MATCHES USER ONBOARDING OPTIONS
+  // Only 3 values match onboarding UI: mostly_dry, balanced, less_dry
   precipitation_level_actual: [
-    'low',           // Very little rainfall
     'mostly_dry',    // Below average rainfall
     'balanced',      // Moderate rainfall
-    'high',          // Above average rainfall
-    'less_dry'       // Higher rainfall (opposite of mostly_dry)
+    'less_dry'       // Higher rainfall
   ],
 
-  // Pace of life - ⭐ HIGH IMPACT FIELD
-  // Original: ['slow', 'moderate', 'fast']
-  // Actual usage: "relaxed" captures nuance between slow and moderate
-  //               Used by 164 towns (48% of database)
+  // Pace of life - MATCHES USER ONBOARDING OPTIONS
+  // Only 3 values match onboarding UI: relaxed, moderate, fast
+  // Note: "relaxed" used by 164 towns (48% of database)
   pace_of_life_actual: [
-    'slow',          // Very laid-back, minimal hustle
-    'relaxed',       // ⭐ Comfortable pace, not rushed but not sluggish
+    'relaxed',       // Comfortable pace, not rushed
     'moderate',      // Balanced pace
     'fast'           // Bustling, energetic, fast-paced
   ],
 
-  // Seasonal variation
-  // Original: ['low', 'moderate', 'high']
-  // Actual usage: More descriptive terms for seasonal changes
+  // Seasonal preference - MATCHES USER ONBOARDING OPTIONS
+  // Updated: 2025-11-13 - Migrated all 352 towns to match user preference format
+  // Previous values (minimal, moderate, high, extreme, distinct_seasons) described
+  // "how much seasons vary" but user preference asks "which seasons do you prefer"
+  // Smart classification based on winter_climate_actual completed
   seasonal_variation_actual: [
-    'low',              // Minimal seasonal change
-    'minimal',          // Very little variation year-round
-    'moderate',         // Noticeable but not extreme
-    'distinct_seasons', // Clear four-season experience
-    'high',             // Significant seasonal differences
-    'extreme'           // Dramatic seasonal variation
+    'all_seasons',      // Experiences distinct seasons (218 towns)
+    'summer_focused',   // Warm/mild year-round (134 towns)
+    'winter_focused'    // Cool/cold year-round (0 towns currently)
   ],
 
-  // Cultural events frequency
-  // Original: ['rare', 'occasional', 'frequent', 'constant']
-  // Actual usage: Specific frequencies more useful
+  // Cultural events frequency - MATCHES USER ONBOARDING & TOWN DATA
+  // Updated: 2025-11-13 - Consolidated from 7 values to 3 for 1:1 matching
+  // User preference matches town data for accurate algorithm scoring
   cultural_events_frequency: [
-    'rare',        // Few events per year
-    'occasional',  // A few times per month
-    'monthly',     // Events every month
-    'frequent',    // Multiple events per month
-    'weekly',      // Events every week
-    'constant',    // Events very frequently
-    'daily'        // Daily cultural activities
+    'occasional',  // Monthly events (30 towns)
+    'regular',     // Weekly events (28 towns)
+    'frequent'     // Daily events (1 town)
   ],
 
-  // Social atmosphere
-  // Original: ['reserved', 'moderate', 'friendly', 'very friendly']
-  // Actual usage: Additional descriptors for ambiance
+  // Social atmosphere - CONSOLIDATED TO 3 VALUES
+  // Updated: 2025-11-13 - Reduced from 6 to 3 for clarity
+  // Migrated 22 towns: moderate → friendly
   social_atmosphere: [
-    'reserved',      // Formal, less outgoing
-    'quiet',         // Peaceful, low-key social scene
-    'moderate',      // Balanced social energy
-    'friendly',      // Welcoming, approachable
-    'vibrant',       // Lively, energetic social scene
-    'very friendly'  // Exceptionally warm and welcoming
+    'quiet',         // Peaceful, low-key social scene (4 towns)
+    'friendly',      // Welcoming, comfortable social energy (68 towns)
+    'vibrant'        // Lively, energetic social scene (8 towns)
   ],
 
-  // Traditional vs progressive lean
-  // Original: ['traditional', 'moderate', 'progressive']
-  // Actual usage: "balanced" is distinct from "moderate"
+  // Traditional vs progressive lean - CONSOLIDATED TO 3 VALUES
+  // Updated: 2025-11-13 - Reduced from 4 to 3 for clarity
+  // Migrated 11 towns: moderate → balanced
   traditional_progressive_lean: [
-    'traditional',   // Conservative, traditional values
-    'moderate',      // Leans slightly traditional
-    'balanced',      // Equal mix of traditional and progressive
-    'progressive'    // Forward-thinking, liberal values
+    'traditional',   // Conservative, traditional values (35 towns)
+    'balanced',      // Equal mix of traditional and progressive (39 towns)
+    'progressive'    // Forward-thinking, liberal values (6 towns)
   ],
 
   // Expat community size
@@ -123,30 +106,30 @@ export const VALID_CATEGORICAL_VALUES = {
     'native'
   ],
 
-  // Urban/rural character
+  // Urban/rural character - MATCHES USER ONBOARDING OPTIONS
+  // Only 3 values match onboarding UI: rural, suburban, urban (in that order)
   urban_rural_character: [
-    'urban',
-    'suburban',
     'rural',
-    'remote'
+    'suburban',
+    'urban'
   ],
 
   // Summer climate descriptors
+  // Only 3 values used: mild (71 towns), warm (146 towns), hot (135 towns)
+  // Verified Nov 12, 2025 - no towns use 'cold' or 'cool'
   summer_climate_actual: [
-    'cold',
-    'cool',
     'mild',
     'warm',
     'hot'
   ],
 
   // Winter climate descriptors
+  // Only 3 values: cold, cool, mild
+  // For warm year-round climates, use 'mild'
   winter_climate_actual: [
     'cold',
     'cool',
-    'mild',
-    'warm',
-    'hot'
+    'mild'
   ],
 
   // Humidity level
@@ -212,6 +195,31 @@ export const VALID_CATEGORICAL_VALUES = {
     'moderate',
     'high',
     'very_high'
+  ],
+
+  // Geographic features - used in region preferences and scoring
+  // Updated: 2025-11-13 - Centralized from regionScoring.js (RULE #2: NO HARDCODING)
+  geographic_features_actual: [
+    'coastal',
+    'mountain',
+    'island',
+    'lake',
+    'river',
+    'valley',
+    'desert',
+    'forest',
+    'plains'
+  ],
+
+  // Vegetation types - used in region preferences and scoring
+  // Updated: 2025-11-13 - Centralized from regionScoring.js (RULE #2: NO HARDCODING)
+  vegetation_type_actual: [
+    'tropical',
+    'subtropical',
+    'mediterranean',
+    'forest',
+    'grassland',
+    'desert'
   ]
 };
 

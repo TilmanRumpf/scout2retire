@@ -150,9 +150,20 @@ export default function TownPhotoUpload({ town, onPhotoUpdate }) {
       // Step 8: Reload images from database
       await loadImages();
 
-      // Step 9: Notify parent (trigger will sync towns.image_url_1)
-      if (onPhotoUpdate) {
-        onPhotoUpdate(town.id);
+      // Step 9: Fetch updated town data (trigger synced towns.image_url_1/2/3)
+      const { data: updatedTown, error: fetchError } = await supabase
+        .from('towns')
+        .select('image_url_1, image_url_2, image_url_3')
+        .eq('id', town.id)
+        .single();
+
+      if (fetchError) {
+        console.error('Failed to fetch updated town:', fetchError);
+      }
+
+      // Step 10: Notify parent with updated image URLs
+      if (onPhotoUpdate && updatedTown) {
+        onPhotoUpdate(updatedTown);
       }
 
       const sizeKB = (optimizedFile.size / 1024).toFixed(1);
@@ -190,9 +201,20 @@ export default function TownPhotoUpload({ town, onPhotoUpdate }) {
       // Reload images (trigger handles promotion)
       await loadImages();
 
-      // Notify parent
-      if (onPhotoUpdate) {
-        onPhotoUpdate(town.id);
+      // Fetch updated town data (trigger synced towns.image_url_1/2/3)
+      const { data: updatedTown, error: fetchError } = await supabase
+        .from('towns')
+        .select('image_url_1, image_url_2, image_url_3')
+        .eq('id', town.id)
+        .single();
+
+      if (fetchError) {
+        console.error('Failed to fetch updated town:', fetchError);
+      }
+
+      // Notify parent with updated image URLs
+      if (onPhotoUpdate && updatedTown) {
+        onPhotoUpdate(updatedTown);
       }
 
       toast.success('Image deleted');
@@ -317,9 +339,22 @@ export default function TownPhotoUpload({ town, onPhotoUpdate }) {
       // Reload to confirm
       await loadImages();
 
-      // Notify parent (if primary changed)
-      if (updates[0].id !== images[0][IMAGE_CONFIG.COLUMNS.ID] && onPhotoUpdate) {
-        onPhotoUpdate(town.id);
+      // Fetch updated town data if primary changed (trigger synced towns.image_url_1/2/3)
+      if (updates[0].id !== images[0][IMAGE_CONFIG.COLUMNS.ID]) {
+        const { data: updatedTown, error: fetchError } = await supabase
+          .from('towns')
+          .select('image_url_1, image_url_2, image_url_3')
+          .eq('id', town.id)
+          .single();
+
+        if (fetchError) {
+          console.error('Failed to fetch updated town:', fetchError);
+        }
+
+        // Notify parent with updated image URLs
+        if (onPhotoUpdate && updatedTown) {
+          onPhotoUpdate(updatedTown);
+        }
       }
 
       toast.success('Photos reordered');

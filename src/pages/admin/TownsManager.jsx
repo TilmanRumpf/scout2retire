@@ -876,8 +876,9 @@ const TownsManager = () => {
 
     // VALIDATION: Cannot publish town without primary image
     if (newPublishedState && !town.image_url_1) {
-      toast.error('❌ Cannot publish town without a primary image! Upload a photo first.', {
-        duration: 5000
+      toast.error('⚠️ Image is missing - cannot publish town without a primary image!', {
+        duration: 5000,
+        icon: '🚫'
       });
       return;
     }
@@ -1019,7 +1020,7 @@ const TownsManager = () => {
   };
 
   // Handle town updates from inline editing panels
-  const handleTownUpdate = (field, newValue) => {
+  const handleTownUpdate = async (field, newValue) => {
     if (!selectedTown) return;
 
     // Update the selected town state with the new field value
@@ -1041,6 +1042,16 @@ const TownsManager = () => {
         ? { ...town, [field]: newValue }
         : town
     ));
+
+    // Reload audit data to pick up manual audit status changes
+    try {
+      const { loadAuditResults } = await import('../../utils/auditTown');
+      const results = await loadAuditResults(selectedTown.id, supabase);
+      setAuditResults(results);
+      console.log('✅ Audit data reloaded after update:', results);
+    } catch (error) {
+      console.error('Error reloading audit results:', error);
+    }
   };
 
   // Load audit results from database when town is selected
@@ -1945,9 +1956,16 @@ const TownsManager = () => {
                             `}
                           />
                         </button>
-                        <span className={`text-xs font-medium ${selectedTown.is_published ? 'text-green-600 dark:text-green-400' : !selectedTown.image_url_1 ? 'text-red-500 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
-                          {selectedTown.is_published ? 'Published' : !selectedTown.image_url_1 ? 'No Image' : 'Unpublished'}
-                        </span>
+                        <div className="flex flex-col">
+                          <span className={`text-xs font-medium ${selectedTown.is_published ? 'text-green-600 dark:text-green-400' : !selectedTown.image_url_1 ? 'text-red-500 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                            {selectedTown.is_published ? 'Published' : !selectedTown.image_url_1 ? 'Cannot Publish' : 'Unpublished'}
+                          </span>
+                          {!selectedTown.is_published && !selectedTown.image_url_1 && (
+                            <span className="text-xs text-red-500 dark:text-red-400">
+                              ⚠️ Image missing
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 lg:gap-3">

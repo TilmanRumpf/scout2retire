@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { uiConfig } from '../../styles/uiConfig';
 import { isIOS } from '../../utils/platformDetection';
 import { SelectionCard, SelectionGrid, SelectionSection } from '../../components/onboarding/SelectionCard';
+import { ADMIN_QUALITY_LEVELS } from '../../utils/config/userPreferenceOptions';
 
 // Health Select Component - using centralized button standards
 const HealthSelect = ({ value, onChange, name, label, options }) => {
@@ -294,12 +295,8 @@ export default function OnboardingAdministration() {
     );
   }
 
-  // Standardized options for all quality selections
-  const qualityOptions = [
-    { value: 'good', label: 'Good' },
-    { value: 'functional', label: 'Functional' },
-    { value: 'basic', label: 'Basic' }
-  ];
+  // DYNAMIC: Quality options from centralized config (RULE #2: NO HARDCODING)
+  const qualityOptions = ADMIN_QUALITY_LEVELS;
 
   const stayDurationOptions = [
     { value: 'short', label: '1-2 Years' },
