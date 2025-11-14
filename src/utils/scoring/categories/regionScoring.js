@@ -19,6 +19,11 @@ import { parsePreferences } from '../helpers/preferenceParser.js';
 import { compareIgnoreCase, includesIgnoreCase, normalize, arrayIncludesIgnoreCase } from '../helpers/stringUtils.js';
 import { REGION_SETTINGS } from '../config.js';
 import { VALID_CATEGORICAL_VALUES } from '../../validation/categoricalValues.js';
+import { scoreWithAdjacency } from '../helpers/adjacencyMatcher.js';
+import {
+  GEOGRAPHIC_FEATURES_ADJACENCY,
+  VEGETATION_ADJACENCY
+} from '../config/adjacencyRules.js';
 
 // Helper function to calculate array overlap score
 function calculateArrayOverlap(userArray, townArray, maxScore = 100) {
@@ -179,35 +184,34 @@ export function calculateRegionScore(preferences, town) {
       geoScore = 30
       factors.push({ factor: 'Geographic features match', score: 30 })
     } else {
-      // IMPROVED: Give partial credit for related geographic features
+      // IMPROVED: Give partial credit for related geographic features using centralized helper
       // Water features are somewhat interchangeable for lifestyle purposes
-      const relatedFeatures = {
-        'coastal': ['island', 'lake', 'river'],  // All water access
-        'island': ['coastal'],  // Islands are inherently coastal
-        'lake': ['coastal', 'river'],  // Water features
-        'river': ['lake', 'coastal'],  // Water features
-        'mountain': ['valley', 'forest'],  // Often found together
-        'valley': ['mountain', 'river'],  // Valleys often have rivers
-        'forest': ['mountain', 'valley'],  // Forest areas
-        'plains': ['valley'],  // Similar flat terrain
-        'desert': []  // Desert is unique
-      }
-
-      let partialMatch = false
       if (town.geographic_features_actual?.length) {
         const townFeatures = town.geographic_features_actual.map(f => normalize(String(f)))
-        for (const userFeature of userFeatures) {
-          const related = relatedFeatures[userFeature] || []
-          if (townFeatures.some(tf => related.includes(tf))) {
-            geoScore = 15  // 50% credit for related features
-            factors.push({ factor: 'Related geographic features (partial match)', score: 15 })
-            partialMatch = true
-            break
+        // Check each town feature against all user features for adjacency
+        let adjacencyScore = 0
+        for (const townFeature of townFeatures) {
+          const featureScore = scoreWithAdjacency({
+            userValues: userFeatures, // array of user features
+            townValue: townFeature,   // single town feature
+            maxPoints: 30,
+            adjacencyMap: GEOGRAPHIC_FEATURES_ADJACENCY,
+            adjacentFactor: 0.50,
+            treatEmptyAsOpen: false
+          })
+          if (featureScore > adjacencyScore) {
+            adjacencyScore = featureScore
+            break // Found a match, use it
           }
         }
-      }
 
-      if (!partialMatch) {
+        if (adjacencyScore > 0) {
+          geoScore = adjacencyScore
+          factors.push({ factor: 'Related geographic features (partial match)', score: adjacencyScore })
+        } else {
+          factors.push({ factor: 'No geographic feature match', score: 0 })
+        }
+      } else {
         factors.push({ factor: 'No geographic feature match', score: 0 })
       }
     }
@@ -246,28 +250,28 @@ export function calculateRegionScore(preferences, town) {
       vegScore = 20
       factors.push({ factor: 'Vegetation type match', score: 20 })
     } else {
-      // IMPROVED: Give partial credit for related vegetation types
+      // IMPROVED: Give partial credit for related vegetation types using centralized helper
       // Mediterranean is related to subtropical (both warm, dry climates)
-      const relatedVegetation = {
-        'mediterranean': ['subtropical'],
-        'subtropical': ['mediterranean', 'tropical'],
-        'tropical': ['subtropical'],
-        'forest': ['grassland'],
-        'grassland': ['forest']
-      }
-
-      let partialMatch = false
-      for (const userVegType of userVeg) {
-        const related = relatedVegetation[userVegType] || []
-        if (townVeg.some(tv => related.includes(tv))) {
-          vegScore = 10  // 50% credit for related vegetation
-          factors.push({ factor: 'Related vegetation type (partial match)', score: 10 })
-          partialMatch = true
-          break
+      let adjacencyScore = 0
+      for (const townVegType of townVeg) {
+        const vegScore = scoreWithAdjacency({
+          userValues: userVeg,      // array of user vegetation types
+          townValue: townVegType,   // single town vegetation type
+          maxPoints: 20,
+          adjacencyMap: VEGETATION_ADJACENCY,
+          adjacentFactor: 0.50,
+          treatEmptyAsOpen: false
+        })
+        if (vegScore > adjacencyScore) {
+          adjacencyScore = vegScore
+          break // Found a match, use it
         }
       }
 
-      if (!partialMatch) {
+      if (adjacencyScore > 0) {
+        vegScore = adjacencyScore
+        factors.push({ factor: 'Related vegetation type (partial match)', score: adjacencyScore })
+      } else {
         factors.push({ factor: 'No vegetation match', score: 0 })
       }
     }

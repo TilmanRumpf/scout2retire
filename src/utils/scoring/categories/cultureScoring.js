@@ -24,27 +24,43 @@
 import { parsePreferences } from '../helpers/preferenceParser.js';
 import { mapCultureValue } from '../helpers/cultureInference.js';
 import { compareIgnoreCase, includesIgnoreCase } from '../helpers/stringUtils.js';
+import { scoreWithAdjacency } from '../helpers/adjacencyMatcher.js';
+import {
+  URBAN_RURAL_ADJACENCY,
+  PACE_OF_LIFE_ADJACENCY,
+  EXPAT_COMMUNITY_ADJACENCY,
+  TRADITIONAL_PROGRESSIVE_ADJACENCY,  // V2
+  SOCIAL_ATMOSPHERE_ADJACENCY         // V2
+} from '../config/adjacencyRules.js';
+import { FEATURE_FLAGS } from '../config.js';
 
-// Adjacency maps for gradual scoring
-const CULTURE_ADJACENCY = {
-  urban_rural_preference: {
-    'urban': ['suburban'],
-    'suburban': ['urban', 'rural'],
-    'rural': ['suburban']
-  },
-  pace_of_life_preference: {
-    'fast': ['moderate'],
-    'moderate': ['fast', 'relaxed'],
-    'relaxed': ['moderate']
-  },
-  expat_community: {
-    'large': ['moderate'],
-    'moderate': ['large', 'small'],
-    'small': ['moderate']
-  }
-}
+// V1 Point Allocation (100 points total)
+const POINTS_V1 = {
+  LIVING_ENVIRONMENT: 20,
+  PACE: 20,
+  LANGUAGE: 20,
+  EXPAT: 10,
+  DINING: 10,
+  EVENTS: 10,
+  MUSEUMS: 10
+};
+
+// V2 Point Allocation (100 points total) - Added Nov 14, 2025
+const POINTS_V2 = {
+  LIVING_ENVIRONMENT: 15,       // Reduced from 20
+  PACE: 15,                     // Reduced from 20
+  LANGUAGE: 15,                 // Reduced from 20
+  TRADITIONAL_PROGRESSIVE: 10,  // NEW
+  SOCIAL_ATMOSPHERE: 10,        // NEW
+  EXPAT: 10,
+  DINING: 10,
+  EVENTS: 10,
+  MUSEUMS: 10
+};
 
 export function calculateCultureScore(preferences, town) {
+  // Choose point allocation based on feature flag
+  const POINTS = FEATURE_FLAGS.ENABLE_CULTURE_V2_SCORING ? POINTS_V2 : POINTS_V1;
   let score = 0
   let factors = []
 
@@ -78,17 +94,19 @@ export function calculateCultureScore(preferences, town) {
         factors.push({ factor: `Living environment matched (${standardizedUrbanRural})`, score: 20 })
       }
     } else {
-      // Check for adjacent match
-      let isAdjacent = false
-      for (const pref of livingEnvPref) {
-        if (CULTURE_ADJACENCY.urban_rural_preference[pref]?.includes(standardizedUrbanRural)) {
-          isAdjacent = true
-          break
-        }
-      }
-      if (isAdjacent) {
-        score += 10
-        factors.push({ factor: `Living environment close match (${standardizedUrbanRural})`, score: 10 })
+      // Check for adjacent match using centralized helper
+      const urbanRuralScore = scoreWithAdjacency({
+        userValues: livingEnvPref,
+        townValue: standardizedUrbanRural,
+        maxPoints: 20,
+        adjacencyMap: URBAN_RURAL_ADJACENCY,
+        adjacentFactor: 0.50,
+        treatEmptyAsOpen: false
+      })
+
+      if (urbanRuralScore > 0) {
+        score += urbanRuralScore
+        factors.push({ factor: `Living environment close match (${standardizedUrbanRural})`, score: urbanRuralScore })
       } else {
         factors.push({ factor: `Living environment mismatch (${standardizedUrbanRural})`, score: 0 })
       }
@@ -121,17 +139,19 @@ export function calculateCultureScore(preferences, town) {
         factors.push({ factor: `Pace of life matched (${townPace})`, score: 20 })
       }
     } else {
-      // Check for adjacent match
-      let isAdjacent = false
-      for (const pref of pacePref) {
-        if (CULTURE_ADJACENCY.pace_of_life_preference[pref]?.includes(townPace)) {
-          isAdjacent = true
-          break
-        }
-      }
-      if (isAdjacent) {
-        score += 10
-        factors.push({ factor: `Pace of life close match (${townPace})`, score: 10 })
+      // Check for adjacent match using centralized helper
+      const paceScore = scoreWithAdjacency({
+        userValues: pacePref,
+        townValue: townPace,
+        maxPoints: 20,
+        adjacencyMap: PACE_OF_LIFE_ADJACENCY,
+        adjacentFactor: 0.50,
+        treatEmptyAsOpen: false
+      })
+
+      if (paceScore > 0) {
+        score += paceScore
+        factors.push({ factor: `Pace of life close match (${townPace})`, score: paceScore })
       } else {
         factors.push({ factor: `Pace of life mismatch (${townPace})`, score: 0 })
       }
@@ -223,17 +243,19 @@ export function calculateCultureScore(preferences, town) {
         factors.push({ factor: `Expat community matched (${standardizedExpat})`, score: 10 })
       }
     } else {
-      // Check for adjacent match
-      let isAdjacent = false
-      for (const pref of expatPrefs) {
-        if (CULTURE_ADJACENCY.expat_community[pref]?.includes(standardizedExpat)) {
-          isAdjacent = true
-          break
-        }
-      }
-      if (isAdjacent) {
-        score += 5
-        factors.push({ factor: `Expat community close match (${town.expat_community_size})`, score: 5 })
+      // Check for adjacent match using centralized helper
+      const expatScore = scoreWithAdjacency({
+        userValues: expatPrefs,
+        townValue: standardizedExpat,
+        maxPoints: 10,
+        adjacencyMap: EXPAT_COMMUNITY_ADJACENCY,
+        adjacentFactor: 0.50,
+        treatEmptyAsOpen: false
+      })
+
+      if (expatScore > 0) {
+        score += expatScore
+        factors.push({ factor: `Expat community close match (${town.expat_community_size})`, score: expatScore })
       } else {
         factors.push({ factor: `Expat community mismatch (${town.expat_community_size})`, score: 0 })
       }
@@ -390,7 +412,74 @@ export function calculateCultureScore(preferences, town) {
     score += 5
     factors.push({ factor: 'Museums data unavailable', score: 5 })
   }
-  
+
+  // V2 SCORING (only runs if feature flag enabled)
+  if (FEATURE_FLAGS.ENABLE_CULTURE_V2_SCORING) {
+    // 8. TRADITIONAL VS PROGRESSIVE LEAN (10 points) - V2
+    const traditionalProgressivePref = parsed.culture.traditionalProgressiveLean
+
+    if (!traditionalProgressivePref || traditionalProgressivePref.length === 0) {
+      // User doesn't care - 50% fallback
+      score += POINTS.TRADITIONAL_PROGRESSIVE * 0.5
+      factors.push({ factor: 'Flexible on traditional/progressive values', score: Math.round(POINTS.TRADITIONAL_PROGRESSIVE * 0.5) })
+    } else if (town.traditional_progressive_lean) {
+      // Check for exact or adjacent match
+      const traditionalScore = scoreWithAdjacency({
+        userValues: traditionalProgressivePref,
+        townValue: town.traditional_progressive_lean,
+        maxPoints: POINTS.TRADITIONAL_PROGRESSIVE,
+        adjacencyMap: TRADITIONAL_PROGRESSIVE_ADJACENCY,
+        adjacentFactor: 0.50,
+        treatEmptyAsOpen: false
+      })
+
+      score += traditionalScore
+      if (traditionalScore === POINTS.TRADITIONAL_PROGRESSIVE) {
+        factors.push({ factor: `Traditional/progressive matched (${town.traditional_progressive_lean})`, score: traditionalScore })
+      } else if (traditionalScore > 0) {
+        factors.push({ factor: `Traditional/progressive close match (${town.traditional_progressive_lean})`, score: traditionalScore })
+      } else {
+        factors.push({ factor: `Traditional/progressive mismatch (${town.traditional_progressive_lean})`, score: 0 })
+      }
+    } else {
+      // Town has no data - 50% fallback
+      score += POINTS.TRADITIONAL_PROGRESSIVE * 0.5
+      factors.push({ factor: 'Traditional/progressive data unavailable', score: Math.round(POINTS.TRADITIONAL_PROGRESSIVE * 0.5) })
+    }
+
+    // 9. SOCIAL ATMOSPHERE (10 points) - V2
+    const socialAtmospherePref = parsed.culture.socialAtmosphere
+
+    if (!socialAtmospherePref || socialAtmospherePref.length === 0) {
+      // User doesn't care - 50% fallback
+      score += POINTS.SOCIAL_ATMOSPHERE * 0.5
+      factors.push({ factor: 'Flexible on social atmosphere', score: Math.round(POINTS.SOCIAL_ATMOSPHERE * 0.5) })
+    } else if (town.social_atmosphere) {
+      // Check for exact or adjacent match
+      const socialScore = scoreWithAdjacency({
+        userValues: socialAtmospherePref,
+        townValue: town.social_atmosphere,
+        maxPoints: POINTS.SOCIAL_ATMOSPHERE,
+        adjacencyMap: SOCIAL_ATMOSPHERE_ADJACENCY,
+        adjacentFactor: 0.50,
+        treatEmptyAsOpen: false
+      })
+
+      score += socialScore
+      if (socialScore === POINTS.SOCIAL_ATMOSPHERE) {
+        factors.push({ factor: `Social atmosphere matched (${town.social_atmosphere})`, score: socialScore })
+      } else if (socialScore > 0) {
+        factors.push({ factor: `Social atmosphere close match (${town.social_atmosphere})`, score: socialScore })
+      } else {
+        factors.push({ factor: `Social atmosphere mismatch (${town.social_atmosphere})`, score: 0 })
+      }
+    } else {
+      // Town has no data - 50% fallback
+      score += POINTS.SOCIAL_ATMOSPHERE * 0.5
+      factors.push({ factor: 'Social atmosphere data unavailable', score: Math.round(POINTS.SOCIAL_ATMOSPHERE * 0.5) })
+    }
+  }
+
   return {
     score: Math.min(score, 100),
     factors,

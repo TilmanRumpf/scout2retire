@@ -22,6 +22,12 @@
 import { parsePreferences } from '../helpers/preferenceParser.js';
 import { mapToStandardValue } from '../helpers/climateInference.js';
 import { compareIgnoreCase, normalize, arrayIncludesIgnoreCase } from '../helpers/stringUtils.js';
+import { scoreWithAdjacency } from '../helpers/adjacencyMatcher.js';
+import {
+  HUMIDITY_ADJACENCY,
+  SUNSHINE_ADJACENCY,
+  PRECIPITATION_ADJACENCY
+} from '../config/adjacencyRules.js';
 
 // Temperature ranges for climate preferences (in Celsius)
 const TEMP_RANGES = {
@@ -62,73 +68,6 @@ function calculateTemperatureScore(actualTemp, preferredRange) {
   if (distance <= 5) return 50      // Within 5°C
   if (distance <= 10) return 20     // Within 10°C
   return 0                           // More than 10°C away
-}
-
-/**
- * Calculate gradual scoring for climate preferences using adjacency mapping
- * @param {string} userPref - User's preference
- * @param {string} townActual - Town's actual value
- * @param {number} maxPoints - Maximum points for perfect match
- * @param {Object} adjacencyMap - Map defining adjacent preferences
- * @returns {Object} Score and description
- */
-function calculateGradualClimateScore(userPref, townActual, maxPoints, adjacencyMap) {
-  if (!userPref || !townActual) return { score: 0, description: null }
-  
-  // Exact match
-  if (userPref === townActual) {
-    return {
-      score: maxPoints,
-      description: 'Perfect'
-    }
-  }
-  
-  // Check if preferences are adjacent
-  const adjacent = adjacencyMap[userPref]?.includes(townActual)
-  if (adjacent) {
-    return {
-      score: Math.round(maxPoints * 0.7), // 70% of max points
-      description: 'Good compatibility'
-    }
-  }
-  
-  // Opposite or no relationship
-  return {
-    score: 0,
-    description: 'Preference mismatch'
-  }
-}
-
-/**
- * Helper function for array-based climate preferences
- * @param {Array} userPrefs - User's preferences array
- * @param {string} townActual - Town's actual value
- * @param {number} maxPoints - Maximum points for perfect match
- * @param {Object} adjacencyMap - Map defining adjacent preferences
- * @returns {Object} Best score and description from all preferences
- */
-function calculateGradualClimateScoreForArray(userPrefs, townActual, maxPoints, adjacencyMap) {
-  if (!userPrefs?.length || !townActual) return { score: 0, description: null }
-  
-  let bestScore = 0
-  let bestDescription = null
-  let matchedPref = null
-  
-  // Check each user preference
-  for (const pref of userPrefs) {
-    const result = calculateGradualClimateScore(pref, townActual, maxPoints, adjacencyMap)
-    if (result.score > bestScore) {
-      bestScore = result.score
-      bestDescription = result.description
-      matchedPref = pref
-    }
-  }
-  
-  return {
-    score: bestScore,
-    description: bestDescription,
-    matchedPref: matchedPref
-  }
 }
 
 // 2. CLIMATE MATCHING (15% of total)
@@ -283,34 +222,32 @@ export function calculateClimateScore(preferences, town) {
       factors.push({ factor: 'Winter climate appears suitable', score: 13 })
     }
   }
-  
+
   // Humidity match (20 points) - now with gradual scoring
-  const humidityAdjacency = {
-    'dry': ['balanced'],
-    'balanced': ['dry', 'humid'],
-    'humid': ['balanced']
-  }
-  
+  // Using centralized adjacency rules from config/adjacencyRules.js
   if (town.humidity_level_actual && parsed.climate.humidity.length > 0) {
     // Map town value to standard category first
     const standardizedHumidity = mapToStandardValue(town.humidity_level_actual, 'humidity')
-    const humidityResult = calculateGradualClimateScoreForArray(
-      parsed.climate.humidity, 
-      standardizedHumidity, 
-      20, 
-      humidityAdjacency
-    )
-    
-    if (humidityResult.score > 0) {
-      score += humidityResult.score
-      const factorText = humidityResult.description === 'Perfect' ? 
-        'Perfect humidity match' : 
-        `Good humidity compatibility (${humidityResult.matchedPref} → ${standardizedHumidity})`
+    const humidityScore = scoreWithAdjacency({
+      userValues: parsed.climate.humidity,
+      townValue: standardizedHumidity,
+      maxPoints: 20,
+      adjacencyMap: HUMIDITY_ADJACENCY,
+      adjacentFactor: 0.70,
+      treatEmptyAsOpen: false
+    })
+
+    if (humidityScore > 0) {
+      score += humidityScore
+      const isPerfect = humidityScore === 20
+      const factorText = isPerfect ?
+        'Perfect humidity match' :
+        `Good humidity compatibility`
       // Add note if value was mapped
       if (town.humidity_level_actual !== standardizedHumidity) {
-        factors.push({ factor: `${factorText} [${town.humidity_level_actual} = ${standardizedHumidity}]`, score: humidityResult.score })
+        factors.push({ factor: `${factorText} [${town.humidity_level_actual} = ${standardizedHumidity}]`, score: humidityScore })
       } else {
-        factors.push({ factor: factorText, score: humidityResult.score })
+        factors.push({ factor: factorText, score: humidityScore })
       }
     }
   } else if (!town.humidity_level_actual && town.climate_description && parsed.climate.humidity?.length > 0) {
@@ -327,66 +264,58 @@ export function calculateClimateScore(preferences, town) {
     } else if (climateDesc.includes('mediterranean') || climateDesc.includes('temperate')) {
       inferredHumidity = 'balanced'
     }
-    
+
     if (inferredHumidity) {
-      const humidityResult = calculateGradualClimateScoreForArray(
-        parsed.climate.humidity, 
-        inferredHumidity, 
-        13, // Reduced points for inferred data
-        humidityAdjacency
-      )
-      
-      if (humidityResult.score > 0) {
-        score += humidityResult.score
-        factors.push({ 
-          factor: `Humidity appears suitable (${inferredHumidity}, inferred)`, 
-          score: humidityResult.score 
+      const humidityScore = scoreWithAdjacency({
+        userValues: parsed.climate.humidity,
+        townValue: inferredHumidity,
+        maxPoints: 13, // Reduced points for inferred data
+        adjacencyMap: HUMIDITY_ADJACENCY,
+        adjacentFactor: 0.70,
+        treatEmptyAsOpen: false
+      })
+
+      if (humidityScore > 0) {
+        score += humidityScore
+        factors.push({
+          factor: `Humidity appears suitable (${inferredHumidity}, inferred)`,
+          score: humidityScore
         })
       }
     }
   }
-  
+
   // Sunshine match (20 points) - now with gradual scoring
-  const sunshineAdjacency = {
-    // User preferences (what they can select)
-    'often_sunny': ['balanced', 'mostly_sunny', 'sunny', 'abundant'],
-    'balanced': ['often_sunny', 'mostly_sunny', 'sunny', 'abundant', 'less_sunny', 'partly_sunny', 'often_cloudy'],
-    'less_sunny': ['balanced', 'partly_sunny', 'often_cloudy'],
-    
-    // Town values (for reverse lookup - town value as key)
-    'sunny': ['often_sunny', 'balanced'],
-    'abundant': ['often_sunny', 'balanced'],
-    'mostly_sunny': ['often_sunny', 'balanced'],
-    'partly_sunny': ['balanced', 'less_sunny'],
-    'often_cloudy': ['balanced', 'less_sunny']
-  }
-  
+  // Using centralized adjacency rules from config/adjacencyRules.js
   if (town.sunshine_level_actual && parsed.climate.sunshine?.length > 0) {
     // Map town value to standard category first
     const standardizedSunshine = mapToStandardValue(town.sunshine_level_actual, 'sunshine')
-    const sunshineResult = calculateGradualClimateScoreForArray(
-      parsed.climate.sunshine, 
-      standardizedSunshine, 
-      20, 
-      sunshineAdjacency
-    )
-    
-    if (sunshineResult.score > 0) {
-      score += sunshineResult.score
-      const factorText = sunshineResult.description === 'Perfect' ? 
-        'Perfect sunshine match' : 
-        `Good sunshine compatibility (${sunshineResult.matchedPref} → ${standardizedSunshine})`
+    const sunshineScore = scoreWithAdjacency({
+      userValues: parsed.climate.sunshine,
+      townValue: standardizedSunshine,
+      maxPoints: 20,
+      adjacencyMap: SUNSHINE_ADJACENCY,
+      adjacentFactor: 0.70,
+      treatEmptyAsOpen: false
+    })
+
+    if (sunshineScore > 0) {
+      score += sunshineScore
+      const isPerfect = sunshineScore === 20
+      const factorText = isPerfect ?
+        'Perfect sunshine match' :
+        `Good sunshine compatibility`
       // Add note if value was mapped
       if (town.sunshine_level_actual !== standardizedSunshine) {
-        factors.push({ factor: `${factorText} [${town.sunshine_level_actual} = ${standardizedSunshine}]`, score: sunshineResult.score })
+        factors.push({ factor: `${factorText} [${town.sunshine_level_actual} = ${standardizedSunshine}]`, score: sunshineScore })
       } else {
-        factors.push({ factor: factorText, score: sunshineResult.score })
+        factors.push({ factor: factorText, score: sunshineScore })
       }
     }
   } else if (!town.sunshine_level_actual && town.sunshine_hours && parsed.climate.sunshine?.length > 0) {
     // Fallback: use sunshine_hours data
     let inferredSunshine = null
-    
+
     if (town.sunshine_hours > 2800) {
       inferredSunshine = 'often_sunny'
     } else if (town.sunshine_hours > 2200) {
@@ -394,20 +323,22 @@ export function calculateClimateScore(preferences, town) {
     } else if (town.sunshine_hours > 0) {
       inferredSunshine = 'less_sunny'
     }
-    
+
     if (inferredSunshine) {
-      const sunshineResult = calculateGradualClimateScoreForArray(
-        parsed.climate.sunshine, 
-        inferredSunshine, 
-        13, // Reduced points for inferred data
-        sunshineAdjacency
-      )
-      
-      if (sunshineResult.score > 0) {
-        score += sunshineResult.score
-        factors.push({ 
-          factor: `Sunshine appears suitable (${town.sunshine_hours}h/year, ${inferredSunshine})`, 
-          score: sunshineResult.score 
+      const sunshineScore = scoreWithAdjacency({
+        userValues: parsed.climate.sunshine,
+        townValue: inferredSunshine,
+        maxPoints: 13, // Reduced points for inferred data
+        adjacencyMap: SUNSHINE_ADJACENCY,
+        adjacentFactor: 0.70,
+        treatEmptyAsOpen: false
+      })
+
+      if (sunshineScore > 0) {
+        score += sunshineScore
+        factors.push({
+          factor: `Sunshine appears suitable (${town.sunshine_hours}h/year, ${inferredSunshine})`,
+          score: sunshineScore
         })
       }
     }
@@ -425,60 +356,58 @@ export function calculateClimateScore(preferences, town) {
     } else if (climateDesc.includes('cloudy') || climateDesc.includes('overcast') || climateDesc.includes('oceanic')) {
       inferredSunshine = 'less_sunny'
     }
-    
+
     if (inferredSunshine) {
-      const sunshineResult = calculateGradualClimateScoreForArray(
-        parsed.climate.sunshine, 
-        inferredSunshine, 
-        10, // Further reduced points for climate description inference
-        sunshineAdjacency
-      )
-      
-      if (sunshineResult.score > 0) {
-        score += sunshineResult.score
-        factors.push({ 
-          factor: `Sunshine appears suitable (${inferredSunshine}, inferred)`, 
-          score: sunshineResult.score 
+      const sunshineScore = scoreWithAdjacency({
+        userValues: parsed.climate.sunshine,
+        townValue: inferredSunshine,
+        maxPoints: 10, // Further reduced points for climate description inference
+        adjacencyMap: SUNSHINE_ADJACENCY,
+        adjacentFactor: 0.70,
+        treatEmptyAsOpen: false
+      })
+
+      if (sunshineScore > 0) {
+        score += sunshineScore
+        factors.push({
+          factor: `Sunshine appears suitable (${inferredSunshine}, inferred)`,
+          score: sunshineScore
         })
       }
     }
   }
-  
+
   // Precipitation match (10 points) - now with gradual scoring
-  const precipitationAdjacency = {
-    'mostly_dry': ['balanced'],
-    'dry': ['balanced'],           // Alternative spelling
-    'balanced': ['mostly_dry', 'dry', 'less_dry', 'wet'],
-    'less_dry': ['balanced'],
-    'wet': ['balanced']            // Alternative spelling
-  }
-  
+  // Using centralized adjacency rules from config/adjacencyRules.js
   if (town.precipitation_level_actual && parsed.climate.precipitation?.length > 0) {
     // Map town value to standard category first
     const standardizedPrecipitation = mapToStandardValue(town.precipitation_level_actual, 'precipitation')
-    const precipitationResult = calculateGradualClimateScoreForArray(
-      parsed.climate.precipitation, 
-      standardizedPrecipitation, 
-      10, 
-      precipitationAdjacency
-    )
-    
-    if (precipitationResult.score > 0) {
-      score += precipitationResult.score
-      const factorText = precipitationResult.description === 'Perfect' ? 
-        'Perfect precipitation match' : 
-        `Good precipitation compatibility (${precipitationResult.matchedPref} → ${standardizedPrecipitation})`
+    const precipitationScore = scoreWithAdjacency({
+      userValues: parsed.climate.precipitation,
+      townValue: standardizedPrecipitation,
+      maxPoints: 10,
+      adjacencyMap: PRECIPITATION_ADJACENCY,
+      adjacentFactor: 0.70,
+      treatEmptyAsOpen: false
+    })
+
+    if (precipitationScore > 0) {
+      score += precipitationScore
+      const isPerfect = precipitationScore === 10
+      const factorText = isPerfect ?
+        'Perfect precipitation match' :
+        `Good precipitation compatibility`
       // Add note if value was mapped
       if (town.precipitation_level_actual !== standardizedPrecipitation) {
-        factors.push({ factor: `${factorText} [${town.precipitation_level_actual} = ${standardizedPrecipitation}]`, score: precipitationResult.score })
+        factors.push({ factor: `${factorText} [${town.precipitation_level_actual} = ${standardizedPrecipitation}]`, score: precipitationScore })
       } else {
-        factors.push({ factor: factorText, score: precipitationResult.score })
+        factors.push({ factor: factorText, score: precipitationScore })
       }
     }
   } else if (!town.precipitation_level_actual && town.annual_rainfall && parsed.climate.precipitation?.length > 0) {
     // Fallback: use annual_rainfall data (in mm)
     let inferredPrecipitation = null
-    
+
     if (town.annual_rainfall < 400) {
       inferredPrecipitation = 'mostly_dry'
     } else if (town.annual_rainfall < 1000) {
@@ -486,19 +415,21 @@ export function calculateClimateScore(preferences, town) {
     } else {
       inferredPrecipitation = 'less_dry'
     }
-    
-    const precipitationResult = calculateGradualClimateScoreForArray(
-      parsed.climate.precipitation, 
-      inferredPrecipitation, 
-      7, // Reduced points for inferred data
-      precipitationAdjacency
-    )
-    
-    if (precipitationResult.score > 0) {
-      score += precipitationResult.score
-      factors.push({ 
-        factor: `Precipitation appears suitable (${town.annual_rainfall}mm/year, ${inferredPrecipitation})`, 
-        score: precipitationResult.score 
+
+    const precipitationScore = scoreWithAdjacency({
+      userValues: parsed.climate.precipitation,
+      townValue: inferredPrecipitation,
+      maxPoints: 7, // Reduced points for inferred data
+      adjacencyMap: PRECIPITATION_ADJACENCY,
+      adjacentFactor: 0.70,
+      treatEmptyAsOpen: false
+    })
+
+    if (precipitationScore > 0) {
+      score += precipitationScore
+      factors.push({
+        factor: `Precipitation appears suitable (${town.annual_rainfall}mm/year, ${inferredPrecipitation})`,
+        score: precipitationScore
       })
     }
   } else if (!town.precipitation_level_actual && !town.annual_rainfall && town.climate_description && parsed.climate.precipitation?.length > 0) {
@@ -515,20 +446,22 @@ export function calculateClimateScore(preferences, town) {
     } else if (climateDesc.includes('tropical') || climateDesc.includes('rainforest') || climateDesc.includes('wet')) {
       inferredPrecipitation = 'less_dry'
     }
-    
+
     if (inferredPrecipitation) {
-      const precipitationResult = calculateGradualClimateScoreForArray(
-        parsed.climate.precipitation, 
-        inferredPrecipitation, 
-        5, // Further reduced points for climate description inference
-        precipitationAdjacency
-      )
-      
-      if (precipitationResult.score > 0) {
-        score += precipitationResult.score
-        factors.push({ 
-          factor: `Precipitation appears suitable (${inferredPrecipitation}, inferred)`, 
-          score: precipitationResult.score 
+      const precipitationScore = scoreWithAdjacency({
+        userValues: parsed.climate.precipitation,
+        townValue: inferredPrecipitation,
+        maxPoints: 5, // Further reduced points for climate description inference
+        adjacencyMap: PRECIPITATION_ADJACENCY,
+        adjacentFactor: 0.70,
+        treatEmptyAsOpen: false
+      })
+
+      if (precipitationScore > 0) {
+        score += precipitationScore
+        factors.push({
+          factor: `Precipitation appears suitable (${inferredPrecipitation}, inferred)`,
+          score: precipitationScore
         })
       }
     }

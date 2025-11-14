@@ -118,6 +118,14 @@ export const HOBBIES_SETTINGS = {
 };
 
 // ============================================
+// FEATURE FLAGS
+// ============================================
+// Enable/disable experimental features for gradual rollout
+export const FEATURE_FLAGS = {
+  ENABLE_CULTURE_V2_SCORING: false  // V2: Adds traditional_progressive_lean + social_atmosphere scoring
+};
+
+// ============================================
 // DEBUG SETTINGS
 // ============================================
 export const DEBUG = {

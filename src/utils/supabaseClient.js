@@ -1,9 +1,12 @@
 // supabaseClient.js
 import { createClient } from '@supabase/supabase-js'
 
-// Get environment variables (Vite requires VITE_ prefix)
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// Get environment variables - support both Vite (import.meta.env) and Node.js (process.env)
+// This allows tests to run in Node.js while production uses Vite
+const supabaseUrl = (typeof import.meta.env !== 'undefined' && import.meta.env.VITE_SUPABASE_URL) ||
+                     (typeof process !== 'undefined' && process.env.VITE_SUPABASE_URL)
+const supabaseAnonKey = (typeof import.meta.env !== 'undefined' && import.meta.env.VITE_SUPABASE_ANON_KEY) ||
+                         (typeof process !== 'undefined' && process.env.VITE_SUPABASE_ANON_KEY)
 
 
 // Validate environment variables

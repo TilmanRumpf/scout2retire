@@ -106,6 +106,10 @@ function parseCulturePreferences(prefs) {
     culturalEventsFrequency: cultural.cultural_events || 'occasional',  // Now uses frequency strings
     museumsImportance: cultural.museums || 0,  // Still uses 1-5 scale
 
+    // V2 fields (added Nov 14, 2025 - Phase 2 Culture V2)
+    traditionalProgressiveLean: normalizeArray(prefs.traditional_progressive_lean),
+    socialAtmosphere: normalizeArray(prefs.social_atmosphere),
+
     // Helpers
     hasAnyPreferences: Boolean(
       lifestyle.urban_rural_preference?.length ||
@@ -114,7 +118,9 @@ function parseCulturePreferences(prefs) {
       language.preferences?.length ||
       cultural.dining_nightlife > 1 ||
       (cultural.cultural_events && cultural.cultural_events !== 'occasional') ||  // String value, not 'occasional' (default)
-      cultural.museums > 1
+      cultural.museums > 1 ||
+      prefs.traditional_progressive_lean?.length ||  // V2
+      prefs.social_atmosphere?.length                // V2
     )
   };
 }

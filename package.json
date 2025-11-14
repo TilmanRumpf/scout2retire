@@ -8,6 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "test:golden": "node --test tests/scoring/goldenMaster.test.js",
+    "test:capture-baseline": "node tests/scoring/captureGoldenMaster.js",
     "db:run": "node db-runner.js",
     "db:test": "node test-supabase-key.js",
     "verify:styles": "node scripts/verify-styles.js",

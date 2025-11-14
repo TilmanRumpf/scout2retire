@@ -177,9 +177,12 @@ export default function OnboardingCulture() {
     },
     lifestyle_preferences: {
       pace_of_life_preference: [],
-      urban_rural_preference_preference: [],
-      traditional_progressive: ''
-    }
+      urban_rural_preference_preference: []
+    },
+    // V2 fields (added Nov 14, 2025 - Phase 2 Culture V2)
+    // Fixed: traditional_progressive was incorrectly nested in lifestyle_preferences
+    traditional_progressive_lean: [],
+    social_atmosphere: []
   });
   
   const [loading, setLoading] = useState(false);

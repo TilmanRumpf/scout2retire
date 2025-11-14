@@ -1,0 +1,218 @@
+[
+  {
+    "test_name": "complete_valencia_perfect_match",
+    "user_summary": {
+      "citizenship": "USA",
+      "country": "Spain",
+      "has_climate_prefs": true,
+      "has_culture_prefs": true,
+      "has_hobbies": true,
+      "has_cost_prefs": true
+    },
+    "town_summary": {
+      "id": "test-town-valencia",
+      "name": "Valencia",
+      "country": "Spain",
+      "region": "Europe"
+    },
+    "scoring_result": {
+      "match_score": 77,
+      "match_quality": "Very Good",
+      "category_scores": {
+        "region": 100,
+        "climate": 35,
+        "culture": 100,
+        "hobbies": 100,
+        "administration": 21,
+        "cost": 100
+      },
+      "culture_factors": []
+    },
+    "expected_range": {
+      "min": 80,
+      "max": 100
+    },
+    "captured_at": "2025-11-14T01:22:38.202Z",
+    "version": "V2"
+  },
+  {
+    "test_name": "complete_bangkok_poor_match",
+    "user_summary": {
+      "citizenship": "USA",
+      "country": "Spain",
+      "has_climate_prefs": true,
+      "has_culture_prefs": true,
+      "has_hobbies": true,
+      "has_cost_prefs": true
+    },
+    "town_summary": {
+      "id": "test-town-bangkok",
+      "name": "Bangkok",
+      "country": "Thailand",
+      "region": "Southeast Asia"
+    },
+    "scoring_result": {
+      "match_score": 67,
+      "match_quality": "Good",
+      "category_scores": {
+        "region": 67,
+        "climate": 29,
+        "culture": 100,
+        "hobbies": 100,
+        "administration": 21,
+        "cost": 100
+      },
+      "culture_factors": []
+    },
+    "expected_range": {
+      "min": 15,
+      "max": 35
+    },
+    "captured_at": "2025-11-14T01:22:38.203Z",
+    "version": "V2"
+  },
+  {
+    "test_name": "complete_porto_partial_match",
+    "user_summary": {
+      "citizenship": "USA",
+      "country": "Spain",
+      "has_climate_prefs": true,
+      "has_culture_prefs": true,
+      "has_hobbies": true,
+      "has_cost_prefs": true
+    },
+    "town_summary": {
+      "id": "test-town-porto",
+      "name": "Porto",
+      "country": "Portugal",
+      "region": "Europe"
+    },
+    "scoring_result": {
+      "match_score": 77,
+      "match_quality": "Very Good",
+      "category_scores": {
+        "region": 100,
+        "climate": 35,
+        "culture": 100,
+        "hobbies": 100,
+        "administration": 21,
+        "cost": 100
+      },
+      "culture_factors": []
+    },
+    "expected_range": {
+      "min": 50,
+      "max": 70
+    },
+    "captured_at": "2025-11-14T01:22:38.203Z",
+    "version": "V2"
+  },
+  {
+    "test_name": "minimal_valencia_fallback",
+    "user_summary": {
+      "citizenship": "USA",
+      "country": "Spain",
+      "has_climate_prefs": false,
+      "has_culture_prefs": false,
+      "has_hobbies": false,
+      "has_cost_prefs": false
+    },
+    "town_summary": {
+      "id": "test-town-valencia",
+      "name": "Valencia",
+      "country": "Spain",
+      "region": "Europe"
+    },
+    "scoring_result": {
+      "match_score": 87,
+      "match_quality": "Excellent",
+      "category_scores": {
+        "region": 100,
+        "climate": 0,
+        "culture": 100,
+        "hobbies": 100,
+        "administration": 100,
+        "cost": 100
+      },
+      "culture_factors": []
+    },
+    "expected_range": {
+      "min": 15,
+      "max": 30
+    },
+    "captured_at": "2025-11-14T01:22:38.203Z",
+    "version": "V2"
+  },
+  {
+    "test_name": "minimal_bangkok_fallback",
+    "user_summary": {
+      "citizenship": "USA",
+      "country": "Spain",
+      "has_climate_prefs": false,
+      "has_culture_prefs": false,
+      "has_hobbies": false,
+      "has_cost_prefs": false
+    },
+    "town_summary": {
+      "id": "test-town-bangkok",
+      "name": "Bangkok",
+      "country": "Thailand",
+      "region": "Southeast Asia"
+    },
+    "scoring_result": {
+      "match_score": 87,
+      "match_quality": "Excellent",
+      "category_scores": {
+        "region": 100,
+        "climate": 0,
+        "culture": 100,
+        "hobbies": 100,
+        "administration": 100,
+        "cost": 100
+      },
+      "culture_factors": []
+    },
+    "expected_range": {
+      "min": 15,
+      "max": 30
+    },
+    "captured_at": "2025-11-14T01:22:38.204Z",
+    "version": "V2"
+  },
+  {
+    "test_name": "mixed_valencia_moderate",
+    "user_summary": {
+      "citizenship": "USA",
+      "country": "Spain",
+      "has_climate_prefs": true,
+      "has_culture_prefs": true,
+      "has_hobbies": true,
+      "has_cost_prefs": true
+    },
+    "town_summary": {
+      "id": "test-town-valencia",
+      "name": "Valencia",
+      "country": "Spain",
+      "region": "Europe"
+    },
+    "scoring_result": {
+      "match_score": 100,
+      "match_quality": "Excellent",
+      "category_scores": {
+        "region": 100,
+        "climate": 100,
+        "culture": 100,
+        "hobbies": 100,
+        "administration": 100,
+        "cost": 100
+      },
+      "culture_factors": []
+    },
+    "expected_range": {
+      "min": 45,
+      "max": 70
+    },
+    "captured_at": "2025-11-14T01:22:38.204Z",
+    "version": "V2"
+  }
+]
