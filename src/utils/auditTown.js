@@ -207,3 +207,78 @@ export async function loadAuditResults(townId, supabase) {
     return {};
   }
 }
+
+/**
+ * Save manual audit status and metadata for a specific field
+ * Stores in towns.audit_data JSONB column
+ * Updated: November 14, 2025 - Added final value persistence
+ *
+ * @param {string} townId - Town ID
+ * @param {string} fieldName - Field name being audited
+ * @param {string} status - Audit status (unknown|needs_review|approved|rejected)
+ * @param {Object} supabase - Supabase client instance
+ * @param {Object} metadata - Optional metadata to save (finalValue, confidence, source, etc.)
+ * @returns {Promise<Object>} Success/error result
+ */
+export async function saveFieldAuditStatus(townId, fieldName, status, supabase, metadata = {}) {
+  if (!supabase) {
+    throw new Error('Supabase client is required');
+  }
+
+  const validStatuses = ['unknown', 'needs_review', 'approved', 'rejected'];
+  if (!validStatuses.includes(status)) {
+    throw new Error(`Invalid audit status: ${status}. Must be one of: ${validStatuses.join(', ')}`);
+  }
+
+  try {
+    // Load current audit_data
+    const { data: townData, error: fetchError } = await supabase
+      .from('towns')
+      .select('audit_data')
+      .eq('id', townId)
+      .single();
+
+    if (fetchError) {
+      throw new Error(`Failed to fetch town audit data: ${fetchError.message}`);
+    }
+
+    // Preserve existing metadata and merge with new
+    const currentAuditData = townData?.audit_data || {};
+    const existingFieldData = currentAuditData[fieldName] || {};
+
+    const updatedAuditData = {
+      ...currentAuditData,
+      [fieldName]: {
+        ...existingFieldData,  // Preserve existing metadata
+        status,
+        updated_at: new Date().toISOString(),
+        // Merge in new metadata (finalValue, confidence, source, aiSuggestion, etc.)
+        ...metadata
+      }
+    };
+
+    // Save back to database
+    const { error: updateError } = await supabase
+      .from('towns')
+      .update({ audit_data: updatedAuditData })
+      .eq('id', townId);
+
+    if (updateError) {
+      throw new Error(`Failed to save audit status: ${updateError.message}`);
+    }
+
+    return {
+      success: true,
+      fieldName,
+      status,
+      metadata
+    };
+
+  } catch (error) {
+    console.error('Error saving audit status:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}

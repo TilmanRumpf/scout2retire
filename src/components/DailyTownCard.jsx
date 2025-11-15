@@ -6,9 +6,10 @@ import TownImageOverlay from './TownImageOverlay';
 import { getTownOfTheDay } from '../utils/townUtils.jsx';
 import { getCurrentUser } from '../utils/authUtils';
 import { fetchFavorites, toggleFavorite } from '../utils/townUtils.jsx';
-import { MapPin, DollarSign, Activity, Shield, Users, Thermometer, Plane, MessageCircle, Footprints } from 'lucide-react';
+import { MapPin, DollarSign, Activity, Shield, Users, Thermometer, Plane, MessageCircle, Footprints, Info } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
 import toast from 'react-hot-toast';
+import { getCostStatus, getLuxuryCostNote } from '../utils/scoring/helpers/costUtils';
 
 function DailyTownCard() {
   const [town, setTown] = useState(null);
@@ -18,8 +19,9 @@ function DailyTownCard() {
   const [user, setUser] = useState(null);
   const [userLoading, setUserLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
+  const [userBudget, setUserBudget] = useState(null); // User's monthly budget for cost status
   const navigate = useNavigate();
-  
+
   const userId = user?.id;
   
   // Helper function to check if favorited
@@ -33,6 +35,19 @@ function DailyTownCard() {
       const result = await getCurrentUser();
       setUser(result.user);
       setUserLoading(false);
+
+      // Load user budget from preferences
+      if (result.user?.id) {
+        try {
+          const { getOnboardingProgress } = await import('../utils/userpreferences/onboardingUtils');
+          const { success, data: preferences } = await getOnboardingProgress(result.user.id);
+          if (success && preferences) {
+            setUserBudget(preferences.total_monthly_cost || null);
+          }
+        } catch (err) {
+          console.error('Error loading user budget:', err);
+        }
+      }
     };
     loadUser();
   }, []);
@@ -108,9 +123,14 @@ function DailyTownCard() {
       setIsUpdating(false);
     }
   };
-  
+
   // Check if current town is favorited
   const isFavorited = town ? checkFavorited(town.id) : false;
+
+  // Compute cost status if town and budget are available
+  const townCost = town ? (town.cost_of_living_usd || town.typical_monthly_living_cost) : null;
+  const costStatus = (town && userBudget) ? getCostStatus(userBudget, townCost) : null;
+  const luxuryCostNote = (town && userBudget) ? getLuxuryCostNote(userBudget, townCost) : null;
 
   const handleExploreClick = () => {
     if (town) {
@@ -170,6 +190,7 @@ function DailyTownCard() {
             isFavorited={isFavorited}
             isUpdating={isUpdating}
             onFavoriteClick={handleFavoriteToggle}
+            preferenceCoverage={town.preferenceCoverage}
             appealStatement={(() => {
               // Find the highest scoring category and display it
               const scores = town.categoryScores;
@@ -221,6 +242,21 @@ function DailyTownCard() {
           </p>
         </div>
 
+        {/* Cost Status Badge */}
+        {costStatus && (
+          <div className="mb-4">
+            <span className={`inline-flex items-center gap-2 px-3 py-1.5 text-sm ${uiConfig.layout.radius.md} ${
+              costStatus.level === 'low' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
+              costStatus.level === 'medium' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' :
+              costStatus.level === 'high' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' :
+              'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+            }`}>
+              <DollarSign size={14} />
+              {costStatus.label}
+            </span>
+          </div>
+        )}
+
         {/* Category Scores Grid - All 6 Onboarding Categories */}
         {town.categoryScores && (
           <>
@@ -261,12 +297,12 @@ function DailyTownCard() {
         <div className={`mb-5 ${uiConfig.colors.body} text-sm md:text-base`}>
           {(() => {
             const summaryParts = [];
-            
+
             // Culture/Region compatibility
             if (town.categoryScores?.culture >= 70 || town.categoryScores?.region >= 70) {
               summaryParts.push("Strong cultural compatibility");
             }
-            
+
             // Cost savings
             if (town.cost_index) {
               const savings = 2500 - town.cost_index; // Assuming $2500/mo baseline
@@ -274,18 +310,38 @@ function DailyTownCard() {
                 summaryParts.push(`Cost-effective: Save $${Math.round(savings)}/month`);
               }
             }
-            
+
             // Climate match
             if (town.categoryScores?.climate >= 80) {
               summaryParts.push("Ideal climate match");
             }
-            
+
             // Join with periods
-            return summaryParts.length > 0 ? summaryParts.join(". ") + "." : 
+            return summaryParts.length > 0 ? summaryParts.join(". ") + "." :
               "Discover why this could be your perfect retirement destination.";
           })()}
         </div>
-        
+
+        {/* Personalization Note - appears when coverage is low but score is high */}
+        {town.personalizationNote && (
+          <div className={`flex items-start gap-2 mb-4 p-3 ${uiConfig.layout.radius.md} bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800`}>
+            <Info size={16} className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-800 dark:text-amber-200">
+              {town.personalizationNote}
+            </p>
+          </div>
+        )}
+
+        {/* Luxury Cost Note - appears when high-budget user matched with very cheap town */}
+        {luxuryCostNote && (
+          <div className={`flex items-start gap-2 mb-4 p-3 ${uiConfig.layout.radius.md} bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800`}>
+            <Info size={16} className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-blue-800 dark:text-blue-200">
+              💡 {luxuryCostNote}
+            </p>
+          </div>
+        )}
+
         <button
           onClick={handleExploreClick}
           className={`w-full px-4 py-2 ${uiConfig.colors.btnPrimary} ${uiConfig.font.weight.medium} ${uiConfig.layout.radius.md}`}

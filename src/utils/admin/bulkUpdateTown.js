@@ -1,9 +1,29 @@
 /**
  * Bulk Update Town Utility
  * Analyzes town data completeness and generates AI-powered update suggestions
+ *
+ * Updated: November 13, 2025 - Added tab-aware filtering for Smart Update
  */
 
 import { researchFieldWithContext } from '../aiResearch';
+import { FIELD_CATEGORIES } from '../fieldCategories.js';
+import { ARRAY_FIELDS, isArrayField } from '../config/arrayFields.js';
+import { normalizeFieldValue } from '../fieldNormalization.js';
+
+// NOTE: ARRAY_FIELDS now imported from ../config/arrayFields.js
+// This is the SINGLE SOURCE OF TRUTH for text[] fields (no more duplication)
+
+/**
+ * Normalize field value for database storage
+ * NOW USING CONSOLIDATED NORMALIZATION - November 14, 2025
+ *
+ * @param {string} fieldName - Field name
+ * @param {any} rawValue - Raw value from UI
+ * @returns {any} Normalized value ready for DB
+ */
+function normalizeFieldValueForDb(fieldName, rawValue) {
+  return normalizeFieldValue(fieldName, rawValue, 'db');
+}
 
 // Field categories for wizard-based updates
 const CRITICAL_FIELDS = new Set([
@@ -17,7 +37,8 @@ const CRITICAL_FIELDS = new Set([
   'image_url_1',
   'town_name',
   'climate_description',
-  'geographic_features',
+  'geographic_features_actual',  // 🔧 FIX: Use actual DB column name (not 'geographic_features')
+  'water_bodies',  // 🔧 FIX (water_bodies bug): Critical for region/location matching
   'avg_temp_summer',
   'avg_temp_winter',
   'annual_rainfall'
@@ -47,7 +68,8 @@ const FIELD_PRIORITIES = {
   healthcare_score: 8,
   safety_score: 8,
   climate_description: 8,
-  geographic_features: 8,
+  geographic_features_actual: 8,  // 🔧 FIX: Use actual DB column name
+  water_bodies: 8,  // 🔧 FIX (water_bodies bug): Same priority as geographic_features
   avg_temp_summer: 7,
   avg_temp_winter: 7,
   annual_rainfall: 7,
@@ -78,7 +100,8 @@ const FIELD_EXPLANATIONS = {
   healthcare_score: 'Healthcare quality score (0-100) - critical for retirees making health decisions',
   safety_score: 'Safety score (0-100) - users filter by this when choosing where to live',
   climate_description: 'Detailed climate info helps users understand what weather to expect year-round',
-  geographic_features: 'Location type (coastal, mountains, etc.) - users have strong preferences about this',
+  geographic_features_actual: 'Location type (coastal, mountains, etc.) - users have strong preferences about this',  // 🔧 FIX: Use actual DB column name
+  water_bodies: 'Nearby water bodies (ocean, lake, river) - users have strong preferences about proximity to water',  // 🔧 FIX (water_bodies bug): Added explanation
   avg_temp_summer: 'Summer temperature in Celsius - users need this to plan visits and understand comfort',
   avg_temp_winter: 'Winter temperature in Celsius - critical for users avoiding cold or seeking seasons',
   annual_rainfall: 'Rainfall in mm/year - helps users avoid too wet or too dry climates',
@@ -123,9 +146,10 @@ export function filterFieldsByMode(fields, mode = 'critical') {
  * @param {Object} town - Town data object
  * @param {Object} auditResults - Audit confidence results (field_name -> confidence)
  * @param {string} mode - 'critical', 'supplemental', or 'all' (default: 'all')
+ * @param {string|null} tabFilter - Optional tab name to filter by (e.g., 'Region', 'Climate')
  * @returns {Object} Analysis with fields categorized by priority
  */
-export function analyzeTownCompleteness(town, auditResults = {}, mode = 'all') {
+export function analyzeTownCompleteness(town, auditResults = {}, mode = 'all', tabFilter = null) {
   const missingFields = [];
   const lowConfidenceFields = [];
   const allFieldsNeedingAttention = [];
@@ -192,12 +216,45 @@ export function analyzeTownCompleteness(town, auditResults = {}, mode = 'all') {
   lowConfidenceFields.sort(sortByPriority);
   allFieldsNeedingAttention.sort(sortByPriority);
 
-  // Filter by mode if specified
+  // 🆕 TAB-AWARE FILTERING (Added: November 13, 2025)
+  // If tabFilter is provided, it takes precedence over mode filtering
   let filteredFields = allFieldsNeedingAttention;
-  if (mode === 'critical') {
-    filteredFields = filterFieldsByMode(allFieldsNeedingAttention, 'critical');
-  } else if (mode === 'supplemental') {
-    filteredFields = filterFieldsByMode(allFieldsNeedingAttention, 'supplemental');
+
+  if (tabFilter) {
+    // Tab-specific Smart Update: ignore mode, filter by tab only
+    console.log(`[SmartUpdate] mode: ${mode}, tab: ${tabFilter}`);
+    console.log(`[SmartUpdate] candidate fields BEFORE tab filter:`, allFieldsNeedingAttention.map(f => f.fieldName).join(', '));
+
+    filteredFields = allFieldsNeedingAttention.filter(field => {
+      const fieldCategory = FIELD_CATEGORIES[field.fieldName];
+
+      // Match exact tab name
+      if (fieldCategory === tabFilter) {
+        return true;
+      }
+
+      // For fields not in FIELD_CATEGORIES, exclude them (strict filtering)
+      if (!fieldCategory) {
+        console.warn(`⚠️ Field "${field.fieldName}" not found in FIELD_CATEGORIES, excluding from tab filter`);
+        return false;
+      }
+
+      return false;
+    });
+
+    console.log(`[SmartUpdate] priority fields AFTER tab filter:`, filteredFields.map(f => f.fieldName).join(', '));
+    console.log(`   ✓ Found ${filteredFields.length} fields for tab "${tabFilter}"`);
+  } else {
+    // Global Smart Update: use mode filtering (critical/supplemental/all)
+    console.log(`[SmartUpdate] mode: ${mode}, tab: (none - global)`);
+
+    if (mode === 'critical') {
+      filteredFields = filterFieldsByMode(allFieldsNeedingAttention, 'critical');
+    } else if (mode === 'supplemental') {
+      filteredFields = filterFieldsByMode(allFieldsNeedingAttention, 'supplemental');
+    }
+
+    console.log(`[SmartUpdate] priority fields:`, filteredFields.map(f => f.fieldName).join(', '));
   }
 
   return {
@@ -205,7 +262,8 @@ export function analyzeTownCompleteness(town, auditResults = {}, mode = 'all') {
     lowConfidenceFields,
     allFieldsNeedingAttention: filteredFields,
     totalIssues: filteredFields.length,
-    priorityFields: filteredFields // Return all filtered fields
+    priorityFields: filteredFields, // Return all filtered fields
+    tabFilter: tabFilter || null // Include tab filter in result for transparency
   };
 }
 
@@ -222,7 +280,7 @@ export async function generateUpdateSuggestions(town, fieldsToUpdate, onProgress
   for (let i = 0; i < fieldsToUpdate.length; i++) {
     const field = fieldsToUpdate[i];
 
-    if (onProgress) {
+    if (typeof onProgress === 'function') {
       onProgress({
         current: i + 1,
         total: fieldsToUpdate.length,
@@ -331,13 +389,52 @@ export async function applyBulkUpdates(townId, selectedUpdates, supabase) {
     };
   }
 
-  // Build update object
+  // Build update object with normalization for all array fields
   const updateData = {};
+
   selectedUpdates.forEach(update => {
     if (update.suggestedValue !== null && update.suggestedValue !== undefined) {
-      updateData[update.fieldName] = update.suggestedValue;
+      // 🔧 FIX: Use centralized normalization for ALL fields (especially array fields)
+      const valueToStore = normalizeFieldValueForDb(update.fieldName, update.suggestedValue);
+
+      // 🔍 DEBUG: Log normalization for array fields
+      if (ARRAY_FIELDS.has(update.fieldName)) {
+        console.log(`[ArrayField] ${update.fieldName} normalization:`, {
+          rawFinalValue: update.suggestedValue,
+          valueToStore,
+          isArrayField: true,
+          typeOfValueToStore: typeof valueToStore,
+          isArray: Array.isArray(valueToStore)
+        });
+      }
+
+      updateData[update.fieldName] = valueToStore;
     }
   });
+
+  // 🔍 DEBUG: Log final payload for geographic_features_actual
+  if (updateData.geographic_features_actual !== undefined) {
+    console.log('[GeoFeatures] Final DB payload (about to send to Supabase):', {
+      townId,
+      fieldName: 'geographic_features_actual',
+      value: updateData.geographic_features_actual,
+      valueType: typeof updateData.geographic_features_actual,
+      isArray: Array.isArray(updateData.geographic_features_actual),
+      arrayLength: Array.isArray(updateData.geographic_features_actual) ? updateData.geographic_features_actual.length : 'N/A'
+    });
+  }
+
+  // 🔍 DEBUG: Log final payload for water_bodies (BUG FIX LOGGING)
+  if (updateData.water_bodies !== undefined) {
+    console.log('[WaterBodies][BulkUpdate] about to send DB update:', {
+      townId,
+      fieldName: 'water_bodies',
+      valueToStore: updateData.water_bodies,
+      typeofValueToStore: typeof updateData.water_bodies,
+      isArray: Array.isArray(updateData.water_bodies),
+      arrayLength: Array.isArray(updateData.water_bodies) ? updateData.water_bodies.length : 'N/A'
+    });
+  }
 
   // AUTO-TRACK: Add current user as last modifier
   try {
@@ -359,10 +456,34 @@ export async function applyBulkUpdates(townId, selectedUpdates, supabase) {
       .select();
 
     if (error) {
+      // 🔍 DEBUG: Enhanced error logging for geographic_features_actual
+      if (updateData.geographic_features_actual !== undefined) {
+        console.error('[GeoFeatures] DB update error:', error);
+      }
+      // 🔍 DEBUG: Error logging for water_bodies (BUG FIX LOGGING)
+      if (updateData.water_bodies !== undefined) {
+        console.error('[WaterBodies][BulkUpdate] DB update ERROR:', error);
+      }
       return {
         success: false,
         error: error.message
       };
+    }
+
+    // 🔍 DEBUG: Log successful update for geographic_features_actual
+    if (updateData.geographic_features_actual !== undefined) {
+      console.log('[GeoFeatures] DB update SUCCESS:', {
+        updatedValue: data[0]?.geographic_features_actual
+      });
+    }
+
+    // 🔍 DEBUG: Log successful update for water_bodies (BUG FIX LOGGING)
+    if (updateData.water_bodies !== undefined) {
+      console.log('[WaterBodies][BulkUpdate] DB update result:', {
+        data: data[0]?.water_bodies,
+        error: null,
+        success: true
+      });
     }
 
     return {
@@ -395,7 +516,7 @@ export function getFieldDisplayName(fieldName) {
     cost_of_living_usd: 'Cost of Living (USD)',
     healthcare_score: 'Healthcare Score',
     safety_score: 'Safety Score',
-    geographic_features: 'Geographic Features',
+    geographic_features_actual: 'Geographic Features',  // 🔧 FIX: Use actual DB column name
     avg_temp_summer: 'Summer Temperature',
     avg_temp_winter: 'Winter Temperature',
     annual_rainfall: 'Annual Rainfall',

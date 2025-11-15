@@ -11,6 +11,10 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { supabase } from './supabaseClient';
+import {
+  validateSuggestedValue,
+  normalizeSuggestedValue
+} from './validation/aiSuggestionValidation.js';
 
 /**
  * MULTI-DIMENSIONAL FIELD CONFIGURATIONS
@@ -447,6 +451,42 @@ PRIORITY ORDER:
     }
 
     console.log('✅ AI Research completed:', result);
+
+    // 🔍 CENTRALIZED VALIDATION: Check against enum/range constraints
+    // Added: November 13, 2025 - Tab-aware Smart Update validation layer
+    const proposedValue = result.proposed_value || result.suggestedValue;
+
+    if (proposedValue !== null && proposedValue !== undefined) {
+      // Normalize value first (e.g., convert comma-separated strings to arrays)
+      const normalizedValue = normalizeSuggestedValue(fieldName, proposedValue);
+
+      // Validate against field rules
+      const validation = validateSuggestedValue(fieldName, normalizedValue);
+
+      if (!validation.ok) {
+        console.warn(`⚠️ VALIDATION FAILED: ${fieldName} = "${proposedValue}"`);
+        console.warn(`   Reason: ${validation.reason}`);
+        if (validation.suggestion) {
+          console.warn(`   Suggestion: ${validation.suggestion}`);
+        }
+
+        return {
+          success: false,
+          suggestedValue: null,
+          confidence: 'low',
+          reasoning: `AI suggestion rejected by validation: ${validation.reason}`,
+          validationError: validation.reason,
+          validationSuggestion: validation.suggestion,
+          patternCount: similarTowns.length,
+          fieldDefinition: fieldDef?.audit_question || null
+        };
+      }
+
+      // Validation passed - use normalized value
+      result.proposed_value = normalizedValue;
+      result.suggestedValue = normalizedValue;
+      console.log(`✓ VALIDATION PASSED: ${fieldName} = ${JSON.stringify(normalizedValue)}`);
+    }
 
     // 🎯 OVERRIDE: Primary photo should be manually uploaded, not AI-suggested
     if (fieldName === 'image_url_1') {

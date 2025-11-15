@@ -46,8 +46,16 @@ const FIELD_CONVENTIONS = {
   population: { min: 0, max: 50000000, type: 'population' }
 };
 
-// Critical fields that must be populated
-const CRITICAL_FIELDS = [
+/**
+ * Fields required for data quality validation
+ *
+ * NOTE: This is DIFFERENT from CRITICAL_FIELDS in bulkUpdateTown.js
+ * - bulkUpdateTown CRITICAL_FIELDS (14 fields): Algorithm-blocking fields for Smart Update
+ * - dataVerification VALIDATION_REQUIRED_FIELDS (6 fields): Data quality check
+ *
+ * Renamed November 14, 2025 to avoid confusion
+ */
+const VALIDATION_REQUIRED_FIELDS = [
   'town_name', 'country', 'region',
   'cost_of_living_usd', 'healthcare_score', 'safety_score'
 ];
@@ -365,7 +373,7 @@ export function analyzeDataQuality(towns) {
     townReport.issues.push(...relationalIssues);
 
     // Check for missing critical fields
-    CRITICAL_FIELDS.forEach(field => {
+    VALIDATION_REQUIRED_FIELDS.forEach(field => {
       if (!town[field] || town[field] === '' || town[field] === 'NULL') {
         townReport.issues.push({
           field,
@@ -479,4 +487,4 @@ export function getIssuesByField(report, fieldName) {
   });
 }
 
-export { SEVERITY, ISSUE_TYPE, FIELD_CONVENTIONS, CRITICAL_FIELDS };
+export { SEVERITY, ISSUE_TYPE, FIELD_CONVENTIONS, VALIDATION_REQUIRED_FIELDS };

@@ -28,6 +28,8 @@ import AlertDashboard from '../../components/admin/AlertDashboard';
 import RatingHistoryPanel from '../../components/admin/RatingHistoryPanel';
 import { getFieldOptions, isMultiSelectField } from '../../utils/townDataOptions';
 import { useFieldDefinitions } from '../../hooks/useFieldDefinitions';
+import { useAuditManagement } from '../../hooks/useAuditManagement';
+import { useSmartUpdate } from '../../hooks/useSmartUpdate';
 import { uiConfig } from '../../styles/uiConfig';
 import { formatTownDisplay } from '../../utils/townDisplayUtils';
 import {
@@ -184,8 +186,16 @@ const TownsManager = () => {
   const [editingCell, setEditingCell] = useState(null);
   const [editValue, setEditValue] = useState('');
 
-  // Audit state - tracks which fields have been audited
-  const [auditedFields, setAuditedFields] = useState({});
+  // Audit management (extracted to hook)
+  const {
+    auditResults,
+    auditLoading,
+    auditedFields,
+    setAuditedFields,
+    loadAudits,
+    runAudit
+  } = useAuditManagement(supabase);
+
   const [showAuditDialog, setShowAuditDialog] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
@@ -244,16 +254,18 @@ const TownsManager = () => {
   const [addTownModalOpen, setAddTownModalOpen] = useState(false);
   const [initialTownName, setInitialTownName] = useState('');
 
-  // Audit state - stores confidence level per field
-  const [auditResults, setAuditResults] = useState({});
-  const [auditLoading, setAuditLoading] = useState(false);
-
-  // Update Town modal state
-  const [updateModalOpen, setUpdateModalOpen] = useState(false);
-  const [updateSuggestions, setUpdateSuggestions] = useState([]);
-  const [updateLoading, setUpdateLoading] = useState(false);
-  const [generationProgress, setGenerationProgress] = useState(null);
-  const [updateMode, setUpdateMode] = useState('critical'); // 'critical' or 'supplemental'
+  // Smart Update management (extracted to hook)
+  const {
+    updateModalOpen,
+    updateSuggestions,
+    updateLoading,
+    generationProgress,
+    updateMode,
+    currentTabFilter,
+    generateSuggestions,
+    closeUpdateModal,
+    setUpdateModalOpen
+  } = useSmartUpdate();
 
   // Global field search state
   const [fieldSearchQuery, setFieldSearchQuery] = useState('');
@@ -1045,9 +1057,7 @@ const TownsManager = () => {
 
     // Reload audit data to pick up manual audit status changes
     try {
-      const { loadAuditResults } = await import('../../utils/auditTown');
-      const results = await loadAuditResults(selectedTown.id, supabase);
-      setAuditResults(results);
+      const results = await loadAudits(selectedTown.id);
       console.log('✅ Audit data reloaded after update:', results);
     } catch (error) {
       console.error('Error reloading audit results:', error);
@@ -1058,17 +1068,13 @@ const TownsManager = () => {
   useEffect(() => {
     async function loadAuditData() {
       if (!selectedTown?.id) {
-        setAuditResults({});
         return;
       }
 
       try {
-        const { loadAuditResults } = await import('../../utils/auditTown');
-        const results = await loadAuditResults(selectedTown.id, supabase);
-        setAuditResults(results);
+        await loadAudits(selectedTown.id);
       } catch (error) {
         console.error('Error loading audit results:', error);
-        setAuditResults({});
       }
     }
 
@@ -1088,33 +1094,19 @@ const TownsManager = () => {
       return;
     }
 
-    setAuditLoading(true);
     toast('Starting audit... This may take 30-60 seconds', { icon: '🔍' });
 
-    try {
-      // Dynamically import the audit utility
-      const { auditTownData } = await import('../../utils/auditTown');
+    const result = await runAudit(selectedTown);
 
-      // Pass supabase client to save results to database
-      const result = await auditTownData(selectedTown, supabase);
-
-      if (!result.success) {
-        throw new Error(result.error || 'Audit failed');
-      }
-
-      setAuditResults(result.fieldConfidence || {});
-
+    if (result.success) {
       toast.success(`Audit complete! Assessed ${result.totalFields} fields and saved to database`);
-    } catch (error) {
-      console.error('Audit error:', error);
-      toast.error(`Audit failed: ${error.message}`);
-    } finally {
-      setAuditLoading(false);
+    } else {
+      toast.error(`Audit failed: ${result.error}`);
     }
   };
 
   // Handle bulk update request for the selected town
-  const handleUpdateTown = async () => {
+  const handleUpdateTown = async (tabName = null) => {
     if (!selectedTown) {
       toast.error('No town selected');
       return;
@@ -1127,7 +1119,15 @@ const TownsManager = () => {
     }
 
     setUpdateLoading(true);
-    const sessionName = updateMode === 'critical' ? 'Session 1: Critical Fields' : 'Session 2: Supplemental Details';
+    setCurrentTabFilter(tabName); // Store tab filter for modal
+
+    // 🆕 Tab-aware session naming
+    let sessionName;
+    if (tabName) {
+      sessionName = `Smart Update ${tabName} Tab`;
+    } else {
+      sessionName = updateMode === 'critical' ? 'Session 1: Critical Fields' : 'Session 2: Supplemental Details';
+    }
     toast(`${sessionName} - Analyzing...`);
 
     try {
@@ -1135,42 +1135,55 @@ const TownsManager = () => {
       let audit = auditResults;
       if (updateMode === 'critical' && (!audit || Object.keys(audit).length === 0)) {
         toast('Running audit first...');
-        const { auditTownData } = await import('../../utils/auditTown');
-        const result = await auditTownData(selectedTown, supabase);
+        const result = await runAudit(selectedTown);
 
         if (result.success) {
           audit = result.fieldConfidence || {};
-          setAuditResults(audit);
         }
       }
 
-      // 2. Analyze completeness with mode filter
-      const analysis = analyzeTownCompleteness(selectedTown, audit, updateMode);
+      // 2. Analyze completeness with mode filter AND optional tab filter
+      const currentTown = towns.find(t => t.id === selectedTown);
+      const analysis = analyzeTownCompleteness(
+        currentTown || selectedTown,
+        audit,
+        updateMode,
+        tabName // 🆕 Pass tab filter to restrict fields
+      );
 
       if (analysis.priorityFields.length === 0) {
-        const message = updateMode === 'critical'
-          ? 'All critical fields look good! Ready to add details?'
-          : 'All supplemental fields complete!';
+        let message;
+        if (tabName) {
+          message = `All ${tabName} tab fields look good!`;
+        } else {
+          message = updateMode === 'critical'
+            ? 'All critical fields look good! Ready to add details?'
+            : 'All supplemental fields complete!';
+        }
         toast.success(message);
         setUpdateLoading(false);
 
         // If critical is done and no issues, offer to continue to supplemental
-        if (updateMode === 'critical') {
+        if (updateMode === 'critical' && !tabName) {
           setUpdateMode('supplemental');
         }
         return;
       }
 
-      toast.success(`Found ${analysis.totalIssues} ${updateMode} fields. Generating suggestions...`);
+      const fieldScope = tabName ? `${tabName} tab` : updateMode;
+      toast.success(`Found ${analysis.totalIssues} ${fieldScope} fields. Generating suggestions...`);
 
       // 3. Generate AI suggestions for each priority field
       const suggestions = await generateUpdateSuggestions(
-        selectedTown.id,
-        analysis.priorityFields,
         selectedTown,
-        (field, progress, total) => {
-          setGenerationProgress({ field, current: progress, total });
-          toast(`Researching ${field}... (${progress}/${total})`);
+        analysis.priorityFields,
+        (progress) => {
+          setGenerationProgress({
+            fieldName: progress.fieldName,
+            current: progress.current,
+            total: progress.total
+          });
+          toast(`Researching ${progress.fieldName}... (${progress.current}/${progress.total})`);
         }
       );
 
@@ -2124,7 +2137,16 @@ const TownsManager = () => {
                     <ScoreBreakdownPanel town={selectedTown} onTownUpdate={handleTownUpdate} />
                   ) : activeCategory === 'Region' ? (
                     // Special handling for Region tab with inline editing panel
-                    <RegionPanel town={selectedTown} onTownUpdate={handleTownUpdate} auditResults={auditResults} />
+                    <RegionPanel
+                      town={selectedTown}
+                      onTownUpdate={handleTownUpdate}
+                      auditResults={auditResults}
+                      onSmartUpdateTab={(tabName) => {
+                        setActiveCategory(tabName);
+                        setUpdateMode('critical');
+                        handleUpdateTown(tabName);
+                      }}
+                    />
                   ) : activeCategory === 'Climate' ? (
                     // Special handling for Climate tab with inline editing panel
                     <ClimatePanel town={selectedTown} onTownUpdate={handleTownUpdate} auditResults={auditResults} />
@@ -2435,11 +2457,111 @@ const TownsManager = () => {
       {/* Update Town Modal - AI-powered bulk updates (DEPRECATED - use wizard instead) */}
       <UpdateTownModal
         isOpen={updateModalOpen}
-        onClose={() => {
+        onClose={async () => {
+          // 🔄 PROGRESSIVE DISCOVERY: Check for remaining fields after modal closes
+          console.log('[ModalClose] Starting onClose handler', {
+            updateMode,
+            currentTabFilter,
+            selectedTown: selectedTown?.town_name
+          });
+
           setUpdateModalOpen(false);
           setUpdateSuggestions([]);
           setGenerationProgress(null);
-          setUpdateMode('critical'); // Reset to critical for next time
+
+          // Reload town data to get latest audit_data changes
+          if (selectedTown) {
+            const { data: refreshedTown, error } = await supabase
+              .from('towns')
+              .select('*, audit_data')
+              .eq('id', selectedTown.id)
+              .single();
+
+            if (!error && refreshedTown) {
+              // Update towns list and selected town with fresh data
+              setTowns(prevTowns => prevTowns.map(t => t.id === refreshedTown.id ? refreshedTown : t));
+              setSelectedTown(refreshedTown);
+
+              // 🔧 FIX: Reload audit results from database to get latest field statuses
+              const latestAuditResults = await loadAudits(refreshedTown.id);
+
+              console.log('[ModalClose] Loaded latest audit results:', {
+                fieldsWithAudit: Object.keys(latestAuditResults).length,
+                approvedFields: Object.entries(latestAuditResults).filter(([_, status]) => status === 'approved').length
+              });
+
+              // Re-analyze to check for remaining fields in same mode/tab
+              console.log('[ModalClose] Re-analyzing completeness', {
+                mode: updateMode,
+                tabFilter: currentTabFilter
+              });
+
+              const analysis = analyzeTownCompleteness(
+                refreshedTown,
+                latestAuditResults, // Use FRESH audit data, not stale state
+                updateMode,
+                currentTabFilter
+              );
+
+              console.log('[ModalClose] Analysis results', {
+                priorityFieldsCount: analysis.priorityFields.length,
+                priorityFields: analysis.priorityFields.map(f => f.fieldName)
+              });
+
+              // If more fields need attention in this session, offer to continue
+              if (analysis.priorityFields.length > 0) {
+                const scopeDescription = currentTabFilter
+                  ? `${currentTabFilter} tab`
+                  : updateMode === 'critical' ? 'critical fields' : 'supplemental fields';
+
+                const capturedTabFilter = currentTabFilter;
+                const fieldList = analysis.priorityFields.map(f => f.fieldName).join(', ');
+
+                console.log('[ModalClose] Found more fields:', {
+                  count: analysis.priorityFields.length,
+                  scope: scopeDescription,
+                  fields: fieldList,
+                  tabFilter: capturedTabFilter
+                });
+
+                // 🔧 FIX: Ask user if they want to continue, don't auto-trigger
+                const continueMessage = `Found ${analysis.priorityFields.length} more ${scopeDescription}: ${fieldList}\n\nContinue updating?`;
+
+                if (window.confirm(continueMessage)) {
+                  console.log('[ModalClose] User confirmed - triggering next batch with tab:', capturedTabFilter);
+                  handleUpdateTown(capturedTabFilter);
+                } else {
+                  console.log('[ModalClose] User declined - stopping here');
+                  toast.success('Session complete! You can start a new session anytime.', { duration: 3000 });
+                }
+              } else {
+                console.log('[ModalClose] Session complete - no more fields found');
+
+                // This mode/tab is complete - suggest next steps
+                let message = currentTabFilter
+                  ? `✅ All ${currentTabFilter} tab fields complete!`
+                  : updateMode === 'critical'
+                  ? '✅ All critical fields complete! Ready for supplemental details?'
+                  : '✅ All fields complete for this town!';
+
+                toast.success(message, { duration: 4000 });
+
+                // If critical mode just completed, auto-switch to supplemental
+                if (updateMode === 'critical' && !currentTabFilter) {
+                  console.log('[ModalClose] Critical mode complete - will auto-switch to supplemental in 3s');
+                  setTimeout(() => {
+                    console.log('[ModalClose] Switching to supplemental mode');
+                    setUpdateMode('supplemental');
+                    toast('Switching to supplemental fields...', { icon: '📝' });
+                  }, 3000);
+                }
+              }
+            }
+          }
+
+          // Reset filters for next session
+          console.log('[ModalClose] Resetting currentTabFilter to null');
+          setCurrentTabFilter(null);
         }}
         town={selectedTown}
         suggestions={updateSuggestions}
@@ -2447,6 +2569,7 @@ const TownsManager = () => {
         isGenerating={updateLoading}
         generationProgress={generationProgress}
         mode={updateMode}
+        tabName={currentTabFilter}
       />
 
     </div>

@@ -23,6 +23,7 @@
  */
 
 import { parsePreferences } from '../helpers/preferenceParser.js';
+import { FEATURE_FLAGS } from '../config.js';
 
 /**
  * Calculate comprehensive tax scoring based on user's tax sensitivity
@@ -187,6 +188,110 @@ function calculateGradualTaxScore(taxRate, taxType) {
   }
 }
 
+/**
+ * COST V2: Compute asymmetric cost scoring (cheaper = good, expensive = penalized)
+ * @param {number} townCost - Town's monthly cost in USD
+ * @param {number} userBudget - User's monthly budget in USD
+ * @param {number} maxPoints - Maximum points for base cost fit (default 70)
+ * @returns {Object} Score and description
+ */
+function computeCostScoreV2(townCost, userBudget, maxPoints = 70) {
+  // Input validation
+  if (!townCost || !userBudget || isNaN(townCost) || isNaN(userBudget) || townCost <= 0 || userBudget <= 0) {
+    return {
+      score: 0,
+      description: 'Invalid cost data',
+      ratio: 0
+    };
+  }
+
+  // Calculate ratio: townCost / userBudget
+  const ratio = townCost / userBudget;
+
+  // ASYMMETRIC SCORING:
+  // - If town is cheaper or equal (ratio <= 1.0): FULL score
+  // - If town is expensive (ratio > 1.0): SMOOTH exponential penalty
+
+  if (ratio <= 1.0) {
+    // Town costs LESS than budget → Perfect fit
+    return {
+      score: maxPoints,
+      description: `Affordable (cost $${townCost} vs budget $${userBudget})`,
+      ratio: ratio
+    };
+  } else {
+    // Town costs MORE than budget → Exponential penalty
+    // Formula: maxPoints * exp(-(ratio - 1) * steepness)
+    // steepness = 2.0 gives smooth degradation
+    const steepness = 2.0;
+    const score = maxPoints * Math.exp(-(ratio - 1) * steepness);
+
+    let description;
+    if (ratio <= 1.2) {
+      description = `Slightly over budget (cost $${townCost} vs budget $${userBudget})`;
+    } else if (ratio <= 1.5) {
+      description = `Moderately over budget (cost $${townCost} vs budget $${userBudget})`;
+    } else {
+      description = `Significantly over budget (cost $${townCost} vs budget $${userBudget})`;
+    }
+
+    return {
+      score: Math.round(score),
+      description: description,
+      ratio: ratio
+    };
+  }
+}
+
+/**
+ * COST V2: Apply luxury underbudget adjustment for high-budget users
+ * Prevents extremely cheap towns from getting perfect scores for luxury lifestyle users
+ * @param {number} baseScore - Base cost score (0-70)
+ * @param {number} townCost - Town's monthly cost in USD
+ * @param {number} userBudget - User's monthly budget in USD
+ * @returns {Object} Adjusted score and description
+ */
+function applyLuxuryUnderbudgetAdjustment(baseScore, townCost, userBudget) {
+  // Only apply to high-budget users (>= $4000/month)
+  const LUXURY_THRESHOLD = 4000;
+
+  if (userBudget < LUXURY_THRESHOLD) {
+    // Not a luxury user - no adjustment
+    return {
+      score: baseScore,
+      description: null,
+      penaltyApplied: 0
+    };
+  }
+
+  // Only penalize if town is EXTREMELY cheap (< 50% of budget)
+  const EXTREME_CHEAP_THRESHOLD = 0.5;
+  const ratio = townCost / userBudget;
+
+  if (ratio >= EXTREME_CHEAP_THRESHOLD) {
+    // Town is not extremely cheap - no adjustment
+    return {
+      score: baseScore,
+      description: null,
+      penaltyApplied: 0
+    };
+  }
+
+  // Calculate penalty: up to 30% reduction for extremely cheap towns
+  // Penalty increases as town gets cheaper relative to budget
+  const MAX_PENALTY_PERCENT = 0.30;
+  const penaltyFactor = 1 - (ratio / EXTREME_CHEAP_THRESHOLD); // 0.0 to 1.0
+  const penaltyPercent = MAX_PENALTY_PERCENT * penaltyFactor;
+  const penalty = baseScore * penaltyPercent;
+  const adjustedScore = baseScore - penalty;
+
+  return {
+    score: Math.round(adjustedScore),
+    description: `Luxury budget mismatch (town $${townCost} vs budget $${userBudget})`,
+    penaltyApplied: Math.round(penalty)
+  };
+}
+
 // 6. COST MATCHING (20% of total)
 export function calculateCostScore(preferences, town) {
   let score = 0
@@ -216,46 +321,81 @@ export function calculateCostScore(preferences, town) {
     return { score, factors, category: 'Costs' }
   }
 
-  const costRatio = userCost / townCost
+  // ============================================================================
+  // COST SCORING V1 vs V2 BRANCHING
+  // ============================================================================
 
-  // CRITICAL FIX (2025-10-17): REMOVED POWER USER PENALTY
-  // OLD BROKEN LOGIC: Penalized users for setting rent/healthcare costs (50% penalty!)
-  // NEW LOGIC: Everyone gets same base points, bonus points awarded if rent/healthcare also match
-  // This ensures filling in more cost fields = MORE points, not LESS
+  if (FEATURE_FLAGS.ENABLE_COST_V2_SCORING) {
+    // ========================================================================
+    // COST V2: ASYMMETRIC SCORING (cheaper = good, expensive = penalized)
+    // ========================================================================
 
-  // Base cost ratio scoring (same for everyone - no penalty for being thorough)
-  if (costRatio >= 2.0) {
-    // User cost is 2x or more than cost - excellent value
-    score += 70
-    factors.push({ factor: `Excellent value (cost $${userCost} vs actual $${townCost})`, score: 70 })
-  } else if (costRatio >= 1.5) {
-    // User cost is 1.5x cost - very comfortable margin
-    score += 65
-    factors.push({ factor: `Very comfortable (cost $${userCost} vs actual $${townCost})`, score: 65 })
-  } else if (costRatio >= 1.2) {
-    // User cost is 1.2x cost - comfortable fit
-    score += 60
-    factors.push({ factor: `Comfortable fit (cost $${userCost} vs actual $${townCost})`, score: 60 })
-  } else if (costRatio >= 1.0) {
-    // User cost EXACTLY meets cost - good match
-    score += 55
-    factors.push({ factor: `Matches cost (cost $${userCost} vs actual $${townCost})`, score: 55 })
-  } else if (costRatio >= 0.9) {
-    // User cost is 90% of cost - slightly tight
-    score += 45
-    factors.push({ factor: `Slightly tight (cost $${userCost} vs actual $${townCost})`, score: 45 })
-  } else if (costRatio >= 0.8) {
-    // User cost is 80% of cost - challenging but possible
-    score += 30
-    factors.push({ factor: `Challenging (cost $${userCost} vs actual $${townCost})`, score: 30 })
-  } else if (costRatio >= 0.7) {
-    // User cost is 70% of cost - very tight
-    score += 15
-    factors.push({ factor: `Very tight (cost $${userCost} vs actual $${townCost})`, score: 15 })
+    // Step 1: Compute base cost score using V2 algorithm
+    const costResult = computeCostScoreV2(townCost, userCost, 70);
+    let baseCostScore = costResult.score;
+
+    // Step 2: Apply luxury underbudget adjustment (only for high-budget users)
+    const luxuryAdjustment = applyLuxuryUnderbudgetAdjustment(baseCostScore, townCost, userCost);
+    baseCostScore = luxuryAdjustment.score;
+
+    // Add factors
+    score += baseCostScore;
+    factors.push({ factor: costResult.description, score: baseCostScore });
+
+    // Add luxury penalty note if applied
+    if (luxuryAdjustment.penaltyApplied > 0) {
+      factors.push({
+        factor: luxuryAdjustment.description,
+        score: -luxuryAdjustment.penaltyApplied
+      });
+    }
+
   } else {
-    // Cost too low
-    score += 5
-    factors.push({ factor: `Over cost limit (cost $${userCost} vs actual $${townCost})`, score: 5 })
+    // ========================================================================
+    // COST V1: ORIGINAL SCORING (symmetrical penalty for over/under budget)
+    // ========================================================================
+
+    const costRatio = userCost / townCost
+
+    // CRITICAL FIX (2025-10-17): REMOVED POWER USER PENALTY
+    // OLD BROKEN LOGIC: Penalized users for setting rent/healthcare costs (50% penalty!)
+    // NEW LOGIC: Everyone gets same base points, bonus points awarded if rent/healthcare also match
+    // This ensures filling in more cost fields = MORE points, not LESS
+
+    // Base cost ratio scoring (same for everyone - no penalty for being thorough)
+    if (costRatio >= 2.0) {
+      // User cost is 2x or more than cost - excellent value
+      score += 70
+      factors.push({ factor: `Excellent value (cost $${userCost} vs actual $${townCost})`, score: 70 })
+    } else if (costRatio >= 1.5) {
+      // User cost is 1.5x cost - very comfortable margin
+      score += 65
+      factors.push({ factor: `Very comfortable (cost $${userCost} vs actual $${townCost})`, score: 65 })
+    } else if (costRatio >= 1.2) {
+      // User cost is 1.2x cost - comfortable fit
+      score += 60
+      factors.push({ factor: `Comfortable fit (cost $${userCost} vs actual $${townCost})`, score: 60 })
+    } else if (costRatio >= 1.0) {
+      // User cost EXACTLY meets cost - good match
+      score += 55
+      factors.push({ factor: `Matches cost (cost $${userCost} vs actual $${townCost})`, score: 55 })
+    } else if (costRatio >= 0.9) {
+      // User cost is 90% of cost - slightly tight
+      score += 45
+      factors.push({ factor: `Slightly tight (cost $${userCost} vs actual $${townCost})`, score: 45 })
+    } else if (costRatio >= 0.8) {
+      // User cost is 80% of cost - challenging but possible
+      score += 30
+      factors.push({ factor: `Challenging (cost $${userCost} vs actual $${townCost})`, score: 30 })
+    } else if (costRatio >= 0.7) {
+      // User cost is 70% of cost - very tight
+      score += 15
+      factors.push({ factor: `Very tight (cost $${userCost} vs actual $${townCost})`, score: 15 })
+    } else {
+      // Cost too low
+      score += 5
+      factors.push({ factor: `Over cost limit (cost $${userCost} vs actual $${townCost})`, score: 5 })
+    }
   }
 
   // Get rent and healthcare costs for bonus scoring

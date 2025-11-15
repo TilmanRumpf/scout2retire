@@ -4,23 +4,30 @@ import { formatTownDisplay } from '../utils/townDisplayUtils';
 import { Link } from 'react-router-dom';
 import { toggleFavorite } from '../utils/townUtils.jsx';
 import toast from 'react-hot-toast';
-import { MapPin, DollarSign, Activity, Shield } from 'lucide-react';
+import { MapPin, DollarSign, Activity, Shield, Info } from 'lucide-react';
 import { uiConfig } from '../styles/uiConfig';
 import OptimizedImage from './OptimizedImage';
 import TownImageOverlay from './TownImageOverlay';
 import TownCardImageCarousel from './TownCardImageCarousel';
+import { getCostStatus, getLuxuryCostNote } from '../utils/scoring/helpers/costUtils';
 
-function TownCard({ 
-  town, 
-  userId, 
+function TownCard({
+  town,
+  userId,
   initiallyFavorited = false,
   onFavoriteChange,
   variant = 'default', // 'default', 'compact', 'detailed'
   showActions = true,
-  className = ''
+  className = '',
+  userBudget = null // User's monthly budget for cost status display
 }) {
   const [isFavorited, setIsFavorited] = useState(initiallyFavorited);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // Compute cost status if user budget is provided
+  const townCost = town.cost_of_living_usd || town.typical_monthly_living_cost;
+  const costStatus = userBudget ? getCostStatus(userBudget, townCost) : null;
+  const luxuryCostNote = userBudget ? getLuxuryCostNote(userBudget, townCost) : null;
 
   const handleFavoriteToggle = async () => {
     if (!userId || isUpdating) return;
@@ -99,6 +106,7 @@ function TownCard({
             isUpdating={isUpdating}
             onFavoriteClick={handleFavoriteToggle}
             appealStatement={town.appealStatement}
+            preferenceCoverage={town.preferenceCoverage}
           />
         )}
       </div>
@@ -120,6 +128,16 @@ function TownCard({
               ${town.cost_of_living_usd || town.typical_monthly_living_cost}/mo
             </span>
           )}
+          {costStatus && (
+            <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs ${uiConfig.layout.radius.full} ${
+              costStatus.level === 'low' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
+              costStatus.level === 'medium' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' :
+              costStatus.level === 'high' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' :
+              'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+            }`}>
+              {costStatus.label}
+            </span>
+          )}
           {town.healthcare_score && (
             <span className={`inline-flex items-center gap-1 px-2 py-1 ${uiConfig.colors.statusInfo} text-xs ${uiConfig.layout.radius.full}`}>
               <Activity size={12} />
@@ -137,6 +155,26 @@ function TownCard({
         <p className={`${uiConfig.colors.body} text-sm mb-4 line-clamp-3`}>
           {town.description || "Discover this beautiful town for your retirement."}
         </p>
+
+        {/* Personalization Note - appears when coverage is low but score is high */}
+        {town.personalizationNote && (
+          <div className={`flex items-start gap-2 mb-3 p-2 ${uiConfig.layout.radius.md} bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800`}>
+            <Info size={16} className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-800 dark:text-amber-200">
+              {town.personalizationNote}
+            </p>
+          </div>
+        )}
+
+        {/* Luxury Cost Note - appears when high-budget user matched with very cheap town */}
+        {luxuryCostNote && (
+          <div className={`flex items-start gap-2 mb-3 p-2 ${uiConfig.layout.radius.md} bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800`}>
+            <Info size={16} className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-blue-800 dark:text-blue-200">
+              💡 {luxuryCostNote}
+            </p>
+          </div>
+        )}
 
         <div className="flex justify-between items-center">
           <Link

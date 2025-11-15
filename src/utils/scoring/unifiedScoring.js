@@ -4,6 +4,21 @@
  */
 
 import { calculateEnhancedMatch } from './core/calculateMatch.js';
+import { parsePreferences } from './helpers/preferenceParser.js';
+
+/**
+ * Returns an optional personalization note based on score and coverage.
+ *
+ * @param {number} score - Total match score (0–100)
+ * @param {number} coverage - Preference coverage (0.0–1.0)
+ * @returns {string|null}
+ */
+function getPersonalizationNote(score, coverage) {
+  if (coverage < 0.4 && score >= 80) {
+    return 'Limited personalization — you provided very few preferences. Complete your profile for sharper matches.';
+  }
+  return null;
+}
 
 /**
  * Simple implementations of insight generation functions
@@ -280,6 +295,22 @@ export const scoreTown = async (town, userPreferences) => {
     const bestCategory = categories.reduce((max, cat) => cat.score > max.score ? cat : max);
     const appealStatement = `${bestCategory.name} Match: ${Math.round(bestCategory.score)}%`;
 
+    // Calculate preference coverage (what proportion of categories have user preferences)
+    const parsed = parsePreferences(userPreferences);
+    const totalCategories = 6;
+    const categoriesWithPrefs = [
+      parsed.region.hasAnyPreferences,
+      parsed.climate.hasAnyPreferences,
+      parsed.culture.hasAnyPreferences,
+      parsed.hobbies.hasAnyPreferences,
+      parsed.admin.hasAnyPreferences,
+      parsed.cost.hasAnyPreferences
+    ].filter(Boolean).length;
+    const preferenceCoverage = categoriesWithPrefs / totalCategories;
+
+    // Generate personalization note if needed
+    const personalizationNote = getPersonalizationNote(enhancedResult.match_score, preferenceCoverage);
+
     return {
       ...town,
       matchScore: enhancedResult.match_score,
@@ -292,7 +323,9 @@ export const scoreTown = async (town, userPreferences) => {
       valueRating: valueRating,
       match_factors: enhancedResult.match_factors,
       match_quality: enhancedResult.match_quality,
-      appealStatement: appealStatement
+      appealStatement: appealStatement,
+      preferenceCoverage: preferenceCoverage,
+      personalizationNote: personalizationNote
     };
   } catch (error) {
     // ERROR HANDLING: If scoring fails, return safe defaults so UI doesn't hang
@@ -318,7 +351,9 @@ export const scoreTown = async (town, userPreferences) => {
       valueRating: 3,
       match_factors: [],
       match_quality: 'Error',
-      appealStatement: 'Error: Unable to score'
+      appealStatement: 'Error: Unable to score',
+      preferenceCoverage: 0,  // Unknown due to error
+      personalizationNote: null  // Cannot determine due to error
     };
   }
 };

@@ -13,7 +13,7 @@ import LegacyFieldsSection from './LegacyFieldsSection';
 import { checkAdminAccess } from '../../utils/paywallUtils';
 import { VALID_CATEGORICAL_VALUES } from '../../utils/validation/categoricalValues';
 
-export default function RegionPanel({ town, onTownUpdate, auditResults = {} }) {
+export default function RegionPanel({ town, onTownUpdate, auditResults = {}, onSmartUpdateTab }) {
   const [isExecutiveAdmin, setIsExecutiveAdmin] = useState(false);
 
   // Check if user is executive admin
@@ -62,6 +62,22 @@ export default function RegionPanel({ town, onTownUpdate, auditResults = {} }) {
 
   return (
     <div className="space-y-6">
+      {/* Smart Update Button - Tab-specific AI suggestions */}
+      {onSmartUpdateTab && (
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={() => onSmartUpdateTab('Region')}
+            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors flex items-center gap-2"
+            title="Use AI to suggest updates for Region tab fields"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Smart Update Region
+          </button>
+        </div>
+      )}
+
       {/* Location & Countries */}
       <div>
         <button

@@ -8,6 +8,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
     "test:golden": "node --test tests/scoring/goldenMaster.test.js",
     "test:capture-baseline": "node tests/scoring/captureGoldenMaster.js",
     "db:run": "node db-runner.js",
@@ -54,6 +57,8 @@
   "devDependencies": {
     "@eslint/js": "^9.25.0",
     "@playwright/test": "^1.56.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
@@ -66,6 +71,7 @@
     "postcss": "^8.4.31",
     "postcss-preset-env": "^10.2.4",
     "tailwindcss": "^3.3.3",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vitest": "^4.0.9"
   }
 }

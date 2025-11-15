@@ -10,14 +10,15 @@ import { uiConfig } from '../styles/uiConfig';
  * 3. Lower right: Location icon linked to Google Maps
  * 4. Lower left: Appeal statement
  */
-export default function TownImageOverlay({ 
+export default function TownImageOverlay({
   town,
   matchScore,
   isFavorited,
   isUpdating,
   onFavoriteClick,
   appealStatement,
-  enableAnimation = false // Only enable for main display, not card grid
+  enableAnimation = false, // Only enable for main display, not card grid
+  preferenceCoverage // New prop: 0.0-1.0 indicating profile completeness
 }) {
   const [shouldAnimate, setShouldAnimate] = useState(false);
   
@@ -49,9 +50,9 @@ export default function TownImageOverlay({
 
   return (
     <>
-      {/* Upper left: Match percentage */}
+      {/* Upper left: Match percentage & Profile completeness */}
       {matchScore !== undefined && matchScore !== null && (
-        <div className={`absolute ${uiConfig.townCardOverlay.position.topLeft}`}>
+        <div className={`absolute ${uiConfig.townCardOverlay.position.topLeft} flex flex-col gap-1`}>
           <div className={`px-2.5 py-1 ${uiConfig.townCardOverlay.radius} ${uiConfig.townCardOverlay.backdrop} ${uiConfig.townCardOverlay.fontSize.matchScore} ${uiConfig.townCardOverlay.fontWeight.matchScore} ${
             matchScore >= 80 ? uiConfig.townCardOverlay.matchColors.high :
             matchScore >= 60 ? uiConfig.townCardOverlay.matchColors.medium :
@@ -59,6 +60,16 @@ export default function TownImageOverlay({
           }`}>
             {matchScore}%
           </div>
+          {/* Profile Completeness badge */}
+          {preferenceCoverage !== undefined && preferenceCoverage !== null && (
+            <div className={`px-2 py-0.5 ${uiConfig.townCardOverlay.radius} ${uiConfig.townCardOverlay.backdrop} text-xs ${
+              preferenceCoverage >= 0.8 ? 'text-green-400' :
+              preferenceCoverage >= 0.4 ? 'text-yellow-400' :
+              'text-orange-400'
+            }`}>
+              Profile: {Math.round(preferenceCoverage * 100)}%
+            </div>
+          )}
         </div>
       )}
 

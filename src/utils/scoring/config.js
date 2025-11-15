@@ -122,7 +122,22 @@ export const HOBBIES_SETTINGS = {
 // ============================================
 // Enable/disable experimental features for gradual rollout
 export const FEATURE_FLAGS = {
-  ENABLE_CULTURE_V2_SCORING: false  // V2: Adds traditional_progressive_lean + social_atmosphere scoring
+  ENABLE_CULTURE_V2_SCORING: false,      // V2: Adds traditional_progressive_lean + social_atmosphere scoring
+  ENABLE_STANDARDIZED_FALLBACKS: false,  // V2: Standardizes missing-data fallback (40%) when town lacks data
+                                         // NOTE: "No preferences" ALWAYS = 100% (not affected by this flag)
+  ENABLE_COST_V2_SCORING: true           // V2: Asymmetric cost scoring - cheaper = good, expensive = penalized (ENABLED)
+};
+
+// ============================================
+// FALLBACK SETTINGS
+// ============================================
+// Standardized fallback percentages (used when ENABLE_STANDARDIZED_FALLBACKS = true)
+export const FALLBACK_SETTINGS = {
+  NO_PREFERENCE_FALLBACK: 0.50,      // DEPRECATED - Not used (no preferences always = 100%)
+  MISSING_DATA_FALLBACK: 0.40,       // 40% when town missing data for a field
+  ADJACENT_MATCH_CLIMATE: 0.70,      // 70% for adjacent climate match (unchanged)
+  ADJACENT_MATCH_CULTURE: 0.50,      // 50% for adjacent culture match (unchanged)
+  ADJACENT_MATCH_REGION: 0.50        // 50% for adjacent region match (unchanged)
 };
 
 // ============================================

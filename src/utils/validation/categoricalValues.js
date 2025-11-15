@@ -12,6 +12,8 @@
  * DO update code/validation to accept these values.
  */
 
+import { normalizeFieldValue } from '../fieldNormalization.js';
+
 export const VALID_CATEGORICAL_VALUES = {
 
   // Retirement community presence
@@ -260,11 +262,9 @@ export function getCategoricalFields() {
 }
 
 /**
- * Normalize a categorical value (lowercase, trim)
- * @param {string} value - Value to normalize
- * @returns {string} - Normalized value
+ * Normalize categorical value for comparison
+ * NOW USING CONSOLIDATED NORMALIZATION - November 14, 2025
  */
 export function normalizeCategoricalValue(value) {
-  if (!value) return null;
-  return String(value).toLowerCase().trim();
+  return normalizeFieldValue(null, value, 'categorical');
 }

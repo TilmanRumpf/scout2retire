@@ -17,7 +17,7 @@
 
 import { parsePreferences } from '../helpers/preferenceParser.js';
 import { compareIgnoreCase, includesIgnoreCase, normalize, arrayIncludesIgnoreCase } from '../helpers/stringUtils.js';
-import { REGION_SETTINGS } from '../config.js';
+import { REGION_SETTINGS, FEATURE_FLAGS, FALLBACK_SETTINGS } from '../config.js';
 import { VALID_CATEGORICAL_VALUES } from '../../validation/categoricalValues.js';
 import { scoreWithAdjacency } from '../helpers/adjacencyMatcher.js';
 import {
@@ -212,7 +212,13 @@ export function calculateRegionScore(preferences, town) {
           factors.push({ factor: 'No geographic feature match', score: 0 })
         }
       } else {
-        factors.push({ factor: 'No geographic feature match', score: 0 })
+        // Town has no geographic features data, but user has preferences
+        if (FEATURE_FLAGS.ENABLE_STANDARDIZED_FALLBACKS) {
+          geoScore = Math.round(30 * FALLBACK_SETTINGS.MISSING_DATA_FALLBACK)  // 40% of 30 = 12
+          factors.push({ factor: 'Geographic features data unavailable - baseline score', score: geoScore })
+        } else {
+          factors.push({ factor: 'No geographic feature match', score: 0 })
+        }
       }
     }
   }
@@ -277,7 +283,12 @@ export function calculateRegionScore(preferences, town) {
     }
   } else {
     // User has preferences but town has no vegetation data
-    factors.push({ factor: 'Vegetation data unavailable', score: 0 })
+    if (FEATURE_FLAGS.ENABLE_STANDARDIZED_FALLBACKS) {
+      vegScore = Math.round(20 * FALLBACK_SETTINGS.MISSING_DATA_FALLBACK)  // 40% of 20 = 8
+      factors.push({ factor: 'Vegetation data unavailable - baseline score', score: vegScore })
+    } else {
+      factors.push({ factor: 'Vegetation data unavailable', score: 0 })
+    }
   }
 
   score += vegScore

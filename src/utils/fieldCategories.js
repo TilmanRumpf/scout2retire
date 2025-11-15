@@ -9,7 +9,6 @@ export const FIELD_CATEGORIES = {
   town_name: 'Overview',
   country: 'Overview',
   state_code: 'Overview',
-  population: 'Overview',
   overview: 'Overview',
 
   // Region
@@ -20,9 +19,13 @@ export const FIELD_CATEGORIES = {
   vegetation_type_actual: 'Region',
   water_bodies: 'Region',
   elevation_m: 'Region',
+  elevation_meters: 'Region',
+  altitude_meters: 'Region',
   latitude: 'Region',
   longitude: 'Region',
   time_zone: 'Region',
+  population: 'Region',
+  urban_rural_character: 'Region',
 
   // Climate
   climate: 'Climate',
