@@ -82,6 +82,11 @@ export function useSmartUpdate() {
     currentTabFilter,
     generateSuggestions,
     closeUpdateModal,
-    setUpdateModalOpen
+    setUpdateModalOpen,
+    setUpdateMode,
+    setUpdateSuggestions,
+    setUpdateLoading,
+    setGenerationProgress,
+    setCurrentTabFilter
   };
 }

@@ -264,7 +264,12 @@ const TownsManager = () => {
     currentTabFilter,
     generateSuggestions,
     closeUpdateModal,
-    setUpdateModalOpen
+    setUpdateModalOpen,
+    setUpdateMode,
+    setUpdateSuggestions,
+    setUpdateLoading,
+    setGenerationProgress,
+    setCurrentTabFilter
   } = useSmartUpdate();
 
   // Global field search state
